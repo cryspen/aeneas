@@ -39,12 +39,50 @@ def litToRust : Lit → String
   | .str s => s!"\"{s}\""
   | .byteStr _ => "b\"<bytestr>\""
 
+/-- Rust-side operator for a binop `App` head. `Some _` means render
+    the application as `lhs <op> rhs`; `none` falls through to a
+    function-call form (used for wrapping/checked variants). -/
+def binopRustOp : String → Option String
+  | "Add" => some "+"
+  | "Sub" => some "-"
+  | "Mul" => some "*"
+  | "Div" => some "/"
+  | "Rem" => some "%"
+  | "BitXor" => some "^"
+  | "BitAnd" => some "&"
+  | "BitOr"  => some "|"
+  | "Shl" => some "<<"
+  | "Shr" => some ">>"
+  | "Eq" => some "=="
+  | "Ne" => some "!="
+  | "Lt" => some "<"
+  | "Le" => some "<="
+  | "Gt" => some ">"
+  | "Ge" => some ">="
+  | _ => none
+
+/-- For wrapping / checked ops, render as `lhs.wrapping_add(rhs)`. -/
+def binopRustMethod : String → Option String
+  | "AddWrap" => some "wrapping_add"
+  | "SubWrap" => some "wrapping_sub"
+  | "MulWrap" => some "wrapping_mul"
+  | "AddChecked" => some "checked_add"
+  | "SubChecked" => some "checked_sub"
+  | "MulChecked" => some "checked_mul"
+  | _ => none
+
 partial def PExpr.toRust : PExpr → String
   | .var name => name
   | .lit l => litToRust l
   | .app head args =>
-    if args.isEmpty then head
-    else s!"{head}(" ++ String.intercalate ", " (args.toList.map PExpr.toRust) ++ ")"
+    match binopRustOp head, binopRustMethod head, args.toList with
+    | some op, _, [l, r] =>
+      "(" ++ l.toRust ++ " " ++ op ++ " " ++ r.toRust ++ ")"
+    | _, some m, [l, r] =>
+      l.toRust ++ "." ++ m ++ "(" ++ r.toRust ++ ")"
+    | _, _, _ =>
+      if args.isEmpty then head
+      else s!"{head}(" ++ String.intercalate ", " (args.toList.map PExpr.toRust) ++ ")"
   | .letIn name _ e1 e2 =>
     s!"let {name} = {e1.toRust};\n    {e2.toRust}"
   -- M8 drops the .ok wrapper: the Rust model returns the value directly.

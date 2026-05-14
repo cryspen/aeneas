@@ -33,6 +33,7 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .assert cond expected =>
     let _ ← stepAssert st cond expected
     return st
+  | .binop op lhs rhs dst => stepBinop st op lhs rhs dst
   | .panic => return st
   | .retn => return st
   | .reborrow child parent place => stepReborrow st child parent place

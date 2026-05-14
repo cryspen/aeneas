@@ -61,6 +61,10 @@ def checkEvent (ev : Event) : TC Unit := do
     checkSymExpr restore.givenBack
     removeLoan loan
   | .assert cond _ => checkSymExpr cond
+  | .binop _ lhs rhs dst => do
+    checkSymExpr lhs
+    checkSymExpr rhs
+    checkPlace dst
   | .panic => pure ()
   | .retn => pure ()
   | .reborrow child _parent place => do

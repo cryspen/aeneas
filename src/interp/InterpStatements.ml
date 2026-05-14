@@ -883,6 +883,27 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                     S.synthesize_assignment ctx p rv rp
               in
               let ctx, cc = comp cc (assign_to_place config st.span rv p ctx) in
+              (* Cert: emit EvBinop for BinaryOp rvalues now that the
+                 destination place has been written. The operands are
+                 converted to cert_sym_expr; if either operand or the
+                 destination place can't be flattened (e.g. a global)
+                 we skip the event — the trace stays consistent
+                 because the Lean side never observes the missing
+                 binop and the placeholder body kicks in. *)
+              (match rvalue with
+               | BinaryOp (binop, op1, op2) ->
+                   (match
+                      ( CertEvent.cert_place_of_place p,
+                        CertEvent.cert_sym_expr_of_operand op1,
+                        CertEvent.cert_sym_expr_of_operand op2 )
+                    with
+                    | Some cp, Some lhs, Some rhs ->
+                        ctx_emit_event ctx
+                          (CertEvent.EvBinop
+                             { op = CertEvent.cert_binop_string binop;
+                               lhs; rhs; dst = cp })
+                    | _ -> ())
+               | _ -> ());
               ((ctx, Unit), cc)
         in
         let cc = cc_comp cc cf_assign in

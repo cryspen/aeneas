@@ -118,6 +118,19 @@ type event =
       (** [DB] Execution diverged via panic. *)
   | EvReturn
       (** [DB] Function returned normally. *)
+  | EvBinop of {
+      op : string;
+      lhs : cert_sym_expr;
+      rhs : cert_sym_expr;
+      dst : cert_place;
+    }
+      (** [M10] An LLBC [Rvalue.BinaryOp] reduction.
+
+          [op] is a flat tag: arithmetic ops carry their overflow mode
+          baked in ([AddPanic] / [AddWrap] / [AddUB]) so the Lean side
+          can match on a single string rather than a nested algebraic
+          shape. Non-arithmetic ops use the bare constructor name
+          ([BitXor], [Eq], [Lt], ...). *)
   (* === Reborrows + nested borrows (M9) === *)
   | EvReborrow of {
       child : borrow_id;
@@ -184,6 +197,34 @@ type crate_cert = {
     backwards-incompatible way. *)
 let cert_fmt_version : int = 1
 
+(** Encode a Charon [binop] as a flat string tag. Arithmetic ops bake
+    the overflow mode into the tag suffix ([Panic] / [UB] / [Wrap])
+    so the Lean parser stays string-keyed. *)
+let cert_binop_string : binop -> string =
+  let mode_suffix : overflow_mode -> string = function
+    | OPanic -> "Panic"
+    | OUB -> "UB"
+    | OWrap -> "Wrap"
+  in
+  function
+  | BitXor -> "BitXor"
+  | BitAnd -> "BitAnd"
+  | BitOr -> "BitOr"
+  | Eq -> "Eq" | Lt -> "Lt" | Le -> "Le"
+  | Ne -> "Ne" | Ge -> "Ge" | Gt -> "Gt"
+  | Add m -> "Add" ^ mode_suffix m
+  | Sub m -> "Sub" ^ mode_suffix m
+  | Mul m -> "Mul" ^ mode_suffix m
+  | Div m -> "Div" ^ mode_suffix m
+  | Rem m -> "Rem" ^ mode_suffix m
+  | AddChecked -> "AddChecked"
+  | SubChecked -> "SubChecked"
+  | MulChecked -> "MulChecked"
+  | Shl m -> "Shl" ^ mode_suffix m
+  | Shr m -> "Shr" ^ mode_suffix m
+  | Offset -> "Offset"
+  | Cmp -> "Cmp"
+
 (** Convert a Charon [place] into a flat [cert_place].
 
     Returns [None] for [PlaceGlobal]: globals do not appear in the
@@ -201,3 +242,21 @@ let cert_place_of_place (p : place) : cert_place option =
   | None -> None
   | Some (lid, proj, ty) ->
       Some { cp_local = lid; cp_projection = proj; cp_ty = ty }
+
+(** Convert a Charon operand into a [cert_sym_expr]. Returns [None]
+    when the operand references a global or when place flattening
+    fails (out of the direct-borrow subset). *)
+let cert_sym_expr_of_operand (op : operand) : cert_sym_expr option =
+  match op with
+  | Copy p ->
+      (match cert_place_of_place p with
+       | Some cp -> Some (SymCopy cp)
+       | None -> None)
+  | Move p ->
+      (match cert_place_of_place p with
+       | Some cp -> Some (SymMove cp)
+       | None -> None)
+  | Constant ce ->
+      (match ce.kind with
+       | CLiteral lit -> Some (SymLit lit)
+       | _ -> None)

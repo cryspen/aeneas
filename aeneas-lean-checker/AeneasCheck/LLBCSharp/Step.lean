@@ -173,6 +173,24 @@ def stepAssign (st : SymState) (dst : Place) (rhs : SymExpr) :
   let v ← evalSymExpr st rhs
   return st.setLocal (placeRootLocal dst) v
 
+/-! ## E-BinaryOp
+
+M10.0 structural rule: evaluate operands in the current state, bind
+the destination local to a sentinel `bottom` (the symbolic-binop
+result; the Pure translator carries the operand expressions
+directly). The `op` tag is not interpreted here — the translator
+maps it to a Lean operator. -/
+
+def stepBinop (st : SymState) (_op : String) (lhs rhs : SymExpr)
+    (dst : Place) : Result SymState := do
+  let _ ← evalSymExpr st lhs
+  let _ ← evalSymExpr st rhs
+  let root := placeRootLocal dst
+  if root ≥ st.numLocals then
+    fail s!"E-BinaryOp: local {root} out of bounds (have {st.numLocals})"
+  else
+    return st.setLocal root (.sym 0)
+
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :
     Result Unit := do
   -- We don't model the assertion's truth value (symbolic execution

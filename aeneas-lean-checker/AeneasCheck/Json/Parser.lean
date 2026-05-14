@@ -164,6 +164,12 @@ def parseEvent (j : Json) : Result Event := do
       let cond ← parseSymExpr (← field payload "cond")
       let expected ← asBool (← field payload "expected")
       return .assert cond expected
+    | "EvBinop" =>
+      let op ← asStr (← field payload "op")
+      let lhs ← parseSymExpr (← field payload "lhs")
+      let rhs ← parseSymExpr (← field payload "rhs")
+      let dst ← parsePlace (← field payload "dst")
+      return .binop op lhs rhs dst
     | "EvReborrow" =>
       let child ← asNat (← field payload "child")
       let parent ← asNat (← field payload "parent")

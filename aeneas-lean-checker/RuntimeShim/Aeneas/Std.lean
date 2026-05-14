@@ -42,6 +42,14 @@ instance (n : Nat) [OfNat UInt16 n] : OfNat U16 n  := inferInstanceAs (OfNat UIn
 instance (n : Nat) [OfNat UInt32 n] : OfNat U32 n  := inferInstanceAs (OfNat UInt32 n)
 instance (n : Nat) [OfNat UInt64 n] : OfNat U64 n  := inferInstanceAs (OfNat UInt64 n)
 
+-- Re-derive arithmetic instances so the M10.0 emitter's `x + 1` style
+-- expressions typecheck against the shim's `Std.U*` aliases. The
+-- result type is `Result α` to match the real Aeneas runtime, which
+-- treats overflow as a checked failure inside the Result monad. The
+-- shim is permissive — every binop succeeds with `.ok` modulo
+-- wrapping semantics; the emitter's `do let t ← x + y` and bare-tail
+-- `do x + y` shapes both resolve.
+
 /-! ## ControlFlow
 
 The standard Aeneas backend opens `ControlFlow` as part of its
@@ -85,6 +93,36 @@ instance : Monad Result where
   bind := bind
 
 end Result
+
+-- Binop instances that lift the underlying-type operator into the
+-- Result monad. Defined here (after `Result`) so the result type is
+-- in scope.
+@[inline] private def liftRes2 {α β : Type} (op : α → α → β) (a b : α)
+    : Result β := .ok (op a b)
+
+instance : HAdd U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.add : UInt32 → UInt32 → UInt32)⟩
+instance : HSub U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.sub : UInt32 → UInt32 → UInt32)⟩
+instance : HMul U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.mul : UInt32 → UInt32 → UInt32)⟩
+instance : HXor U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.xor : UInt32 → UInt32 → UInt32)⟩
+instance : HAnd U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.land : UInt32 → UInt32 → UInt32)⟩
+instance : HOr  U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.lor : UInt32 → UInt32 → UInt32)⟩
+instance : HShiftLeft U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.shiftLeft : UInt32 → UInt32 → UInt32)⟩
+instance : HShiftRight U32 U32 (Result U32) :=
+  ⟨liftRes2 (UInt32.shiftRight : UInt32 → UInt32 → UInt32)⟩
+
+instance : HAdd U64 U64 (Result U64) :=
+  ⟨liftRes2 (UInt64.add : UInt64 → UInt64 → UInt64)⟩
+instance : HSub U64 U64 (Result U64) :=
+  ⟨liftRes2 (UInt64.sub : UInt64 → UInt64 → UInt64)⟩
+instance : HMul U64 U64 (Result U64) :=
+  ⟨liftRes2 (UInt64.mul : UInt64 → UInt64 → UInt64)⟩
 
 end Std
 end Aeneas

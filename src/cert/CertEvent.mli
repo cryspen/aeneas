@@ -56,6 +56,12 @@ type event =
   | EvAssert of { cond : cert_sym_expr; expected : bool }
   | EvPanic
   | EvReturn
+  | EvBinop of {
+      op : string;
+      lhs : cert_sym_expr;
+      rhs : cert_sym_expr;
+      dst : cert_place;
+    }
   | EvReborrow of {
       child : borrow_id;
       parent : borrow_id;
@@ -101,8 +107,18 @@ type crate_cert = {
 
 val cert_fmt_version : int
 
+val cert_binop_string : Expressions.binop -> string
+(** Flat string tag for an LLBC binop. See implementation for the
+    mapping; arithmetic ops bake the overflow mode into the suffix
+    ([Panic] / [UB] / [Wrap]). *)
+
 val cert_place_of_place : Expressions.place -> cert_place option
 (** Flatten a Charon [place] to a [cert_place]; [None] for [PlaceGlobal]. *)
+
+val cert_sym_expr_of_operand : Expressions.operand -> cert_sym_expr option
+(** Build a [cert_sym_expr] from an LLBC operand. Returns [None] for
+    operand shapes the M10 subset cannot yet encode (globals,
+    constants other than literals). *)
 
 val pp_event : Format.formatter -> event -> unit
 val pp_fun_cert : Format.formatter -> fun_cert -> unit

@@ -227,6 +227,18 @@ let json_event (e : event) : Yojson.Basic.t =
         ]
   | EvPanic -> `String "EvPanic"
   | EvReturn -> `String "EvReturn"
+  | EvBinop { op; lhs; rhs; dst } ->
+      `Assoc
+        [
+          ( "EvBinop",
+            `Assoc
+              [
+                "op", `String op;
+                "lhs", json_cert_sym_expr lhs;
+                "rhs", json_cert_sym_expr rhs;
+                "dst", json_cert_place dst;
+              ] );
+        ]
   | EvReborrow { child; parent; place } ->
       `Assoc
         [

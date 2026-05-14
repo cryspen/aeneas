@@ -255,6 +255,22 @@
           }
         },
         { "type": "object", "required": ["EvReborrow"] },
+        {
+          "type": "object",
+          "required": ["EvBinop"],
+          "properties": {
+            "EvBinop": {
+              "type": "object",
+              "required": ["op", "lhs", "rhs", "dst"],
+              "properties": {
+                "op": { "type": "string" },
+                "lhs": { "$ref": "#/definitions/sym_expr" },
+                "rhs": { "$ref": "#/definitions/sym_expr" },
+                "dst": { "$ref": "#/definitions/place" }
+              }
+            }
+          }
+        },
         { "type": "object", "required": ["EvCall"] },
         { "type": "object", "required": ["EvEndAbs"] },
         { "type": "object", "required": ["EvProj"] },

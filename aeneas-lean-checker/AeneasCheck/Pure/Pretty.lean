@@ -45,15 +45,55 @@ def litToLean : Lit → String
   | .str s => s!"\"{s}\""
   | .byteStr _ => "<bytestr>"
 
+/-- Map a binop `App` head to its Lean infix operator (or `none` if
+    the head should render as a function application). The notations
+    match the standard Aeneas backend's output. -/
+def binopInfix : String → Option String
+  | "Add"       => some "+"
+  | "Sub"       => some "-"
+  | "Mul"       => some "*"
+  | "Div"       => some "/"
+  | "Rem"       => some "%"
+  | "BitXor"    => some "^^^"
+  | "BitAnd"    => some "&&&"
+  | "BitOr"     => some "|||"
+  | "Shl"       => some "<<<"
+  | "Shr"       => some ">>>"
+  | "Eq"        => some "="
+  | "Ne"        => some "≠"
+  | "Lt"        => some "<"
+  | "Le"        => some "≤"
+  | "Gt"        => some ">"
+  | "Ge"        => some "≥"
+  | _           => none
+
+/-- Map a wrapping/checked binop head to its qualified-name surface
+    form. Returns `none` if `head` is not such an op. -/
+def binopWrappingName : String → Option String
+  | "AddWrap" => some "wrapping_add"
+  | "SubWrap" => some "wrapping_sub"
+  | "MulWrap" => some "wrapping_mul"
+  | "AddChecked" => some "checked_add"
+  | "SubChecked" => some "checked_sub"
+  | "MulChecked" => some "checked_mul"
+  | _ => none
+
 /-- Expression form used inside a `do`-block: tail `.ok` becomes a
     bare `ok …` (Result is opened), let-bindings become monadic
-    `let … ← …`. -/
+    `let … ← …`, binary operators render with the matching infix or
+    a qualified function call. -/
 partial def PExpr.toLeanDo : PExpr → String
   | .var name => name
   | .lit l => litToLean l
   | .app head args =>
-    if args.isEmpty then head
-    else "(" ++ head ++ " " ++ String.intercalate " " (args.toList.map PExpr.toLeanDo) ++ ")"
+    match binopInfix head, args.toList with
+    | some op, [lhs, rhs] =>
+      "(" ++ lhs.toLeanDo ++ " " ++ op ++ " " ++ rhs.toLeanDo ++ ")"
+    | _, _ =>
+      let head := (binopWrappingName head).getD head
+      if args.isEmpty then head
+      else "(" ++ head ++ " " ++
+        String.intercalate " " (args.toList.map PExpr.toLeanDo) ++ ")"
   | .letIn name _ e1 e2 =>
     -- Inner expressions in a monadic let bind a Result-valued
     -- computation; emit a `let … ←` form. Tail position is e2.

@@ -44,6 +44,11 @@ inductive Event
   | assert (cond : SymExpr) (expected : Bool)
   | panic
   | retn
+  /-- M10.0: a Charon `Rvalue.BinaryOp` reduction. `op` is the flat
+      string tag emitted by OCaml's `cert_binop_string` (arithmetic
+      ops bake the overflow mode in: `AddPanic` / `AddWrap` /
+      `AddUB`, etc.). -/
+  | binop (op : String) (lhs rhs : SymExpr) (dst : Place)
   -- later milestones
   | reborrow (child parent : Nat) (place : Place)
   | call (fn callId : Nat) (args : Array SymExpr) (dst : Place) (regionAbs : Array Nat)
