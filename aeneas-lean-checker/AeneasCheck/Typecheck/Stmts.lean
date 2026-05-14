@@ -75,7 +75,11 @@ def checkEvent (ev : Event) : TC Unit := do
   | .call _ _ _ args dst _ => do
     for a in args do checkSymExpr a
     checkPlace dst
-  | .endAbs _ _ => emitErr "EvEndAbs: not supported until M10"
+  | .endAbs _ finals => do
+    -- M10.2: structural no-op. The `finals` list will populate in
+    -- M10.2b once backward functions are translated; for now we just
+    -- bounds-check any place references that flow through it.
+    for e in finals do checkSymExpr e
   | .proj _ _ _ => emitErr "EvProj: not supported until M10"
   | .join _ _ _ => emitErr "EvJoin: not supported until M11"
   | .loopInv _ _ => emitErr "EvLoopInv: not supported until M12"

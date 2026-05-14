@@ -1275,6 +1275,15 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
          context all-together. *)
       let ctx, cc = comp cc (end_abs_synthesize config span abs_id level ctx) in
 
+      (* Cert: emit EvEndAbs marking the abstraction as closed. The
+         [final_values] field is left empty in M10.2 — the structural
+         marker is enough for the Lean translator to know the
+         abstraction's region was released; M10.2b will populate the
+         field with the per-loan given-back symbolic values so the
+         pure translator can emit backward-function applications. *)
+      ctx_emit_event ctx
+        (CertEvent.EvEndAbs { abs = abs_id; final_values = [] });
+
       (* Debugging *)
       [%ltrace
         AbsId.to_string abs_id ^ "\n- original context:\n"

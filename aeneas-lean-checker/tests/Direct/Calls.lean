@@ -49,4 +49,34 @@ def main : IO Unit := do
     IO.println s!"  ✓ saw {nCall} EvCall(wrapping_add) event(s)"
   else
     throw <| IO.userError "expected ≥ 1 wrapping_add EvCall"
+  -- M10.2: the `calls.cert.json` fixture exercises EvEndAbs (fires
+  -- when an in-body callee's region abstraction closes).
+  let callsCC ← readCrateCert "tests/Direct/calls.cert.json"
+  match checkCrateCert callsCC with
+  | .ok _ => IO.println "  ✓ calls.cert.json typechecks"
+  | .error errs =>
+    for e in errs do IO.eprintln s!"    {e}"
+    throw <| IO.userError "calls.cert.json rejected"
+  match replayCrate callsCC with
+  | .ok _ => IO.println "  ✓ calls.cert.json replays"
+  | .error msg => throw <| IO.userError s!"calls replay failed: {msg}"
+  let nEndAbs := callsCC.functions.foldl (init := 0) fun acc f =>
+    acc + (f.events.foldl (init := 0) fun a e => match e with
+      | .endAbs _ _ => a + 1
+      | _ => a)
+  if nEndAbs ≥ 1 then
+    IO.println s!"  ✓ saw {nEndAbs} EvEndAbs event(s) in calls.cert.json"
+  else
+    throw <| IO.userError "expected ≥ 1 EvEndAbs in calls.cert.json"
+  -- And the emitted Lean still has the right shape for the simple
+  -- helper-calling case (`incr_via_helper(x) = incr_inner(x)`).
+  match translateCrate callsCC with
+  | .error e => throw <| IO.userError s!"calls translate failed: {e}"
+  | .ok tc =>
+    let src := emitTranslatedCrate "calls" tc
+    if (src.splitOn "(calls.incr_inner x1)").length < 2 then
+      IO.eprintln src
+      throw <| IO.userError "incr_via_helper missing call to incr_inner"
+    else
+      IO.println "  ✓ incr_via_helper translates to incr_inner call"
   IO.println "all tests passed"
