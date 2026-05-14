@@ -1,5 +1,6 @@
 import AeneasCheck.Raw.Types
 import AeneasCheck.Raw.Literal
+import AeneasCheck.Raw.CertEvent
 
 /-!
 Pure IR — the target language of the LLBC# → Pure translation.
@@ -49,12 +50,23 @@ structure Param where
   ty : PTy
   deriving Repr, Inhabited
 
-/-- A pure function declaration. -/
+/-- A pure function declaration.
+
+    `qualifiedName` is the original Rust `crate::path::fn` form,
+    preserved for the per-function Aeneas-style docstring. `name` is
+    the bare def name within its (possibly nested) namespace block —
+    the Lean emitter strips the leading crate segment from
+    `qualifiedName` to produce `name`.
+
+    `sourceSpan` flows into the `Source: ...` docstring line; `none`
+    suppresses that line. -/
 structure Decl where
   name : String
+  qualifiedName : String
   params : Array Param
   retTy : PTy
   body : PExpr
+  sourceSpan : Option Raw.SourceSpan := none
   deriving Repr, Inhabited
 
 end AeneasCheck.Pure

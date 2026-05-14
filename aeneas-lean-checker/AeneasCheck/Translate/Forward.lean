@@ -34,21 +34,24 @@ def paramName (i : Nat) : String := s!"x{i}"
     types in the cert. -/
 def placeholderTy : PTy := .lit (.int .u32)
 
-/-- Translate a `CheckedTrace` for a function into a Pure decl.
+/-- Strip the leading crate-name segment of a `crate::a::b` path,
+    returning the inner def name `a.b`. The crate prefix becomes the
+    surrounding `namespace` block in the emitter. -/
+def innerName (qualified : String) : String :=
+  let segs := qualified.splitOn "::"
+  match segs with
+  | _ :: rest => String.intercalate "." rest
+  | [] => qualified
 
-    The naming convention for the generated decl is `<rust_fn_name>_pure`
-    to make it easy to spot in diffs against `aeneas -backend lean`. -/
-def translateFun (t : CheckedTrace) : Decl :=
-  -- Best-effort parameter count: the trace's max read-only local id.
-  let numParams := Id.run do
-    let mut maxLocal := 0
-    for ev in t.events do
-      match ev with
-      | .mutBorrow _ p _ | .sharedBorrow _ _ p _
-      | .copy _ p | .move _ p =>
-        if p.local_ > maxLocal then maxLocal := p.local_
-      | _ => pure ()
-    return maxLocal
+/-- Translate a function's cert + replay into a Pure decl.
+
+    M9.0c uses the cert-carried signature for the emitted parameter
+    count (was: max-local-seen-in-events). The signature's input types
+    are still opaque pretty-printed strings, so emitted params still
+    pick up `placeholderTy`; M9.1+ swaps that for the typed cert
+    place's ty. -/
+def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
+  let numParams := f.signature.inputs.size
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
       { name := paramName (i + 1), ty := placeholderTy }
@@ -58,8 +61,9 @@ def translateFun (t : CheckedTrace) : Decl :=
     if params.isEmpty then PExpr.lit (.scalar .u32 0)
     else PExpr.var params[0]!.name
   let body : PExpr := .ok bodyVar
-  -- Sanitize the function name: replace `::` with `.` for Lean.
-  let leanName := t.fnName.replace "::" "."
-  { name := leanName, params, retTy := placeholderTy, body }
+  { name := innerName f.fnName
+    qualifiedName := f.fnName
+    params, retTy := placeholderTy, body
+    sourceSpan := f.sourceSpan }
 
 end AeneasCheck.Translate

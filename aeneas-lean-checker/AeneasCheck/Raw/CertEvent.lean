@@ -53,10 +53,32 @@ inductive Event
   | loopInv (loopId : Nat) (invariant : StateSummary)
   deriving Repr
 
+/-- A source span attached to a cert function. Used by the Lean
+    emitter to build the per-function `Source: ...` docstring. -/
+structure SourceSpan where
+  file : String
+  begLine : Nat
+  begCol : Nat
+  endLine : Nat
+  endCol : Nat
+  deriving Repr, Inhabited
+
+/-- Lean-side view of the Rust signature: input + output types as
+    pretty-printed LLBC type strings (kept opaque until M9 carries
+    proper Charon types in the cert). -/
+structure FnSignature where
+  inputs : Array RawTy
+  output : RawTy
+  deriving Repr, Inhabited
+
 /-- Per-function cert trace. -/
 structure FunCert where
   fnId : Nat
   fnName : String
+  signature : FnSignature
+  /-- `none` when the OCaml side could not attach a span (synthetic
+      items, builtins). -/
+  sourceSpan : Option SourceSpan
   events : Array Event
   finalState : StateSummary
   deriving Repr, Inhabited

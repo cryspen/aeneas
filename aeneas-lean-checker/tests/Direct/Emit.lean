@@ -14,16 +14,21 @@ def main : IO Unit := do
   | .error e => throw <| IO.userError s!"translate failed: {e}"
   | .ok tc =>
     let src := emitTranslatedCrate "incr_cert" tc
-    -- Basic shape assertions: header present, function defs present,
-    -- monadic Result type used.
+    -- Shape assertions match the M9.0a-polished emitter: standard
+    -- header (`import Aeneas`, full `open` line), per-function
+    -- docstring with `Source: ...`, namespace block, do-syntax body.
     let checks : List String := [
       "AUTOMATICALLY GENERATED",
-      "import Aeneas.Std",
-      "open Aeneas",
-      "def incr_cert.incr",
-      "def incr_cert.incr_local",
-      "Std.Result Std.U32",
-      ".ok"
+      "import Aeneas\n",
+      "open Aeneas Aeneas.Std Result ControlFlow Error",
+      "set_option maxHeartbeats",
+      "namespace incr_cert",
+      "/-- [incr_cert::incr]:\n    Source:",
+      "/-- [incr_cert::incr_local]:\n    Source:",
+      "def incr (x1 : Std.U32) : Result Std.U32 := do",
+      "def incr_local (x1 : Std.U32) : Result Std.U32 := do",
+      "ok x1",
+      "end incr_cert"
     ]
     let mut ok := true
     for c in checks do

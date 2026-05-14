@@ -24,8 +24,8 @@ structure CheckedTrace where
 def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   match ev with
   | .mutBorrow loan place symval => stepMutBorrow st loan place symval
-  | .sharedBorrow _ _ _ _ =>
-    .error "shared borrows: not implemented in M6"
+  | .sharedBorrow loan sbId place symval =>
+    stepSharedBorrow st loan sbId place symval
   | .assign dst rhs => stepAssign st dst rhs
   | .move src dst => stepMove st src dst
   | .copy src dst => stepCopy st src dst
@@ -35,7 +35,7 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
     return st
   | .panic => return st
   | .retn => return st
-  | .reborrow _ _ _ => .error "reborrow: not implemented until M9"
+  | .reborrow child parent place => stepReborrow st child parent place
   | .call _ _ _ _ _ => .error "call: not implemented until M10"
   | .endAbs _ _ => .error "endAbs: not implemented until M10"
   | .proj _ _ _ => .error "proj: not implemented until M10"
@@ -55,10 +55,15 @@ def replayFun (numLocals : Nat) (f : FunCert) : Except String CheckedTrace := do
     | .error e =>
       throw s!"[fn {f.fnId} '{f.fnName}', event {idx}]: {e}"
     idx := idx + 1
-  -- Post-condition: no live loans at function exit.
-  if st.loans.size ≠ 0 then
-    let ids := st.loans.toList.map (·.fst)
-    throw s!"[fn {f.fnId} '{f.fnName}']: {ids.length} loan(s) live at exit: {ids}"
+  -- Post-condition: no live *direct* loans at function exit.
+  -- Reborrow and shared loans may remain live (they tie to the
+  -- caller's borrow lifetime via End-Abstraction, which a future
+  -- milestone models explicitly); a direct in-body mut borrow that
+  -- never ends is always a cert bug.
+  let leakedDirect : List Nat := st.loans.toList.filterMap fun (b, li) =>
+    if li.kind == .direct then some b else none
+  if !leakedDirect.isEmpty then
+    throw s!"[fn {f.fnId} '{f.fnName}']: {leakedDirect.length} direct loan(s) live at exit: {leakedDirect}"
   return { fnId := f.fnId, fnName := f.fnName, events := f.events, finalState := st }
 
 /-- Replay a whole crate cert. Typechecks first to surface structural

@@ -37,5 +37,5 @@ def main : IO Unit := do
   expectAccept "tests/Direct/incr.cert.json"
   expectReject "tests/Negative/double_end.cert.json" "already-ended"
   expectReject "tests/Negative/missing_end.cert.json" "live borrow"
-  expectReject "tests/Negative/bad_projection.cert.json" "Index projection"
+  expectReject "tests/Negative/bad_projection.cert.json" "Subslice projection"
   IO.println "all tests passed"

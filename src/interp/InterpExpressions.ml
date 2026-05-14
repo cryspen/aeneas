@@ -1243,12 +1243,18 @@ let eval_rvalue_ref (config : config) (span : Meta.span) (p : place)
       let nv = { v with value = VLoan (VMutLoan bid) } in
       (* Update the value in the context to replace it with the loan *)
       let ctx = write_place span access p nv ctx in
-      (* Cert: emit EvMutBorrow.
-         The symbolic value id recorded is the id of the symbolic value held
-         by the loan at the moment of the borrow. For concrete values the
-         field is just a placeholder (the LLBC# rule attaches a fresh symbolic
-         value to the loan in symbolic mode; in concrete mode there is no
-         such id). *)
+      (* Cert: emit EvReborrow if [p] is the deref of an existing
+         (mut/shared) borrow — i.e. the new borrow is a child of an
+         existing parent loan — otherwise emit a plain EvMutBorrow.
+
+         Detection: [p] has outer projection [Deref] and the prefix
+         place reads to a [VBorrow]. We look up the parent borrow id
+         from the original context (before the write that replaced
+         the parent's loan with [VMutLoan bid]).
+
+         The symbolic value id on EvMutBorrow records the symbolic
+         value held by the loan at the moment of the borrow; concrete
+         (non-symbolic) values use a 0 placeholder. *)
       (match CertEvent.cert_place_of_place p with
       | None -> ()
       | Some cp ->
@@ -1257,8 +1263,24 @@ let eval_rvalue_ref (config : config) (span : Meta.span) (p : place)
             | VSymbolic sv -> sv.sv_id
             | _ -> Values.SymbolicValueId.of_int 0
           in
-          ctx_emit_event ctx
-            (CertEvent.EvMutBorrow { loan = bid; place = cp; symval }));
+          let parent_bid_opt =
+            match p.kind with
+            | PlaceProjection (parent_p, Deref) ->
+                let _, parent_v = read_place span Read parent_p ctx in
+                (match parent_v.value with
+                | VBorrow (VMutBorrow (pbid, _))
+                | VBorrow (VSharedBorrow (pbid, _))
+                | VBorrow (VReservedMutBorrow (pbid, _)) -> Some pbid
+                | _ -> None)
+            | _ -> None
+          in
+          match parent_bid_opt with
+          | Some parent ->
+              ctx_emit_event ctx
+                (CertEvent.EvReborrow { child = bid; parent; place = cp })
+          | None ->
+              ctx_emit_event ctx
+                (CertEvent.EvMutBorrow { loan = bid; place = cp; symval }));
       (* Return *)
       (rv, ctx, cc)
 

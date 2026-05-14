@@ -199,13 +199,41 @@ def parseEvent (j : Json) : Result Event := do
       return .loopInv loopId invariant
     | _ => fail s!"unknown Event tag: {tag}"
 
+/-- Parse a signature record. Types are kept as opaque-tagged strings:
+    M9.0b carries them verbatim from the OCaml `show_ty` output. -/
+def parseSignature (j : Json) : Result FnSignature := do
+  let inputsArr ← asArr (← field j "inputs")
+  let inputs ← inputsArr.mapM fun ej => do
+    let s ← asStr ej
+    return RawTy.opaque s
+  let outputStr ← asStr (← field j "output")
+  return { inputs, output := .opaque outputStr }
+
+/-- Parse an optional source-span record. -/
+def parseSourceSpan (j : Json) : Result SourceSpan := do
+  let file ← asStr (← field j "file")
+  let begLine ← asNat (← field j "beg_line")
+  let begCol ← asNat (← field j "beg_col")
+  let endLine ← asNat (← field j "end_line")
+  let endCol ← asNat (← field j "end_col")
+  return { file, begLine, begCol, endLine, endCol }
+
 def parseFunCert (j : Json) : Result FunCert := do
   let fnId ← asNat (← field j "fn_id")
   let fnName ← asStr (← field j "fn_name")
+  -- `signature` is required by the v1 schema (added in M9.0b). We
+  -- still tolerate certs that omit it for forward-compat with hand-
+  -- written negative fixtures.
+  let signature ← match (j.getObjVal? "signature").toOption with
+    | some sj => parseSignature sj
+    | none => pure { inputs := #[], output := .opaque "" }
+  let sourceSpan ← match (j.getObjVal? "source_span").toOption with
+    | some sj => do let s ← parseSourceSpan sj; pure (some s)
+    | none => pure none
   let evArr ← asArr (← field j "events")
   let events ← evArr.mapM parseEvent
   let finalState ← parseStateSummary (← field j "final_state")
-  return { fnId, fnName, events, finalState }
+  return { fnId, fnName, signature, sourceSpan, events, finalState }
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")

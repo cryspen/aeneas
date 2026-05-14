@@ -142,6 +142,23 @@ and json_cert_state_summary (s : cert_state_summary) : Yojson.Basic.t =
 let json_restore_info (r : cert_restore_info) : Yojson.Basic.t =
   `Assoc [ "given_back", json_cert_sym_expr r.ri_given_back ]
 
+let json_cert_source_span (s : cert_source_span) : Yojson.Basic.t =
+  `Assoc
+    [
+      "file", `String s.ss_file;
+      "beg_line", `Int s.ss_beg_line;
+      "beg_col", `Int s.ss_beg_col;
+      "end_line", `Int s.ss_end_line;
+      "end_col", `Int s.ss_end_col;
+    ]
+
+let json_cert_signature (s : cert_signature) : Yojson.Basic.t =
+  `Assoc
+    [
+      "inputs", `List (List.map json_ty s.csig_inputs);
+      "output", json_ty s.csig_output;
+    ]
+
 (* ---------- Events ---------- *)
 
 let json_event (e : event) : Yojson.Basic.t =
@@ -280,13 +297,22 @@ let json_event (e : event) : Yojson.Basic.t =
 (* ---------- Top-level ---------- *)
 
 let json_fun_cert (fc : fun_cert) : Yojson.Basic.t =
+  let optional_span : (string * Yojson.Basic.t) list =
+    match fc.fc_source_span with
+    | None -> []
+    | Some sp -> [ "source_span", json_cert_source_span sp ]
+  in
   `Assoc
-    [
-      "fn_id", json_fun_decl_id fc.fc_fn_id;
-      "fn_name", `String fc.fc_fn_name;
-      "events", `List (List.map json_event fc.fc_events);
-      "final_state", json_cert_state_summary fc.fc_final_state;
-    ]
+    ([
+       "fn_id", json_fun_decl_id fc.fc_fn_id;
+       "fn_name", `String fc.fc_fn_name;
+       "signature", json_cert_signature fc.fc_signature;
+     ]
+    @ optional_span
+    @ [
+        "events", `List (List.map json_event fc.fc_events);
+        "final_state", json_cert_state_summary fc.fc_final_state;
+      ])
 
 let json_crate_cert (cc : crate_cert) : Yojson.Basic.t =
   `Assoc

@@ -31,9 +31,30 @@ def expectReplayFails (path : System.FilePath) (substring : String) : IO Unit :=
       IO.eprintln s!"  ✗ wrong message for {path}: {msg}"
       throw <| IO.userError "wrong diagnostic"
 
+/-- Read a cert and assert at least one event of the given tag occurs
+    somewhere in the trace. Cheap sanity check that an upstream OCaml
+    hook is actually wired (e.g. EvReborrow emitted for `&mut *r`). -/
+def expectEventTag (path : System.FilePath) (tagPred : Raw.Event → Bool)
+    (label : String) : IO Unit := do
+  let cc ← Json.readCrateCert path
+  let mut hit := false
+  for f in cc.functions do
+    for ev in f.events do
+      if tagPred ev then hit := true
+  if hit then
+    IO.println s!"  ✓ {path} contains {label}"
+  else
+    IO.eprintln s!"  ✗ {path} missing expected event tag {label}"
+    throw <| IO.userError "expected event missing"
+
 def main : IO Unit := do
   IO.println "M6 replayer tests:"
   expectReplay "tests/Direct/incr.cert.json"
   expectReplayFails "tests/Negative/double_end.cert.json" "already-ended"
   expectReplayFails "tests/Negative/missing_end.cert.json" "live borrow"
+  -- M9.1 sanity: the incr_local trace exercises the EvReborrow hook
+  -- emitted in InterpExpressions.ml for `&mut *r` shapes.
+  expectEventTag "tests/Direct/incr.cert.json"
+    (fun | .reborrow _ _ _ => true | _ => false)
+    "EvReborrow"
   IO.println "all tests passed"

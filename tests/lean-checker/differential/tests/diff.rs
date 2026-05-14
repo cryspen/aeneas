@@ -9,9 +9,11 @@ use proptest::prelude::*;
 proptest! {
     #[test]
     fn incr_matches_model(x in any::<u32>()) {
-        // The generated model has 2 params (a quirk of the M7
-        // placeholder param-count heuristic); we pass `x` twice so
-        // the test still exercises a meaningful comparison.
-        prop_assert_eq!(incr_ref(x), incr_model(x, x));
+        // M9.0c: param count now comes from the LLBC signature, so
+        // `incr_model` has one param (matching `incr(x: &mut u32)`)
+        // rather than the M7-era over-counted placeholder. Once M9.1
+        // / M10 add binop and call hooks the *reference* side will
+        // shift to `x.wrapping_add(1)` and exercise the full pipeline.
+        prop_assert_eq!(incr_ref(x), incr_model(x));
     }
 }

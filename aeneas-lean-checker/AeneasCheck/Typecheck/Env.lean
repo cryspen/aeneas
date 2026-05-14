@@ -42,6 +42,11 @@ structure FnEnv where
   /-- All currently-live mut borrow ids: set on `mutBorrow`, cleared on
       `endBorrow`. -/
   liveLoans : Std.HashSet Nat
+  /-- Reborrow / shared loans created in the trace. The exit check
+      only flags `liveLoans \ reborrowLoans` since reborrow/shared
+      loans are caller-tied and end implicitly when the parent
+      abstraction ends. -/
+  reborrowLoans : Std.HashSet Nat
   /-- Borrow ids that were once live but have since been ended. We keep
       them so that a duplicate `endBorrow` produces a precise error. -/
   endedLoans : Std.HashSet Nat
@@ -51,7 +56,7 @@ structure FnEnv where
 
 def FnEnv.empty (fnId numLocals : Nat) : FnEnv := {
   fnId, numLocals,
-  liveLoans := {}, endedLoans := {}, cursor := 0
+  liveLoans := {}, reborrowLoans := {}, endedLoans := {}, cursor := 0
 }
 
 abbrev TC α := StateT FnEnv (Except CheckErr) α

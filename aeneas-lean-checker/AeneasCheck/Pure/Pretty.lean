@@ -32,7 +32,10 @@ partial def PTy.toLean : PTy → String
     else s!"({name} {String.intercalate " " (args.toList.map PTy.toLean)})"
   | .tuple args =>
     "(" ++ String.intercalate " × " (args.toList.map PTy.toLean) ++ ")"
-  | .result inner => s!"Std.Result {inner.toLean}"
+  -- The standard Aeneas Lean backend's `open Aeneas Aeneas.Std`
+  -- header makes `Result` unqualified, so we drop the `Std.` prefix
+  -- here for byte-identity with `aeneas -backend lean`.
+  | .result inner => s!"Result {inner.toLean}"
 
 def litToLean : Lit → String
   | .scalar k v =>
@@ -42,6 +45,27 @@ def litToLean : Lit → String
   | .str s => s!"\"{s}\""
   | .byteStr _ => "<bytestr>"
 
+/-- Expression form used inside a `do`-block: tail `.ok` becomes a
+    bare `ok …` (Result is opened), let-bindings become monadic
+    `let … ← …`. -/
+partial def PExpr.toLeanDo : PExpr → String
+  | .var name => name
+  | .lit l => litToLean l
+  | .app head args =>
+    if args.isEmpty then head
+    else "(" ++ head ++ " " ++ String.intercalate " " (args.toList.map PExpr.toLeanDo) ++ ")"
+  | .letIn name _ e1 e2 =>
+    -- Inner expressions in a monadic let bind a Result-valued
+    -- computation; emit a `let … ←` form. Tail position is e2.
+    s!"let {name} ← {e1.toLeanDo}\n  {e2.toLeanDo}"
+  | .ok inner =>
+    let s := match inner with
+      | .var _ | .lit _ => PExpr.toLeanDo inner
+      | _ => "(" ++ PExpr.toLeanDo inner ++ ")"
+    s!"ok {s}"
+
+/-- Non-monadic rendering. Retained for diagnostics; the Lean backend
+    uses `toLeanDo` exclusively. -/
 partial def PExpr.toLean : PExpr → String
   | .var name => name
   | .lit l => litToLean l
@@ -52,9 +76,22 @@ partial def PExpr.toLean : PExpr → String
     s!"let {name} := {e1.toLean}\n  {e2.toLean}"
   | .ok inner => s!".ok {inner.toLean}"
 
+/-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
+    `def`. Empty when no `sourceSpan` is attached. -/
+def Decl.docComment (d : Decl) : String :=
+  match d.sourceSpan with
+  | none => ""
+  | some sp =>
+    let loc :=
+      s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
+    s!"/-- [{d.qualifiedName}]:\n    Source: '{sp.file}', lines {loc} -/\n"
+
+/-- Render the Lean `def …` for `d`, with monadic body. The signature
+    matches the standard Aeneas backend's output (Result, do-block). -/
 def Decl.toLean (d : Decl) : String :=
   let params := String.intercalate " "
     (d.params.toList.map fun p => s!"({p.name} : {p.ty.toLean})")
-  s!"def {d.name} {params} : Std.Result {d.retTy.toLean} :=\n  {d.body.toLean}"
+  d.docComment ++
+  s!"def {d.name} {params} : Result {d.retTy.toLean} := do\n  {d.body.toLeanDo}"
 
 end AeneasCheck.Pure

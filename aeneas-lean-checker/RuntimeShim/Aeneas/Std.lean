@@ -42,6 +42,15 @@ instance (n : Nat) [OfNat UInt16 n] : OfNat U16 n  := inferInstanceAs (OfNat UIn
 instance (n : Nat) [OfNat UInt32 n] : OfNat U32 n  := inferInstanceAs (OfNat UInt32 n)
 instance (n : Nat) [OfNat UInt64 n] : OfNat U64 n  := inferInstanceAs (OfNat UInt64 n)
 
+/-! ## ControlFlow
+
+The standard Aeneas backend opens `ControlFlow` as part of its
+header. The shim exposes it as an empty namespace — the placeholder
+emitter never references any of its constructors, but the `open`
+line still needs to resolve. -/
+
+namespace ControlFlow end ControlFlow
+
 /-! ## Result monad -/
 
 /-- The kind of failure a fallible Aeneas computation can produce.

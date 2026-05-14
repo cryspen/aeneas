@@ -49,10 +49,33 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
           let env = Print.Contexts.decls_ctx_to_fmt_env trans_ctx in
           Print.name_to_string env fdef.item_meta.name
         in
+        let signature : CertEvent.cert_signature =
+          {
+            csig_inputs = fdef.signature.inputs;
+            csig_output = fdef.signature.output;
+          }
+        in
+        let source_span : CertEvent.cert_source_span option =
+          let span_data = fdef.item_meta.span.data in
+          let file =
+            match span_data.file.name with
+            | Virtual s | Local s | NotReal s -> s
+          in
+          Some
+            {
+              ss_file = file;
+              ss_beg_line = span_data.beg_loc.line;
+              ss_beg_col = span_data.beg_loc.col;
+              ss_end_line = span_data.end_loc.line;
+              ss_end_col = span_data.end_loc.col;
+            }
+        in
         Some
           {
             CertEvent.fc_fn_id = fdef.def_id;
             fc_fn_name = fn_name;
+            fc_signature = signature;
+            fc_source_span = source_span;
             fc_events = events;
             fc_final_state =
               { CertEvent.cs_env = []; cs_live_loans = [] };

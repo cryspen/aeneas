@@ -19,15 +19,40 @@
   "definitions": {
     "fun_cert": {
       "type": "object",
-      "required": ["fn_id", "fn_name", "events", "final_state"],
+      "required": ["fn_id", "fn_name", "signature", "events", "final_state"],
       "properties": {
         "fn_id": { "type": "integer", "minimum": 0 },
         "fn_name": { "type": "string" },
+        "signature": { "$ref": "#/definitions/signature" },
+        "source_span": { "$ref": "#/definitions/source_span" },
         "events": {
           "type": "array",
           "items": { "$ref": "#/definitions/event" }
         },
         "final_state": { "$ref": "#/definitions/state_summary" }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "required": ["inputs", "output"],
+      "properties": {
+        "inputs": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Opaque pretty-printed LLBC type for each formal input."
+        },
+        "output": { "type": "string" }
+      }
+    },
+    "source_span": {
+      "type": "object",
+      "required": ["file", "beg_line", "beg_col", "end_line", "end_col"],
+      "properties": {
+        "file": { "type": "string" },
+        "beg_line": { "type": "integer", "minimum": 0 },
+        "beg_col": { "type": "integer", "minimum": 0 },
+        "end_line": { "type": "integer", "minimum": 0 },
+        "end_col": { "type": "integer", "minimum": 0 }
       }
     },
     "state_summary": {

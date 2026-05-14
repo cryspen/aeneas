@@ -24,6 +24,19 @@ type cert_state_summary = {
 
 type cert_restore_info = { ri_given_back : cert_sym_expr }
 
+type cert_source_span = {
+  ss_file : string;
+  ss_beg_line : int;
+  ss_beg_col : int;
+  ss_end_line : int;
+  ss_end_col : int;
+}
+
+type cert_signature = {
+  csig_inputs : ty list;
+  csig_output : ty;
+}
+
 type event =
   | EvMutBorrow of {
       loan : borrow_id;
@@ -74,6 +87,8 @@ type event =
 type fun_cert = {
   fc_fn_id : fun_decl_id;
   fc_fn_name : string;
+  fc_signature : cert_signature;
+  fc_source_span : cert_source_span option;
   fc_events : event list;
   fc_final_state : cert_state_summary;
 }

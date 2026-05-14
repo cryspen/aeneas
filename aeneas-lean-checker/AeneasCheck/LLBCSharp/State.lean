@@ -17,10 +17,23 @@ namespace AeneasCheck.LLBCSharp
 
 open AeneasCheck.Raw
 
+/-- How a loan was created. Affects how `endBorrow` restores state:
+    a direct mut borrow replaces the borrowed local with a `mutLoan`
+    token that the end must clear; a reborrow leaves the original
+    parent's local untouched, so the end has no token to restore. -/
+inductive LoanKind
+  | direct
+  | shared
+  | reborrow
+  deriving Repr, BEq, Inhabited
+
 /-- Info recorded for each live mut borrow: the inner symbolic value
-    that flows back to the loan side upon `endBorrow`. -/
+    that flows back to the loan side upon `endBorrow`, and the loan
+    kind so the end-borrow rule knows whether to scan for a `mutLoan`
+    token in env. -/
 structure LoanInfo where
   given : Val
+  kind : LoanKind := .direct
   deriving Inhabited
 
 structure SymState where
@@ -48,8 +61,9 @@ def setLocal (st : SymState) (l : Nat) (v : Val) : SymState :=
 def hasLoan (st : SymState) (b : Nat) : Bool :=
   st.loans.contains b
 
-def addLoan (st : SymState) (b : Nat) (inner : Val) : SymState :=
-  { st with loans := st.loans.insert b { given := inner } }
+def addLoan (st : SymState) (b : Nat) (inner : Val)
+    (kind : LoanKind := .direct) : SymState :=
+  { st with loans := st.loans.insert b { given := inner, kind } }
 
 def takeLoan (st : SymState) (b : Nat) : Option (LoanInfo × SymState) :=
   match st.loans[b]? with

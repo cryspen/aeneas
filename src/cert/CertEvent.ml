@@ -60,6 +60,29 @@ type cert_restore_info = {
 }
 [@@deriving show]
 
+(** A source-code span attached to a cert function, mirroring
+    [Meta.span]'s data fields. The Lean emitter uses this for the
+    per-function [/-- Source: ..., lines N:M-P:Q -/] docstrings. *)
+type cert_source_span = {
+  ss_file : string;
+  ss_beg_line : int;
+  ss_beg_col : int;
+  ss_end_line : int;
+  ss_end_col : int;
+}
+[@@deriving show]
+
+(** The Rust signature of a cert function as seen by Aeneas, encoded as
+    opaque-tagged type strings. The Lean checker uses [inputs] for the
+    emitted parameter count; [output] is currently informational
+    (downstream emitter still uses a placeholder return type until cert
+    events carry per-place LLBC types in M9+). *)
+type cert_signature = {
+  csig_inputs : ty list;
+  csig_output : ty;
+}
+[@@deriving show]
+
 (** The LLBC# trace event vocabulary.
 
     Direct-borrow subset (M2-M8) uses constructors marked [DB]; later
@@ -134,6 +157,14 @@ type event =
 type fun_cert = {
   fc_fn_id : fun_decl_id;
   fc_fn_name : string;  (** Pretty name; not load-bearing for the checker. *)
+  fc_signature : cert_signature;
+      (** Function signature copied from [fun_decl.signature]. The
+          checker uses [csig_inputs] to drive the emitted-Decl
+          parameter count, replacing the M7 heuristic of inferring
+          from max-local-seen-in-events. *)
+  fc_source_span : cert_source_span option;
+      (** Source-code span for the per-function docstring in the
+          emitted Lean. [None] for synthetic/built-in items. *)
   fc_events : event list;
   fc_final_state : cert_state_summary;
 }

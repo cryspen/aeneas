@@ -46,9 +46,8 @@ def checkEvent (ev : Event) : TC Unit := do
     addLoan loan
   | .sharedBorrow loan _ place _ => do
     checkPlace place
-    -- Shared borrows are tracked separately from mut borrows in LLBC#
-    -- but for the M5 structural check we treat them uniformly.
     addLoan loan
+    modify fun st => { st with reborrowLoans := st.reborrowLoans.insert loan }
   | .assign dst rhs => do
     checkPlace dst
     checkSymExpr rhs
@@ -64,8 +63,11 @@ def checkEvent (ev : Event) : TC Unit := do
   | .assert cond _ => checkSymExpr cond
   | .panic => pure ()
   | .retn => pure ()
+  | .reborrow child _parent place => do
+    checkPlace place
+    addLoan child
+    modify fun st => { st with reborrowLoans := st.reborrowLoans.insert child }
   -- Out-of-subset events: report a precise milestone.
-  | .reborrow _ _ _ => emitErr "EvReborrow: not supported until M9"
   | .call _ _ _ _ _ => emitErr "EvCall: not supported until M10"
   | .endAbs _ _ => emitErr "EvEndAbs: not supported until M10"
   | .proj _ _ _ => emitErr "EvProj: not supported until M10"
@@ -78,13 +80,16 @@ def checkEvents (events : Array Event) : TC Unit := do
     checkEvent ev
     advance
 
-/-- After replaying all events, no borrow should still be live. (This is
-    a sanity check on cert *completeness*; the LLBC# replayer is what
-    actually verifies semantic correctness.) -/
+/-- After replaying all events, no *direct* mut borrow should still be
+    live. Reborrow / shared loans tied to caller abstractions are
+    allowed to leak through the exit (M11's End-Abstraction rule
+    pops them implicitly). This is a sanity check on cert
+    *completeness*; the LLBC# replayer is what actually verifies
+    semantic correctness. -/
 def checkFnPost : TC Unit := do
   let st ← get
-  if st.liveLoans.size ≠ 0 then
-    let ids := st.liveLoans.toList
-    emitErr s!"function ended with live borrow(s): {ids}"
+  let leaked := st.liveLoans.toList.filter fun b => !st.reborrowLoans.contains b
+  if !leaked.isEmpty then
+    emitErr s!"function ended with live borrow(s): {leaked}"
 
 end AeneasCheck.Typecheck
