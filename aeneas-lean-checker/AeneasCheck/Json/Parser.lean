@@ -177,13 +177,14 @@ def parseEvent (j : Json) : Result Event := do
       return .reborrow child parent place
     | "EvCall" =>
       let fn ← asNat (← field payload "fn")
+      let fnName ← asStr (← field payload "fn_name")
       let callId ← asNat (← field payload "call_id")
       let argsArr ← asArr (← field payload "args")
       let args ← argsArr.mapM parseSymExpr
       let dst ← parsePlace (← field payload "dst")
       let raArr ← asArr (← field payload "region_abs")
       let regionAbs ← raArr.mapM asNat
-      return .call fn callId args dst regionAbs
+      return .call fn callId fnName args dst regionAbs
     | "EvEndAbs" =>
       let abs ← asNat (← field payload "abs")
       let fvArr ← asArr (← field payload "final_values")

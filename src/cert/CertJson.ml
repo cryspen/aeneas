@@ -250,13 +250,14 @@ let json_event (e : event) : Yojson.Basic.t =
                 "place", json_cert_place place;
               ] );
         ]
-  | EvCall { fn; call_id; args; dst; region_abs } ->
+  | EvCall { fn; fn_name; call_id; args; dst; region_abs } ->
       `Assoc
         [
           ( "EvCall",
             `Assoc
               [
                 "fn", json_fun_decl_id fn;
+                "fn_name", `String fn_name;
                 "call_id", json_fun_call_id call_id;
                 "args", `List (List.map json_cert_sym_expr args);
                 "dst", json_cert_place dst;

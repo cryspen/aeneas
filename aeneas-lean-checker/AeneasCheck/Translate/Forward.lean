@@ -170,10 +170,22 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- Control / panic / return are observed at the wrap-up step
   -- below; they don't affect the per-local value map.
   | .assert _ _ | .panic | .retn => st
-  -- Out-of-M10.0 events: leave the state untouched. The replayer
+  | .call _ _ fnName args dst _ =>
+    -- M10.1: forward call. Build `Pure.App fnName [argE1, …, argEn]`,
+    -- emit a `let tN ← …` binding, and update the destination
+    -- local's pure value. Backward functions / region abstractions
+    -- are handled by M10.2 in tandem with EndAbs / Proj.
+    let argEs := args.map (lookupSymExpr st.vm)
+    let app : PExpr := .app fnName argEs
+    let (nm, st) := st.freshName
+    { st with
+      binds := st.binds.push (nm, app)
+      vm := st.vm.insert dst.local_ (.var nm)
+      lastWrite := some dst.local_ }
+  -- Out-of-M10.1 events: leave the state untouched. The replayer
   -- already rejected them upstream; this branch keeps `walkEvent`
   -- total.
-  | .call _ _ _ _ _ | .endAbs _ _ | .proj _ _ _
+  | .endAbs _ _ | .proj _ _ _
   | .join _ _ _ | .loopInv _ _ => st
 
 /-- Wrap a tail value in `ok` *only* when it is a pure (non-Result)

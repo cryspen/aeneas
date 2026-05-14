@@ -126,3 +126,35 @@ instance : HMul U64 U64 (Result U64) :=
 
 end Std
 end Aeneas
+
+/-! ## Qualified-call shims
+
+The M10.1 emitter renders `EvCall(core::num::{u32}::wrapping_add)` as
+the Lean call `core.num.U32.wrapping_add a b`. The shim defines that
+qualified path (and a few common siblings) so generated source
+compiles without mathlib. Each shim wraps the underlying primitive in
+`Aeneas.Std.Result` to match the binop-instance convention. -/
+
+namespace core
+namespace num
+
+namespace U32
+@[inline] def wrapping_add (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
+  .ok (UInt32.add a b)
+@[inline] def wrapping_sub (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
+  .ok (UInt32.sub a b)
+@[inline] def wrapping_mul (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
+  .ok (UInt32.mul a b)
+end U32
+
+namespace U64
+@[inline] def wrapping_add (a b : Aeneas.Std.U64) : Aeneas.Std.Result Aeneas.Std.U64 :=
+  .ok (UInt64.add a b)
+@[inline] def wrapping_sub (a b : Aeneas.Std.U64) : Aeneas.Std.Result Aeneas.Std.U64 :=
+  .ok (UInt64.sub a b)
+@[inline] def wrapping_mul (a b : Aeneas.Std.U64) : Aeneas.Std.Result Aeneas.Std.U64 :=
+  .ok (UInt64.mul a b)
+end U64
+
+end num
+end core

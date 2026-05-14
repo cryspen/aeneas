@@ -271,7 +271,30 @@
             }
           }
         },
-        { "type": "object", "required": ["EvCall"] },
+        {
+          "type": "object",
+          "required": ["EvCall"],
+          "properties": {
+            "EvCall": {
+              "type": "object",
+              "required": ["fn", "fn_name", "call_id", "args", "dst", "region_abs"],
+              "properties": {
+                "fn": { "type": "integer", "minimum": 0 },
+                "fn_name": { "type": "string" },
+                "call_id": { "type": "integer", "minimum": 0 },
+                "args": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/sym_expr" }
+                },
+                "dst": { "$ref": "#/definitions/place" },
+                "region_abs": {
+                  "type": "array",
+                  "items": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          }
+        },
         { "type": "object", "required": ["EvEndAbs"] },
         { "type": "object", "required": ["EvProj"] },
         { "type": "object", "required": ["EvJoin"] },

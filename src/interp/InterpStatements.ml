@@ -883,13 +883,18 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                     S.synthesize_assignment ctx p rv rp
               in
               let ctx, cc = comp cc (assign_to_place config st.span rv p ctx) in
-              (* Cert: emit EvBinop for BinaryOp rvalues now that the
-                 destination place has been written. The operands are
-                 converted to cert_sym_expr; if either operand or the
-                 destination place can't be flattened (e.g. a global)
-                 we skip the event — the trace stays consistent
-                 because the Lean side never observes the missing
-                 binop and the placeholder body kicks in. *)
+              (* Cert: emit a destination-bearing event so the Lean
+                 translator can track the assign's actual `dst`. The
+                 M3-era EvCopy/EvMove events from `eval_operand`
+                 record only operand reads (with src=dst), losing the
+                 assign target; M10 closes that gap.
+
+                 * BinaryOp → EvBinop with the cert op tag
+                 * Use(op)  → EvAssign with the operand lifted to
+                              cert_sym_expr
+                 Other rvalue shapes (RvRef, Aggregate, …) keep
+                 emitting their existing milestone-specific events;
+                 EvAssign is *not* emitted for those. *)
               (match rvalue with
                | BinaryOp (binop, op1, op2) ->
                    (match
@@ -902,6 +907,15 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                           (CertEvent.EvBinop
                              { op = CertEvent.cert_binop_string binop;
                                lhs; rhs; dst = cp })
+                    | _ -> ())
+               | Use operand ->
+                   (match
+                      ( CertEvent.cert_place_of_place p,
+                        CertEvent.cert_sym_expr_of_operand operand )
+                    with
+                    | Some cp, Some rhs ->
+                        ctx_emit_event ctx
+                          (CertEvent.EvAssign { dst = cp; rhs })
                     | _ -> ())
                | _ -> ());
               ((ctx, Unit), cc)
@@ -1541,6 +1555,24 @@ and eval_function_call_symbolic_from_inst_sig (config : config)
   (* Unique identifier for the call *)
   let call_id = ctx.fresh_fun_call_id () in
 
+  (* Capture cert-side metadata before [args] gets shadowed by
+     [eval_operands]: the original operand list maps cleanly onto
+     [cert_sym_expr]. *)
+  let cert_args : CertEvent.cert_sym_expr list option =
+    let xs = List.map CertEvent.cert_sym_expr_of_operand args in
+    if List.for_all Option.is_some xs then Some (List.map Option.get xs)
+    else None
+  in
+  let cert_dst : CertEvent.cert_place option =
+    CertEvent.cert_place_of_place dest
+  in
+  let cert_fn_decl_id : Types.fun_decl_id =
+    match fid with
+    | FunId (FRegular fid) -> fid
+    | FunId (FBuiltin _) | TraitMethod _ -> Types.FunDeclId.of_int 0
+  in
+  let cert_fn_name : string = fn_ptr_kind_to_string ctx fid in
+
   (* Generate a fresh symbolic value for the return value *)
   let ret_sv_ty = inst_sg.output in
   let ret_spc = mk_fresh_symbolic_value span ctx ret_sv_ty in
@@ -1563,6 +1595,23 @@ and eval_function_call_symbolic_from_inst_sig (config : config)
   (* Generate the abstractions and insert them in the context *)
   let abs_ids = List.map (fun rg -> rg.id) inst_sg.abs_regions_hierarchy in
   let args_with_rtypes = List.combine args inst_sg.inputs in
+
+  (* Cert: emit EvCall now that we know [abs_ids] (the region
+     abstractions). We elide the event if any operand or the dest
+     place couldn't be flattened — the trace stays internally
+     consistent because the Lean replayer never observes the missing
+     call and the M10.0 placeholder body covers the remaining gap. *)
+  (match cert_args, cert_dst with
+   | Some args_e, Some dst_e ->
+       ctx_emit_event ctx
+         (CertEvent.EvCall
+            { fn = cert_fn_decl_id;
+              fn_name = cert_fn_name;
+              call_id;
+              args = args_e;
+              dst = dst_e;
+              region_abs = abs_ids })
+   | _ -> ());
 
   (* Check the type of the input arguments *)
   List.iteri

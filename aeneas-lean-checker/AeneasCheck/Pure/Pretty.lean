@@ -78,6 +78,27 @@ def binopWrappingName : String → Option String
   | "MulChecked" => some "checked_mul"
   | _ => none
 
+/-- Sanitize a Charon-style qualified function name like
+    `core::num::{u32}::wrapping_add` into a Lean-valid path
+    `core.num.U32.wrapping_add`. Rules:
+    * `::` becomes `.`
+    * `{…}` braces strip to their content
+    * primitive integer-type segments `u8` / `u16` / … / `i32` / … are
+      capitalised (`u32` → `U32`) to match the standard Aeneas
+      backend's namespace casing. -/
+def sanitizeCallName (n : String) : String :=
+  let bareInts :=
+    ["u8","u16","u32","u64","u128","usize",
+     "i8","i16","i32","i64","i128","isize"]
+  let stripBraces (p : String) : String :=
+    if p.startsWith "{" && p.endsWith "}" then
+      ((p.drop 1).dropEnd 1).toString
+    else p
+  let parts := (n.splitOn "::").map fun p =>
+    let p := stripBraces p
+    if bareInts.contains p then p.capitalize else p
+  String.intercalate "." parts
+
 /-- Expression form used inside a `do`-block: tail `.ok` becomes a
     bare `ok …` (Result is opened), let-bindings become monadic
     `let … ← …`, binary operators render with the matching infix or
@@ -90,7 +111,13 @@ partial def PExpr.toLeanDo : PExpr → String
     | some op, [lhs, rhs] =>
       "(" ++ lhs.toLeanDo ++ " " ++ op ++ " " ++ rhs.toLeanDo ++ ")"
     | _, _ =>
-      let head := (binopWrappingName head).getD head
+      -- Function-call head: try the wrapping-shortcut map first
+      -- (`AddWrap → wrapping_add`), then fall back to sanitising a
+      -- Charon-style qualified path (`a::b::{u32}::c → a.b.U32.c`).
+      let head :=
+        match binopWrappingName head with
+        | some w => w
+        | none => sanitizeCallName head
       if args.isEmpty then head
       else "(" ++ head ++ " " ++
         String.intercalate " " (args.toList.map PExpr.toLeanDo) ++ ")"

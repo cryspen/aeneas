@@ -69,6 +69,7 @@ type event =
     }
   | EvCall of {
       fn : fun_decl_id;
+      fn_name : string;
       call_id : fun_call_id;
       args : cert_sym_expr list;
       dst : cert_place;

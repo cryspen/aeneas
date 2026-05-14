@@ -191,6 +191,20 @@ def stepBinop (st : SymState) (_op : String) (lhs rhs : SymExpr)
   else
     return st.setLocal root (.sym 0)
 
+/-! ## E-Call (forward only)
+
+M10.1 structural rule: bind the destination local to a fresh
+symbolic placeholder. Backward functions / region abstractions are
+M10.2 work — for forward-only `wrapping_add`-style calls the dst
+binding is all the replayer needs to thread the trace through. -/
+
+def stepCall (st : SymState) (dst : Place) : Result SymState := do
+  let root := placeRootLocal dst
+  if root ≥ st.numLocals then
+    fail s!"E-Call: dst local {root} out of bounds (have {st.numLocals})"
+  else
+    return st.setLocal root (.sym 0)
+
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :
     Result Unit := do
   -- We don't model the assertion's truth value (symbolic execution

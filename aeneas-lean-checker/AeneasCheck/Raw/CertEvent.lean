@@ -51,7 +51,13 @@ inductive Event
   | binop (op : String) (lhs rhs : SymExpr) (dst : Place)
   -- later milestones
   | reborrow (child parent : Nat) (place : Place)
-  | call (fn callId : Nat) (args : Array SymExpr) (dst : Place) (regionAbs : Array Nat)
+  /-- M10.1: a function call. `fnName` is the qualified callee name
+      (e.g. `core::num::{u32}::wrapping_add`); the translator
+      consumes it directly so we don't need a builtin-id lookup
+      table. `regionAbs` is the abstraction-id list that M10.2's
+      End-Abstraction rule consumes. -/
+  | call (fn callId : Nat) (fnName : String) (args : Array SymExpr)
+      (dst : Place) (regionAbs : Array Nat)
   | endAbs (abs : Nat) (finalValues : Array SymExpr)
   | proj (abs : Nat) (place : Place) (symval : Nat)
   | join (left right result : StateSummary)

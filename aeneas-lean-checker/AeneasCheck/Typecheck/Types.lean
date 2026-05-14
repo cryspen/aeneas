@@ -33,7 +33,7 @@ private def eventMaxLocal : Event → Nat
   | .binop _ l r d =>
     max (max (symExprMaxLocal l) (symExprMaxLocal r)) (placeMaxLocal d)
   | .reborrow _ _ p => placeMaxLocal p
-  | .call _ _ args dst _ =>
+  | .call _ _ _ args dst _ =>
     let argMax := args.foldl (fun a e => max a (symExprMaxLocal e)) 0
     max argMax (placeMaxLocal dst)
   | .endAbs _ vs => vs.foldl (fun a e => max a (symExprMaxLocal e)) 0

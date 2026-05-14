@@ -140,6 +140,11 @@ type event =
   (* === Function calls + abstractions (M10) === *)
   | EvCall of {
       fn : fun_decl_id;
+      fn_name : string;
+          (** Pretty-printed qualified name of the callee, e.g.
+              [core::num::u32::wrapping_add]. Used by the Lean
+              translator to emit the right surface call without
+              needing a builtin-id lookup table. *)
       call_id : fun_call_id;
       args : cert_sym_expr list;
       dst : cert_place;

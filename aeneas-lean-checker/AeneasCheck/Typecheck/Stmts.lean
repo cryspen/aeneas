@@ -72,7 +72,9 @@ def checkEvent (ev : Event) : TC Unit := do
     addLoan child
     modify fun st => { st with reborrowLoans := st.reborrowLoans.insert child }
   -- Out-of-subset events: report a precise milestone.
-  | .call _ _ _ _ _ => emitErr "EvCall: not supported until M10"
+  | .call _ _ _ args dst _ => do
+    for a in args do checkSymExpr a
+    checkPlace dst
   | .endAbs _ _ => emitErr "EvEndAbs: not supported until M10"
   | .proj _ _ _ => emitErr "EvProj: not supported until M10"
   | .join _ _ _ => emitErr "EvJoin: not supported until M11"
