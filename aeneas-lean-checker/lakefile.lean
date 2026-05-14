@@ -21,3 +21,19 @@ package «aeneas-lean-checker» where
 lean_exe «aeneas-check» where
   root := `AeneasCheck.Cli
   supportInterpreter := true
+
+/-- Minimal `Aeneas.Std` shim: just enough surface for the M7
+    emitter's output to typecheck without pulling in the
+    mathlib-backed real runtime in `backends/lean/`. See
+    `RuntimeShim/Aeneas/Std.lean` for the design rationale. -/
+lean_lib «RuntimeShim» where
+  srcDir := "RuntimeShim"
+  roots := #[`Aeneas, `Aeneas.Std]
+
+/-- Compiles the M7-generated Lean source against `RuntimeShim`. The
+    file at `tests/Generated/Incr.lean` is produced by running
+    `aeneas-check --out tests/Generated/Incr.lean` (see
+    `scripts/check-vertical-slice.sh`). -/
+lean_lib «GeneratedTests» where
+  srcDir := "tests"
+  roots := #[`Generated.Incr]

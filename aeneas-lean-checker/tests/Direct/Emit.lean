@@ -19,6 +19,7 @@ def main : IO Unit := do
     let checks : List String := [
       "AUTOMATICALLY GENERATED",
       "import Aeneas.Std",
+      "open Aeneas",
       "def incr_cert.incr",
       "def incr_cert.incr_local",
       "Std.Result Std.U32",
