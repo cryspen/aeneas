@@ -556,7 +556,14 @@ let eval_operand_no_reorganize (config : config) (span : Meta.span)
       in
       (* Update the original value *)
       let ctx = write_place span access p updated_value ctx in
-      (* *)
+      (* Cert: emit EvCopy. We use [p] as both src and dst: the LLBC#
+         rule for Copy is "place read into a temp"; the temp does not
+         have a place of its own. M7 collapses Copy events into the
+         enclosing Assign's RHS. *)
+      (match CertEvent.cert_place_of_place p with
+      | Some cp ->
+          ctx_emit_event ctx (CertEvent.EvCopy { src = cp; dst = cp })
+      | None -> ());
       (copied_value, ctx, cc)
   | Move p ->
       (* Access the value *)
@@ -569,6 +576,11 @@ let eval_operand_no_reorganize (config : config) (span : Meta.span)
       (* Move the value *)
       let bottom : tvalue = { value = VBottom; ty = v.ty } in
       let ctx = write_place span access p bottom ctx in
+      (* Cert: emit EvMove. Same caveat as EvCopy. *)
+      (match CertEvent.cert_place_of_place p with
+      | Some cp ->
+          ctx_emit_event ctx (CertEvent.EvMove { src = cp; dst = cp })
+      | None -> ());
       (v, ctx, fun e -> e)
 
 let eval_operand (config : config) (span : Meta.span) (op : operand)

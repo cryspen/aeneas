@@ -154,6 +154,16 @@ let eval_assertion (config : config) (span : Meta.span) (assertion : assertion)
  fun ctx ->
   (* Evaluate the operand *)
   let v, ctx, cf_eval_op = eval_operand config span assertion.cond ctx in
+  (* Cert: emit EvAssert. The condition's [cert_sym_expr] is the
+     symbolic id when symbolic, the literal otherwise. *)
+  (let cond : CertEvent.cert_sym_expr =
+     match v.value with
+     | VSymbolic sv -> CertEvent.SymVal sv.sv_id
+     | VLiteral lit -> CertEvent.SymLit lit
+     | _ -> CertEvent.SymVal (Values.SymbolicValueId.of_int 0)
+   in
+   ctx_emit_event ctx
+     (CertEvent.EvAssert { cond; expected = assertion.expected }));
   (* Evaluate the assertion *)
   [%sanity_check] span (v.ty = TLiteral TBool);
   let st, cf_eval_assert =
@@ -900,12 +910,15 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
       ([ (ctx, res) ], cc_singleton __FILE__ __LINE__ st.span cc)
   | Call call -> eval_function_call config st.span call ctx
   | Abort _ ->
+      ctx_emit_event ctx CertEvent.EvPanic;
       (* Evaluate to a panic only if the execution is concrete, otherwise we stop
          evaluating there and synthesize a [panic] node in the symbolic AST. *)
       if config.mode = ConcreteMode then
         ([ (ctx, Panic) ], cf_singleton __FILE__ __LINE__ st.span)
       else ([], cf_empty __FILE__ __LINE__ st.span SA.Panic)
-  | Return -> ([ (ctx, Return) ], cf_singleton __FILE__ __LINE__ st.span)
+  | Return ->
+      ctx_emit_event ctx CertEvent.EvReturn;
+      ([ (ctx, Return) ], cf_singleton __FILE__ __LINE__ st.span)
   | Break i -> ([ (ctx, Break i) ], cf_singleton __FILE__ __LINE__ st.span)
   | Continue i -> ([ (ctx, Continue i) ], cf_singleton __FILE__ __LINE__ st.span)
   | StorageLive _ | Nop ->
