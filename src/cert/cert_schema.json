@@ -1,0 +1,241 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aeneas-verif.io/schemas/cert-v1.json",
+  "title": "Aeneas LLBC# Certificate",
+  "description": "Schema for cert.json files emitted by the OCaml Aeneas binary and consumed by the aeneas-lean-checker. Format version 1.",
+  "type": "object",
+  "required": ["fmt_version", "crate_hash", "functions"],
+  "properties": {
+    "fmt_version": { "const": 1 },
+    "crate_hash": {
+      "type": "string",
+      "description": "Hex digest of the associated llbc.json file's bytes."
+    },
+    "functions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/fun_cert" }
+    }
+  },
+  "definitions": {
+    "fun_cert": {
+      "type": "object",
+      "required": ["fn_id", "fn_name", "events", "final_state"],
+      "properties": {
+        "fn_id": { "type": "integer", "minimum": 0 },
+        "fn_name": { "type": "string" },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/event" }
+        },
+        "final_state": { "$ref": "#/definitions/state_summary" }
+      }
+    },
+    "state_summary": {
+      "type": "object",
+      "required": ["env", "live_loans"],
+      "properties": {
+        "env": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["local", "value"],
+            "properties": {
+              "local": { "type": "integer" },
+              "value": { "$ref": "#/definitions/sym_expr" }
+            }
+          }
+        },
+        "live_loans": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "sym_expr": {
+      "oneOf": [
+        { "type": "object", "required": ["SymVal"], "properties": { "SymVal": { "type": "integer" } } },
+        { "type": "object", "required": ["SymLit"], "properties": { "SymLit": { "$ref": "#/definitions/literal" } } },
+        { "type": "object", "required": ["SymCopy"], "properties": { "SymCopy": { "$ref": "#/definitions/place" } } },
+        { "type": "object", "required": ["SymMove"], "properties": { "SymMove": { "$ref": "#/definitions/place" } } },
+        { "type": "object", "required": ["SymMutBorrowTok"], "properties": { "SymMutBorrowTok": { "type": "integer" } } }
+      ]
+    },
+    "literal": {
+      "oneOf": [
+        { "type": "object", "required": ["Scalar"], "properties": { "Scalar": { "$ref": "#/definitions/scalar" } } },
+        { "type": "object", "required": ["Float"] },
+        { "type": "object", "required": ["Bool"], "properties": { "Bool": { "type": "boolean" } } },
+        { "type": "object", "required": ["Char"], "properties": { "Char": { "type": "integer" } } },
+        { "type": "object", "required": ["ByteStr"] },
+        { "type": "object", "required": ["Str"], "properties": { "Str": { "type": "string" } } }
+      ]
+    },
+    "scalar": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["Unsigned"],
+          "properties": {
+            "Unsigned": {
+              "type": "array",
+              "items": [
+                { "enum": ["Usize", "U8", "U16", "U32", "U64", "U128"] },
+                { "type": "string" }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["Signed"],
+          "properties": {
+            "Signed": {
+              "type": "array",
+              "items": [
+                { "enum": ["Isize", "I8", "I16", "I32", "I64", "I128"] },
+                { "type": "string" }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        }
+      ]
+    },
+    "place": {
+      "type": "object",
+      "required": ["local", "projection", "ty"],
+      "properties": {
+        "local": { "type": "integer", "minimum": 0 },
+        "projection": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/projection_elem" }
+        },
+        "ty": { "type": "string" }
+      }
+    },
+    "projection_elem": {
+      "oneOf": [
+        { "const": "Deref" },
+        { "const": "PtrMetadata" },
+        { "const": "ProjIndex" },
+        { "const": "Subslice" },
+        {
+          "type": "object",
+          "required": ["Field"],
+          "properties": { "Field": { "type": "integer" } }
+        }
+      ]
+    },
+    "restore_info": {
+      "type": "object",
+      "required": ["given_back"],
+      "properties": { "given_back": { "$ref": "#/definitions/sym_expr" } }
+    },
+    "event": {
+      "oneOf": [
+        { "const": "EvPanic" },
+        { "const": "EvReturn" },
+        {
+          "type": "object",
+          "required": ["EvMutBorrow"],
+          "properties": {
+            "EvMutBorrow": {
+              "type": "object",
+              "required": ["loan", "place", "symval"],
+              "properties": {
+                "loan": { "type": "integer" },
+                "place": { "$ref": "#/definitions/place" },
+                "symval": { "type": "integer" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["EvSharedBorrow"],
+          "properties": {
+            "EvSharedBorrow": {
+              "type": "object",
+              "required": ["loan", "shared_borrow_id", "place", "symval"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["EvAssign"],
+          "properties": {
+            "EvAssign": {
+              "type": "object",
+              "required": ["dst", "rhs"],
+              "properties": {
+                "dst": { "$ref": "#/definitions/place" },
+                "rhs": { "$ref": "#/definitions/sym_expr" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["EvMove"],
+          "properties": {
+            "EvMove": {
+              "type": "object",
+              "required": ["src", "dst"],
+              "properties": {
+                "src": { "$ref": "#/definitions/place" },
+                "dst": { "$ref": "#/definitions/place" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["EvCopy"],
+          "properties": {
+            "EvCopy": {
+              "type": "object",
+              "required": ["src", "dst"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["EvEndBorrow"],
+          "properties": {
+            "EvEndBorrow": {
+              "type": "object",
+              "required": ["loan", "restore"],
+              "properties": {
+                "loan": { "type": "integer" },
+                "restore": { "$ref": "#/definitions/restore_info" }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["EvAssert"],
+          "properties": {
+            "EvAssert": {
+              "type": "object",
+              "required": ["cond", "expected"],
+              "properties": {
+                "cond": { "$ref": "#/definitions/sym_expr" },
+                "expected": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        { "type": "object", "required": ["EvReborrow"] },
+        { "type": "object", "required": ["EvCall"] },
+        { "type": "object", "required": ["EvEndAbs"] },
+        { "type": "object", "required": ["EvProj"] },
+        { "type": "object", "required": ["EvJoin"] },
+        { "type": "object", "required": ["EvLoopInv"] }
+      ]
+    }
+  }
+}
