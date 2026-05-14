@@ -1,5 +1,6 @@
 import AeneasCheck.Raw.CertEvent
 import AeneasCheck.Json.Parser
+import AeneasCheck.Typecheck.Types
 
 /-!
 Top-level module for the Aeneas Lean checker.

@@ -1,0 +1,14 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "synthetic-missing-end",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "synthetic::missing_end",
+      "events": [
+        { "EvMutBorrow": { "loan": 0, "place": { "local": 0, "projection": [], "ty": "u32" }, "symval": 0 } }
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}

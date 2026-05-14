@@ -1,0 +1,16 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "synthetic-double-end",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "synthetic::double_end",
+      "events": [
+        { "EvMutBorrow": { "loan": 0, "place": { "local": 0, "projection": [], "ty": "u32" }, "symval": 0 } },
+        { "EvEndBorrow": { "loan": 0, "restore": { "given_back": { "SymVal": 0 } } } },
+        { "EvEndBorrow": { "loan": 0, "restore": { "given_back": { "SymVal": 0 } } } }
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}
