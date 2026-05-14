@@ -5,6 +5,7 @@ import AeneasCheck.LLBCSharp.Replay
 import AeneasCheck.Pure.Pretty
 import AeneasCheck.Translate.Driver
 import AeneasCheck.Backends.LeanEmit
+import AeneasCheck.Backends.RustEmit
 
 /-!
 Top-level module for the Aeneas Lean checker.

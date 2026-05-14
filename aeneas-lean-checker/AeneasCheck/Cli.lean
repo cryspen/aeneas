@@ -48,6 +48,12 @@ def main (args : List String) : IO UInt32 := do
         IO.FS.writeFile outPath src
         IO.println s!"  wrote Lean source: {outPath}"
       | none => pure ()
+      match findFlag rest "--rust-model" with
+      | some rustPath =>
+        let src := emitTranslatedCrateRust crateName tc
+        IO.FS.writeFile rustPath src
+        IO.println s!"  wrote Rust model:  {rustPath}"
+      | none => pure ()
       return 0
   | _ => do
     IO.println usage

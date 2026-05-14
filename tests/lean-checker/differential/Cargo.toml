@@ -1,0 +1,15 @@
+[package]
+name = "aeneas-cert-differential"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+proptest = "1"
+
+[[test]]
+name = "diff"
+path = "tests/diff.rs"
