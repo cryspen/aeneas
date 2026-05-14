@@ -1,0 +1,232 @@
+import Lean.Data.Json
+import AeneasCheck.Raw.CertEvent
+
+/-!
+JSON → Raw parser for the certificate format defined in
+`src/cert/cert_schema.json` (format version 1).
+
+Pattern: monadic `Except String α` helpers built on `Lean.Json`'s
+core accessors (`getObjVal?`, `getArr?`, …). Constructor encoding
+matches Serde's tagged-enum convention:
+* nullary variants: JSON string `"VariantName"`
+* payload variants: object `{"VariantName": <payload>}`
+-/
+
+namespace AeneasCheck.Json
+
+open Lean (Json)
+open AeneasCheck.Raw
+
+abbrev Result α := Except String α
+
+private def fail {α} (msg : String) : Result α := .error msg
+
+private def field (j : Json) (k : String) : Result Json := j.getObjVal? k
+private def asNat (j : Json) : Result Nat := do
+  let i ← j.getInt?
+  if i < 0 then fail s!"expected nonneg int, got {i}" else return i.toNat
+private def asBool (j : Json) : Result Bool := j.getBool?
+private def asStr (j : Json) : Result String := j.getStr?
+private def asArr (j : Json) : Result (Array Json) := j.getArr?
+
+/-- Parse a single-key tagged variant: returns (tag, payload). Fails on
+    multi-key objects so a malformed cert can't be confused with a
+    well-formed one. -/
+private def asTaggedObj (j : Json) : Result (String × Json) := do
+  let kvs ← j.getObj?
+  let arr := kvs.toArray
+  if h : arr.size = 1 then
+    return arr[0]
+  else
+    fail s!"expected single-key tagged variant, got {arr.size} keys"
+
+/-! ## Primitive parsers -/
+
+def intKindOfStr : String → Result IntKind
+  | "U8" => .ok .u8 | "U16" => .ok .u16 | "U32" => .ok .u32
+  | "U64" => .ok .u64 | "U128" => .ok .u128 | "Usize" => .ok .usize
+  | "I8" => .ok .i8 | "I16" => .ok .i16 | "I32" => .ok .i32
+  | "I64" => .ok .i64 | "I128" => .ok .i128 | "Isize" => .ok .isize
+  | s => fail s!"unknown IntKind: {s}"
+
+/-- Parse a scalar payload: `{"Unsigned": ["U32", "5"]}` or `{"Signed": …}`. -/
+def parseScalar (j : Json) : Result (IntKind × Int) := do
+  let (tag, payload) ← asTaggedObj j
+  if tag ≠ "Unsigned" ∧ tag ≠ "Signed" then
+    fail s!"scalar: expected Unsigned/Signed, got {tag}"
+  else
+    let arr ← asArr payload
+    if h : arr.size = 2 then
+      let k ← asStr arr[0] >>= intKindOfStr
+      let s ← asStr arr[1]
+      match s.toInt? with
+      | some i => return (k, i)
+      | none => fail s!"scalar: bad int literal {s}"
+    else fail s!"scalar: expected 2-elt array, got {arr.size}"
+
+def parseLiteral (j : Json) : Result Lit := do
+  let (tag, payload) ← asTaggedObj j
+  match tag with
+  | "Scalar" =>
+    let (k, v) ← parseScalar payload
+    return .scalar k v
+  | "Bool" => return .bool (← asBool payload)
+  | "Char" => return .char (← asNat payload)
+  | "Str" => return .str (← asStr payload)
+  | "ByteStr" =>
+    let arr ← asArr payload
+    let bs ← arr.mapM asNat
+    return .byteStr bs
+  | "Float" => fail "literal: Float not supported in M4"
+  | _ => fail s!"unknown literal tag: {tag}"
+
+def parseProjElem (j : Json) : Result ProjElem := do
+  match j with
+  | .str "Deref" => return .deref
+  | .str "PtrMetadata" => return .ptrMetadata
+  | .str "ProjIndex" => return .projIndex
+  | .str "Subslice" => return .subslice
+  | .str s => fail s!"unknown ProjElem string: {s}"
+  | _ =>
+    let (tag, payload) ← asTaggedObj j
+    match tag with
+    | "Field" => return .field (← asNat payload)
+    | _ => fail s!"unknown ProjElem tag: {tag}"
+
+def parsePlace (j : Json) : Result Place := do
+  let local_ ← asNat (← field j "local")
+  let projJsons ← asArr (← field j "projection")
+  let projection ← projJsons.mapM parseProjElem
+  let tyRepr ← asStr (← field j "ty")
+  -- M4: keep type as opaque string; M5 typechecker re-parses against llbc.json.
+  return { local_, projection, ty := .opaque tyRepr }
+
+partial def parseSymExpr (j : Json) : Result SymExpr := do
+  let (tag, payload) ← asTaggedObj j
+  match tag with
+  | "SymVal" => return .symVal (← asNat payload)
+  | "SymLit" => return .symLit (← parseLiteral payload)
+  | "SymCopy" => return .symCopy (← parsePlace payload)
+  | "SymMove" => return .symMove (← parsePlace payload)
+  | "SymMutBorrowTok" => return .symMutBorrowTok (← asNat payload)
+  | _ => fail s!"unknown SymExpr tag: {tag}"
+
+def parseRestoreInfo (j : Json) : Result RestoreInfo := do
+  let gb ← parseSymExpr (← field j "given_back")
+  return { givenBack := gb }
+
+def parseStateSummary (j : Json) : Result StateSummary := do
+  let envArr ← asArr (← field j "env")
+  let env ← envArr.mapM fun ej => do
+    let l ← asNat (← field ej "local")
+    let v ← parseSymExpr (← field ej "value")
+    return (l, v)
+  let liveArr ← asArr (← field j "live_loans")
+  let liveLoans ← liveArr.mapM asNat
+  return { env, liveLoans }
+
+def parseEvent (j : Json) : Result Event := do
+  match j with
+  | .str "EvPanic" => return .panic
+  | .str "EvReturn" => return .retn
+  | .str s => fail s!"unknown nullary Event: {s}"
+  | _ =>
+    let (tag, payload) ← asTaggedObj j
+    match tag with
+    | "EvMutBorrow" =>
+      let loan ← asNat (← field payload "loan")
+      let place ← parsePlace (← field payload "place")
+      let symval ← asNat (← field payload "symval")
+      return .mutBorrow loan place symval
+    | "EvSharedBorrow" =>
+      let loan ← asNat (← field payload "loan")
+      let sbId ← asNat (← field payload "shared_borrow_id")
+      let place ← parsePlace (← field payload "place")
+      let symval ← asNat (← field payload "symval")
+      return .sharedBorrow loan sbId place symval
+    | "EvAssign" =>
+      let dst ← parsePlace (← field payload "dst")
+      let rhs ← parseSymExpr (← field payload "rhs")
+      return .assign dst rhs
+    | "EvMove" =>
+      let src ← parsePlace (← field payload "src")
+      let dst ← parsePlace (← field payload "dst")
+      return .move src dst
+    | "EvCopy" =>
+      let src ← parsePlace (← field payload "src")
+      let dst ← parsePlace (← field payload "dst")
+      return .copy src dst
+    | "EvEndBorrow" =>
+      let loan ← asNat (← field payload "loan")
+      let restore ← parseRestoreInfo (← field payload "restore")
+      return .endBorrow loan restore
+    | "EvAssert" =>
+      let cond ← parseSymExpr (← field payload "cond")
+      let expected ← asBool (← field payload "expected")
+      return .assert cond expected
+    | "EvReborrow" =>
+      let child ← asNat (← field payload "child")
+      let parent ← asNat (← field payload "parent")
+      let place ← parsePlace (← field payload "place")
+      return .reborrow child parent place
+    | "EvCall" =>
+      let fn ← asNat (← field payload "fn")
+      let callId ← asNat (← field payload "call_id")
+      let argsArr ← asArr (← field payload "args")
+      let args ← argsArr.mapM parseSymExpr
+      let dst ← parsePlace (← field payload "dst")
+      let raArr ← asArr (← field payload "region_abs")
+      let regionAbs ← raArr.mapM asNat
+      return .call fn callId args dst regionAbs
+    | "EvEndAbs" =>
+      let abs ← asNat (← field payload "abs")
+      let fvArr ← asArr (← field payload "final_values")
+      let finalValues ← fvArr.mapM parseSymExpr
+      return .endAbs abs finalValues
+    | "EvProj" =>
+      let abs ← asNat (← field payload "abs")
+      let place ← parsePlace (← field payload "place")
+      let symval ← asNat (← field payload "symval")
+      return .proj abs place symval
+    | "EvJoin" =>
+      let left ← parseStateSummary (← field payload "left")
+      let right ← parseStateSummary (← field payload "right")
+      let result ← parseStateSummary (← field payload "result")
+      return .join left right result
+    | "EvLoopInv" =>
+      let loopId ← asNat (← field payload "loop_id")
+      let invariant ← parseStateSummary (← field payload "invariant")
+      return .loopInv loopId invariant
+    | _ => fail s!"unknown Event tag: {tag}"
+
+def parseFunCert (j : Json) : Result FunCert := do
+  let fnId ← asNat (← field j "fn_id")
+  let fnName ← asStr (← field j "fn_name")
+  let evArr ← asArr (← field j "events")
+  let events ← evArr.mapM parseEvent
+  let finalState ← parseStateSummary (← field j "final_state")
+  return { fnId, fnName, events, finalState }
+
+def parseCrateCert (j : Json) : Result CrateCert := do
+  let fmtVersion ← asNat (← field j "fmt_version")
+  if fmtVersion ≠ 1 then
+    fail s!"unsupported cert fmt_version: {fmtVersion} (expected 1)"
+  else
+    let crateHash ← asStr (← field j "crate_hash")
+    let fnArr ← asArr (← field j "functions")
+    let functions ← fnArr.mapM parseFunCert
+    return { fmtVersion, crateHash, functions }
+
+/-- Top-level entry: parse a cert JSON string. -/
+def parseCrateCertStr (s : String) : Result CrateCert := do
+  let j ← Lean.Json.parse s
+  parseCrateCert j
+
+/-- Read a cert from disk. -/
+def readCrateCert (path : System.FilePath) : IO CrateCert := do
+  let s ← IO.FS.readFile path
+  match parseCrateCertStr s with
+  | .ok cc => return cc
+  | .error e => throw (IO.userError s!"cert parse failed at {path}: {e}")
+
+end AeneasCheck.Json
