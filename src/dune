@@ -34,6 +34,7 @@
   BorrowCheck
   Builtin
   CertEvent
+  CertGen
   CertJson
   Collections
   Config

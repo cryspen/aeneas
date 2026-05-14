@@ -57,6 +57,16 @@ let set_subdir (s : string) : unit = subdir := Some s
     CI arguments. *)
 let borrow_check = ref false
 
+(** Emit a [.cert.json] file containing the LLBC# trace produced by the
+    symbolic interpreter, for consumption by the [aeneas-lean-checker]
+    project. Implies borrow-checking but does not run extraction. *)
+let emit_cert = ref false
+
+(** Emit a [.llbc.json] file: a round-trip of the post-pre-pass LLBC crate.
+    Paired with [emit_cert] so the Lean side has a canonical, post-pre-pass
+    crate to parse. *)
+let emit_llbc_json = ref false
+
 (** Get the target backend
 
     If there is no backend (we are borrow-checking) we default to Lean - it

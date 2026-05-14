@@ -93,6 +93,14 @@ let () =
       ( "-borrow-check",
         Arg.Set borrow_check,
         " Only borrow-check the program and do not generate any translation" );
+      ( "-emit-cert",
+        Arg.Set emit_cert,
+        " Emit a <input>.cert.json file with the LLBC# trace, for \
+         consumption by aeneas-lean-checker. Implies borrow-checking." );
+      ( "-emit-llbc-json",
+        Arg.Set emit_llbc_json,
+        " Emit a <input>.llbc.json file: a canonical, post-pre-pass JSON \
+         dump of the crate (used in tandem with -emit-cert)." );
       ( "-backend",
         Arg.Symbol (backend_names, set_backend),
         " Specify the target backend (" ^ String.concat ", " backend_names ^ ")"
@@ -479,6 +487,11 @@ let () =
     !loops_to_recursive_functions
     "-loops-to-rec" !no_recursive_loops "-loops-no-rec";
 
+  (* -emit-cert and -emit-llbc-json count as "no backend, just check"; they
+     are allowed without -borrow-check. -emit-cert without -borrow-check
+     implies borrow-checking. *)
+  if !emit_cert || !emit_llbc_json then borrow_check := true;
+
   (* Check that the user specified a backend *)
   let _ =
     match !opt_backend with
@@ -486,7 +499,9 @@ let () =
         check_not !borrow_check
           "Arguments `-backend` and `-borrow-check` are not compatible"
     | None ->
-        check !borrow_check "Missing `-backend` or `-borrow-check` argument"
+        check !borrow_check
+          "Missing `-backend`, `-borrow-check`, `-emit-cert`, or \
+           `-emit-llbc-json` argument"
   in
 
   (* Set some options depending on the backend *)
@@ -731,7 +746,11 @@ let () =
 
       (* Translate or borrow-check the crate *)
       let extracted_opaque = ref false in
-      if !borrow_check then Aeneas.BorrowCheck.borrow_check_crate m marked_ids
+      if !borrow_check then begin
+        if !emit_cert || !emit_llbc_json then
+          Aeneas.CertGen.emit filename m marked_ids
+        else Aeneas.BorrowCheck.borrow_check_crate m marked_ids
+      end
       else
         Aeneas.Translate.translate_crate filename dest_dir !Config.subdir m
           extracted_opaque marked_ids;

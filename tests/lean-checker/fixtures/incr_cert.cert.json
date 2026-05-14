@@ -1,0 +1,53 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "01c31fa6719f56008442a086283ea16e",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "incr_cert::incr",
+      "events": [],
+      "final_state": { "env": [], "live_loans": [] }
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "incr_cert::incr_local",
+      "events": [
+        {
+          "EvMutBorrow": {
+            "loan": 0,
+            "place": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "symval": 0
+          }
+        },
+        {
+          "EvMutBorrow": {
+            "loan": 1,
+            "place": {
+              "local": 3,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "symval": 0
+          }
+        },
+        {
+          "EvEndBorrow": {
+            "loan": 1,
+            "restore": { "given_back": { "SymVal": 1 } }
+          }
+        },
+        {
+          "EvEndBorrow": {
+            "loan": 0,
+            "restore": { "given_back": { "SymVal": 1 } }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}

@@ -1231,6 +1231,22 @@ let eval_rvalue_ref (config : config) (span : Meta.span) (p : place)
       let nv = { v with value = VLoan (VMutLoan bid) } in
       (* Update the value in the context to replace it with the loan *)
       let ctx = write_place span access p nv ctx in
+      (* Cert: emit EvMutBorrow.
+         The symbolic value id recorded is the id of the symbolic value held
+         by the loan at the moment of the borrow. For concrete values the
+         field is just a placeholder (the LLBC# rule attaches a fresh symbolic
+         value to the loan in symbolic mode; in concrete mode there is no
+         such id). *)
+      (match CertEvent.cert_place_of_place p with
+      | None -> ()
+      | Some cp ->
+          let symval =
+            match v.value with
+            | VSymbolic sv -> sv.sv_id
+            | _ -> Values.SymbolicValueId.of_int 0
+          in
+          ctx_emit_event ctx
+            (CertEvent.EvMutBorrow { loan = bid; place = cp; symval }));
       (* Return *)
       (rv, ctx, cc)
 

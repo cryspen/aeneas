@@ -152,3 +152,21 @@ type crate_cert = {
 (** Current cert format version. Bump whenever the JSON shape changes in a
     backwards-incompatible way. *)
 let cert_fmt_version : int = 1
+
+(** Convert a Charon [place] into a flat [cert_place].
+
+    Returns [None] for [PlaceGlobal]: globals do not appear in the
+    direct-borrow subset, and the trace would be ambiguous if we silently
+    elided them. Later milestones extend this. *)
+let cert_place_of_place (p : place) : cert_place option =
+  let rec collect (acc : projection_elem list) (p : place) :
+      (local_id * projection_elem list * ty) option =
+    match p.kind with
+    | PlaceLocal lid -> Some (lid, acc, p.ty)
+    | PlaceProjection (sub, pe) -> collect (pe :: acc) sub
+    | PlaceGlobal _ -> None
+  in
+  match collect [] p with
+  | None -> None
+  | Some (lid, proj, ty) ->
+      Some { cp_local = lid; cp_projection = proj; cp_ty = ty }

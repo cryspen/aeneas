@@ -156,8 +156,20 @@ type eval_ctx = {
   fresh_loop_id : unit -> loop_id;
   fresh_meta_id : unit -> meta_id;
   fresh_symbolic_expr_id : unit -> symbolic_expr_id;
+  cert_event_buffer : (CertEvent.event list ref[@opaque]);
+      (** Append-only LLBC# event log, populated when the [-emit-cert] flag is
+          on. Held behind a ref so that shared/copied contexts append to the
+          same buffer; the interpreter never reads this back, only writes. *)
 }
 [@@deriving show]
+
+let ctx_emit_event (ctx : eval_ctx) (ev : CertEvent.event) : unit =
+  ctx.cert_event_buffer := ev :: !(ctx.cert_event_buffer)
+
+let ctx_take_events (ctx : eval_ctx) : CertEvent.event list =
+  let evs = List.rev !(ctx.cert_event_buffer) in
+  ctx.cert_event_buffer := [];
+  evs
 
 let lookup_type_var_opt (ctx : eval_ctx) (vid : TypeVarId.id) :
     type_param option =

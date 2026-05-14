@@ -86,6 +86,9 @@ type crate_cert = {
 
 val cert_fmt_version : int
 
+val cert_place_of_place : Expressions.place -> cert_place option
+(** Flatten a Charon [place] to a [cert_place]; [None] for [PlaceGlobal]. *)
+
 val pp_event : Format.formatter -> event -> unit
 val pp_fun_cert : Format.formatter -> fun_cert -> unit
 val pp_crate_cert : Format.formatter -> crate_cert -> unit

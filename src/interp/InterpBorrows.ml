@@ -1006,6 +1006,27 @@ let rec end_borrow_aux (config : config) (span : Meta.span) ~(snapshots : bool)
       | Concrete (VMutBorrow (_, bv)) ->
           [%sanity_check] span (Option.is_none (get_first_loan_in_value bv))
       | _ -> ());
+      (* Cert: emit EvEndBorrow for mutable borrows.
+         For [UShared] we will emit a separate event in M9 (shared borrows).
+         The [given_back] symbolic expression carries the value that flows
+         back to the loan. For the direct-borrow subset (concrete or single
+         symbolic value), we approximate it as the symbolic id of the borrow
+         body, with a literal fallback. *)
+      (match l with
+      | UMut loan_bid ->
+          let given_back : CertEvent.cert_sym_expr =
+            match bc with
+            | Concrete (VMutBorrow (_, bv)) -> (
+                match bv.value with
+                | VSymbolic sv -> CertEvent.SymVal sv.sv_id
+                | VLiteral lit -> CertEvent.SymLit lit
+                | _ -> CertEvent.SymMutBorrowTok loan_bid)
+            | _ -> CertEvent.SymMutBorrowTok loan_bid
+          in
+          ctx_emit_event ctx
+            (CertEvent.EvEndBorrow
+               { loan = loan_bid; restore = { ri_given_back = given_back } })
+      | UShared _ -> ());
       (* Give back the value *)
       let ctx = give_back_concrete span l bc ctx in
       (* Do a sanity check and continue *)
