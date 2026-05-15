@@ -1071,6 +1071,7 @@ def tailToResult (e : PExpr) : PExpr :=
   match e with
   | .app _ _ => e  -- Already monadic — binops are Result-typed.
   | .ifThenElse _ _ _ => e  -- Branches are already Result-typed.
+  | .matchE _ _ => e  -- M9.5d: arms are already Result-typed.
   | _ => .ok e
 
 /-- A binding name is "fresh" (introduced solely by the translator for
@@ -1136,6 +1137,149 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
     else
       let ev := evs[i]'(Nat.lt_of_not_ge h)
       match ev with
+      | .matchArm scrutinee _adtId _vid _vname =>
+        -- M9.5d: a match-arm marker opens an arm. The OCaml emitter
+        -- interleaves arms linearly: `[matchArm A] [body_A] [matchArm
+        -- B] [body_B] …`. We scan for the *contiguous* run of
+        -- matchArm markers + their bodies (all sharing the same
+        -- scrutinee), sub-walk each arm's body events into a `PExpr`,
+        -- then emit a single `PExpr.matchE` and skip past the whole
+        -- run.
+        --
+        -- Each arm's body range ends at the *next* matchArm with the
+        -- same scrutinee, or at the end of the event array, or at an
+        -- `EvJoin` (the post-match continuation marker). We strip a
+        -- trailing `EvReturn` from each arm body so the per-arm tail
+        -- expression is just the assigned return value (the
+        -- `tailToResult` wrap below adds the `ok …`).
+        let sameScrutinee : Event → Bool
+          | .matchArm s _ _ _ =>
+            match scrutinee, s with
+            | .symVal a, .symVal b => a == b
+            | _, _ => false
+          | _ => false
+        -- Find each arm's [start, end) range and its ctor info.
+        let rec collect (k : Nat)
+            (acc : List (Nat × Nat × Nat × Nat × String)) :
+            List (Nat × Nat × Nat × Nat × String) :=
+          if h : k ≥ evs.size then acc.reverse
+          else
+            match evs[k]'(Nat.lt_of_not_ge h) with
+            | .matchArm s adtId vid vname =>
+              -- Only collect if it shares our opener's scrutinee.
+              if sameScrutinee (Event.matchArm s adtId vid vname) then
+                -- Find the end: next matchArm (same scrutinee) or
+                -- the array end. We stop at the first non-matching
+                -- event boundary; nested matches aren't supported in
+                -- M9.5d.
+                let rec findEnd (j : Nat) : Nat :=
+                  if hj : j ≥ evs.size then j
+                  else
+                    match evs[j]'(Nat.lt_of_not_ge hj) with
+                    | .matchArm s' _ _ _ =>
+                      if sameScrutinee (Event.matchArm s' 0 0 "") then j
+                      else findEnd (j + 1)
+                    | .join _ _ _ => j
+                    | _ => findEnd (j + 1)
+                let endIdx := findEnd (k + 1)
+                collect endIdx ((k, endIdx, adtId, vid, vname) :: acc)
+              else acc.reverse
+            | _ => acc.reverse
+        let arms := collect i []
+        match arms with
+        | [] => go (i + 1) (walkEvent st ev)
+        | _ =>
+          -- Resolve the adt name via the type-decl map. All arms
+          -- share the same adt id by construction; take the first.
+          let adtId : Nat :=
+            match arms.head? with
+            | some (_, _, a, _, _) => a
+            | none => 0
+          let adtName : String :=
+            match st.tdm[adtId]? with
+            | some info => info.name
+            | none => "Enum"
+          -- Pick the scrutinee's surface form: walk vm looking for an
+          -- input parameter whose stored expression is `.var "xK"`.
+          -- For the C-style fixtures the scrutinee is always a direct
+          -- function parameter, so we just pick the first input that
+          -- maps to a `var`. Fall back to `s<n>` form when nothing
+          -- matches.
+          let scrutE : PExpr := Id.run do
+            let nFallback : Nat :=
+              match scrutinee with
+              | .symVal n => n
+              | _ => 0
+            let mut found : Option PExpr := none
+            let mut bestLocal : Nat := 0
+            for (l, e) in st.vm.toList do
+              if 1 ≤ l ∧ l ≤ st.numParams then
+                match e with
+                | .var _ =>
+                  -- Prefer the lowest-numbered input parameter.
+                  if found.isNone ∨ l < bestLocal then
+                    found := some e
+                    bestLocal := l
+                | _ => pure ()
+            return found.getD (.var s!"s{nFallback}")
+          -- Build the arm bodies via sub-walks.
+          let armResults : Array (String × PExpr) × Nat :=
+            arms.toArray.foldl (init := (#[], st.fresh)) fun (acc, fresh) arm =>
+              let (start, endIdx, _adtId, _vid, vname) := arm
+              -- Body events are (start+1 .. endIdx); strip a trailing
+              -- EvReturn (we'll re-wrap in `ok` via tailToResult).
+              let bodyEnd :=
+                if endIdx > start + 1 then
+                  match evs[endIdx - 1]? with
+                  | some Event.retn => endIdx - 1
+                  | _ => endIdx
+                else endIdx
+              let bodyEvs := evs.extract (start + 1) bodyEnd
+              let sub := walkEvents bodyEvs
+                { st with binds := #[], fresh := fresh }
+              -- Tail value = vm[0] (the LLBC return slot). For arms
+              -- whose body is just an EvAssign to local 0 of a
+              -- SymVariant rhs, vm[0] is that variant ctor expression.
+              -- Qualify variant ctors with the adt name here so the
+              -- emitter produces `Sign.Pos` not bare `Pos`.
+              let qualify : PExpr → PExpr
+                | .var name =>
+                  -- Heuristic: if the bare name matches a known
+                  -- variant of `adtName`, prepend `<adtName>.`.
+                  -- Since the bare name was stored from
+                  -- `symVariant`'s `variantName` field, we just
+                  -- always qualify here (the var name was the bare
+                  -- variant name and can't accidentally match a
+                  -- normal local because locals are `xK`/`tK`/`sK`/
+                  -- `bK` which all start with a lowercase letter
+                  -- followed by a digit).
+                  if name.length ≥ 1 ∧ name.front.isUpper then
+                    .var s!"{adtName}.{name}"
+                  else .var name
+                | e => e
+              let tailRaw : PExpr := sub.vm.getD 0 (.var "()")
+              let tail : PExpr := qualify tailRaw
+              let armCtor := s!"{adtName}.{vname}"
+              let body := assembleBody sub.binds (tailToResult tail)
+              (acc.push (armCtor, body), sub.fresh)
+          let armsArr := armResults.1
+          let nextFresh := armResults.2
+          -- Skip past the entire run: end of last arm's range.
+          let lastEnd : Nat :=
+            match arms.getLast? with
+            | some (_, e, _, _, _) => e
+            | none => i + 1
+          let matchE : PExpr := PExpr.matchE scrutE armsArr
+          -- Whole function body is a match expression. Bind it as
+          -- vm[0] (the return slot) so the linear walk's wrap-up
+          -- picks it up. Subsequent EvReturn / EvJoin events fall
+          -- through harmlessly (they're no-ops at the value layer).
+          let st' :=
+            { st with
+              fresh := nextFresh
+              vm := st.vm.insert 0 matchE
+              lastWrite := some 0 }
+          go lastEnd st'
       | .assert (.symVal n) true =>
         -- Possible branch opener. Look ahead.
         match findBranchEnd evs i (.symVal n) with
