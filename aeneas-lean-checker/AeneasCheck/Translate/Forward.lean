@@ -2186,15 +2186,22 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
         let tail := buildBackwardTail bs finalSt.vm
         assembleBody finalSt.binds tail
   -- M9.5j: detect self-recursion by scanning for any `EvCall` whose
-  -- callee id matches the current function's `fnId`. The standard
-  -- Aeneas backend appends `partial_fixpoint` after the do-block for
-  -- such defs so Lean's elaborator doesn't reject them on structural-
-  -- recursion grounds. We don't try to be smarter (e.g. structural-
-  -- recursion analysis on the match-arm shape) — the standard backend
-  -- itself uses `partial_fixpoint` uniformly for recursive funs.
+  -- callee id AND qualified name match the current function's. The
+  -- standard Aeneas backend appends `partial_fixpoint` after the
+  -- do-block for such defs so Lean's elaborator doesn't reject them
+  -- on structural-recursion grounds. We don't try to be smarter
+  -- (e.g. structural-recursion analysis on the match-arm shape) —
+  -- the standard backend itself uses `partial_fixpoint` uniformly
+  -- for recursive funs.
+  -- Post-M9.5l: matching on `fnId` alone was unsound — Charon emits
+  -- intercept-style callees (e.g. `@SliceIndexShared`, `@ArrayIndexMut`)
+  -- with `fn = 0`, which collides with the first user function's fnId.
+  -- The qualified `fnName` is the robust discriminator: real self-calls
+  -- carry the same qualified path; intercepts start with `@`.
   let isSelfRecursive : Bool := f.events.any fun ev =>
     match ev with
-    | .call calleeId _ _ _ _ _ => calleeId == f.fnId
+    | .call calleeId _ calleeName _ _ _ =>
+        calleeId == f.fnId && calleeName == f.fnName
     | _ => false
   let trailer : Option String :=
     if isSelfRecursive then some "partial_fixpoint" else none

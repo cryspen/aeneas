@@ -120,7 +120,16 @@ def main : IO Unit := do
     let mustNotContain : List String := [
       "Array Std.U32",
       "@SliceIndexShared",
-      "@SliceIndexMut"
+      "@SliceIndexMut",
+      -- Post-M9.5l regression guard: neither `get_first` nor
+      -- `set_idx_slice` is self-recursive. The cert call's `fn` field
+      -- is `0` for `@SliceIndex*` intercepts (a Charon-side legacy)
+      -- which collides with `get_first`'s own `fn_id = 0`, so the
+      -- pre-fix `isSelfRecursive` test (fnId-only) misclassified the
+      -- call and appended `partial_fixpoint`. The fix matches on
+      -- qualified `fnName` as well; if that ever regresses, this
+      -- substring check fires.
+      "partial_fixpoint"
     ]
     for c in mustNotContain do
       if (src.splitOn c).length ≥ 2 then
