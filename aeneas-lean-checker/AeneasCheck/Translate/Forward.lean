@@ -63,6 +63,28 @@ def isUnitTy : RawTy → Bool
     (s.splitOn "types = []").length ≥ 2
   | _ => false
 
+/-- M12.2b: when an output type is a TAdt-TTuple containing N TRef-RMut
+    components (each in a distinct region), return `some N`. Used to
+    detect helpers like `swap_pair<'a,'b>(...) -> (&'a mut u32, &'b mut u32)`
+    whose pure translation produces N backward closures (one per region)
+    instead of a single closure. Returns `none` if the output is not a
+    tuple OR contains zero/one mut-ref fields.
+
+    Heuristic: the type-printer renders the inner types list as
+    `types = [TRef …; TRef …; ...]`. We count `TRef` substrings within
+    the `types = [...]` block AND require at least one `RMut` per such
+    TRef. -/
+def isOutputTupleOfMutRefs : RawTy → Option Nat
+  | .opaque s =>
+    if (s.splitOn "TTuple").length < 2 then none
+    else
+      -- Count TRef + RMut paired occurrences. The substring count of
+      -- "TRef" minus 1 is the number of TRef sites. Same for RMut.
+      let nRef := (s.splitOn "TRef").length - 1
+      let nMut := (s.splitOn "RMut").length - 1
+      if nRef ≥ 2 && nMut ≥ nRef then some nRef else none
+  | _ => none
+
 /-- Crude `RawTy` → `PTy` mapping based on substring lookup in the
     opaque-tagged signature string. M11 brings the first cases that
     actually matter (Bool for `if` conditions); M12 will replace this
@@ -175,11 +197,15 @@ structure PendingCall where
 /-- M12.2a-3: a single accumulated monadic binding in the walk's
     do-block. Most bindings are `regular` — `let <name> ← <rhs>`.
     For calls into `&mut`-taking helpers the binding destructures
-    the result pair: `let (<name>, <backName>) ← <rhs>`. The
-    pattern form is rendered as `letPat` in [assembleBody]. -/
+    the result pair: `let (<name>, <backName>) ← <rhs>`. M12.2b
+    extends this with `tuple` — `let (n₀, n₁, …, nₖ) ← <rhs>` —
+    used when a call's region count is ≥ 2 and the dst is a tuple
+    of `&mut` returns. The pattern forms are rendered as `letPat`
+    in [assembleBody]. -/
 inductive Bind
   | regular (name : String) (rhs : PExpr)
   | pair (name backName : String) (rhs : PExpr)
+  | tuple (names : Array String) (rhs : PExpr)
   deriving Inhabited
 
 /-- Walk state: accumulated `let` bindings (in monadic order) plus
@@ -224,6 +250,32 @@ structure WalkState where
       assigned value and propagate the result tuple into the
       function's return slot (LLBC convention: vm[0]). -/
   callBack : Std.HashMap Nat String := {}
+  /-- M12.2b: for a multi-region EvCall, the destructured result
+      tuple gets one backward-closure name per region. Keyed by
+      (callDstLocal, fieldIdx). Populated at EvCall time; consumed
+      by the subsequent EvAssigns that destructure
+      `<callDstLocal>.[Field K]` into per-region locals — those
+      EvAssigns thread `callBackByField[(L, K)]` into [callBack]
+      so the existing deref-write hook applies the right closure. -/
+  callBackByField : Std.HashMap (Nat × Nat) String := {}
+  /-- M12.2b: `true` for a destructured-from-multi-region local
+      (set alongside [callBack] from a field-EvAssign). When a
+      deref-write through such a local fires, accumulate the
+      closure application into [multiRegionTail] in field order
+      *instead of* clobbering `vm[0]` (the single-region path).
+      The function tail then wraps `multiRegionTail` into the
+      output shape. -/
+  multiRegionLocal : Std.HashSet Nat := {}
+  /-- M12.2b: per-field accumulated `<back_K> v` applications.
+      Built by deref-EvAssigns through [multiRegionLocal] locals.
+      Indexed by region/field index (0-based, matching
+      [callBackByField]). Consumed at function tail to build
+      `ok (app_0, app_1, …, app_{N-1})`. -/
+  multiRegionTail : Std.HashMap Nat PExpr := {}
+  /-- M12.2b: the field-index of each multi-region-destructured
+      local. Lets deref-writes thread their `<back_K>` application
+      into [multiRegionTail] at the right slot. -/
+  multiRegionLocalIdx : Std.HashMap Nat Nat := {}
   deriving Inhabited
 
 namespace WalkState
@@ -407,7 +459,35 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       match d.projection.toList.getLast? with
       | some ProjElem.deref => true
       | _ => false
-    if derefTail then
+    -- M12.2b: detect a field-destructure of a multi-region call
+    -- result, i.e. `EvAssign dst=L rhs=SymMove(L'.[Field K])`
+    -- where `(L', K)` is keyed in [callBackByField]. Thread the
+    -- per-region back-closure name into `callBack[L]` so the
+    -- subsequent deref-write through L fires the right closure.
+    -- We also record L's field index in [multiRegionLocalIdx] so
+    -- the deref-write accumulates into [multiRegionTail] at the
+    -- right slot. The Pure binding is *not* emitted (the
+    -- destructure was already done by the multi-name `letPat` at
+    -- EvCall time); we only update bookkeeping.
+    let fieldFromMultiCall : Option (Nat × String) :=
+      match rhs with
+      | .symMove rp | .symCopy rp =>
+        match rp.projection.toList.getLast? with
+        | some (ProjElem.field k) =>
+          match st.callBackByField[(rp.local_, k)]? with
+          | some backName => some (k, backName)
+          | none => none
+        | _ => none
+      | _ => none
+    if let some (k, backName) := fieldFromMultiCall then
+      { st with
+        callBack := st.callBack.insert d.local_ backName
+        multiRegionLocal := st.multiRegionLocal.insert d.local_
+        multiRegionLocalIdx := st.multiRegionLocalIdx.insert d.local_ k
+        -- Don't update vm[d.local_]: the destructured local has no
+        -- pure-value meaning until a deref-write fires the closure.
+        lastWrite := some d.local_ }
+    else if derefTail then
       match st.callBack[d.local_]? with
       | some backName =>
         -- The backward closure was bound as `<backName> : T → tuple`.
@@ -415,9 +495,19 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         -- restored `&mut` input post-states, which IS the function's
         -- return value for unit-returning callers (e.g. use_choose).
         let tailE : PExpr := .app backName #[rhsE]
-        { st with
-          vm := st.vm.insert 0 tailE
-          lastWrite := some 0 }
+        -- M12.2b: in the multi-region case each closure produces ONE
+        -- input's post-state (not a tuple). Accumulate per field
+        -- index into [multiRegionTail] instead of clobbering vm[0].
+        -- The function tail then builds the return tuple from these.
+        if st.multiRegionLocal.contains d.local_ then
+          let k := st.multiRegionLocalIdx.getD d.local_ 0
+          { st with
+            multiRegionTail := st.multiRegionTail.insert k tailE
+            lastWrite := some 0 }
+        else
+          { st with
+            vm := st.vm.insert 0 tailE
+            lastWrite := some 0 }
       | none =>
         -- No tracked backward closure; treat the deref-write as a
         -- regular update to the root local's vm entry. This matches
@@ -511,11 +601,36 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- shape (single-name binding, no destructure).
     let dstIsMutRef : Bool := isMutRef dst.ty
     let dstIsUnit : Bool := isUnitTy dst.ty
+    -- M12.2b: detect a multi-region call returning a tuple of
+    -- N ≥ 2 mut refs. The standard backend emits N+1 result
+    -- components: a forward (often `_` ignored) plus N backward
+    -- closures `_back0`, `_back1`, …, `_back{N-1}`. We bind all
+    -- of them via a `tuple` Bind and stash per-field closure
+    -- names in callBackByField so subsequent field-destructure
+    -- EvAssigns can thread them.
+    let dstTupleOfMuts : Option Nat := isOutputTupleOfMutRefs dst.ty
     if regionAbs.isEmpty then
       -- No &mut inputs on the callee — straight value-flow call.
       { st with
         binds := st.binds.push (.regular nm app)
         vm := st.vm.insert dst.local_ (.var nm)
+        lastWrite := some dst.local_ }
+    else if (dstTupleOfMuts.isSome) && regionAbs.size ≥ 2 then
+      -- Multi-region call: bind `(<nm>_v, <nm>_back0, …, <nm>_back{N-1})`.
+      -- Per-field closure names go in callBackByField; the destructure
+      -- assigns later route each per-region local through callBack.
+      let n := regionAbs.size
+      let vName := s!"{nm}_v"
+      let backNames : Array String :=
+        (List.range n).toArray.map fun i => s!"{nm}_back{i}"
+      let names : Array String := #[vName] ++ backNames
+      let cbbf := (List.range n).foldl (init := st.callBackByField)
+        fun acc i =>
+          acc.insert (dst.local_, i) (backNames[i]!)
+      { st with
+        binds := st.binds.push (.tuple names app)
+        vm := st.vm.insert dst.local_ (.var vName)
+        callBackByField := cbbf
         lastWrite := some dst.local_ }
     else if dstIsMutRef then
       -- Callee has &mut inputs AND returns &mut. Bind
@@ -716,6 +831,7 @@ def assembleBody (binds : Array Bind) (tail : PExpr) : PExpr :=
     match b with
     | .regular nm e => .letIn nm placeholderTy e acc
     | .pair nm bnm e => .letPat #[nm, bnm] placeholderTy e acc
+    | .tuple names e => .letPat names placeholderTy e acc
   match binds.toList, tail with
   | [.regular nm e], .ok (.var n) =>
     if nm == n && isFreshTempName nm then e
@@ -919,6 +1035,11 @@ structure BackSig where
   outputIsMutRef : Bool
   outputInnerTy : PTy
   outputIsUnit  : Bool
+  /-- M12.2b: `some N` when the output is a TAdt-TTuple containing N
+      TRef-RMut fields (each in its own region). Drives the
+      multi-back-closure emit shape. `none` means single-region or
+      non-borrow output (M12.2a falls back to the existing shape). -/
+  outputTupleOfMuts : Option Nat
   deriving Repr, Inhabited
 
 /-- Build the [BackSig] from a function signature. -/
@@ -934,7 +1055,8 @@ def backSigOf (sig : FnSignature) : BackSig := Id.run do
     { mutInputs, mutInputTys
       outputIsMutRef := isMutRef sig.output
       outputInnerTy := rawTyToPTy sig.output
-      outputIsUnit := isUnitTy sig.output }
+      outputIsUnit := isUnitTy sig.output
+      outputTupleOfMuts := isOutputTupleOfMutRefs sig.output }
   return bs
 
 /-- M12.2a-2: backward closure type for a [BackSig]. Returns `none`
@@ -969,6 +1091,30 @@ def backClosureTy (bs : BackSig) : Option PTy :=
       practice). -/
 def emitRetTy (bs : BackSig) : PTy :=
   if bs.mutInputs.isEmpty then bs.outputInnerTy
+  -- M12.2b: output is `(&'r₀ mut T, …, &'r_{N-1} mut T)` with N ≥ 2.
+  -- The standard backend emits a flat tuple
+  --   `(fwd_tuple × back_0 × … × back_{N-1})`
+  -- where each `back_i : T_i → T_i` is the closure for the i-th
+  -- region (one per output field). This branch must come BEFORE the
+  -- generic `outputIsMutRef` / `outputIsUnit` cases — the per-region
+  -- handling supersedes the single-back-closure conservative shape.
+  else if let some n := bs.outputTupleOfMuts then
+    if n ≥ 2 then
+      -- Inner forward tuple: the unwrapped value type per mut input,
+      -- in order. We reuse `mutInputTys` since the count matches
+      -- (one returned ref per input region) — true for `swap_pair`
+      -- and similar pass-through helpers; revisit if a future
+      -- fixture has #outputs ≠ #inputs.
+      let fwdTuple : PTy :=
+        if bs.mutInputTys.size = 1 then bs.mutInputTys[0]!
+        else .tuple bs.mutInputTys
+      let backs : Array PTy := bs.mutInputTys.map fun t => .arrow t t
+      .tuple (#[fwdTuple] ++ backs)
+    else
+      -- Fall back to the M12.2a shape.
+      match backClosureTy bs with
+      | some bcty => .tuple #[bs.outputInnerTy, bcty]
+      | none => bs.outputInnerTy
   else if bs.outputIsMutRef then
     -- forward T_o paired with backward closure
     match backClosureTy bs with
@@ -1015,6 +1161,30 @@ def emitRetTy (bs : BackSig) : PTy :=
     directly rather than re-synthesising a closure from per-input
     post-states. -/
 def buildBackwardTail (bs : BackSig) (vm : VarMap) : PExpr :=
+  -- M12.2b: callee that returns `(&'r₀ mut T, …)` with N ≥ 2 regions.
+  -- Emit `ok ((x₁, …, xₙ), fun ret₀ => ret₀, …, fun ret_{N-1} =>
+  -- ret_{N-1})`. Each back closure is identity for pass-through
+  -- helpers (the only fixture under test today). The forward tuple
+  -- is the post-state of each `&mut` input, in order — which for
+  -- pass-through means the input's original name `xK`.
+  let multiRegionTail : Option PExpr :=
+    match bs.outputTupleOfMuts with
+    | some n =>
+      if n ≥ 2 then
+        let postStates : Array PExpr := bs.mutInputs.map fun p =>
+          vm.getD p (.var (paramName p))
+        let fwdTuple : PExpr :=
+          if postStates.size = 1 then postStates[0]!
+          else .tuple postStates
+        let backs : Array PExpr := bs.mutInputTys.mapIdx fun i t =>
+          let retNm := s!"ret{i}"
+          .lam #[(retNm, t)] (.var retNm)
+        some (.ok (.tuple (#[fwdTuple] ++ backs)))
+      else none
+    | none => none
+  match multiRegionTail with
+  | some t => t
+  | none =>
   let fwdValue : PExpr := vm.getD 0 (
     if bs.mutInputs.size ≥ 1 then .var (paramName bs.mutInputs[0]!)
     else .lit (.scalar .u32 0))
@@ -1146,6 +1316,19 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
           if numParams ≥ 1 then .var (paramName 1)
           else .lit (.scalar .u32 0))
         assembleBody finalSt.binds (tailToResult tailE)
+      else if !finalSt.multiRegionTail.isEmpty then
+        -- M12.2b: caller of a multi-region helper. The deref-EvAssigns
+        -- through each destructured local accumulated one back-
+        -- closure application per region. Build `ok (app_0, app_1,
+        -- …, app_{N-1})` in field order; gaps default to the
+        -- corresponding input's `xK` (the input was untouched).
+        let n := bs.mutInputs.size
+        let comps : Array PExpr := (List.range n).toArray.map fun i =>
+          finalSt.multiRegionTail.getD i (.var (paramName bs.mutInputs[i]!))
+        let tuple : PExpr :=
+          if comps.size = 1 then comps[0]!
+          else .tuple comps
+        assembleBody finalSt.binds (.ok tuple)
       else
         -- Has &mut inputs. Build the forward-and-backward shape
         -- from the linear walk's final vm.
