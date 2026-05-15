@@ -229,12 +229,21 @@ def parseEvent (j : Json) : Result Event := do
       return .matchArm scrutinee adtId variantId variantName
     | _ => fail s!"unknown Event tag: {tag}"
 
+/-- M9.5o: parse one `{trait, type_param}` trait-clause record. -/
+def parseTraitClause (j : Json) : Result TraitClause := do
+  let traitQualifiedName ← asStr (← field j "trait")
+  let typeParamIdx ← asNat (← field j "type_param")
+  return { traitQualifiedName, typeParamIdx }
+
 /-- Parse a signature record. Types are kept as opaque-tagged strings:
     M9.0b carries them verbatim from the OCaml `show_ty` output.
 
     M9.5i: `type_params` is optional for back-compat with pre-M9.5i
     certs (which carry no type-param info); the field defaults to
-    empty when absent. -/
+    empty when absent.
+
+    M9.5o: `trait_clauses` is optional for back-compat with pre-M9.5o
+    certs. -/
 def parseSignature (j : Json) : Result FnSignature := do
   let inputsArr ← asArr (← field j "inputs")
   let inputs ← inputsArr.mapM fun ej => do
@@ -246,7 +255,13 @@ def parseSignature (j : Json) : Result FnSignature := do
       let arr ← asArr tj
       arr.mapM asStr
     | none => pure #[]
-  return { inputs, output := .opaque outputStr, typeParams }
+  let traitClauses : Array TraitClause ←
+    match (j.getObjVal? "trait_clauses").toOption with
+    | some cj => do
+      let arr ← asArr cj
+      arr.mapM parseTraitClause
+    | none => pure #[]
+  return { inputs, output := .opaque outputStr, typeParams, traitClauses }
 
 /-- Parse an optional source-span record. -/
 def parseSourceSpan (j : Json) : Result SourceSpan := do
@@ -350,11 +365,17 @@ def parseTypeDecl (j : Json) : Result TypeDecl := do
     | none => pure ""
   return { id, name, kind, typeParams, isTupleStruct, sourceSpan, qualifiedName }
 
-/-- M9.5l: parse one `TraitMethodDecl`. -/
+/-- M9.5l: parse one `TraitMethodDecl`. M9.5o adds optional
+    `has_default` flag (defaults to false for back-compat). -/
 def parseTraitMethodDecl (j : Json) : Result TraitMethodDecl := do
   let name ← asStr (← field j "name")
   let signature ← parseSignature (← field j "signature")
-  return { name, signature }
+  let hasDefault : Bool ← match (j.getObjVal? "has_default").toOption with
+    | some bj => match bj with
+      | .bool b => pure b
+      | _ => pure false
+    | none => pure false
+  return { name, signature, hasDefault }
 
 /-- M9.5l: parse one top-level `TraitDecl`. -/
 def parseTraitDecl (j : Json) : Result TraitDecl := do
@@ -378,7 +399,11 @@ def parseTraitImplMethod (j : Json) : Result TraitImplMethod := do
 
 /-- M9.5l: parse one top-level `TraitImpl`. `self_type_decl_id` is
     optional (the OCaml side emits it as `Some` only for the
-    minimal-case ADT-Self impls). -/
+    minimal-case ADT-Self impls).
+
+    M9.5o: `self_type_var` is optional (set for blanket impls);
+    `type_params` and `trait_clauses` are optional with empty
+    defaults for back-compat. -/
 def parseTraitImpl (j : Json) : Result TraitImpl := do
   let id ← asNat (← field j "id")
   let prettyName ← asStr (← field j "pretty_name")
@@ -389,12 +414,25 @@ def parseTraitImpl (j : Json) : Result TraitImpl := do
   let selfTypeDeclId : Option Nat ← match (j.getObjVal? "self_type_decl_id").toOption with
     | some sj => do let n ← asNat sj; pure (some n)
     | none => pure none
+  let selfTypeVar : Option String ←
+    match (j.getObjVal? "self_type_var").toOption with
+    | some sj => do let s ← asStr sj; pure (some s)
+    | none => pure none
+  let typeParams : Array String ←
+    match (j.getObjVal? "type_params").toOption with
+    | some tj => do let arr ← asArr tj; arr.mapM asStr
+    | none => pure #[]
+  let traitClauses : Array TraitClause ←
+    match (j.getObjVal? "trait_clauses").toOption with
+    | some cj => do let arr ← asArr cj; arr.mapM parseTraitClause
+    | none => pure #[]
   let methodArr ← asArr (← field j "methods")
   let methods ← methodArr.mapM parseTraitImplMethod
   let sourceSpan ← match (j.getObjVal? "source_span").toOption with
     | some sj => do let s ← parseSourceSpan sj; pure (some s)
     | none => pure none
-  return { id, prettyName, qualifiedName, traitDeclId, selfTypeDeclId, methods, sourceSpan }
+  return { id, prettyName, qualifiedName, traitDeclId, selfTypeDeclId,
+           selfTypeVar, typeParams, traitClauses, methods, sourceSpan }
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")

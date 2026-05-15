@@ -100,6 +100,16 @@ structure SourceSpan where
   endCol : Nat
   deriving Repr, Inhabited
 
+/-- M9.5o: one trait obligation on a generic parameter, e.g.
+    `T: Trait1` lowers to `{ traitQualifiedName := "crate::Trait1",
+    typeParamIdx := 0 }`. The qualified name is what the cert
+    carries (rendered against the `traitDecls` table later to derive
+    the bare trait name). -/
+structure TraitClause where
+  traitQualifiedName : String
+  typeParamIdx : Nat
+  deriving Repr, Inhabited
+
 /-- Lean-side view of the Rust signature: input + output types as
     pretty-printed LLBC type strings (kept opaque until M9 carries
     proper Charon types in the cert). -/
@@ -113,6 +123,11 @@ structure FnSignature where
       identifier that resolves `TVar (Free K)` references inside
       `inputs` / `output`. -/
   typeParams : Array String := #[]
+  /-- M9.5o: per-clause trait obligations on the function's type
+      parameters. Each entry binds a `TraitX` bound to the K-th
+      `typeParams` entry. Empty for signatures without trait
+      obligations. Optional in the JSON cert for back-compat. -/
+  traitClauses : Array TraitClause := #[]
   deriving Repr, Inhabited
 
 /-- Per-function cert trace. -/
@@ -206,6 +221,12 @@ structure TypeDecl where
 structure TraitMethodDecl where
   name : String
   signature : FnSignature
+  /-- M9.5o: true iff this method carries a default implementation
+      in the trait declaration. The Lean translator emits these
+      with a `Trait.<method>.default` shape (the default takes the
+      trait itself as a bound). Defaults to false on the parsing
+      side for back-compat. -/
+  hasDefault : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5l: a crate-level trait declaration. M9.5l only handles the
@@ -246,6 +267,15 @@ structure TraitImpl where
   qualifiedName : String
   traitDeclId : Nat
   selfTypeDeclId : Option Nat
+  /-- M9.5o: for a blanket impl (Self is a type variable), this carries
+      the variable's name (e.g. `"T"`). `none` when Self is a concrete
+      ADT (the `selfTypeDeclId` case). -/
+  selfTypeVar : Option String := none
+  /-- M9.5o: type-parameter names declared on the impl itself. Empty
+      for monomorphic impls. -/
+  typeParams : Array String := #[]
+  /-- M9.5o: trait obligations on the impl's type parameters. -/
+  traitClauses : Array TraitClause := #[]
   methods : Array TraitImplMethod
   sourceSpan : Option SourceSpan := none
   deriving Repr, Inhabited
