@@ -1,0 +1,158 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "0cd85af8a6e68bb54753bd02e993743b",
+  "type_decls": [
+    {
+      "id": 0,
+      "name": "Tag",
+      "kind": { "Struct": [] },
+      "type_params": [],
+      "is_tuple_struct": true,
+      "source_span": {
+        "file": "tests/src/traits_basic.rs",
+        "beg_line": 14,
+        "beg_col": 0,
+        "end_line": 14,
+        "end_col": 15
+      }
+    }
+  ],
+  "trait_decls": [
+    {
+      "id": 0,
+      "name": "Numeric",
+      "qualified_name": "traits_basic::Numeric",
+      "methods": [
+        {
+          "name": "value",
+          "signature": {
+            "inputs": [
+              "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Bound (0, 0))),\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            ],
+            "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+            "type_params": []
+          }
+        }
+      ],
+      "source_span": {
+        "file": "tests/src/traits_basic.rs",
+        "beg_line": 10,
+        "beg_col": 0,
+        "end_line": 12,
+        "end_col": 1
+      }
+    }
+  ],
+  "trait_impls": [
+    {
+      "id": 0,
+      "pretty_name": "Tag.Insts.Traits_basicNumeric",
+      "qualified_name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}",
+      "trait_decl_id": 0,
+      "self_type_decl_id": 0,
+      "methods": [ { "name": "value", "fn_id": 2 } ],
+      "source_span": {
+        "file": "tests/src/traits_basic.rs",
+        "beg_line": 16,
+        "beg_col": 0,
+        "end_line": 20,
+        "end_col": 1
+      }
+    }
+  ],
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "traits_basic::use_numeric",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        ],
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": []
+      },
+      "source_span": {
+        "file": "tests/src/traits_basic.rs",
+        "beg_line": 22,
+        "beg_col": 0,
+        "end_line": 24,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 2,
+            "fn_name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}::value",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "region_abs": [ 0 ]
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}::value",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+        ],
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": []
+      },
+      "source_span": {
+        "file": "tests/src/traits_basic.rs",
+        "beg_line": 17,
+        "beg_col": 4,
+        "end_line": 19,
+        "end_col": 5
+      },
+      "pretty_name": "Tag.Insts.Traits_basicNumeric.value",
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "U32", "42" ] } }
+            }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}

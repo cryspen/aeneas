@@ -78,7 +78,16 @@ lean_lib «RuntimeShim» where
     M9.5k: `Generated.ListGeneric` (parametric recursive enum
     `GList<T>` + `glist_len<T>`) — combination of M9.5i (generics)
     and M9.5j (Box + recursion). No new surface beyond those two;
-    locks in that the two features compose without regressions. -/
+    locks in that the two features compose without regressions.
+
+    M9.5l: `Generated.TraitsBasic` (minimal trait declaration +
+    concrete impl + direct method call on `Tag.value()`). The
+    `structure Numeric (Self : Type) where …` and
+    `@[reducible] def Tag.Insts.Traits_basicNumeric : Numeric Tag :=
+    { value := … }` shapes are pure Lean and require no
+    RuntimeShim surface. The unit struct alias
+    `@[reducible] def Tag := Unit` similarly elaborates without
+    extra wiring. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
@@ -86,4 +95,4 @@ lean_lib «GeneratedTests» where
              `Generated.EnumsBasic, `Generated.EnumsPayload,
              `Generated.SlicesBasic, `Generated.Bitwise,
              `Generated.GenericsBasic, `Generated.ListBasic,
-             `Generated.ListGeneric]
+             `Generated.ListGeneric, `Generated.TraitsBasic]

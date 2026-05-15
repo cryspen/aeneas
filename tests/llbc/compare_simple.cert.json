@@ -10,7 +10,8 @@
         "inputs": [
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": []
       },
       "source_span": {
         "file": "tests/src/compare_simple.rs",
@@ -61,7 +62,8 @@
         "inputs": [
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": []
       },
       "source_span": {
         "file": "tests/src/compare_simple.rs",
@@ -145,7 +147,8 @@
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": []
       },
       "source_span": {
         "file": "tests/src/compare_simple.rs",
