@@ -29,6 +29,19 @@ namespace Std
 /-- Pointer-sized unsigned. -/
 @[reducible] def Usize : Type := USize
 
+-- M9.5c: just enough of `Usize.ofNat` + the `#usize` macro for the
+-- emitted source to parse. The real Aeneas runtime carries an
+-- in-bounds proof; the shim accepts any `Nat` and clips via core
+-- `USize.ofNat`, which is wide enough on every supported platform for
+-- the small fixtures under test. The macro is a token-level match for
+-- `4#usize`; the inner numeral becomes the `USize.ofNat 4` Lean term.
+-- Generated source uses `4#usize` only as a const-generic type-level
+-- value (the `N` in `Array T N#usize`); the macro accepts any term
+-- and discards no proof obligation, so byte-comparable output between
+-- the standard backend and the checker is preserved.
+@[reducible] def Usize.ofNat (n : Nat) : Usize := USize.ofNat n
+@[reducible] def U32.ofNat (n : Nat) : U32 := UInt32.ofNat n
+
 @[reducible] def I8   : Type := Int8
 @[reducible] def I16  : Type := Int16
 @[reducible] def I32  : Type := Int32
@@ -157,8 +170,51 @@ partial def loop {α : Type} {β : Type}
     | .done x => .ok x
   | .error e => .error e
 
+/-! ## Array
+M9.5c: a fixed-length Rust array `[T; N]` maps to `Array T N` where
+`N : Usize` is a type-level const generic. The real Aeneas runtime
+uses a `List`-backed subtype `{ l : List α // l.length = n.val }`; the
+shim simplifies to a thin wrapper over a `List` and dispatches
+out-of-bounds writes to `.error` via `Result`. Just enough for the
+emitted `Array.update <array> <idx> <val>` from `set_idx`-class code to
+compile against the shim. -/
+
+structure Array (α : Type) (_n : Usize) where
+  val : List α
+
+/-- M9.5c: `Array.update` in-bounds, returning a fresh array. Matches
+    the signature of `backends/lean/Aeneas/Std/Array/Array.lean::Array.update`:
+    `Array α n → Usize → α → Result (Array α n)`. Out-of-bounds is
+    surfaced as `Error.outOfBounds`.
+
+    For the shim, "in bounds" is a structural check against the
+    backing `List`'s length; this approximates the real runtime's
+    proof obligation without pulling in the in-bounds-via-`Nat`
+    arithmetic that mathlib's `Aeneas.Std` uses. -/
+def Array.update {α : Type} {n : Usize} (v : Aeneas.Std.Array α n) (i : Usize)
+    (x : α) : Result (Aeneas.Std.Array α n) :=
+  let idx : Nat := i.toNat
+  if idx < v.val.length then
+    .ok ⟨v.val.set idx x⟩
+  else
+    .error .outOfBounds
+
 end Std
 end Aeneas
+
+/-! ## Const-generic Usize literals
+
+M9.5c: the standard Aeneas backend prints const-generic `[T; N]`
+lengths as `N#usize`. The macro mirrors the real-backend's
+`Aeneas.Std.Scalar.Notations.lean` but drops the in-bounds proof
+obligation — the shim's `Usize.ofNat` accepts any `Nat`.
+
+We use `Aeneas.Std.Usize.ofNat` (fully qualified) so the macro
+resolves identically regardless of whether the enclosing module has
+already opened `Aeneas.Std`. -/
+
+macro:max x:term:max noWs "#usize" : term => `(Aeneas.Std.Usize.ofNat $x)
+macro:max x:term:max noWs "#u32"   : term => `(Aeneas.Std.U32.ofNat $x)
 
 /-! ## Rust-attribute markers
 

@@ -33,12 +33,13 @@ lean_lib «RuntimeShim» where
 /-- Compiles the M7-generated Lean source against `RuntimeShim`. The
     file at `tests/Generated/Incr.lean` is produced by running
     `aeneas-check --out tests/Generated/Incr.lean` (see
-    `scripts/check-vertical-slice.sh`). -/
+    `scripts/check-vertical-slice.sh`).
+
+    M9.5c: `Generated.Reborrows` covers the cert-translated
+    `set_fst` / `set_idx` / `reborrow_chain` from `tests/src/reborrows.rs`.
+    The RuntimeShim grew `Aeneas.Std.Array` + `Array.update` + the
+    `#usize` const-generic macro to make the shape compile. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
-             `Generated.LoopsSimple]
--- M9.5c TODO: add `Generated.Reborrows` once the RuntimeShim exposes
--- `ArrayIndexMut` and the set_idx translator emits a body that
--- typechecks against it. The Direct/Reborrows.lean test already
--- asserts set_fst's shape; this entry covers shim compile-ability.
+             `Generated.LoopsSimple, `Generated.Reborrows]
