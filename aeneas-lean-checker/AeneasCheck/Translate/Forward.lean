@@ -19,6 +19,15 @@ to a real value-flow walk:
 * **Pure-Mut-Borrow / Pure-Reborrow**: borrow events are no-ops at
   the pure-value layer (the borrow's mutation flows out via the
   function's return; M10.2 will model backward functions explicitly).
+* **T-Call-Forward** (M10.1): `EvCall` emits a `let tN ← fn args`
+  binding and threads `tN` through subsequent reads of the dst.
+* **T-Call-Backward** (M10.2b): when the call's region abstraction
+  closes via `EvEndAbs`, we update `vm` so subsequent reads of the
+  borrowed input's caller-side local resolve to the call's post-state
+  binding name (`<input>_post`). Without backward functions per se,
+  this conflates "post-state of the borrow" with "result of the
+  call" — sound for single-region `&mut`-taking helpers whose
+  callee acts on one borrow; multi-region cases are left for M11.
 
 The result is a `do`-block of monadic `let` bindings tail-ended by
 `ok <expr>`. Binops that already return `Result α` propagate through
@@ -104,6 +113,31 @@ def binopHead : String → String
   | "Cmp" => "Cmp"
   | s => s
 
+/-- Pending function call info, recorded at EvCall time and consumed
+    at EvEndAbs time. Each region abstraction in a call's `regionAbs`
+    list maps to one [PendingCall] entry; the call's binding is
+    emitted on the *first* EvEndAbs for that call, and subsequent
+    EvEndAbs's of the same call just update `vm` with the next
+    post-state. (Multi-region calls require tuple destructuring,
+    deferred to M11; M10.2b handles the single-region case which is
+    what real-world `&mut`-taking helpers look like.) -/
+structure PendingCall where
+  /-- Unique key (here just the original `callId` from the cert).
+      Distinct EvEndAbs's for the same call share this key, so we
+      know to only emit one `let … ← …` binding. -/
+  callKey : Nat
+  fnName : String
+  argEs : Array PExpr
+  /-- For each region in the call's `regionAbs`, the caller-side
+      local id that should be re-bound to the post-state's fresh
+      pure name. Computed at EvCall time from each arg's place. -/
+  postLocals : Array Nat
+  /-- The call's own dst place's local id (unit for many `&mut`
+      helpers; valued for `&mut`-returning helpers). Kept so we can
+      pick the right "return slot" if the trace consults it. -/
+  dstLocal : Nat
+  deriving Inhabited
+
 /-- Walk state: accumulated `let` bindings (in monadic order) plus
     the current per-local pure expression map. -/
 structure WalkState where
@@ -111,6 +145,10 @@ structure WalkState where
   vm : VarMap := {}
   /-- Counter for fresh `tN` names. -/
   fresh : Nat := 0
+  /-- The function's input-parameter count. Used to discriminate
+      "input locals" (1..numParams) from temp locals when picking
+      a `_post`-style name on EvEndAbs. -/
+  numParams : Nat := 0
   /-- The local id last written by a value-producing event (binop,
       assign, copy/move target). Used as a fallback return value for
       functions whose mutation flows through a `&mut` input — the
@@ -118,6 +156,16 @@ structure WalkState where
       `EvReturn`. M10.2's backward-function pass will replace this
       with an exact post-state per-borrow read. -/
   lastWrite : Option Nat := none
+  /-- M10.2b: pending calls keyed by abstraction id. Populated by
+      EvCall (one entry per region in `regionAbs`) and consumed by
+      EvEndAbs, which materializes the call's `let … ← …` binding
+      (once per call) and threads the post-state symbolic value
+      through `vm`. -/
+  pending : Std.HashMap Nat PendingCall := {}
+  /-- M10.2b: which call keys have already produced a `let … ← …`
+      binding. Subsequent EvEndAbs entries for the same call skip
+      re-emission and only update `vm`. -/
+  emittedCalls : Std.HashSet Nat := {}
   deriving Inhabited
 
 namespace WalkState
@@ -127,6 +175,19 @@ def freshName (st : WalkState) : String × WalkState :=
   (nm, { st with fresh := st.fresh + 1 })
 
 end WalkState
+
+/-- Compute the caller-side local that holds the borrowed value for
+    a single call argument. Mirrors `lookupPlace`'s fallback: when
+    the arg's root local isn't tracked in `vm` (typical: it's an
+    intermediate reborrow temp), the post-state should land on the
+    *first input parameter* — the same fallback `lookupPlace` uses.
+
+    For arg shapes that aren't a place (literal, raw symbolic value),
+    return 0 — the caller treats 0 as "no post-update needed." -/
+def postLocalOfArg (vm : VarMap) : SymExpr → Nat
+  | .symCopy p | .symMove p =>
+    if vm.contains p.local_ then p.local_ else 1
+  | .symVal _ | .symLit _ | .symMutBorrowTok _ => 0
 
 /-- Apply one event to the walk state. -/
 def walkEvent (st : WalkState) (ev : Event) : WalkState :=
@@ -170,22 +231,89 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- Control / panic / return are observed at the wrap-up step
   -- below; they don't affect the per-local value map.
   | .assert _ _ | .panic | .retn => st
-  | .call _ _ fnName args dst _ =>
-    -- M10.1: forward call. Build `Pure.App fnName [argE1, …, argEn]`,
-    -- emit a `let tN ← …` binding, and update the destination
-    -- local's pure value. Backward functions / region abstractions
-    -- are handled by M10.2 in tandem with EndAbs / Proj.
+  | .call _ callId fnName args dst regionAbs =>
+    -- M10.1+M10.2b: forward call.
+    --
+    -- We always emit the call's binding eagerly here so subsequent
+    -- events (EvAssign through a `&mut` return, etc.) see a `vm`
+    -- with the call's return slot populated. When `regionAbs` is
+    -- non-empty, we additionally record a `PendingCall` per
+    -- abstraction; the matching EvEndAbs will then *rebind* the
+    -- binding's name to a `<input>_post` form (renaming the most
+    -- recent binding rather than re-emitting) and update `vm` for
+    -- the borrowed input's caller-side local.
     let argEs := args.map (lookupSymExpr st.vm)
+    let postLocals : Array Nat := args.map (postLocalOfArg st.vm)
+    -- Pick the binding name: a generic `tN` for forward-only
+    -- calls; an `<input>_post` shape when we know which `&mut`
+    -- *input parameter*'s post-state we'll thread on EvEndAbs.
+    -- For args whose root local is a temp (not an input parameter),
+    -- we stay with `tN` — naming a binding `x5_post` when local 5
+    -- is the stack slot for a temporary would be misleading.
+    let inputLocalOfArg : Nat → Nat := fun l =>
+      if 1 ≤ l ∧ l ≤ st.numParams then l else 0
+    let inputLocals : Array Nat := postLocals.map inputLocalOfArg
+    let (nm, st) :=
+      match inputLocals.findSome? (fun l => if l = 0 then none else some l) with
+      | some l => (s!"{paramName l}_post", st)
+      | none => st.freshName
     let app : PExpr := .app fnName argEs
-    let (nm, st) := st.freshName
-    { st with
-      binds := st.binds.push (nm, app)
-      vm := st.vm.insert dst.local_ (.var nm)
-      lastWrite := some dst.local_ }
-  -- Out-of-M10.1 events: leave the state untouched. The replayer
+    let st :=
+      { st with
+        binds := st.binds.push (nm, app)
+        vm := st.vm.insert dst.local_ (.var nm)
+        lastWrite := some dst.local_ }
+    -- Record the pending entries so EvEndAbs can update vm for
+    -- the borrowed input(s).
+    if regionAbs.isEmpty then st
+    else
+      let pending := regionAbs.foldl (init := st.pending) fun acc abs =>
+        acc.insert abs
+          { callKey := callId
+            fnName, argEs, postLocals
+            dstLocal := dst.local_ }
+      { st with
+        pending
+        emittedCalls := st.emittedCalls.insert callId }
+  | .endAbs abs _finals =>
+    -- M10.2b: a callee's region abstraction just closed. The call
+    -- itself was already emitted at EvCall time; what's left to do
+    -- here is update `vm[postLocal] := .var <bindingName>` so that
+    -- subsequent reads of the borrowed input's caller-side local
+    -- pick up the call's post-state. (The cert's `finalValues`
+    -- already carry the OCaml-side symbolic value id for that
+    -- post-state; we ignore it on the Lean side because the binding
+    -- name we emitted already names the post-state slot.)
+    --
+    -- For multi-region calls (e.g. `choose` returning `&mut`), each
+    -- sibling EvEndAbs would want to bind a distinct post-state
+    -- name; M10.2b only threads the FIRST one. The others remain
+    -- visible through `dstLocal` but not via the inputs' caller
+    -- locals. M11 will tuple-destructure those.
+    match st.pending[abs]? with
+    | none => st  -- Spurious EvEndAbs (no matching call); no-op.
+    | some pc =>
+      -- Use the same "first input-parameter local" rule as EvCall
+      -- so the binding name we re-derive matches the one we
+      -- actually emitted at call time.
+      let inputLocals : Array Nat := pc.postLocals.map fun l =>
+        if 1 ≤ l ∧ l ≤ st.numParams then l else 0
+      let postLocal : Nat :=
+        match inputLocals.findSome? (fun l => if l = 0 then none else some l) with
+        | some l => l
+        | none => 0
+      let st :=
+        if postLocal == 0 then st
+        else
+          let postName : String := s!"{paramName postLocal}_post"
+          { st with
+            vm := st.vm.insert postLocal (.var postName)
+            lastWrite := some postLocal }
+      { st with pending := st.pending.erase abs }
+  -- Out-of-M10.2b events: leave the state untouched. The replayer
   -- already rejected them upstream; this branch keeps `walkEvent`
   -- total.
-  | .endAbs _ _ | .proj _ _ _
+  | .proj _ _ _
   | .join _ _ _ | .loopInv _ _ => st
 
 /-- Wrap a tail value in `ok` *only* when it is a pure (non-Result)
@@ -196,6 +324,18 @@ def tailToResult (e : PExpr) : PExpr :=
   | .app _ _ => e  -- Already monadic — binops are Result-typed.
   | _ => .ok e
 
+/-- A binding name is "fresh" (introduced solely by the translator for
+    a monadic let, with no surface-level meaning) iff it starts with
+    `t` followed by a digit (the `tN` pattern used by M10.0/M10.1 for
+    binops and forward-only calls). Post-state bindings emitted by
+    M10.2b carry semantically meaningful names (`x1_post`, …) and
+    must *not* be collapsed away even when they're the sole binding
+    feeding the tail. -/
+def isFreshTempName (nm : String) : Bool :=
+  match nm.toList with
+  | 't' :: c :: _ => c.isDigit
+  | _ => false
+
 /-- Fold the accumulated bindings around a tail expression to form a
     nested `do let … ← …; …` chain. -/
 def assembleBody (binds : Array (String × PExpr)) (tail : PExpr) : PExpr :=
@@ -204,9 +344,17 @@ def assembleBody (binds : Array (String × PExpr)) (tail : PExpr) : PExpr :=
   -- bound expression directly (it already returns Result α). This
   -- matches the standard backend's body shape for tiny functions
   -- like `incr` (`x + 1#u32`).
+  --
+  -- The collapse is only safe for "fresh temp" bindings (`tN`). A
+  -- M10.2b post-state binding (`x1_post`) carries information about
+  -- which `&mut` input's post-state we just bound, and the tail
+  -- `ok x1_post` is the canonical way of returning that post-state;
+  -- keeping the explicit `let x1_post ← …; ok x1_post` makes the
+  -- forward-and-backward correspondence visible in the emitted code.
   match binds.toList, tail with
   | [(nm, e)], .ok (.var n) =>
-    if nm == n then e else binds.foldr (init := tail) (fun (n, e) acc =>
+    if nm == n && isFreshTempName nm then e
+    else binds.foldr (init := tail) (fun (n, e) acc =>
       .letIn n placeholderTy e acc)
   | _, _ =>
     binds.foldr (init := tail) (fun (n, e) acc =>
@@ -234,7 +382,7 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
       m := m.insert (i + 1) (.var (paramName (i + 1)))
     return m
   let finalSt : WalkState :=
-    f.events.foldl (init := { vm := initVm }) walkEvent
+    f.events.foldl (init := { vm := initVm, numParams }) walkEvent
   -- Forward return value:
   -- * If any cert event has explicit "borrow flow" (EvMutBorrow /
   --   EvReborrow / EvSharedBorrow), or if any signature input has a

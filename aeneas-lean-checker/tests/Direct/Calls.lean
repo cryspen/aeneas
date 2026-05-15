@@ -49,8 +49,9 @@ def main : IO Unit := do
     IO.println s!"  ✓ saw {nCall} EvCall(wrapping_add) event(s)"
   else
     throw <| IO.userError "expected ≥ 1 wrapping_add EvCall"
-  -- M10.2: the `calls.cert.json` fixture exercises EvEndAbs (fires
-  -- when an in-body callee's region abstraction closes).
+  -- M10.2/M10.2b: the `calls.cert.json` fixture exercises both
+  -- EvEndAbs (fires when an in-body callee's region abstraction
+  -- closes) and the M10.2b-populated `finalValues` payload.
   let callsCC ← readCrateCert "tests/Direct/calls.cert.json"
   match checkCrateCert callsCC with
   | .ok _ => IO.println "  ✓ calls.cert.json typechecks"
@@ -68,15 +69,38 @@ def main : IO Unit := do
     IO.println s!"  ✓ saw {nEndAbs} EvEndAbs event(s) in calls.cert.json"
   else
     throw <| IO.userError "expected ≥ 1 EvEndAbs in calls.cert.json"
-  -- And the emitted Lean still has the right shape for the simple
-  -- helper-calling case (`incr_via_helper(x) = incr_inner(x)`).
+  -- M10.2b: at least one EvEndAbs must now carry a non-empty
+  -- finalValues list (was always empty under the M10.2 hook-only
+  -- patch).
+  let nEndAbsWithFinals :=
+    callsCC.functions.foldl (init := 0) fun acc f =>
+      acc + (f.events.foldl (init := 0) fun a e => match e with
+        | .endAbs _ fv => if fv.size ≥ 1 then a + 1 else a
+        | _ => a)
+  if nEndAbsWithFinals ≥ 1 then
+    IO.println s!"  ✓ saw {nEndAbsWithFinals} EvEndAbs with non-empty finalValues"
+  else
+    throw <| IO.userError "expected ≥ 1 EvEndAbs with non-empty finalValues (M10.2b)"
+  -- M10.2b: the emitted Lean must now spell out the backward-
+  -- function bind for `incr_via_helper`:
+  --   let x1_post ← (calls.incr_inner x1)
+  --   ok x1_post
+  -- Compare with the standard backend's `incr_inner x` — our shape
+  -- is semantically equivalent but makes the post-state slot
+  -- explicit.
   match translateCrate callsCC with
   | .error e => throw <| IO.userError s!"calls translate failed: {e}"
   | .ok tc =>
     let src := emitTranslatedCrate "calls" tc
-    if (src.splitOn "(calls.incr_inner x1)").length < 2 then
-      IO.eprintln src
-      throw <| IO.userError "incr_via_helper missing call to incr_inner"
-    else
-      IO.println "  ✓ incr_via_helper translates to incr_inner call"
+    let mustContain : List String := [
+      "let x1_post ← (calls.incr_inner x1)",
+      "ok x1_post"
+    ]
+    for c in mustContain do
+      if (src.splitOn c).length < 2 then
+        IO.eprintln s!"  ✗ missing expected substring: {c}"
+        IO.eprintln src
+        throw <| IO.userError "incr_via_helper post-state binding missing"
+      else
+        IO.println s!"  ✓ contains: {c}"
   IO.println "all tests passed"
