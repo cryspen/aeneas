@@ -42,4 +42,5 @@ lean_lib «RuntimeShim» where
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
-             `Generated.LoopsSimple, `Generated.Reborrows]
+             `Generated.LoopsSimple, `Generated.Reborrows,
+             `Generated.EnumsBasic]
