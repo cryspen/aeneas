@@ -1,0 +1,158 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "f73ba901cbd0bcccc21b91339892b7a7",
+  "type_decls": [
+    {
+      "id": 0,
+      "name": "MyOption",
+      "kind": {
+        "Enum": [
+          {
+            "id": 0,
+            "name": "MySome",
+            "fields": [
+              {
+                "idx": 0,
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            ]
+          },
+          { "id": 1, "name": "MyNone", "fields": [] }
+        ]
+      },
+      "type_params": [ "T" ]
+    }
+  ],
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "generics_basic::get",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })",
+          "(Generated_Types.TVar (Generated_Types.Free 0))"
+        ],
+        "output": "(Generated_Types.TVar (Generated_Types.Free 0))",
+        "type_params": [ "T" ]
+      },
+      "source_span": {
+        "file": "/Users/karthik/aeneas/tests/src/generics_basic.rs",
+        "beg_line": 16,
+        "beg_col": 0,
+        "end_line": 21,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 0,
+            "variant_name": "MySome"
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [ { "Field": 0 } ],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 1,
+            "variant_name": "MyNone"
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}
