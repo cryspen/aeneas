@@ -144,4 +144,41 @@ def main : IO Unit := do
         throw <| IO.userError "incr_via_helper post-state binding missing"
       else
         IO.println s!"  ✓ contains: {c}"
+  -- M12.2a-2: `choose` must now translate to the backward-function
+  -- shape. Its signature has the (forward × closure) return type
+  -- and each branch emits an `ok (fwd, fun ret => ...)` tail.
+  match translateCrate callsCC with
+  | .error e => throw <| IO.userError s!"calls translate failed: {e}"
+  | .ok tc =>
+    let src := emitTranslatedCrate "calls" tc
+    let mustContain : List String := [
+      "Result (Std.U32 × (Std.U32 → (Std.U32 × Std.U32)))",
+      "ok (x2, fun ret => (ret, x3))",
+      "ok (x3, fun ret => (x2, ret))"
+    ]
+    for c in mustContain do
+      if (src.splitOn c).length < 2 then
+        IO.eprintln s!"  ✗ missing expected substring: {c}"
+        IO.eprintln src
+        throw <| IO.userError "choose backward-function shape missing (M12.2a-2)"
+      else
+        IO.println s!"  ✓ contains: {c}"
+  -- M12.2a-3: `use_choose` must destructure the call result and
+  -- apply the backward closure to the deref-assigned value.
+  match translateCrate callsCC with
+  | .error e => throw <| IO.userError s!"calls translate failed: {e}"
+  | .ok tc =>
+    let src := emitTranslatedCrate "calls" tc
+    let mustContain : List String := [
+      "def use_choose (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result (Std.U32 × Std.U32)",
+      "let (x1_post_v, x1_post_back) ← (calls.choose x1 x2 x3)",
+      "ok (x1_post_back (7 : Std.U32))"
+    ]
+    for c in mustContain do
+      if (src.splitOn c).length < 2 then
+        IO.eprintln s!"  ✗ missing expected substring: {c}"
+        IO.eprintln src
+        throw <| IO.userError "use_choose deref-assign threading missing (M12.2a-3)"
+      else
+        IO.println s!"  ✓ contains: {c}"
   IO.println "all tests passed"

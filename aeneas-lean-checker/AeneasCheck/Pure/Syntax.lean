@@ -31,6 +31,10 @@ inductive PTy
   /-- The Aeneas Result monad result type (constructor wraps in
       `Result α`). -/
   | result (inner : PTy)
+  /-- M12.2a-2: a (non-monadic) function type `α → β`. Used for the
+      backward-function slot in the output of `&mut`-taking helpers:
+      `Result (T_out × (T_borrow → (T_arg₁ × ... × T_argₙ)))`. -/
+  | arrow (dom cod : PTy)
   deriving Repr, Inhabited
 
 /-- Pure expressions. -/
@@ -47,6 +51,21 @@ inductive PExpr
       in `ok`/`var`/`lit`). The standard Aeneas backend prints this
       as `if cond then <thenE> else <elseE>`. -/
   | ifThenElse (cond thenE elseE : PExpr)
+  /-- M12.2a-2: a tuple expression `(e₁, e₂, ...)`. Used to assemble
+      the forward-and-backward pair returned by `&mut`-taking
+      helpers, and to destructure the call result on the caller side. -/
+  | tuple (args : Array PExpr)
+  /-- M12.2a-2: a non-monadic lambda `fun x₁ ... xₙ => body`. Used
+      for backward closures emitted by `&mut`-taking helpers. -/
+  | lam (params : Array (String × PTy)) (body : PExpr)
+  /-- M12.2a-2: a non-monadic let `let x := e1; e2`. Used for the
+      backward-closure binding inside the do-block (the standard
+      Aeneas backend emits `let back := fun x1 => ...`). -/
+  | letPure (name : String) (ty : PTy) (e1 e2 : PExpr)
+  /-- M12.2a-2: a monadic let with a tuple pattern on the LHS:
+      `let (x₁, ..., xₙ) ← e1; e2`. Used on the caller side of a
+      `&mut`-returning call to destructure the forward/backward pair. -/
+  | letPat (pat : Array String) (ty : PTy) (e1 e2 : PExpr)
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/

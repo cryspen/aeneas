@@ -45,6 +45,24 @@ def paramName (i : Nat) : String := s!"x{i}"
     real LLBC types for the operands. -/
 def placeholderTy : PTy := .lit (.int .u32)
 
+/-- M12.2a-2: detect whether a signature input/output is a `&mut T`.
+    Mirrors the substring-tagged shape that the OCaml `show_ty` emits
+    (`TRef ... Generated_Types.RMut`). -/
+def isMutRef : RawTy → Bool
+  | .opaque s =>
+    (s.splitOn "TRef").length ≥ 2 && (s.splitOn "RMut").length ≥ 2
+  | _ => false
+
+/-- M12.2a-2: detect whether a signature input/output is a unit/`()`
+    tuple. Used to elide the forward result when the original Rust
+    function returned `()`. -/
+def isUnitTy : RawTy → Bool
+  | .opaque s =>
+    (s.splitOn "TTuple").length ≥ 2 &&
+    -- Heuristic: a unit tuple has `types = []` in the printed form.
+    (s.splitOn "types = []").length ≥ 2
+  | _ => false
+
 /-- Crude `RawTy` → `PTy` mapping based on substring lookup in the
     opaque-tagged signature string. M11 brings the first cases that
     actually matter (Bool for `if` conditions); M12 will replace this
@@ -154,10 +172,20 @@ structure PendingCall where
   dstLocal : Nat
   deriving Inhabited
 
+/-- M12.2a-3: a single accumulated monadic binding in the walk's
+    do-block. Most bindings are `regular` — `let <name> ← <rhs>`.
+    For calls into `&mut`-taking helpers the binding destructures
+    the result pair: `let (<name>, <backName>) ← <rhs>`. The
+    pattern form is rendered as `letPat` in [assembleBody]. -/
+inductive Bind
+  | regular (name : String) (rhs : PExpr)
+  | pair (name backName : String) (rhs : PExpr)
+  deriving Inhabited
+
 /-- Walk state: accumulated `let` bindings (in monadic order) plus
     the current per-local pure expression map. -/
 structure WalkState where
-  binds : Array (String × PExpr) := #[]
+  binds : Array Bind := #[]
   vm : VarMap := {}
   /-- Counter for fresh `tN` names. -/
   fresh : Nat := 0
@@ -182,6 +210,20 @@ structure WalkState where
       binding. Subsequent EvEndAbs entries for the same call skip
       re-emission and only update `vm`. -/
   emittedCalls : Std.HashSet Nat := {}
+  /-- M12.2a-2: when the function body is a Return-tailed if/else
+      (each branch ends in `EvReturn`, no `EvJoin`), the walker
+      stashes each sub-walk's `vm` here so the top-level wrap-up
+      can build the backward closure: in each branch we need to
+      know which input the borrow chain leads back to. -/
+  branchTrueVm0  : Option VarMap := none
+  branchFalseVm0 : Option VarMap := none
+  /-- M12.2a-3: for each local that holds the return of a call
+      with `&mut` inputs, remember the call's backward-closure
+      binding name. When a subsequent EvAssign writes through
+      that local's deref projection, we apply the closure to the
+      assigned value and propagate the result tuple into the
+      function's return slot (LLBC convention: vm[0]). -/
+  callBack : Std.HashMap Nat String := {}
   deriving Inhabited
 
 namespace WalkState
@@ -205,20 +247,30 @@ def postLocalOfArg (vm : VarMap) : SymExpr → Nat
     if vm.contains p.local_ then p.local_ else 1
   | .symVal _ | .symLit _ | .symMutBorrowTok _ => 0
 
-/-- M11.2 helper: find the indices `(falseAssertIdx, joinIdx)` of the
-    branch-marker `EvAssert {cond, false}` and the following `EvJoin`
-    that close out a branching block that opens at `i` (which is
-    `EvAssert {cond, true}`).
+/-- M12.2a-2: outcome of [findBranchEnd]'s lookahead.
+    * `joined jIdx kIdx` — standard M11.2 if/else with a closing
+      `EvJoin` at `kIdx` (false marker at `jIdx`).
+    * `returnTailed jIdx trueEnd falseEnd` — both branches end in
+      `EvReturn` with no shared continuation. `trueEnd` is the index
+      of the true branch's terminator, `falseEnd` of the false's.
+      The walker emits the whole `if cond then <true> else <false>`
+      as the function's tail expression. -/
+inductive BranchEnd
+  | joined (jIdx kIdx : Nat)
+  | returnTailed (jIdx trueEnd falseEnd : Nat)
+  deriving Repr
+
+/-- M11.2 helper (M12.2a-2 extended): find the indices that close out
+    a branching block that opens at `i` (which is `EvAssert {cond, true}`).
 
     Returns `none` if the pattern isn't a match (e.g. a real `assert!`
-    not surrounded by an EvJoin, or a malformed cert). The search is
-    one-level-deep: nested ifs inside a branch leave their own
-    well-formed EvAssert+EvJoin runs whose first-`true` marker we'll
-    *not* match because we only consider markers carrying the same
-    `cond` SymExpr as the opening one. (The inner if's `cond` is a
-    different symbolic value, so its markers don't clash.) -/
+    not surrounded by either an EvJoin terminator or a return-tailed
+    pattern, or a malformed cert). The search is one-level-deep:
+    nested ifs inside a branch leave their own well-formed runs whose
+    first-`true` marker we'll *not* match because we only consider
+    markers carrying the same `cond` SymExpr as the opening one. -/
 def findBranchEnd (evs : Array Event) (i : Nat) (openCond : SymExpr) :
-    Option (Nat × Nat) := Id.run do
+    Option BranchEnd := Id.run do
   -- Look for the matching `EvAssert {openCond, false}` first,
   -- skipping any nested `EvAssert {_, false}` whose cond differs.
   let mut j : Option Nat := none
@@ -256,9 +308,19 @@ def findBranchEnd (evs : Array Event) (i : Nat) (openCond : SymExpr) :
   match j with
   | none => none
   | some jIdx =>
-    -- Now find the EvJoin that closes this block. Same depth logic.
+    -- Look for the closing terminator after the false marker. Two
+    -- shapes are accepted (in order of preference):
+    --   * `EvJoin` at depth 0 → `.joined jIdx kIdx`. This is the
+    --     M11.2 in-body if/else (post-`if` continuation exists).
+    --   * No `EvJoin`, but the false branch's range ends in
+    --     `EvReturn` AND the true branch's range also ended in
+    --     `EvReturn` (just before `jIdx`) → `.returnTailed`. This is
+    --     the `choose`-style "both branches return" pattern where
+    --     OCaml never emitted a join because there's no shared
+    --     continuation.
     let mut depth2 : Nat := 0
     let mut joinIdx : Option Nat := none
+    let mut falseEndIdx : Option Nat := none
     let mut m : Nat := jIdx + 1
     while h : m < evs.size do
       let ev := evs[m]
@@ -269,11 +331,41 @@ def findBranchEnd (evs : Array Event) (i : Nat) (openCond : SymExpr) :
           joinIdx := some m
           break
         depth2 := depth2 - 1
+      | .retn =>
+        if depth2 == 0 then
+          falseEndIdx := some m
+          break
       | _ => pure ()
       m := m + 1
-    match joinIdx with
-    | none => none
-    | some kIdx => some (jIdx, kIdx)
+    -- If we found an EvJoin, prefer it (M11.2 path).
+    match joinIdx, falseEndIdx with
+    | some kIdx, _ => some (.joined jIdx kIdx)
+    | none, some fEnd =>
+      -- The true branch must also end in `EvReturn` at depth 0
+      -- (between `i+1` and `jIdx-1`). Find that terminator.
+      let mut depthT : Nat := 0
+      let mut trueEndIdx : Option Nat := none
+      let mut t : Nat := i + 1
+      while ht : t < jIdx do
+        if hs : t < evs.size then
+          let ev := evs[t]
+          match ev with
+          | .assert _ true => depthT := depthT + 1
+          | .join _ _ _ =>
+            if depthT == 0 then break
+            depthT := depthT - 1
+          | .retn =>
+            if depthT == 0 then
+              trueEndIdx := some t
+              break
+          | _ => pure ()
+        else
+          break
+        t := t + 1
+      match trueEndIdx with
+      | some tEnd => some (.returnTailed jIdx tEnd fEnd)
+      | none => none
+    | none, none => none
 where
   /-- Lightweight equality on `SymExpr` for matching openers to
       closers. Only the cheap shape we expect from OCaml. -/
@@ -302,17 +394,50 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         vm := (st.vm.erase s.local_).insert d.local_ v
         lastWrite := some d.local_ }
   | .assign d rhs =>
-    { st with
-      vm := st.vm.insert d.local_ (lookupSymExpr st.vm rhs)
-      lastWrite := some d.local_ }
+    -- M12.2a-3: when the dst place's projection ends in [Deref] AND
+    -- the dst's root local has an associated backward closure (from
+    -- a prior EvCall into a `&mut`-returning helper), apply the
+    -- closure to the assigned value. The closure's result is the
+    -- tuple of restored `&mut` input post-states; we stash it in
+    -- vm[0] (the LLBC return slot) so the wrap-up step picks it up
+    -- as the function's tail. For non-deref EvAssigns, fall back
+    -- to the M10 behavior (rewrite vm[dst.local_]).
+    let rhsE := lookupSymExpr st.vm rhs
+    let derefTail : Bool :=
+      match d.projection.toList.getLast? with
+      | some ProjElem.deref => true
+      | _ => false
+    if derefTail then
+      match st.callBack[d.local_]? with
+      | some backName =>
+        -- The backward closure was bound as `<backName> : T → tuple`.
+        -- Applying it to the assigned RHS yields the function's
+        -- restored `&mut` input post-states, which IS the function's
+        -- return value for unit-returning callers (e.g. use_choose).
+        let tailE : PExpr := .app backName #[rhsE]
+        { st with
+          vm := st.vm.insert 0 tailE
+          lastWrite := some 0 }
+      | none =>
+        -- No tracked backward closure; treat the deref-write as a
+        -- regular update to the root local's vm entry. This matches
+        -- the M10 behavior and is sound when the borrow's owner is
+        -- one of the function's own `&mut` inputs (the in-function
+        -- mutation case).
+        { st with
+          vm := st.vm.insert d.local_ rhsE
+          lastWrite := some d.local_ }
+    else
+      { st with
+        vm := st.vm.insert d.local_ rhsE
+        lastWrite := some d.local_ }
   | .binop op lhs rhs d =>
     let lhsE := lookupSymExpr st.vm lhs
     let rhsE := lookupSymExpr st.vm rhs
     let app : PExpr := .app (binopHead op) #[lhsE, rhsE]
     let (nm, st) := st.freshName
-    let bind := (nm, app)
     { st with
-      binds := st.binds.push bind
+      binds := st.binds.push (.regular nm app)
       vm := st.vm.insert d.local_ (.var nm)
       lastWrite := some d.local_ }
   -- Borrow events have no value-level effect in the forward
@@ -372,23 +497,70 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         | some l => (s!"{paramName l}_post", st)
         | none => st.freshName
     let app : PExpr := .app fnName argEs
-    let st :=
+    -- M12.2a-3: when the callee has `&mut` inputs (non-empty
+    -- regionAbs), the call returns a (forward, backward) pair (or
+    -- just a backward when the callee's return type is unit/a
+    -- single &mut input). We emit a pattern-bound monadic let
+    -- destructuring the call result, and stash the backward
+    -- variable's name in `callBack` so a subsequent
+    -- deref-EvAssign can apply it.
+    --
+    -- The callee's exact shape (returns &mut? returns unit?) is
+    -- inferred from the `dst` place's type. For a non-unit, non-&mut
+    -- return type (rare in practice) we fall back to the M10.2b
+    -- shape (single-name binding, no destructure).
+    let dstIsMutRef : Bool := isMutRef dst.ty
+    let dstIsUnit : Bool := isUnitTy dst.ty
+    if regionAbs.isEmpty then
+      -- No &mut inputs on the callee — straight value-flow call.
       { st with
-        binds := st.binds.push (nm, app)
+        binds := st.binds.push (.regular nm app)
         vm := st.vm.insert dst.local_ (.var nm)
         lastWrite := some dst.local_ }
-    -- Record the pending entries so EvEndAbs can update vm for
-    -- the borrowed input(s).
-    if regionAbs.isEmpty then st
-    else
+    else if dstIsMutRef then
+      -- Callee has &mut inputs AND returns &mut. Bind
+      -- `let (nm_v, nm_back) ← fn args`. The forward result is
+      -- vm[dst.local_] := nm_v; the backward closure is stashed
+      -- in callBack for the next deref-assign to apply.
+      let vName := s!"{nm}_v"
+      let backName := s!"{nm}_back"
+      { st with
+        binds := st.binds.push (.pair vName backName app)
+        vm := st.vm.insert dst.local_ (.var vName)
+        callBack := st.callBack.insert dst.local_ backName
+        lastWrite := some dst.local_ }
+    else if dstIsUnit then
+      -- Callee has &mut inputs AND returns unit. The call returns
+      -- the backward closure directly (or a tuple of restored
+      -- &mut inputs); we keep the M10.2b single-name shape since
+      -- the existing EvEndAbs hook updates the input's vm slot
+      -- when the trace closes the abstraction (in-body callee).
+      -- For tail-position callees (no EvEndAbs in the trace), the
+      -- buildBackwardTail call at translate-time falls back to the
+      -- last vm-recorded post-state.
       let pending := regionAbs.foldl (init := st.pending) fun acc abs =>
         acc.insert abs
           { callKey := callId
             fnName, argEs, postLocals
             dstLocal := dst.local_ }
       { st with
+        binds := st.binds.push (.regular nm app)
+        vm := st.vm.insert dst.local_ (.var nm)
         pending
-        emittedCalls := st.emittedCalls.insert callId }
+        emittedCalls := st.emittedCalls.insert callId
+        lastWrite := some dst.local_ }
+    else
+      -- Callee has &mut inputs AND returns a value (not &mut, not
+      -- unit). Mirror the &mut-return shape since the result is
+      -- still a (value, backward) pair under the standard backend's
+      -- convention.
+      let vName := s!"{nm}_v"
+      let backName := s!"{nm}_back"
+      { st with
+        binds := st.binds.push (.pair vName backName app)
+        vm := st.vm.insert dst.local_ (.var vName)
+        callBack := st.callBack.insert dst.local_ backName
+        lastWrite := some dst.local_ }
   | .endAbs abs _finals =>
     -- M10.2b: a callee's region abstraction just closed. The call
     -- itself was already emitted at EvCall time; what's left to do
@@ -504,10 +676,13 @@ def joinedLocals (left right result : StateSummary) : Array Nat :=
 
 /-- Wrap a tail value in `ok` *only* when it is a pure (non-Result)
     expression. Binops emit `Result α`-typed apps already; double-
-    wrapping them would change semantics. -/
+    wrapping them would change semantics. M12.2a-2: also recognize
+    `ifThenElse` whose branches are themselves already Result-typed
+    (each branch was built via [assembleBody] which wraps in `ok`). -/
 def tailToResult (e : PExpr) : PExpr :=
   match e with
   | .app _ _ => e  -- Already monadic — binops are Result-typed.
+  | .ifThenElse _ _ _ => e  -- Branches are already Result-typed.
   | _ => .ok e
 
 /-- A binding name is "fresh" (introduced solely by the translator for
@@ -524,7 +699,7 @@ def isFreshTempName (nm : String) : Bool :=
 
 /-- Fold the accumulated bindings around a tail expression to form a
     nested `do let … ← …; …` chain. -/
-def assembleBody (binds : Array (String × PExpr)) (tail : PExpr) : PExpr :=
+def assembleBody (binds : Array Bind) (tail : PExpr) : PExpr :=
   -- Simplification: if there is exactly one binding and the tail is
   -- just `ok (.var name)` for that name, drop the let and use the
   -- bound expression directly (it already returns Result α). This
@@ -537,14 +712,16 @@ def assembleBody (binds : Array (String × PExpr)) (tail : PExpr) : PExpr :=
   -- `ok x1_post` is the canonical way of returning that post-state;
   -- keeping the explicit `let x1_post ← …; ok x1_post` makes the
   -- forward-and-backward correspondence visible in the emitted code.
+  let wrapOne (b : Bind) (acc : PExpr) : PExpr :=
+    match b with
+    | .regular nm e => .letIn nm placeholderTy e acc
+    | .pair nm bnm e => .letPat #[nm, bnm] placeholderTy e acc
   match binds.toList, tail with
-  | [(nm, e)], .ok (.var n) =>
+  | [.regular nm e], .ok (.var n) =>
     if nm == n && isFreshTempName nm then e
-    else binds.foldr (init := tail) (fun (n, e) acc =>
-      .letIn n placeholderTy e acc)
+    else binds.foldr (init := tail) wrapOne
   | _, _ =>
-    binds.foldr (init := tail) (fun (n, e) acc =>
-      .letIn n placeholderTy e acc)
+    binds.foldr (init := tail) wrapOne
 
 /-- Outer-loop walk that handles both the linear event stream and
     the M11.2 if/else branching pattern.
@@ -576,7 +753,77 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
         | none =>
           -- Real assert!: fall through to walkEvent.
           go (i + 1) (walkEvent st ev)
-        | some (jIdx, kIdx) =>
+        | some (.returnTailed jIdx tEnd fEnd) =>
+          -- M12.2a-2: both branches end in EvReturn with no join.
+          -- This is the `choose`-style "two early returns" pattern.
+          -- We sub-walk each branch and assemble its tail from
+          -- whatever local 0 (the LLBC return slot) ends up holding.
+          let leftEvs  := (evs.extract (i + 1) tEnd)
+          let rightEvs := (evs.extract (jIdx + 1) fEnd)
+          let leftSub  := walkEvents leftEvs  { st with binds := #[] }
+          let rightSub := walkEvents rightEvs { st with binds := #[], fresh := leftSub.fresh }
+          -- Pick the condition's surface form. Mirror the
+          -- M11.2 heuristic but without a join witness: look up the
+          -- parent's `vm` for the cond's symbolic id directly.
+          --
+          -- The cond's sym id is `n`. M11.0's EvAssert(true) hook
+          -- typically fires *after* an EvAssign of the cond local
+          -- to a SymVal n; the parent's `vm` already has `vm[l] :=
+          -- .var <param>`. We scan for any local in vm whose entry
+          -- is a `.var` matching a known param name. Default to
+          -- `s{n}` if we can't refine.
+          let cond : PExpr := Id.run do
+            -- Find which local holds a parameter named .var
+            -- pointing into the parent's params. The branch
+            -- marker's `cond` is `SymVal n`; the OCaml emits this
+            -- after `eval_operand` on a Bool-typed operand whose
+            -- value was just expanded. The cleanest signal: look
+            -- at the *last* EvAssign before `i` whose dst.local_
+            -- maps to a bool-typed param. As a coarse fallback,
+            -- pick the first input-parameter local that is in vm
+            -- and whose stored expression is `.var "xK"`.
+            let mut found : Option PExpr := none
+            for (l, e) in st.vm.toList do
+              -- Heuristic: prefer the lowest-numbered param.
+              if 1 ≤ l ∧ l ≤ st.numParams then
+                match e with
+                | .var name =>
+                  match found with
+                  | none => found := some (.var name)
+                  | some _ => pure ()
+                | _ => pure ()
+            return found.getD (.var s!"s{n}")
+          -- The leftSub / rightSub's vm have everything they
+          -- assigned. For a Return-tailed branch, the tail
+          -- expression is `vm[0]` (the LLBC return slot), wrapped
+          -- in ok.
+          let leftTail : PExpr :=
+            leftSub.vm.getD 0 (.lit (.scalar .u32 0))
+          let rightTail : PExpr :=
+            rightSub.vm.getD 0 (.lit (.scalar .u32 0))
+          let thenBody := assembleBody leftSub.binds (tailToResult leftTail)
+          let elseBody := assembleBody rightSub.binds (tailToResult rightTail)
+          let ite : PExpr := PExpr.ifThenElse cond thenBody elseBody
+          -- The whole body is this if/else; bind it into vm[0] so
+          -- the top-level wrap-up picks it up. We also push a fresh
+          -- binding so the linear walk's tail logic preserves the
+          -- if-then-else when the caller assembles the body.
+          --
+          -- Easier: thread the if/else as the final value of
+          -- vm[0], then jump past the false branch's EvReturn.
+          let st' :=
+            { st with
+              fresh := rightSub.fresh
+              vm := st.vm.insert 0 ite
+              lastWrite := some 0
+              -- M12.2a-2: also stash the per-branch sub-walk's vm[0]
+              -- (the raw forward value of each branch) so the
+              -- backward-function builder can re-derive which input
+              -- each branch returned through.
+              branchTrueVm0 := some leftSub.vm
+              branchFalseVm0 := some rightSub.vm }
+          go (fEnd + 1) st'
+        | some (.joined jIdx kIdx) =>
           -- Found: branch range is (i+1 .. jIdx-1) for true,
           -- (jIdx+1 .. kIdx-1) for false. The EvJoin is at kIdx.
           let leftEvs := (evs.extract (i + 1) jIdx)
@@ -642,7 +889,7 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                 let ite : PExpr := PExpr.ifThenElse cond thenBody elseBody
                 let (nm, acc) := acc.freshName
                 { acc with
-                  binds := acc.binds.push (nm, ite)
+                  binds := acc.binds.push (.regular nm ite)
                   vm := acc.vm.insert target (.var nm)
                   lastWrite := some target }
               | _, _ => acc
@@ -654,6 +901,167 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
             go (i + 1) (walkEvent st ev)
       | _ => go (i + 1) (walkEvent st ev)
   go 0 st0
+
+/-- M12.2a-2: Backward-function signature description.
+    Captures everything `translateFun` needs to know about the
+    function's borrow pattern to build the right (forward, backward)
+    output shape.
+
+    `mutInputs` is the array of 1-indexed input-parameter positions
+    whose type is `&mut T`. `mutInputTys` is the elementwise unwrap
+    of those parameters' types (i.e., the `T` from each `&mut T`).
+    `outputIsMutRef` is `true` when the function's return type is
+    itself a `&mut T`. `outputInnerTy` is the unwrapped output `T`
+    when `outputIsMutRef`, else the raw output PTy. -/
+structure BackSig where
+  mutInputs     : Array Nat
+  mutInputTys   : Array PTy
+  outputIsMutRef : Bool
+  outputInnerTy : PTy
+  outputIsUnit  : Bool
+  deriving Repr, Inhabited
+
+/-- Build the [BackSig] from a function signature. -/
+def backSigOf (sig : FnSignature) : BackSig := Id.run do
+  let mut mutInputs : Array Nat := #[]
+  let mut mutInputTys : Array PTy := #[]
+  for i in [0:sig.inputs.size] do
+    let t := sig.inputs[i]!
+    if isMutRef t then
+      mutInputs := mutInputs.push (i + 1)
+      mutInputTys := mutInputTys.push (rawTyToPTy t)
+  let bs : BackSig :=
+    { mutInputs, mutInputTys
+      outputIsMutRef := isMutRef sig.output
+      outputInnerTy := rawTyToPTy sig.output
+      outputIsUnit := isUnitTy sig.output }
+  return bs
+
+/-- M12.2a-2: backward closure type for a [BackSig]. Returns `none`
+    when the function has no `&mut` inputs (no backward function
+    needed). The closure shape is:
+    * domain = `outputInnerTy` (the value the caller wrote through
+      the returned `&mut` borrow). When the function doesn't return
+      a `&mut` we conservatively use `Unit`, but the corresponding
+      closure is rarely used directly — see [emitRetTy].
+    * codomain = `tupleTy mutInputTys` (the restored post-state of
+      each `&mut` input, in input-position order). For a single
+      `&mut` input we collapse the tuple to the bare type. -/
+def backClosureTy (bs : BackSig) : Option PTy :=
+  if bs.mutInputs.isEmpty then none
+  else
+    let dom := if bs.outputIsMutRef then bs.outputInnerTy else .unit
+    let cod :=
+      if bs.mutInputTys.size = 1 then bs.mutInputTys[0]!
+      else .tuple bs.mutInputTys
+    some (.arrow dom cod)
+
+/-- M12.2a-2: the function's final return type, accounting for
+    backward functions.
+    * 0 mut inputs: raw output (unchanged from M10).
+    * mut input(s), output is `&mut T_o`:
+      `(T_o × (T_o → tuple T_args))`
+    * mut input(s), unit output:
+      `tuple T_args` (single mut → bare T_arg). This matches the
+      M10.2b shape `incr(&mut u32) → u32`.
+    * mut input(s), non-unit non-borrow output:
+      `(T_o × (T_o → tuple T_args))` (conservative; rare in
+      practice). -/
+def emitRetTy (bs : BackSig) : PTy :=
+  if bs.mutInputs.isEmpty then bs.outputInnerTy
+  else if bs.outputIsMutRef then
+    -- forward T_o paired with backward closure
+    match backClosureTy bs with
+    | some bcty => .tuple #[bs.outputInnerTy, bcty]
+    | none => bs.outputInnerTy
+  else if bs.outputIsUnit then
+    -- only backward: single mut → bare; many → tuple
+    if bs.mutInputTys.size = 1 then bs.mutInputTys[0]!
+    else .tuple bs.mutInputTys
+  else
+    -- value output AND mut inputs; conservative pair shape
+    match backClosureTy bs with
+    | some bcty => .tuple #[bs.outputInnerTy, bcty]
+    | none => bs.outputInnerTy
+
+/-- M12.2a-2: build the per-branch forward-and-backward tail value
+    given the branch's sub-walk var map.
+
+    `bs` is the function's BackSig. `vm` is the branch's terminal
+    var map (after the sub-walk consumed the branch's events). The
+    returned expression is `ok (...)`-wrapped already, ready to be
+    placed in `tailToResult`.
+
+    Algorithm:
+    1. Compute each `&mut` input's post-state: `vm.getD p (.var
+       (paramName p))`. For inputs that were never written to, this
+       falls back to the original `xK` name.
+    2. Find the "selected" input: the one whose post-state equals
+       `vm[0]` (the forward return value). This is the input whose
+       borrow was returned by the function. If none matches, the
+       function modified the inputs but didn't return a borrow into
+       any of them; in that case the backward closure is `fun _ =>
+       <unchanged tuple>`.
+    3. Build the backward lambda: takes a fresh parameter `ret` and
+       returns the tuple of post-states with the selected input's
+       slot replaced by `ret`.
+    4. Wrap the forward value and the closure into the BackSig's
+       canonical output shape.
+
+    Special case (M12.2a-3): when `vm[0]` is an `.app` whose head
+    matches a known backward-closure binding name (e.g.
+    `<call>_back` for `use_choose`'s `*r = 7` after-call assign), it
+    already represents the function's tail tuple. We pass it through
+    directly rather than re-synthesising a closure from per-input
+    post-states. -/
+def buildBackwardTail (bs : BackSig) (vm : VarMap) : PExpr :=
+  let fwdValue : PExpr := vm.getD 0 (
+    if bs.mutInputs.size ≥ 1 then .var (paramName bs.mutInputs[0]!)
+    else .lit (.scalar .u32 0))
+  -- M12.2a-3: if the deref-write hook already populated vm[0] with
+  -- the application of a backward closure, that *is* the
+  -- function's tail. Recognise by `.app head args` whose head ends
+  -- in `_back`.
+  let vm0IsBackApp : Bool :=
+    match vm[0]? with
+    | some (PExpr.app head _) => (head.splitOn "_back").length ≥ 2
+    | _ => false
+  if vm0IsBackApp && bs.outputIsUnit then
+    .ok fwdValue
+  else
+  let postStates : Array PExpr := bs.mutInputs.map fun p =>
+    vm.getD p (.var (paramName p))
+  -- Find the selected input: vm[p] structurally equals fwdValue.
+  let eqExpr : PExpr → PExpr → Bool
+    | .var a, .var b => a == b
+    | _, _ => false
+  let selectedIdx : Option Nat :=
+    postStates.findIdx? fun e => eqExpr e fwdValue
+  -- Build the backward closure (or omit it if no &mut inputs).
+  match backClosureTy bs with
+  | none =>
+    -- No mut inputs. Forward only.
+    .ok fwdValue
+  | some _ =>
+    let retName : String := "ret"
+    let backTuple : Array PExpr :=
+      match selectedIdx with
+      | some idx =>
+        postStates.mapIdx fun i e => if i = idx then .var retName else e
+      | none => postStates
+    let backBody : PExpr :=
+      if backTuple.size = 1 then backTuple[0]!
+      else .tuple backTuple
+    let domTy := if bs.outputIsMutRef then bs.outputInnerTy else .unit
+    let backLam : PExpr := .lam #[(retName, domTy)] backBody
+    if bs.outputIsMutRef then
+      .ok (.tuple #[fwdValue, backLam])
+    else if bs.outputIsUnit then
+      -- No forward value; the backward result IS the return.
+      if backTuple.size = 1 then .ok backTuple[0]!
+      else .ok (.tuple backTuple)
+    else
+      .ok (.tuple #[fwdValue, backLam])
 
 /-- Translate a function's cert + replay into a Pure decl.
 
@@ -711,57 +1119,61 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
     return m
   let finalSt : WalkState :=
     walkEvents f.events { vm := initVm, numParams }
-  -- Forward return value:
-  -- * If any cert event has explicit "borrow flow" (EvMutBorrow /
-  --   EvReborrow / EvSharedBorrow), or if any signature input has a
-  --   `TRef`-shaped opaque type, the function's mutation flows out
-  --   through a borrowed input. Under M10.0 we approximate that
-  --   post-state by `lastWrite` — the most recent value-producing
-  --   event's destination. M10.2's backward-function pass replaces
-  --   this with an exact per-borrow lookup.
-  -- * Otherwise we use LLBC's standard return-value convention,
-  --   local 0.
-  let signatureHasRef : Bool :=
-    f.signature.inputs.any fun t => match t with
-      | .opaque s => (s.splitOn "TRef").length > 1
-      | _ => false
-  let usesBorrow : Bool := signatureHasRef || f.events.any fun
-    | .mutBorrow _ _ _ | .reborrow _ _ _ | .sharedBorrow _ _ _ _ => true
-    | _ => false
-  let returnLocal : Nat :=
-    if usesBorrow then finalSt.lastWrite.getD 1 else 0
-  let tailE : PExpr :=
-    -- Fall back to x1 when neither local has been touched (matches
-    -- the M7 identity placeholder behaviour).
-    finalSt.vm.getD returnLocal (
-      if numParams ≥ 1 then .var (paramName 1)
-      else .lit (.scalar .u32 0))
-  -- M11.2 type-mismatch guard: when the lookupPlace fallback hands
-  -- us a parameter of the wrong type (e.g. `choose(b: bool, …)`
-  -- whose `usesBorrow` heuristic falls back to local 1 = `b : Bool`
-  -- but the real output type is `&mut u32`), the emitted `ok b`
-  -- would not typecheck against `Result Std.U32`. Detect the case
-  -- and substitute a sentinel literal with a clear TODO marker; M12
-  -- (backward function machinery) will replace this with the real
-  -- post-state lookup.
-  let retTy : PTy := rawTyToPTy f.signature.output
-  let tailE : PExpr :=
-    match tailE, retTy with
-    | .var name, .lit (.int kind) =>
-      -- Look up the param's typed PTy; if it's not the same as the
-      -- return type, swap for a 0 literal of the return type.
-      let pIdx := params.findIdx? (fun p => p.name == name)
-      match pIdx with
-      | some idx =>
-        match params[idx]? with
-        | some param =>
-          match param.ty with
-          | .lit (.int k') => if k' == kind then tailE else .lit (.scalar kind 0)
-          | _ => .lit (.scalar kind 0)  -- TODO M12: backward fn
-        | none => tailE
-      | none => tailE
-    | _, _ => tailE
-  let body : PExpr := assembleBody finalSt.binds (tailToResult tailE)
+  -- M12.2a-2: pick the function's output shape based on its
+  -- signature's borrow pattern. See [BackSig] / [emitRetTy].
+  let bs := backSigOf f.signature
+  let retTy : PTy := emitRetTy bs
+  -- M12.2a-2: branch-tailed bodies (the `choose` pattern) compute
+  -- their per-branch tail value through [buildBackwardTail] on each
+  -- sub-walk's vm. The Return-tailed walker stashed each sub-walk's
+  -- vm in `branchTrueVm0` / `branchFalseVm0` and put a single
+  -- `ifThenElse` into the parent's `vm[0]`. Detect that case and
+  -- rebuild the `if cond then ok (...) else ok (...)` with proper
+  -- backward closures.
+  let body : PExpr :=
+    match finalSt.branchTrueVm0, finalSt.branchFalseVm0 with
+    | some tvm, some fvm =>
+      -- Re-derive the condition from the parent's vm at branch
+      -- time. The walker stored an `ifThenElse cond _ _` in
+      -- vm[0]; pull `cond` from there.
+      let cond : PExpr :=
+        match finalSt.vm[0]? with
+        | some (PExpr.ifThenElse c _ _) => c
+        | _ =>
+          -- Fallback: scan vm for a Bool-typed param.
+          Id.run do
+            let mut found : Option PExpr := none
+            for (l, e) in finalSt.vm.toList do
+              if 1 ≤ l ∧ l ≤ numParams then
+                match e with
+                | PExpr.var _ => found := some e
+                | _ => pure ()
+            return found.getD (PExpr.var "cond")
+      let leftTail := buildBackwardTail bs tvm
+      let rightTail := buildBackwardTail bs fvm
+      -- assembleBody around each branch picks up the sub-walk's
+      -- binds if any. Since the sub-walks' binds were thrown away
+      -- when we built `branchTrueVm0/falseVm0` (only the vm was
+      -- preserved), we rely on the sub-walks themselves having
+      -- already absorbed every binding into vm. This works for
+      -- `choose` where the bodies are pure reborrow chains; for
+      -- bodies with binops inside a Return-tailed branch we'd
+      -- need to thread the binds too — deferred to M12.2b.
+      let ite : PExpr := PExpr.ifThenElse cond leftTail rightTail
+      assembleBody finalSt.binds ite
+    | _, _ =>
+      -- Linear body. Use the BackSig to pick the right tail.
+      if bs.mutInputs.isEmpty then
+        -- Regular function: standard return convention.
+        let tailE : PExpr := finalSt.vm.getD 0 (
+          if numParams ≥ 1 then .var (paramName 1)
+          else .lit (.scalar .u32 0))
+        assembleBody finalSt.binds (tailToResult tailE)
+      else
+        -- Has &mut inputs. Build the forward-and-backward shape
+        -- from the linear walk's final vm.
+        let tail := buildBackwardTail bs finalSt.vm
+        assembleBody finalSt.binds tail
   { name := innerName f.fnName
     qualifiedName := f.fnName
     params, retTy, body

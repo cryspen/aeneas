@@ -36,6 +36,10 @@ partial def PTy.toLean : PTy → String
   -- header makes `Result` unqualified, so we drop the `Std.` prefix
   -- here for byte-identity with `aeneas -backend lean`.
   | .result inner => s!"Result {inner.toLean}"
+  -- M12.2a-2: `α → β`. We always wrap in parens so it can sit safely
+  -- inside another application head without re-parsing as multiple
+  -- args (`(α → β)` not `α → β`).
+  | .arrow dom cod => s!"({dom.toLean} → {cod.toLean})"
 
 def litToLean : Lit → String
   | .scalar k v =>
@@ -128,6 +132,11 @@ partial def PExpr.toLeanDo : PExpr → String
   | .ok inner =>
     let s := match inner with
       | .var _ | .lit _ => PExpr.toLeanDo inner
+      -- Tuple already self-parenthesises; don't add another pair.
+      | .tuple _ => PExpr.toLeanDo inner
+      -- `.app` also self-parenthesises (`(head a b)`), so skip
+      -- adding another pair — `ok (head a b)` not `ok ((head a b))`.
+      | .app _ _ => PExpr.toLeanDo inner
       | _ => "(" ++ PExpr.toLeanDo inner ++ ")"
     s!"ok {s}"
   | .ifThenElse cond thenE elseE =>
@@ -142,6 +151,29 @@ partial def PExpr.toLeanDo : PExpr → String
       s!"if {cond.toLeanDo} then {thenS} else {elseS}"
     else
       s!"if {cond.toLeanDo}\n  then {thenS}\n  else {elseS}"
+  | .tuple args =>
+    -- M12.2a-2: render `(e₁, e₂, ...)`. Single-element tuples are
+    -- syntactically forbidden in Lean; we render them as the bare
+    -- inner expression.
+    match args.toList with
+    | [e] => e.toLeanDo
+    | _ => "(" ++ String.intercalate ", " (args.toList.map PExpr.toLeanDo) ++ ")"
+  | .lam params body =>
+    -- M12.2a-2: `fun x₁ x₂ ... => body`. We do not emit explicit
+    -- parameter types — the type is inferred from the surrounding
+    -- function signature in the standard Aeneas backend, and we
+    -- match that shape.
+    let names := String.intercalate " " (params.toList.map (·.1))
+    s!"fun {names} => {body.toLeanDo}"
+  | .letPure name _ e1 e2 =>
+    -- M12.2a-2: non-monadic `let name := e1; e2`. Used inside a
+    -- do-block for the backward closure binding.
+    s!"let {name} := {e1.toLeanDo}\n  {e2.toLeanDo}"
+  | .letPat pat _ e1 e2 =>
+    -- M12.2a-2: monadic `let (p₁, ..., pₙ) ← e1; e2`. Standard
+    -- Aeneas backend uses `_` for the discard slot; we follow.
+    let pats := String.intercalate ", " pat.toList
+    s!"let ({pats}) ← {e1.toLeanDo}\n  {e2.toLeanDo}"
 
 /-- Non-monadic rendering. Retained for diagnostics; the Lean backend
     uses `toLeanDo` exclusively. -/
@@ -156,6 +188,18 @@ partial def PExpr.toLean : PExpr → String
   | .ok inner => s!".ok {inner.toLean}"
   | .ifThenElse c t e =>
     s!"if {c.toLean} then {t.toLean} else {e.toLean}"
+  | .tuple args =>
+    match args.toList with
+    | [e] => e.toLean
+    | _ => "(" ++ String.intercalate ", " (args.toList.map PExpr.toLean) ++ ")"
+  | .lam params body =>
+    let names := String.intercalate " " (params.toList.map (·.1))
+    s!"fun {names} => {body.toLean}"
+  | .letPure name _ e1 e2 =>
+    s!"let {name} := {e1.toLean}\n  {e2.toLean}"
+  | .letPat pat _ e1 e2 =>
+    let pats := String.intercalate ", " pat.toList
+    s!"let ({pats}) := {e1.toLean}\n  {e2.toLean}"
 
 /-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
     `def`. Empty when no `sourceSpan` is attached. -/

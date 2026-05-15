@@ -31,6 +31,12 @@ partial def PTy.toRust : PTy → String
   | .tuple args =>
     "(" ++ String.intercalate ", " (args.toList.map PTy.toRust) ++ ")"
   | .result inner => inner.toRust  -- M8: drop the Result wrapper
+  -- M12.2a-2: render as `Box<dyn Fn(α) -> β>` so the differential
+  -- test harness has *some* type to hang the closure off. Backward
+  -- closures don't naturally exist in the original Rust source —
+  -- the Rust model collapses them into a flat tuple-returning fn
+  -- anyway — so this is a best-effort fallback.
+  | .arrow dom cod => s!"Box<dyn Fn({dom.toRust}) -> {cod.toRust}>"
 
 def litToRust : Lit → String
   | .scalar k v => s!"{v}{IntKind.toRust k}"
@@ -89,6 +95,22 @@ partial def PExpr.toRust : PExpr → String
   | .ok inner => inner.toRust
   | .ifThenElse c t e =>
     "if " ++ c.toRust ++ " { " ++ t.toRust ++ " } else { " ++ e.toRust ++ " }"
+  -- M12.2a-2: best-effort transliteration for tuple / lambda / let
+  -- shapes that arrive via the backward-function machinery. The Rust
+  -- differential model is a coarse approximation here; the real
+  -- model swap is tracked in M13.
+  | .tuple args =>
+    match args.toList with
+    | [e] => e.toRust
+    | _ => "(" ++ String.intercalate ", " (args.toList.map PExpr.toRust) ++ ")"
+  | .lam params body =>
+    let names := String.intercalate ", " (params.toList.map (·.1))
+    s!"Box::new(move |{names}| {body.toRust})"
+  | .letPure name _ e1 e2 =>
+    s!"let {name} = {e1.toRust};\n    {e2.toRust}"
+  | .letPat pat _ e1 e2 =>
+    let pats := String.intercalate ", " pat.toList
+    s!"let ({pats}) = {e1.toRust};\n    {e2.toRust}"
 
 end AeneasCheck.Pure
 
