@@ -53,6 +53,14 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
           {
             csig_inputs = fdef.signature.inputs;
             csig_output = fdef.signature.output;
+            (* M9.5i: the function's type-parameter names live on
+               [fun_decl.generics], not [fun_sig] (Charon keeps the
+               value-level signature separate from the generics
+               binder; only [fun_decl] sees both). *)
+            csig_type_params =
+              List.map
+                (fun (tp : Types.type_param) -> tp.name)
+                fdef.generics.types;
           }
         in
         let source_span : CertEvent.cert_source_span option =
@@ -143,6 +151,14 @@ let collect_type_decls (crate : crate) : CertEvent.cert_type_decl list =
            ctd_id = Types.TypeDeclId.to_int td.def_id;
            ctd_name = bare_name;
            ctd_kind = kind;
+           (* M9.5i: emit the ADT's type-parameter names so the Lean
+              side can render `inductive Foo (T : Type) where ...`
+              and resolve `TVar (Free K)` inside variant payload
+              types to the K-th name. *)
+           ctd_type_params =
+             List.map
+               (fun (tp : Types.type_param) -> tp.name)
+               td.generics.types;
          })
 
 (** Run the interpreter on every function in the crate, capturing per-function

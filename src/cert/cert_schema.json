@@ -28,6 +28,11 @@
       "properties": {
         "id": { "type": "integer", "minimum": 0 },
         "name": { "type": "string" },
+        "type_params": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "M9.5i: ADT type-parameter names, in declaration order. Empty for monomorphic ADTs."
+        },
         "kind": {
           "oneOf": [
             { "const": "Opaque" },
@@ -101,7 +106,12 @@
           "items": { "type": "string" },
           "description": "Opaque pretty-printed LLBC type for each formal input."
         },
-        "output": { "type": "string" }
+        "output": { "type": "string" },
+        "type_params": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "M9.5i: function type-parameter names, in declaration order. Empty for monomorphic functions."
+        }
       }
     },
     "source_span": {

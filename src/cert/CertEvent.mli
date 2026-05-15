@@ -41,6 +41,7 @@ type cert_source_span = {
 type cert_signature = {
   csig_inputs : ty list;
   csig_output : ty;
+  csig_type_params : string list;
 }
 
 type event =
@@ -134,6 +135,7 @@ type cert_type_decl = {
   ctd_id : int;
   ctd_name : string;
   ctd_kind : cert_type_decl_kind;
+  ctd_type_params : string list;
 }
 
 type crate_cert = {

@@ -98,6 +98,12 @@ type cert_source_span = {
 type cert_signature = {
   csig_inputs : ty list;
   csig_output : ty;
+  (** [M9.5i] The function's type-parameter names, in declaration order.
+      For a generic Rust signature `fn get<T>(x: MyOption<T>, default: T) -> T`,
+      this carries `["T"]`; for a monomorphic function it is empty. The
+      Lean side renders these as implicit `{T : Type}` binders before the
+      value parameters. *)
+  csig_type_params : string list;
 }
 [@@deriving show]
 
@@ -291,6 +297,14 @@ type cert_type_decl = {
   ctd_id : int;
   ctd_name : string;
   ctd_kind : cert_type_decl_kind;
+  (** [M9.5i] The ADT's type-parameter names, in declaration order.
+      For `enum MyOption<T> { … }`, this is `["T"]`; for a monomorphic
+      struct (e.g. `Pair { fst: u32, snd: u32 }`) it is empty. The Lean
+      side renders these as `(T : Type)` parameters on the
+      `inductive` / `structure` declaration head, and variant payload
+      types referencing `TVar (Free K)` resolve to the K-th entry of
+      this list. *)
+  ctd_type_params : string list;
 }
 [@@deriving show]
 

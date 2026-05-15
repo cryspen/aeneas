@@ -169,6 +169,10 @@ let json_cert_signature (s : cert_signature) : Yojson.Basic.t =
     [
       "inputs", `List (List.map json_ty s.csig_inputs);
       "output", json_ty s.csig_output;
+      (* M9.5i: the function's type-parameter names, in declaration
+         order. Empty for monomorphic functions. *)
+      "type_params",
+        `List (List.map (fun n -> `String n) s.csig_type_params);
     ]
 
 (* ---------- Events ---------- *)
@@ -372,6 +376,10 @@ let json_cert_type_decl (d : cert_type_decl) : Yojson.Basic.t =
       "id", `Int d.ctd_id;
       "name", `String d.ctd_name;
       "kind", json_cert_type_decl_kind d.ctd_kind;
+      (* M9.5i: the ADT's type-parameter names, in declaration order.
+         Empty for monomorphic ADTs. *)
+      "type_params",
+        `List (List.map (fun n -> `String n) d.ctd_type_params);
     ]
 
 (* ---------- Top-level ---------- *)
