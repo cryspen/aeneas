@@ -38,6 +38,17 @@ type cert_sym_expr =
   | SymMutBorrowTok of borrow_id
       (** The token produced by a [&mut] of a place: the inner borrowed value
           flows back along this borrow id when the borrow ends. *)
+  | SymVariant of {
+      adt_id : int;
+      variant_id : int;
+      variant_name : string;
+    }
+      (** [M9.5d] A C-style enum-variant construction: the result of an
+          [Rvalue.Aggregate (AggregatedAdt (..., Some variant_id, None), [])]
+          with zero fields. The Lean translator renders this as
+          [<adt_name>.<variant_name>] (the adt name is resolved via
+          [adt_id] against the cert's type-decl table). Payload-bearing
+          variants (M9.5e+) extend this with a [fields] list. *)
 [@@deriving show]
 
 (** A coarse summary of the abstract state at a particular point.
@@ -194,6 +205,25 @@ type event =
           body events. Paired with the [EvLoopInv] for the same
           [loop_id]: the events between the two form the body the
           Lean translator extracts into a [<fn>_loop.body] decl. *)
+  | EvMatchArm of {
+      scrutinee : cert_sym_expr;
+      adt_id : int;
+      variant_id : int;
+      variant_name : string;
+    }
+      (** [M9.5d] Marks the start of one arm of a [match] on a
+          symbolic ADT scrutinee. Emitted once per arm by the OCaml
+          [Match] case in [InterpStatements.eval_switch] right
+          after the symbolic-value expansion and right before
+          evaluating the arm's body.
+
+          The Lean translator collects consecutive [EvMatchArm]
+          events with the same [scrutinee] symbolic-value id (and
+          their interleaved per-arm body events) into a single
+          [PExpr.match] expression. The closing of the match is
+          either an [EvJoin] (when the arms share a continuation)
+          or simply the end of each arm via [EvReturn] (the
+          all-arms-return shape, like our [flip] fixture). *)
 [@@deriving show]
 
 (** A per-function trace. *)
@@ -224,12 +254,22 @@ type cert_field = {
 }
 [@@deriving show]
 
-(** Kind of an ADT type declaration. M9.5b only carries [Struct]; later
-    milestones extend this with [Enum] (with variants), [Union], etc. The
-    Lean parser must tolerate unknown kinds gracefully so an early cert
-    can still be replayed by a future Lean checker. *)
+(** A variant of an enum-style ADT declaration. M9.5d only handles the
+    C-style case (zero fields); payload-bearing variants will later
+    populate [cv_fields]. *)
+type cert_variant = {
+  cv_id : int;
+  cv_name : string;
+  cv_fields : cert_field list;
+}
+[@@deriving show]
+
+(** Kind of an ADT type declaration. M9.5b carries [Struct]; M9.5d adds
+    [Enum] (with variants). Other shapes (unions, aliases) downgrade to
+    [Opaque] so the Lean parser can tolerate them. *)
 type cert_type_decl_kind =
   | CTDStruct of cert_field list
+  | CTDEnum of cert_variant list
   | CTDOpaque
 [@@deriving show]
 

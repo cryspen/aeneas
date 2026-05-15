@@ -48,6 +48,30 @@
                   }
                 }
               }
+            },
+            {
+              "type": "object",
+              "required": ["Enum"],
+              "properties": {
+                "Enum": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "name", "fields"],
+                    "properties": {
+                      "id": { "type": "integer", "minimum": 0 },
+                      "name": { "type": "string" },
+                      "fields": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": ["idx", "ty"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           ]
         }
@@ -118,7 +142,22 @@
         { "type": "object", "required": ["SymLit"], "properties": { "SymLit": { "$ref": "#/definitions/literal" } } },
         { "type": "object", "required": ["SymCopy"], "properties": { "SymCopy": { "$ref": "#/definitions/place" } } },
         { "type": "object", "required": ["SymMove"], "properties": { "SymMove": { "$ref": "#/definitions/place" } } },
-        { "type": "object", "required": ["SymMutBorrowTok"], "properties": { "SymMutBorrowTok": { "type": "integer" } } }
+        { "type": "object", "required": ["SymMutBorrowTok"], "properties": { "SymMutBorrowTok": { "type": "integer" } } },
+        {
+          "type": "object",
+          "required": ["SymVariant"],
+          "properties": {
+            "SymVariant": {
+              "type": "object",
+              "required": ["adt_id", "variant_id", "variant_name"],
+              "properties": {
+                "adt_id": { "type": "integer", "minimum": 0 },
+                "variant_id": { "type": "integer", "minimum": 0 },
+                "variant_name": { "type": "string" }
+              }
+            }
+          }
+        }
       ]
     },
     "literal": {
@@ -344,6 +383,22 @@
               "required": ["loop_id"],
               "properties": {
                 "loop_id": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["EvMatchArm"],
+          "properties": {
+            "EvMatchArm": {
+              "type": "object",
+              "required": ["scrutinee", "adt_id", "variant_id", "variant_name"],
+              "properties": {
+                "scrutinee": { "$ref": "#/definitions/sym_expr" },
+                "adt_id": { "type": "integer", "minimum": 0 },
+                "variant_id": { "type": "integer", "minimum": 0 },
+                "variant_name": { "type": "string" }
               }
             }
           }

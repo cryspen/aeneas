@@ -16,6 +16,11 @@ type cert_sym_expr =
   | SymCopy of cert_place
   | SymMove of cert_place
   | SymMutBorrowTok of borrow_id
+  | SymVariant of {
+      adt_id : int;
+      variant_id : int;
+      variant_name : string;
+    }
 
 type cert_state_summary = {
   cs_env : (local_id * cert_sym_expr) list;
@@ -91,6 +96,12 @@ type event =
       invariant : cert_state_summary;
     }
   | EvLoopEnd of { loop_id : loop_id }
+  | EvMatchArm of {
+      scrutinee : cert_sym_expr;
+      adt_id : int;
+      variant_id : int;
+      variant_name : string;
+    }
 
 type fun_cert = {
   fc_fn_id : fun_decl_id;
@@ -107,8 +118,15 @@ type cert_field = {
   cf_ty : ty;
 }
 
+type cert_variant = {
+  cv_id : int;
+  cv_name : string;
+  cv_fields : cert_field list;
+}
+
 type cert_type_decl_kind =
   | CTDStruct of cert_field list
+  | CTDEnum of cert_variant list
   | CTDOpaque
 
 type cert_type_decl = {

@@ -126,6 +126,17 @@ let rec json_cert_sym_expr (e : cert_sym_expr) : Yojson.Basic.t =
   | SymCopy p -> `Assoc [ "SymCopy", json_cert_place p ]
   | SymMove p -> `Assoc [ "SymMove", json_cert_place p ]
   | SymMutBorrowTok bid -> `Assoc [ "SymMutBorrowTok", json_borrow_id bid ]
+  | SymVariant { adt_id; variant_id; variant_name } ->
+      `Assoc
+        [
+          ( "SymVariant",
+            `Assoc
+              [
+                "adt_id", `Int adt_id;
+                "variant_id", `Int variant_id;
+                "variant_name", `String variant_name;
+              ] );
+        ]
 
 and json_cert_state_summary (s : cert_state_summary) : Yojson.Basic.t =
   `Assoc
@@ -312,6 +323,18 @@ let json_event (e : event) : Yojson.Basic.t =
           ( "EvLoopEnd",
             `Assoc [ "loop_id", json_loop_id loop_id ] );
         ]
+  | EvMatchArm { scrutinee; adt_id; variant_id; variant_name } ->
+      `Assoc
+        [
+          ( "EvMatchArm",
+            `Assoc
+              [
+                "scrutinee", json_cert_sym_expr scrutinee;
+                "adt_id", `Int adt_id;
+                "variant_id", `Int variant_id;
+                "variant_name", `String variant_name;
+              ] );
+        ]
 
 (* ---------- Type declarations (M9.5b) ---------- *)
 
@@ -326,10 +349,20 @@ let json_cert_field (f : cert_field) : Yojson.Basic.t =
      @ name_field
      @ [ "ty", json_ty f.cf_ty ])
 
+let json_cert_variant (v : cert_variant) : Yojson.Basic.t =
+  `Assoc
+    [
+      "id", `Int v.cv_id;
+      "name", `String v.cv_name;
+      "fields", `List (List.map json_cert_field v.cv_fields);
+    ]
+
 let json_cert_type_decl_kind (k : cert_type_decl_kind) : Yojson.Basic.t =
   match k with
   | CTDStruct fields ->
       `Assoc [ "Struct", `List (List.map json_cert_field fields) ]
+  | CTDEnum variants ->
+      `Assoc [ "Enum", `List (List.map json_cert_variant variants) ]
   | CTDOpaque -> `String "Opaque"
 
 let json_cert_type_decl (d : cert_type_decl) : Yojson.Basic.t =

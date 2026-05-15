@@ -115,6 +115,28 @@ let collect_type_decls (crate : crate) : CertEvent.cert_type_decl list =
                    fields
                in
                CTDStruct cert_fields
+           | Types.Enum variants ->
+               let cert_variants : CertEvent.cert_variant list =
+                 List.mapi
+                   (fun i (v : Types.variant) ->
+                     let cert_fields : CertEvent.cert_field list =
+                       List.mapi
+                         (fun j (f : Types.field) ->
+                           CertEvent.{
+                             cf_idx = j;
+                             cf_name = f.field_name;
+                             cf_ty = f.field_ty;
+                           })
+                         v.fields
+                     in
+                     CertEvent.{
+                       cv_id = i;
+                       cv_name = v.variant_name;
+                       cv_fields = cert_fields;
+                     })
+                   variants
+               in
+               CTDEnum cert_variants
            | _ -> CTDOpaque
          in
          {

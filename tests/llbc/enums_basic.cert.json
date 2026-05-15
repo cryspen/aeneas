@@ -1,0 +1,114 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "5d31aeff2bd4488aafd8a26e8a625481",
+  "type_decls": [
+    {
+      "id": 0,
+      "name": "Sign",
+      "kind": {
+        "Enum": [
+          { "id": 0, "name": "Pos", "fields": [] },
+          { "id": 1, "name": "Neg", "fields": [] },
+          { "id": 2, "name": "Zero", "fields": [] }
+        ]
+      }
+    }
+  ],
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "enums_basic::flip",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        ],
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+      },
+      "source_span": {
+        "file": "/Users/karthik/aeneas/tests/src/enums_basic.rs",
+        "beg_line": 15,
+        "beg_col": 0,
+        "end_line": 21,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 0,
+            "variant_name": "Pos"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymVariant": {
+                "adt_id": 0,
+                "variant_id": 1,
+                "variant_name": "Neg"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 1,
+            "variant_name": "Neg"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymVariant": {
+                "adt_id": 0,
+                "variant_id": 0,
+                "variant_name": "Pos"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 2,
+            "variant_name": "Zero"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymVariant": {
+                "adt_id": 0,
+                "variant_id": 2,
+                "variant_name": "Zero"
+              }
+            }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}

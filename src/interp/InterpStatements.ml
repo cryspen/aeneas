@@ -917,6 +917,47 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                         ctx_emit_event ctx
                           (CertEvent.EvAssign { dst = cp; rhs })
                     | _ -> ())
+               | Aggregate
+                   ( AggregatedAdt
+                       ( { id = TAdtId def_id; _ },
+                         Some variant_id,
+                         None ),
+                     [] ) ->
+                   (* M9.5d: a nullary-variant ADT construction (the
+                      RHS of `Sign::Pos` in a C-style enum match arm).
+                      Emit an `EvAssign dst=p rhs=SymVariant {…}` so
+                      the Lean translator's match-arm body picks up
+                      the constructor application.
+
+                      We don't fire this for tuple / struct aggregates
+                      (those produce VAdt values too but with non-empty
+                      [fields]); the M9.5b struct-update path already
+                      covers struct-shape rewrites via Field projections.
+                      Payload-bearing variants will need an extension
+                      that carries the fields. *)
+                   let type_decl =
+                     ctx_lookup_type_decl st.span ctx def_id
+                   in
+                   let variant_name =
+                     match type_decl.kind with
+                     | Enum variants ->
+                         (Types.VariantId.nth variants variant_id)
+                           .variant_name
+                     | _ -> "Variant"
+                   in
+                   (match CertEvent.cert_place_of_place p with
+                    | Some cp ->
+                        ctx_emit_event ctx
+                          (CertEvent.EvAssign
+                             { dst = cp
+                             ; rhs =
+                                 CertEvent.SymVariant
+                                   { adt_id = Types.TypeDeclId.to_int def_id
+                                   ; variant_id =
+                                       Types.VariantId.to_int variant_id
+                                   ; variant_name }
+                             })
+                    | None -> ())
                | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
                    (* M12.2a: a reborrow assignment `v@N := &mut *(local)`
                       previously emitted only an `EvMutBorrow` /
@@ -1221,10 +1262,74 @@ and eval_switch_raw (config : config) (span : Meta.span) (switch : switch) :
             let ctxl, cf_expand =
               expand_symbolic_adt span sv (Some (S.mk_mplace span p ctx)) ctx
             in
+            (* M9.5d cert hook: for each branch context, emit an
+               [EvMatchArm] event right before that arm's body events.
+               The scrutinee's symbolic id [sv.sv_id] groups all arms
+               together; the variant id (read out of the just-expanded
+               value at place [p]) labels each arm.
+
+               The Lean translator collects consecutive [EvMatchArm]s
+               with the same scrutinee into a single [PExpr.match]
+               expression. Falls through (no event emitted) for
+               non-enum ADTs (struct match, which the M9.5b struct
+               support handles separately) and for unexpected shapes.
+
+               We interleave the emission with the per-branch eval
+               (the emit happens immediately before that branch's
+               body events) so the per-arm event ranges are linear
+               in the trace. The cert event buffer is a single ref
+               shared across all derived contexts, so emitting from
+               within [List.map] writes into the same trail. *)
+            let adt_def_id : Types.TypeDeclId.id option =
+              match sv.sv_ty with
+              | TAdt { id = TAdtId def_id; _ } -> Some def_id
+              | _ -> None
+            in
+            let variants : Types.variant list option =
+              match adt_def_id with
+              | None -> None
+              | Some def_id ->
+                  let td = ctx_lookup_type_decl span ctx def_id in
+                  (match td.kind with
+                   | Enum vs -> Some vs
+                   | _ -> None)
+            in
+            let read_variant_id (c : eval_ctx) :
+                Types.VariantId.id option =
+              try
+                let _, v, _, _ =
+                  access_rplace_reorganize_and_read config span
+                    expand_prim_copy access p c
+                in
+                let v = value_strip_shared_loans v in
+                match v.value with
+                | VAdt { variant_id; _ } -> variant_id
+                | _ -> None
+              with _ -> None
+            in
+            let emit_arm_marker (c : eval_ctx) : unit =
+              match adt_def_id, variants, read_variant_id c with
+              | Some def_id, Some vs, Some vid ->
+                  let variant_name =
+                    try (Types.VariantId.nth vs vid).variant_name
+                    with _ -> "Variant"
+                  in
+                  ctx_emit_event c
+                    (CertEvent.EvMatchArm
+                       { scrutinee = CertEvent.SymVal sv.sv_id
+                       ; adt_id = Types.TypeDeclId.to_int def_id
+                       ; variant_id = Types.VariantId.to_int vid
+                       ; variant_name })
+              | _ -> ()
+            in
             (* Re-evaluate the switch - the value is not symbolic anymore,
                which means we will go to the other branch *)
             let resl =
-              List.map (fun ctx -> (eval_switch config span switch) ctx) ctxl
+              List.map
+                (fun ctx ->
+                  emit_arm_marker ctx;
+                  (eval_switch config span switch) ctx)
+                ctxl
             in
             (* Should we join the contexts after the match? *)
             let join =
