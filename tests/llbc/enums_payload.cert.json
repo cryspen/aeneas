@@ -1,6 +1,6 @@
 {
   "fmt_version": 1,
-  "crate_hash": "b70f9158a9dc58c851955a4e1f04f942",
+  "crate_hash": "2c33050d4953bf22a75c5dcb56ed64cc",
   "type_decls": [
     {
       "id": 0,
@@ -125,6 +125,132 @@
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
             "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "enums_payload::wrap",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        ],
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+      },
+      "source_span": {
+        "file": "tests/src/enums_payload.rs",
+        "beg_line": 19,
+        "beg_col": 0,
+        "end_line": 21,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymVariant": {
+                "adt_id": 0,
+                "variant_id": 0,
+                "variant_name": "Num",
+                "fields": [
+                  {
+                    "SymMove": {
+                      "local": 2,
+                      "projection": [],
+                      "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "enums_payload::zero",
+      "signature": {
+        "inputs": [],
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+      },
+      "source_span": {
+        "file": "tests/src/enums_payload.rs",
+        "beg_line": 23,
+        "beg_col": 0,
+        "end_line": 25,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymVariant": {
+                "adt_id": 0,
+                "variant_id": 1,
+                "variant_name": "Zero",
+                "fields": []
+              }
+            }
           }
         },
         "EvReturn"

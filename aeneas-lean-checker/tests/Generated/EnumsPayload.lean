@@ -25,4 +25,14 @@ def value (x1 : NumOrZero) : Result Std.U32 := do
   | NumOrZero.Num x2 => ok x2
   | NumOrZero.Zero => ok (0 : Std.U32)
 
+/-- [enums_payload::wrap]:
+    Source: 'tests/src/enums_payload.rs', lines 19:0-21:1 -/
+def wrap (x1 : Std.U32) : Result NumOrZero := do
+  ok (NumOrZero.Num x1)
+
+/-- [enums_payload::zero]:
+    Source: 'tests/src/enums_payload.rs', lines 23:0-25:1 -/
+def zero : Result NumOrZero := do
+  ok NumOrZero.Zero
+
 end enums_payload

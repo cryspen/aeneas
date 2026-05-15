@@ -15,3 +15,11 @@ pub fn value(x: NumOrZero) -> u32 {
         NumOrZero::Zero => 0,
     }
 }
+
+pub fn wrap(x: u32) -> NumOrZero {
+    NumOrZero::Num(x)
+}
+
+pub fn zero() -> NumOrZero {
+    NumOrZero::Zero
+}
