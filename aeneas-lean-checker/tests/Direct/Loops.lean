@@ -78,7 +78,7 @@ def main : IO Unit := do
       -- Top-level: forwards inputs + initial state to the wrapper.
       "@[reducible]",
       "def count_to (x1 : Std.U32) : Result Std.U32 := do",
-      "(count_to_loop x1 (0 : Std.U32))"
+      "(count_to_loop x1 0#u32)"
     ]
     for c in mustContain do
       if (src.splitOn c).length < 2 then

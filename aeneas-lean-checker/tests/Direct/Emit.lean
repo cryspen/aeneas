@@ -29,8 +29,8 @@ def main : IO Unit := do
       "def incr_local (x1 : Std.U32) : Result Std.U32 := do",
       -- M10.0: the cert now carries the `*x += 1` binop, so the body
       -- contains an additive expression — both functions translate
-      -- to the same surface shape `(x1 + (1 : Std.U32))`.
-      "(x1 + (1 : Std.U32))",
+      -- to the same surface shape `(x1 + 1#u32)`.
+      "(x1 + 1#u32)",
       "end incr_cert"
     ]
     let mut ok := true

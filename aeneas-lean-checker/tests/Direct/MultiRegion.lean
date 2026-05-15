@@ -59,8 +59,8 @@ def main : IO Unit := do
       "def use_swap_pair (x1 : Std.U32) (x2 : Std.U32) : Result (Std.U32 × Std.U32)",
       "let (x1_post_v, x1_post_back0, x1_post_back1) ← (multi_region.swap_pair x1 x2)",
       -- Tail tuple built from both back-closure applications.
-      "x1_post_back0 (7 : Std.U32)",
-      "x1_post_back1 (9 : Std.U32)"
+      "x1_post_back0 7#u32",
+      "x1_post_back1 9#u32"
     ]
     for c in mustContain do
       if (src.splitOn c).length < 2 then

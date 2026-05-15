@@ -20,7 +20,7 @@ The Lean translator turns these into:
 
 Pre-M9.5o the same fixture produced `__UnknownSelf.Insts.Blanket_implTrait2`
 (no Self resolution), no trait-bound binders, no `.default` rename, and
-a unit-body that emitted `ok (0 : Std.U32)` instead of `ok ()`.
+a unit-body that emitted `ok 0#u32` instead of `ok ()`.
 -/
 
 open AeneasCheck Json LLBCSharp Typecheck Translate Backends
@@ -90,7 +90,7 @@ def main : IO Unit := do
       -- Default method: explicit (Self : Type) binder, no trait
       -- instance binder (Trait2::foo's body doesn't use Self).
       "def Trait2.foo.default (Self : Type) : Result Unit",
-      -- Default method body emits `ok ()` (was `ok (0 : Std.U32)` pre-M9.5o).
+      -- Default method body emits `ok ()` (was `ok 0#u32` pre-M9.5o).
       "  ok ()",
       -- Blanket impl method body carries the trait-clause binder.
       "def Trait2.Blanket.foo {T : Type} (Trait1Inst : Trait1 T) : Result Unit",
@@ -107,7 +107,7 @@ def main : IO Unit := do
       -- missing Self resolution for blanket impls.
       "__UnknownSelf",
       -- The unit-body bug: a `foo()` should never tail with a U32 zero.
-      "ok (0 : Std.U32)",
+      "ok 0#u32",
       -- Pre-M9.5o the default body was emitted at the wrong header.
       "def Trait2.foo {Self : Type} : Result Unit",
       -- Pre-M9.5o the impl decl had `: Trait2 Unit` (Self defaulted

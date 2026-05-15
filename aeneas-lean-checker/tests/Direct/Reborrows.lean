@@ -69,7 +69,7 @@ def main : IO Unit := do
   else
     throw <| IO.userError "expected a nested reborrow (child of an earlier reborrow)"
   -- M9.5a: `reborrow_chain(x: &mut u32) { let s = &mut *x; *s = 7; }`
-  -- must emit `ok (7 : Std.U32)` as the body, not a phantom `ok ret`
+  -- must emit `ok 7#u32` as the body, not a phantom `ok ret`
   -- or some other broken tail. The deref-write through the reborrow
   -- chain must propagate to the input's vm slot so the unit-output
   -- back-closure builder sees the right post-state.
@@ -103,7 +103,7 @@ def main : IO Unit := do
     let mustContain : List String := [
       -- M9.5a, unchanged.
       "def reborrow_chain (x1 : Std.U32) : Result Std.U32 := do",
-      "ok (7 : Std.U32)",
+      "ok 7#u32",
       -- M9.5b: struct decl emitted ahead of any function that uses it.
       "structure Pair where",
       "  fst : Std.U32",

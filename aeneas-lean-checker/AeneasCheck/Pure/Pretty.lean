@@ -90,8 +90,15 @@ partial def PTy.toLean : PTy → String
   | .tyVar name => name
 
 def litToLean : Lit → String
+  -- M9.5q-2: emit the standard Aeneas backend's literal-suffix style
+  -- `N#kind` (e.g. `0#u32`, `7#i32`, `16#usize`) instead of the
+  -- pre-M9.5q `(N : Std.K)` form. Aeneas's runtime defines these as
+  -- coercion sugar so both forms elaborate identically; matching the
+  -- standard form removes literal-style noise from `compare-backends`
+  -- diffs across every fixture. The kind suffix is the Rust spelling
+  -- already used by [IntKind.toRust].
   | .scalar k v =>
-    s!"({v} : Std.{IntKind.toLean k})"
+    s!"{v}#{IntKind.toRust k}"
   | .bool b => toString b
   | .char c => s!"⟨{c}⟩"
   | .str s => s!"\"{s}\""

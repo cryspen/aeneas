@@ -65,7 +65,7 @@ def main : IO Unit := do
   | .ok tc =>
     let src := emitTranslatedCrate "aggregates_basic" tc
     -- Param-name (`x1` / `x2` vs the Rust source's `x` / `y`) and
-    -- literal-style (`(0 : Std.Usize)` vs `0#usize`) cosmetic diffs
+    -- literal-style (`0#usize` vs `0#usize`) cosmetic diffs
     -- are allowed per the M9.5p done criteria.
     let mustContain : List String := [
       -- Tuple aggregate: signature carries a `Std.U32 × Std.U32` and

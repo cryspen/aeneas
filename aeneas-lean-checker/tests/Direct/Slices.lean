@@ -78,7 +78,7 @@ def main : IO Unit := do
     throw <| IO.userError s!"expected 1 @SliceIndexMut event, saw {nMut}"
   -- End-to-end: translate + emit, then assert on the rendered source.
   -- Param-name (`x1`/`x2`/`x3` vs. Rust source names `xs`/`i`/`v`)
-  -- and literal-style (`(0 : Std.Usize)` vs `0#usize`) cosmetic
+  -- and literal-style (`0#usize` vs `0#usize`) cosmetic
   -- diffs are allowed per the M9.5g done criteria.
   match translateCrate cc with
   | .error e => throw <| IO.userError s!"translate failed: {e}"
@@ -87,11 +87,11 @@ def main : IO Unit := do
     let mustContain : List String := [
       -- get_first: `&[u32] -> u32` lowers to `Slice Std.U32 ->
       -- Result Std.U32` with a single `Slice.index_usize` call in
-      -- the body. The `(0 : Std.Usize)` literal style is the
+      -- the body. The `0#usize` literal style is the
       -- checker's; the standard backend prints `0#usize` — both
       -- elaborate identically against the RuntimeShim.
       "def get_first (x1 : Slice Std.U32) : Result Std.U32 := do",
-      "Slice.index_usize x1 (0 : Std.Usize)",
+      "Slice.index_usize x1 0#usize",
       -- set_idx_slice: `&mut [u32]` post-state surfaces as the bare
       -- `Slice Std.U32`. The body is a single `Slice.update`
       -- call. As with M9.5c's `Array.update`, the outer parens

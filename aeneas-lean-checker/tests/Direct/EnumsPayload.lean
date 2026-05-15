@@ -145,7 +145,7 @@ def main : IO Unit := do
       "def value (x1 : NumOrZero) : Result Std.U32 := do",
       "match x1 with",
       "| NumOrZero.Num x2 => ok x2",
-      "| NumOrZero.Zero => ok (0 : Std.U32)",
+      "| NumOrZero.Zero => ok 0#u32",
       -- wrap (M9.5f): payload-bearing variant *construction*. The
       -- signature flips from `value`: a `Std.U32` in, a
       -- `Result NumOrZero` out (no parens around the ret type —

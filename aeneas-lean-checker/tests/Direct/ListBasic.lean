@@ -135,8 +135,8 @@ def main : IO Unit := do
       "match x1 with",
       "| List.Cons x2 x3 =>",
       "let t0 ← (list_basic.list_len x3)",
-      "(core.num.U32.wrapping_add t0 (1 : Std.U32))",
-      "| List.Nil => ok (0 : Std.U32)",
+      "(core.num.U32.wrapping_add t0 1#u32)",
+      "| List.Nil => ok 0#u32",
       -- The `partial_fixpoint` trailer, at column 0 on its own line.
       -- The standard Aeneas backend emits this for recursive defs.
       "partial_fixpoint"

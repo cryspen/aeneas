@@ -69,13 +69,13 @@ def main : IO Unit := do
       -- inlines the second shift as the bare do-tail and the first
       -- shift remains a `let t0 ← …`. The standard backend's output
       -- is structurally identical (modulo cosmetic literal rendering
-      -- — `(16 : Std.Usize)` vs `16#usize`).
+      -- — `16#usize` vs `16#usize`).
       "def shift_u32 (x1 : Std.U32) : Result Std.U32 := do",
-      "let t0 ← (x1 >>> (16 : Std.Usize))",
-      "(t0 <<< (16 : Std.Usize))",
+      "let t0 ← (x1 >>> 16#usize)",
+      "(t0 <<< 16#usize)",
       "def shift_i32 (x1 : Std.I32) : Result Std.I32 := do",
-      "let t0 ← (x1 >>> (16 : Std.Isize))",
-      "(t0 <<< (16 : Std.Isize))"
+      "let t0 ← (x1 >>> 16#isize)",
+      "(t0 <<< 16#isize)"
     ]
     for c in mustContain do
       if (src.splitOn c).length < 2 then
@@ -99,8 +99,8 @@ def main : IO Unit := do
       "let t0 ← (x1 ||| x2)",
       -- A redundant `ok tN` tail after the LAST shift binding would
       -- mean the last-binding collapse misfired on the shift case.
-      "(t0 <<< (16 : Std.Usize))\n  ok",
-      "(t0 <<< (16 : Std.Isize))\n  ok"
+      "(t0 <<< 16#usize)\n  ok",
+      "(t0 <<< 16#isize)\n  ok"
     ]
     for c in mustNotContain do
       if (src.splitOn c).length ≥ 2 then

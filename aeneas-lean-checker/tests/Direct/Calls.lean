@@ -172,7 +172,7 @@ def main : IO Unit := do
     let mustContain : List String := [
       "def use_choose (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result (Std.U32 × Std.U32)",
       "let (x1_post_v, x1_post_back) ← (calls.choose x1 x2 x3)",
-      "ok (x1_post_back (7 : Std.U32))"
+      "ok (x1_post_back 7#u32)"
     ]
     for c in mustContain do
       if (src.splitOn c).length < 2 then

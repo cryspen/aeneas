@@ -65,7 +65,7 @@ def main : IO Unit := do
       "match x1 with",
       "| GList.GCons x2 x3 =>",
       "let t0 ← (list_generic.glist_len x3)",
-      "| GList.GNil => ok (0 : Std.U32)",
+      "| GList.GNil => ok 0#u32",
       "partial_fixpoint"
     ]
     let mustNotContain : List String := [
