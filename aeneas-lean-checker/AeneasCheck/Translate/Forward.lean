@@ -125,6 +125,32 @@ def parseTAdtId (s : String) : Option Nat :=
 def isTupleAdt (s : String) : Bool :=
   (s.splitOn "TTuple").length ≥ 2
 
+/-- M9.5c: parse the length of a `TArray (...elem..., { ... CLiteral
+    (VScalar (UnsignedScalar (Usize, N))); ...})` opaque string. The
+    `N` is the const-generic length. We do a substring scan for
+    `UnsignedScalar (` and then look for `Usize, ` followed by digits.
+    Returns `none` if the pattern isn't found. -/
+def parseArrayLen (s : String) : Option Nat :=
+  -- The const-generic length is always rendered as
+  -- `UnsignedScalar (Generated_Values.Usize, N)` for our fixtures
+  -- (signed-indexed arrays are unusual in Rust). We anchor on
+  -- `Usize, ` since that's the unique-enough prefix in the array
+  -- branch. (Outside `TArray`, the same string never appears.)
+  let parts := s.splitOn "Usize, "
+  match parts with
+  | _ :: rest :: _ =>
+    let digits := (rest.dropWhile Char.isWhitespace).takeWhile Char.isDigit
+    if digits.isEmpty then none else digits.toNat?
+  | _ => none
+
+/-- M9.5c: detect a `TArray` opaque type. Used to gate the
+    array-aware branch of [rawTyToPTyWith]; without this guard, the
+    catch-all `Usize` substring check downstream incorrectly classifies
+    `[u32; 4]` as a bare `Std.Usize` (because the const-generic length
+    carries a `Usize` tag). -/
+def isArrayTy (s : String) : Bool :=
+  (s.splitOn "TArray").length ≥ 2
+
 /-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping. Resolves
     `TAdtId N` references via [tdm]; falls back to the legacy
     substring-keyed heuristic when the type is a literal or contains
@@ -143,7 +169,32 @@ def isTupleAdt (s : String) : Bool :=
     `TAdtId 0` substring can still appear inside *generic* args. -/
 def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy
   | .opaque s =>
-    if (s.splitOn "TBool").length ≥ 2 then .lit .bool
+    -- M9.5c: TArray must come first. The const-generic length section
+    -- includes a `Usize` tag, which would otherwise be misclassified
+    -- as a bare `Usize` literal by the catch-all below.
+    if isArrayTy s then
+      -- For now we only carry element-kind information at the
+      -- token-level (U32 / U64 / U8 / U16 / Usize / I32 / Bool); a
+      -- full TArray opaque string for `[u32; 4]` starts with the
+      -- element type before the const-generic block, so a substring
+      -- scan picks the right one. Order tokens so the longer/less-
+      -- ambiguous ones win: `U64` before `U8`, etc. (`Usize` appears
+      -- in the length section too, so we deliberately skip it here —
+      -- a `[usize; N]` array would need a separate fixture to test.)
+      --
+      -- For unrecognised element types, fall back to `u32`; this
+      -- mirrors the catch-all in the non-array branch and keeps the
+      -- pipeline running for shapes the test fixtures don't exercise.
+      let elem : PTy :=
+        if (s.splitOn "TBool").length ≥ 2 then .lit .bool
+        else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
+        else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)
+        else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
+        else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
+        else if (s.splitOn "U32").length ≥ 2 then .lit (.int .u32)
+        else .lit (.int .u32)
+      .array elem ((parseArrayLen s).getD 0)
+    else if (s.splitOn "TBool").length ≥ 2 then .lit .bool
     else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
     else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)
     else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
@@ -358,6 +409,17 @@ structure WalkState where
       with the right field name. Also used by [rawTyToPTyWith] when
       mapping signature inputs/outputs. -/
   tdm : TypeDeclMap := {}
+  /-- M9.5c: in-flight `@ArrayIndexMut` calls. Keyed by the call's
+      destination local (the temp that holds the returned
+      `&mut elem`); the payload carries the *array* expression,
+      the *index* expression, and (when known) the array's root
+      input-parameter local id. The translator does not emit a
+      binding at EvCall time — `index_mut` followed by a deref-
+      assign lowers directly to `Array.update <array> <idx> <rhs>`,
+      which is the standard backend's shape. The pending entry is
+      consumed (and emitted as a regular monadic let) by the
+      subsequent deref-write through the call's dst local. -/
+  arrayIndexMut : Std.HashMap Nat (PExpr × PExpr × Option Nat) := {}
   deriving Inhabited
 
 namespace WalkState
@@ -602,6 +664,31 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         vm := st.vm.insert d.local_ suExpr
         lastWrite := some d.local_ }
     else if derefTail then
+      -- M9.5c: deref-write through the result of an earlier
+      -- `@ArrayIndexMut` call. Emit a single `Array.update <array>
+      -- <idx> <rhs>` monadic binding and thread the updated array
+      -- back into its input local. This collapses the
+      -- Charon-emitted `index_mut + deref-store` pair into the
+      -- standard backend's idiomatic shape.
+      match st.arrayIndexMut[d.local_]? with
+      | some (arrayE, idxE, arrayRoot) =>
+        -- Build `Array.update <arrayE> <idxE> <rhsE>`. The result
+        -- (the updated array) gets bound to a fresh name and routed
+        -- into the array's root input local so the function tail
+        -- picks it up.
+        let updateApp : PExpr :=
+          .app "Array.update" #[arrayE, idxE, rhsE]
+        let (nm, st') := st.freshName
+        let vm' :=
+          match arrayRoot with
+          | some r => (st'.vm.insert r (.var nm)).insert d.local_ (.var nm)
+          | none => st'.vm.insert d.local_ (.var nm)
+        { st' with
+          binds := st'.binds.push (.regular nm updateApp)
+          vm := vm'
+          arrayIndexMut := st'.arrayIndexMut.erase d.local_
+          lastWrite := arrayRoot.orElse (fun _ => some d.local_) }
+      | none =>
       match st.callBack[d.local_]? with
       | some backName =>
         -- The backward closure was bound as `<backName> : T → tuple`.
@@ -674,6 +761,43 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- below; they don't affect the per-local value map.
   | .assert _ _ | .panic | .retn => st
   | .call _ callId fnName args dst regionAbs =>
+    -- M9.5c: intercept Charon's builtin `@ArrayIndexMut` ahead of the
+    -- generic call machinery. The standard Aeneas backend lowers
+    -- `xs[i] = v` (which compiles to `index_mut` + a deref-store) to a
+    -- single `Array.update xs i v` call returning the whole updated
+    -- array. We do the same here: stash the call's array/index args
+    -- so the subsequent deref-EvAssign through `dst.local_` can emit
+    -- `let nm ← Array.update <array> <idx> <rhs>` and thread `nm`
+    -- back into the array's input slot. NO binding is emitted at
+    -- EvCall time; without this guard we'd otherwise produce the
+    -- generic `(forward, backward)`-pair shape that doesn't apply to
+    -- arrays (since `index_mut` followed by a write IS the update —
+    -- there's no "value side" to keep).
+    if fnName == "@ArrayIndexMut" && args.size == 2 then
+      let argEs := args.map (lookupSymExpr st.vm)
+      let arrayE := argEs[0]!
+      let idxE := argEs[1]!
+      -- Identify the array's root input-parameter local so we can
+      -- write the updated array back into it (and pick it up as the
+      -- function's tail value). Two signals:
+      --   * the arg's PExpr is `.var "xK"` for some param K (the
+      --     M12.2a-1 cert hook makes this almost always true for
+      --     borrow-typed temps);
+      --   * the arg's place root maps to an input local in vm.
+      let paramNameOfPExpr : PExpr → Option Nat := fun e =>
+        match e with
+        | .var name =>
+          if name.length ≥ 2 && name.front == 'x' then
+            match (name.drop 1).toNat? with
+            | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+            | none => none
+          else none
+        | _ => none
+      let arrayRoot : Option Nat :=
+        paramNameOfPExpr arrayE
+      { st with
+        arrayIndexMut := st.arrayIndexMut.insert dst.local_ (arrayE, idxE, arrayRoot) }
+    else
     -- M10.1+M10.2b: forward call.
     --
     -- We always emit the call's binding eagerly here so subsequent
