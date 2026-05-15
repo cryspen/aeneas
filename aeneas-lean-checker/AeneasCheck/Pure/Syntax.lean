@@ -97,6 +97,11 @@ structure Decl where
   body : PExpr
   sourceSpan : Option Raw.SourceSpan := none
   note : Option String := none
+  /-- M12.1: Lean attribute names to attach to the `def`. Rendered as
+      `@[a1, a2, ...]\n` immediately before `def`. The standard
+      Aeneas backend uses this for `rust_loop` / `rust_loop_body` /
+      `reducible` on the synthesised loop decls. -/
+  attributes : Array String := #[]
   deriving Repr, Inhabited
 
 end AeneasCheck.Pure

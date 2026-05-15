@@ -103,6 +103,17 @@ def sanitizeCallName (n : String) : String :=
     if bareInts.contains p then p.capitalize else p
   String.intercalate "." parts
 
+/-- M12.1: a sub-expression used as a function-application argument
+    needs to render with surrounding parens when its Lean form would
+    otherwise be parsed as a multi-token construct (lambda, if/else,
+    let, …). We pre-parenthesise such forms so `app head [arg1, …]`
+    can space-join its args safely. -/
+private partial def parenIfNeeded (s : String) (e : PExpr) : String :=
+  match e with
+  | .lam _ _ | .ifThenElse _ _ _ | .letIn _ _ _ _
+  | .letPure _ _ _ _ | .letPat _ _ _ _ => "(" ++ s ++ ")"
+  | _ => s
+
 /-- Expression form used inside a `do`-block: tail `.ok` becomes a
     bare `ok …` (Result is opened), let-bindings become monadic
     `let … ← …`, binary operators render with the matching infix or
@@ -124,7 +135,8 @@ partial def PExpr.toLeanDo : PExpr → String
         | none => sanitizeCallName head
       if args.isEmpty then head
       else "(" ++ head ++ " " ++
-        String.intercalate " " (args.toList.map PExpr.toLeanDo) ++ ")"
+        String.intercalate " " (args.toList.map fun a =>
+          parenIfNeeded (PExpr.toLeanDo a) a) ++ ")"
   | .letIn name _ e1 e2 =>
     -- Inner expressions in a monadic let bind a Result-valued
     -- computation; emit a `let … ←` form. Tail position is e2.
@@ -144,13 +156,40 @@ partial def PExpr.toLeanDo : PExpr → String
     -- branches is `if c then <e1> else <e2>`. We keep that when both
     -- branches are single-line; otherwise unfold into a multi-line
     -- `if c\n  then …\n  else …` form.
+    --
+    -- M12.1: when a branch is itself a multi-line do-block (e.g. a
+    -- `let t ← e` followed by `ok …`), every continuation line
+    -- needs to be re-indented to sit under the `then`/`else` body
+    -- start. We splice in the appropriate indent (the `t` of `then `
+    -- is column 7 from the start of the `if`). The standard backend
+    -- aligns the continuation under the body start, e.g.
+    --     then let i1 ← i + 1#u32
+    --          ok (cont i1)
+    -- where "ok" sits in column 12. We approximate by using the
+    -- standard backend's exact column count.
     let thenS := thenE.toLeanDo
     let elseS := elseE.toLeanDo
     let isSimple (s : String) : Bool := !s.contains '\n'
+    -- Continuation-line indent for a `then ` prefix: 7 spaces puts
+    -- subsequent lines under the body start. For `else ` we use 7
+    -- spaces too (alignment with `else`'s body start).
+    let reindent (prefixLen : Nat) (s : String) : String :=
+      let pad := "".pushn ' ' prefixLen
+      let lines := s.splitOn "\n"
+      (lines.zipIdx).foldl (init := "") fun acc (line, i) =>
+        if i = 0 then line
+        -- Drop the leading "  " (the do-block sub-line indent) and
+        -- replace with our pad. If the line doesn't start with "  ",
+        -- leave it alone.
+        else
+          let stripped := if line.startsWith "  " then line.drop 2 else line
+          acc ++ "\n" ++ pad ++ stripped
     if isSimple thenS && isSimple elseS then
       s!"if {cond.toLeanDo} then {thenS} else {elseS}"
     else
-      s!"if {cond.toLeanDo}\n  then {thenS}\n  else {elseS}"
+      let thenLines := reindent 7 thenS
+      let elseLines := reindent 7 elseS
+      s!"if {cond.toLeanDo}\n  then {thenLines}\n  else {elseLines}"
   | .tuple args =>
     -- M12.2a-2: render `(e₁, e₂, ...)`. Single-element tuples are
     -- syntactically forbidden in Lean; we render them as the bare
@@ -219,12 +258,23 @@ def Decl.noteBlock (d : Decl) : String :=
   | none => ""
   | some n => s!"/- TRANSLATOR NOTE: {n} -/\n"
 
+/-- Render the optional Lean attribute prefix, e.g. `@[rust_loop]\n`
+    or `@[rust_loop_body, reducible]\n`. Empty when no attributes. -/
+def Decl.attrPrefix (d : Decl) : String :=
+  if d.attributes.isEmpty then ""
+  else s!"@[{String.intercalate ", " d.attributes.toList}]\n"
+
 /-- Render the Lean `def …` for `d`, with monadic body. The signature
-    matches the standard Aeneas backend's output (Result, do-block). -/
+    matches the standard Aeneas backend's output (Result, do-block).
+
+    M12.1: the order is docComment → noteBlock → attrPrefix → def.
+    The docstring `/-- … -/` must lead so Lean's parser attaches it
+    to the `def`; attributes (`@[rust_loop]`, …) come immediately
+    before `def`. -/
 def Decl.toLean (d : Decl) : String :=
   let params := String.intercalate " "
     (d.params.toList.map fun p => s!"({p.name} : {p.ty.toLean})")
-  d.noteBlock ++ d.docComment ++
+  d.docComment ++ d.noteBlock ++ d.attrPrefix ++
   s!"def {d.name} {params} : Result {d.retTy.toLean} := do\n  {d.body.toLeanDo}"
 
 end AeneasCheck.Pure

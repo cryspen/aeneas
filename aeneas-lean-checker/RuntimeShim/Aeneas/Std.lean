@@ -1,3 +1,5 @@
+import Lean
+
 /-!
 Minimal `Aeneas.Std` runtime shim for the aeneas-lean-checker tests.
 
@@ -17,23 +19,23 @@ namespace Std
 /-! ## Scalar types -/
 
 /-- Unsigned 8-bit. -/
-def U8   : Type := UInt8
+@[reducible] def U8   : Type := UInt8
 /-- Unsigned 16-bit. -/
-def U16  : Type := UInt16
+@[reducible] def U16  : Type := UInt16
 /-- Unsigned 32-bit. -/
-def U32  : Type := UInt32
+@[reducible] def U32  : Type := UInt32
 /-- Unsigned 64-bit. -/
-def U64  : Type := UInt64
+@[reducible] def U64  : Type := UInt64
 /-- Pointer-sized unsigned. -/
-def Usize : Type := USize
+@[reducible] def Usize : Type := USize
 
-def I8   : Type := Int8
-def I16  : Type := Int16
-def I32  : Type := Int32
-def I64  : Type := Int64
+@[reducible] def I8   : Type := Int8
+@[reducible] def I16  : Type := Int16
+@[reducible] def I32  : Type := Int32
+@[reducible] def I64  : Type := Int64
 /-- Pointer-sized signed. (No Int8 alias for ISize in the shim — we
     use `ISize` from core.) -/
-def Isize : Type := ISize
+@[reducible] def Isize : Type := ISize
 
 -- Re-derive OfNat through the underlying types so literals like
 -- `(0 : Std.U32)` resolve to the UInt32 OfNat instance.
@@ -53,11 +55,15 @@ instance (n : Nat) [OfNat UInt64 n] : OfNat U64 n  := inferInstanceAs (OfNat UIn
 /-! ## ControlFlow
 
 The standard Aeneas backend opens `ControlFlow` as part of its
-header. The shim exposes it as an empty namespace — the placeholder
-emitter never references any of its constructors, but the `open`
-line still needs to resolve. -/
+header. M12.1 needs the real two-constructor inductive (`cont` for
+continue, `done` for break) so the loop body translation can return
+`Result (ControlFlow α β)`. Constructors match
+`backends/lean/Aeneas/Std/Primitives.lean::ControlFlow`. -/
 
-namespace ControlFlow end ControlFlow
+inductive ControlFlow (α : Type) (β : Type) where
+  | cont (v : α)
+  | done (v : β)
+  deriving Repr
 
 /-! ## Result monad -/
 
@@ -79,6 +85,10 @@ inductive Result (α : Type) where
   | ok (value : α)
   | error (e : Error)
   deriving Repr
+
+-- M12.1: needed so `partial def loop` can synthesize a default
+-- inhabitant for its return type.
+instance : Inhabited (Result α) := ⟨.error .panic⟩
 
 namespace Result
 
@@ -124,8 +134,42 @@ instance : HSub U64 U64 (Result U64) :=
 instance : HMul U64 U64 (Result U64) :=
   ⟨liftRes2 (UInt64.mul : UInt64 → UInt64 → UInt64)⟩
 
+-- M12.1: comparison instances. Generated Lean from the loop
+-- translation uses `if i < n then ...` directly (bool-returning LT),
+-- so we forward to the underlying UInt32 instance. Since
+-- `U32 := UInt32` is definitionally equal, the underlying instance
+-- is *already* discovered for `Std.U32`; we don't need explicit
+-- wrappers. (Earlier the alias was hidden behind a separate `def`,
+-- which is why this needs a comment — the natural answer "just
+-- inferInstance works" looks like nothing.) Future refactors that
+-- change `U32` to a structure wrapper will need to re-expose LT/LE/
+-- Decidable here.
+
+-- M12.1: the loop combinator. Generated Lean wraps each Rust loop in
+-- `loop (fun s => <body> n s) initial_state`. Matches the signature
+-- in `backends/lean/Aeneas/Std/Primitives.lean::loop`.
+partial def loop {α : Type} {β : Type}
+    (body : α → Result (ControlFlow α β)) (x : α) : Result β :=
+  match body x with
+  | .ok r =>
+    match r with
+    | .cont x => loop body x
+    | .done x => .ok x
+  | .error e => .error e
+
 end Std
 end Aeneas
+
+/-! ## Rust-attribute markers
+
+M12.1 emits `@[rust_loop]` / `@[rust_loop_body]` on the synthesised
+loop helpers, matching the standard Aeneas backend's surface form.
+The real Aeneas runtime registers these as simp-set attributes;
+the shim only needs them to *parse*. We register them here as
+no-op user attributes. -/
+
+register_simp_attr rust_loop
+register_simp_attr rust_loop_body
 
 /-! ## Qualified-call shims
 

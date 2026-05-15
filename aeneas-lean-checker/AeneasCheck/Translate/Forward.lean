@@ -620,7 +620,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- only reached if the [findBranchEnd] lookahead failed (malformed
   -- cert), in which case ignoring it is the safest fallback.
   | .proj _ _ _
-  | .join _ _ _ | .loopInv _ _ => st
+  | .join _ _ _ | .loopInv _ _ | .loopEnd _ => st
 
 /-- Render a `SymExpr` from a join state summary as a Pure expression
     *in the context of a sub-walk's final var map*. Used by
@@ -1081,36 +1081,13 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
         | some t => rawTyToPTy t
         | none => placeholderTy
       { name := paramName (i + 1), ty }
-  -- M12.0: detect loop-bearing functions. The forward translator
-  -- does not yet implement the LLBC# loop-translation rule
-  -- (T-Loop-Fixpoint) — that lands in M12.1. For now we emit the
-  -- function with a sentinel body (an `ok` of a default value of the
-  -- return type) and tag it with a translator note pointing at
-  -- M12.1. The full event walk would otherwise produce a partially-
-  -- unrolled body that misrepresents the function's semantics.
-  let hasLoop : Bool := f.events.any fun
-    | .loopInv _ _ => true
-    | _ => false
-  let retTy0 : PTy := rawTyToPTy f.signature.output
-  if hasLoop then
-    -- Sentinel body: `ok` of a default value at the return type. We
-    -- pick `0` for any integer kind, `false` for `Bool`, and U32 0
-    -- as a coarse fallback for other shapes (the body is only
-    -- meaningful as a "function exists, body deferred to M12.1"
-    -- marker; downstream emit + lake build are all we exercise).
-    let sentinelTail : PExpr :=
-      match retTy0 with
-      | .lit (.int k) => .lit (.scalar k 0)
-      | .lit .bool => .lit (.bool false)
-      | _ => .lit (.scalar .u32 0)
-    let body : PExpr := .ok sentinelTail
-    let note := s!"loop-containing function ({f.fnName}): body is a sentinel placeholder; M12.1 implements T-Loop-Fixpoint."
-    { name := innerName f.fnName
-      qualifiedName := f.fnName
-      params, retTy := retTy0, body
-      sourceSpan := f.sourceSpan
-      note := some note }
-  else
+  -- M12.1: loop-bearing functions are handled separately by
+  -- `translateLoopFun` (called from `Driver.translateCrate` before
+  -- this function). If we reach here with `EvLoopInv` in the
+  -- events, fall through to the linear walk anyway — the result
+  -- won't be semantically right, but it will be syntactically valid
+  -- Lean code. Driver should always route loops through
+  -- `translateLoopFun`.
   -- Initial var map: input local 1 ↦ x1, local 2 ↦ x2, ...
   let initVm : VarMap := Id.run do
     let mut m : VarMap := {}
