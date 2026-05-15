@@ -339,16 +339,38 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- Pick the binding name: a generic `tN` for forward-only
     -- calls; an `<input>_post` shape when we know which `&mut`
     -- *input parameter*'s post-state we'll thread on EvEndAbs.
-    -- For args whose root local is a temp (not an input parameter),
-    -- we stay with `tN` — naming a binding `x5_post` when local 5
-    -- is the stack slot for a temporary would be misleading.
+    --
+    -- M12.2a-1: with the new RvRef→EvAssign cert hook, `vm[l]` for
+    -- a borrow-typed temp now resolves to a `.var "<paramName>"`
+    -- pointing at the underlying input. We look at each arg's
+    -- resolved `PExpr` and pick `_post`-style names whenever an
+    -- input parameter shows up. (The previous heuristic only
+    -- inspected the *root local* of the arg place and missed the
+    -- case where a temp shadows an input through an EvAssign.)
     let inputLocalOfArg : Nat → Nat := fun l =>
       if 1 ≤ l ∧ l ≤ st.numParams then l else 0
     let inputLocals : Array Nat := postLocals.map inputLocalOfArg
+    let paramNameOfPExpr : PExpr → Option Nat := fun e =>
+      match e with
+      | .var name =>
+        -- Match `xN` for some N in [1..numParams].
+        let parsed : Option Nat :=
+          if name.length ≥ 2 && name.front == 'x' then
+            (name.drop 1).toNat?
+          else none
+        match parsed with
+        | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+        | none => none
+      | _ => none
+    let inputLocalsViaExpr : Array Nat :=
+      argEs.map (fun e => (paramNameOfPExpr e).getD 0)
     let (nm, st) :=
       match inputLocals.findSome? (fun l => if l = 0 then none else some l) with
       | some l => (s!"{paramName l}_post", st)
-      | none => st.freshName
+      | none =>
+        match inputLocalsViaExpr.findSome? (fun l => if l = 0 then none else some l) with
+        | some l => (s!"{paramName l}_post", st)
+        | none => st.freshName
     let app : PExpr := .app fnName argEs
     let st :=
       { st with
@@ -390,10 +412,26 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       -- actually emitted at call time.
       let inputLocals : Array Nat := pc.postLocals.map fun l =>
         if 1 ≤ l ∧ l ≤ st.numParams then l else 0
+      -- M12.2a-1: also re-derive via the arg PExprs as we do in
+      -- EvCall so the naming stays consistent.
+      let paramNameOfPExpr : PExpr → Option Nat := fun e =>
+        match e with
+        | .var name =>
+          let parsed : Option Nat :=
+            if name.length ≥ 2 && name.front == 'x' then (name.drop 1).toNat? else none
+          match parsed with
+          | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+          | none => none
+        | _ => none
+      let inputLocalsViaExpr : Array Nat :=
+        pc.argEs.map (fun e => (paramNameOfPExpr e).getD 0)
       let postLocal : Nat :=
         match inputLocals.findSome? (fun l => if l = 0 then none else some l) with
         | some l => l
-        | none => 0
+        | none =>
+          match inputLocalsViaExpr.findSome? (fun l => if l = 0 then none else some l) with
+          | some l => l
+          | none => 0
       let st :=
         if postLocal == 0 then st
         else

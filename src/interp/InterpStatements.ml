@@ -917,6 +917,29 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                         ctx_emit_event ctx
                           (CertEvent.EvAssign { dst = cp; rhs })
                     | _ -> ())
+               | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
+                   (* M12.2a: a reborrow assignment `v@N := &mut *(local)`
+                      previously emitted only an `EvMutBorrow` /
+                      `EvReborrow` event with the *borrowed* place — the
+                      *destination* local (N) was lost. Without it the
+                      forward translator can't link the temp `v@N` back
+                      to the caller's input borrow, and `lookupPlace`
+                      collapses to a wrong fallback.
+                      Emit an additional `EvAssign dst=p rhs=SymCopy(rp)`
+                      so the walker's `vm` learns `vm[N] := lookup(rp)`.
+                      For the forward direction a `&mut p` carries the
+                      same symbolic value as `p`, so SymCopy is the
+                      right RHS — backward functions are reconstructed
+                      separately from the EvEndAbs trace. *)
+                   (match
+                      ( CertEvent.cert_place_of_place p,
+                        CertEvent.cert_place_of_place rp )
+                    with
+                    | Some cp, Some crp ->
+                        ctx_emit_event ctx
+                          (CertEvent.EvAssign
+                             { dst = cp; rhs = CertEvent.SymCopy crp })
+                    | _ -> ())
                | _ -> ());
               ((ctx, Unit), cc)
         in
