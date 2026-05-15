@@ -2172,13 +2172,28 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
         -- from the linear walk's final vm.
         let tail := buildBackwardTail bs finalSt.vm
         assembleBody finalSt.binds tail
+  -- M9.5j: detect self-recursion by scanning for any `EvCall` whose
+  -- callee id matches the current function's `fnId`. The standard
+  -- Aeneas backend appends `partial_fixpoint` after the do-block for
+  -- such defs so Lean's elaborator doesn't reject them on structural-
+  -- recursion grounds. We don't try to be smarter (e.g. structural-
+  -- recursion analysis on the match-arm shape) — the standard backend
+  -- itself uses `partial_fixpoint` uniformly for recursive funs.
+  let isSelfRecursive : Bool := f.events.any fun ev =>
+    match ev with
+    | .call calleeId _ _ _ _ _ => calleeId == f.fnId
+    | _ => false
+  let trailer : Option String :=
+    if isSelfRecursive then some "partial_fixpoint" else none
   { name := innerName f.fnName
     qualifiedName := f.fnName
     params, retTy, body
     sourceSpan := f.sourceSpan
     -- M9.5i: emit `{T : Type}` binders. Empty for monomorphic
     -- functions, so the emit shape stays byte-identical with M9.5h.
-    typeParams }
+    typeParams
+    -- M9.5j: `partial_fixpoint` only when we observed a self-call.
+    trailer }
 
 /-- M9.5b: kept-for-back-compat wrapper around [translateFunWith]
     with an empty type-decl map. Real translation goes through
