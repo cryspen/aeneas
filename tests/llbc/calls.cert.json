@@ -1,6 +1,7 @@
 {
   "fmt_version": 1,
   "crate_hash": "8447601926a20310b468da0f9dcff25a",
+  "type_decls": [],
   "functions": [
     {
       "fn_id": 0,

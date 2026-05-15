@@ -1,6 +1,26 @@
 {
   "fmt_version": 1,
   "crate_hash": "18b6e532379c81fe76ecfd8bc8e0ca65",
+  "type_decls": [
+    {
+      "id": 0,
+      "name": "Pair",
+      "kind": {
+        "Struct": [
+          {
+            "idx": 0,
+            "name": "fst",
+            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+          },
+          {
+            "idx": 1,
+            "name": "snd",
+            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+          }
+        ]
+      }
+    }
+  ],
   "functions": [
     {
       "fn_id": 0,

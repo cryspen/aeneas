@@ -313,6 +313,33 @@ let json_event (e : event) : Yojson.Basic.t =
             `Assoc [ "loop_id", json_loop_id loop_id ] );
         ]
 
+(* ---------- Type declarations (M9.5b) ---------- *)
+
+let json_cert_field (f : cert_field) : Yojson.Basic.t =
+  let name_field : (string * Yojson.Basic.t) list =
+    match f.cf_name with
+    | Some n -> [ "name", `String n ]
+    | None -> []
+  in
+  `Assoc
+    ([ "idx", `Int f.cf_idx ]
+     @ name_field
+     @ [ "ty", json_ty f.cf_ty ])
+
+let json_cert_type_decl_kind (k : cert_type_decl_kind) : Yojson.Basic.t =
+  match k with
+  | CTDStruct fields ->
+      `Assoc [ "Struct", `List (List.map json_cert_field fields) ]
+  | CTDOpaque -> `String "Opaque"
+
+let json_cert_type_decl (d : cert_type_decl) : Yojson.Basic.t =
+  `Assoc
+    [
+      "id", `Int d.ctd_id;
+      "name", `String d.ctd_name;
+      "kind", json_cert_type_decl_kind d.ctd_kind;
+    ]
+
 (* ---------- Top-level ---------- *)
 
 let json_fun_cert (fc : fun_cert) : Yojson.Basic.t =
@@ -338,6 +365,7 @@ let json_crate_cert (cc : crate_cert) : Yojson.Basic.t =
     [
       "fmt_version", `Int cc.cc_fmt_version;
       "crate_hash", `String cc.cc_crate_hash;
+      "type_decls", `List (List.map json_cert_type_decl cc.cc_type_decls);
       "functions", `List (List.map json_fun_cert cc.cc_functions);
     ]
 

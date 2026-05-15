@@ -101,9 +101,26 @@ type fun_cert = {
   fc_final_state : cert_state_summary;
 }
 
+type cert_field = {
+  cf_idx : int;
+  cf_name : string option;
+  cf_ty : ty;
+}
+
+type cert_type_decl_kind =
+  | CTDStruct of cert_field list
+  | CTDOpaque
+
+type cert_type_decl = {
+  ctd_id : int;
+  ctd_name : string;
+  ctd_kind : cert_type_decl_kind;
+}
+
 type crate_cert = {
   cc_fmt_version : int;
   cc_crate_hash : string;
+  cc_type_decls : cert_type_decl list;
   cc_functions : fun_cert list;
 }
 

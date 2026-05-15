@@ -85,6 +85,44 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     end
   | _ -> None
 
+(** Collect the crate's transparent ADT type declarations into a flat list
+    indexed by [TypeDeclId]. Struct decls carry their full field list
+    (name + type); other kinds are downgraded to [Opaque] so the Lean
+    parser can tolerate them. M9.5b only consumes [Struct]. *)
+let collect_type_decls (crate : crate) : CertEvent.cert_type_decl list =
+  Types.TypeDeclId.Map.values crate.type_decls
+  |> List.map (fun (td : Types.type_decl) : CertEvent.cert_type_decl ->
+         let env = Print.Contexts.decls_ctx_to_fmt_env (compute_contexts crate) in
+         let full_name =
+           Print.name_to_string env td.item_meta.name
+         in
+         let bare_name =
+           match List.rev (String.split_on_char ':' full_name) with
+           | [] -> full_name
+           | last :: _ -> last
+         in
+         let kind : CertEvent.cert_type_decl_kind =
+           match td.kind with
+           | Types.Struct fields ->
+               let cert_fields : CertEvent.cert_field list =
+                 List.mapi
+                   (fun i (f : Types.field) ->
+                     CertEvent.{
+                       cf_idx = i;
+                       cf_name = f.field_name;
+                       cf_ty = f.field_ty;
+                     })
+                   fields
+               in
+               CTDStruct cert_fields
+           | _ -> CTDOpaque
+         in
+         {
+           ctd_id = Types.TypeDeclId.to_int td.def_id;
+           ctd_name = bare_name;
+           ctd_kind = kind;
+         })
+
 (** Run the interpreter on every function in the crate, capturing per-function
     event traces. *)
 let generate_crate_cert (crate : crate) (marked_ids : marked_ids)
@@ -94,9 +132,11 @@ let generate_crate_cert (crate : crate) (marked_ids : marked_ids)
     List.filter_map (collect_for_fun trans_ctx marked_ids)
       (FunDeclId.Map.values crate.fun_decls)
   in
+  let type_decls = collect_type_decls crate in
   {
     cc_fmt_version = CertEvent.cert_fmt_version;
     cc_crate_hash = crate_hash;
+    cc_type_decls = type_decls;
     cc_functions = fun_certs;
   }
 

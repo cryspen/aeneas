@@ -11,12 +11,48 @@
       "type": "string",
       "description": "Hex digest of the associated llbc.json file's bytes."
     },
+    "type_decls": {
+      "type": "array",
+      "description": "Crate ADT type declarations. M9.5b carries enough to render `structure` blocks for struct types and to resolve `Field K` projections to field names.",
+      "items": { "$ref": "#/definitions/type_decl" }
+    },
     "functions": {
       "type": "array",
       "items": { "$ref": "#/definitions/fun_cert" }
     }
   },
   "definitions": {
+    "type_decl": {
+      "type": "object",
+      "required": ["id", "name", "kind"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 0 },
+        "name": { "type": "string" },
+        "kind": {
+          "oneOf": [
+            { "const": "Opaque" },
+            {
+              "type": "object",
+              "required": ["Struct"],
+              "properties": {
+                "Struct": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["idx", "ty"],
+                    "properties": {
+                      "idx": { "type": "integer", "minimum": 0 },
+                      "name": { "type": "string" },
+                      "ty": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
     "fun_cert": {
       "type": "object",
       "required": ["fn_id", "fn_name", "signature", "events", "final_state"],

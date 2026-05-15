@@ -213,12 +213,52 @@ type fun_cert = {
 }
 [@@deriving show]
 
+(** A struct field's projection-friendly summary, used by [cert_type_decl]
+    to resolve [Field K] projections on the Lean side. Field names follow
+    Charon's [field_name] convention: [None] for tuple-style positional
+    fields (the Lean side falls back to [`field<K>`] in that case). *)
+type cert_field = {
+  cf_idx : int;
+  cf_name : string option;
+  cf_ty : ty;
+}
+[@@deriving show]
+
+(** Kind of an ADT type declaration. M9.5b only carries [Struct]; later
+    milestones extend this with [Enum] (with variants), [Union], etc. The
+    Lean parser must tolerate unknown kinds gracefully so an early cert
+    can still be replayed by a future Lean checker. *)
+type cert_type_decl_kind =
+  | CTDStruct of cert_field list
+  | CTDOpaque
+[@@deriving show]
+
+(** A single ADT type declaration. [ctd_id] matches the OCaml
+    [TypeDeclId.id] that appears inside [TAdt {id = TAdtId N; ...}]
+    type strings in [cert_place.cp_ty] / [cert_signature]; the Lean side
+    uses this to resolve [TAdtId N] to a struct name and field names.
+
+    [ctd_name] is the bare ADT name (e.g. [Pair], not [reborrows::Pair]).
+    The Lean translator surfaces it directly. *)
+type cert_type_decl = {
+  ctd_id : int;
+  ctd_name : string;
+  ctd_kind : cert_type_decl_kind;
+}
+[@@deriving show]
+
 (** Top-level certificate. *)
 type crate_cert = {
   cc_fmt_version : int;
   cc_crate_hash : string;
       (** Hex SHA-256 of the LLBC JSON file's bytes; the Lean parser refuses
           mismatched (LLBC, cert) pairs. *)
+  cc_type_decls : cert_type_decl list;
+      (** [M9.5b] The crate's ADT type declarations, indexed by
+          [TypeDeclId]. The cert is the only source of truth for type
+          shape (the companion [llbc.json] is a stub); the Lean checker
+          uses this to render [structure …] decls and to resolve
+          [TAdtId N] references inside event places. *)
   cc_functions : fun_cert list;
 }
 [@@deriving show]
