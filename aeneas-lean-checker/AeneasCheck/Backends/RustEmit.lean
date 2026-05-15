@@ -37,6 +37,10 @@ partial def PTy.toRust : PTy → String
   -- the Rust model collapses them into a flat tuple-returning fn
   -- anyway — so this is a best-effort fallback.
   | .arrow dom cod => s!"Box<dyn Fn({dom.toRust}) -> {cod.toRust}>"
+  -- M9.5c: a fixed-length array `[T; N]`. Rust's native array
+  -- notation matches one-for-one; the differential harness can
+  -- consume / produce these directly.
+  | .array elem length => s!"[{elem.toRust}; {length}]"
 
 def litToRust : Lit → String
   | .scalar k v => s!"{v}{IntKind.toRust k}"

@@ -35,11 +35,27 @@ partial def PTy.toLean : PTy → String
   -- The standard Aeneas Lean backend's `open Aeneas Aeneas.Std`
   -- header makes `Result` unqualified, so we drop the `Std.` prefix
   -- here for byte-identity with `aeneas -backend lean`.
-  | .result inner => s!"Result {inner.toLean}"
+  --
+  -- M9.5c: a multi-token inner type (an `.array`) needs parens
+  -- because Lean's parser would otherwise read
+  -- `Result Array Std.U32 4#usize` as `Result` applied to 4
+  -- separate args. We add parens when the inner contains a space
+  -- *and* doesn't already self-parenthesise (the `.tuple` and
+  -- `.arrow` cases above always wrap themselves in `(…)`).
+  | .result inner =>
+    let s := inner.toLean
+    let selfParen := s.startsWith "("
+    if s.contains ' ' && !selfParen then s!"Result ({s})" else s!"Result {s}"
   -- M12.2a-2: `α → β`. We always wrap in parens so it can sit safely
   -- inside another application head without re-parsing as multiple
   -- args (`(α → β)` not `α → β`).
   | .arrow dom cod => s!"({dom.toLean} → {cod.toLean})"
+  -- M9.5c: a fixed-length array. The standard Aeneas backend emits
+  -- `Array <elem> <N>#usize`. Both the element type and the
+  -- length-literal are simple-enough tokens that we don't need to
+  -- parenthesise the whole thing — at use site it's always preceded
+  -- by `:` (param type) or `Result` (return type).
+  | .array elem length => s!"Array {elem.toLean} {length}#usize"
 
 def litToLean : Lit → String
   | .scalar k v =>
@@ -290,8 +306,17 @@ def Decl.attrPrefix (d : Decl) : String :=
 def Decl.toLean (d : Decl) : String :=
   let params := String.intercalate " "
     (d.params.toList.map fun p => s!"({p.name} : {p.ty.toLean})")
+  -- M9.5c: parenthesise multi-token return types (e.g. an `.array`
+  -- like `Array Std.U32 4#usize`) so `Result T` doesn't reparse as
+  -- `Result` applied to four separate args. Single-token forms and
+  -- self-parenthesising forms (`.tuple`, `.arrow`) stay bare.
+  let retStr := d.retTy.toLean
+  let retParens :=
+    if retStr.contains ' ' && !retStr.startsWith "(" then
+      s!"({retStr})"
+    else retStr
   d.docComment ++ d.noteBlock ++ d.attrPrefix ++
-  s!"def {d.name} {params} : Result {d.retTy.toLean} := do\n  {d.body.toLeanDo}"
+  s!"def {d.name} {params} : Result {retParens} := do\n  {d.body.toLeanDo}"
 
 /-- M9.5b: docstring for a `structure` decl. Mirrors `Decl.docComment`
     but uses the `[crate::Foo]` form without a trailing colon (the

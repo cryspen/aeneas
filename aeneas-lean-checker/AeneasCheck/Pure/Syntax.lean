@@ -35,6 +35,14 @@ inductive PTy
       backward-function slot in the output of `&mut`-taking helpers:
       `Result (T_out × (T_borrow → (T_arg₁ × ... × T_argₙ)))`. -/
   | arrow (dom cod : PTy)
+  /-- M9.5c: a fixed-length Rust array `[T; N]`. The standard Aeneas
+      backend renders this as `Array <elem> <N>#usize`, where `<N>` is
+      the const-generic length expressed as a `Std.Usize` literal. We
+      keep the length as a `Nat` here (rather than wrapping it in
+      `PExpr.lit`) because const generics flow through the type
+      system, not the value layer; the pretty-printer is responsible
+      for the `<N>#usize` rendering. -/
+  | array (elem : PTy) (length : Nat)
   deriving Repr, Inhabited
 
 /-- Pure expressions. -/
