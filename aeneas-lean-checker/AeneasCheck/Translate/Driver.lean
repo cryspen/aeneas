@@ -65,16 +65,20 @@ def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl
     Option StructDecl :=
   match td.kind with
   | .struct fields =>
+    -- M9.5i: pass the struct's `typeParams` into the field-type
+    -- translator so a generic field type `T` resolves to
+    -- `.tyVar "T"` rather than the placeholder.
     let pureFields : Array StructField := fields.map fun f =>
       { name :=
           match f.name with
           | some n => n
           | none => s!"field{f.idx}"
-        ty := rawTyToPTyWith tdm f.ty }
+        ty := rawTyToPTyWithVars tdm td.typeParams f.ty }
     some
       { name := td.name
         qualifiedName := s!"{crateName}::{td.name}"
-        fields := pureFields }
+        fields := pureFields
+        typeParams := td.typeParams }
   | .enum _ => none
   | .opaque => none
 
@@ -88,18 +92,23 @@ def enumDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) 
     Option EnumDecl :=
   match td.kind with
   | .enum variants =>
+    -- M9.5i: pass the enum's `typeParams` into the field-type
+    -- translator so a generic variant payload type like
+    -- `MySome(T)` → `T` (i.e. `TVar (Free 0)` in the cert)
+    -- resolves to `.tyVar "T"` rather than the placeholder.
     let pureVariants : Array EnumVariant := variants.map fun v =>
       let pureFields : Array StructField := v.fields.map fun f =>
         { name :=
             match f.name with
             | some n => n
             | none => s!"field{f.idx}"
-          ty := rawTyToPTyWith tdm f.ty }
+          ty := rawTyToPTyWithVars tdm td.typeParams f.ty }
       { name := v.name, fields := pureFields }
     some
       { name := td.name
         qualifiedName := s!"{crateName}::{td.name}"
-        variants := pureVariants }
+        variants := pureVariants
+        typeParams := td.typeParams }
   | .struct _ => none
   | .opaque => none
 

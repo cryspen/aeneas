@@ -167,6 +167,72 @@ def isArrayTy (s : String) : Bool :=
 def isSliceTy (s : String) : Bool :=
   (s.splitOn "TSlice").length ≥ 2
 
+/-- M9.5i: detect a bare `TVar` opaque type — i.e., a top-level type
+    variable reference like `(Generated_Types.TVar
+    (Generated_Types.Free 0))`. We require the type to start with the
+    `TVar` head (rather than just contain the substring) to avoid
+    misclassifying a `TAdt` whose generic-args list contains a TVar.
+
+    The check tolerates an optional leading `(` plus whitespace from
+    the OCaml pretty-printer's `show_ty` output. -/
+def isBareTVar (s : String) : Bool :=
+  let isLeadJunk : Char → Bool := fun c => c = '(' || c.isWhitespace
+  let trimmed := s.dropWhile isLeadJunk
+  -- Charon's `show_ty` qualifies the constructor as
+  -- `Generated_Types.TVar`; we also accept the bare `TVar` head for
+  -- hand-written fixtures.
+  trimmed.startsWith "Generated_Types.TVar" || trimmed.startsWith "TVar"
+
+/-- M9.5i: extract the de-Bruijn index from the *first* `TVar (Free K)`
+    occurrence in a type string. Used both for the bare-TVar case
+    ([isBareTVar]) and for the TAdt-generic-args case. Returns `none`
+    if no `Free` integer follows. -/
+def parseTVarIndex (s : String) : Option Nat :=
+  let parts := s.splitOn "Free"
+  match parts with
+  | _ :: rest :: _ =>
+    let notDigit : Char → Bool := fun c => !c.isDigit
+    let trimmed := rest.dropWhile notDigit
+    let digits := trimmed.takeWhile Char.isDigit
+    if digits.isEmpty then none else digits.toNat?
+  | _ => none
+
+/-- M9.5i: drop ASCII whitespace from both ends, returning a real
+    `String`. Lean v4.30's built-in `String.trim` (renamed to
+    `trimAscii`) returns a `String.Slice` that's awkward to feed
+    back into other string ops, so we materialise here via a
+    char-list round trip. -/
+private def trimBothEnds (s : String) : String :=
+  -- Drop leading + trailing whitespace by reversing the list, dropping
+  -- leading whitespace, reversing again, then trimming the new front.
+  let chars := s.toList
+  let dropped := (chars.reverse.dropWhile Char.isWhitespace).reverse.dropWhile
+    Char.isWhitespace
+  String.ofList dropped
+
+/-- M9.5i: heuristic parser for a `TAdt`'s generic-type-args list.
+    Given the full opaque type string for a `TAdt { id = TAdtId N;
+    generics = { … types = [t1; t2; …]; … } }`, return the list of
+    inner type strings (one per argument). For our M9.5i fixture
+    the list contains a single `TVar` entry; the parser handles N
+    by splitting on `;` within the `types = [...]` block.
+
+    Returns the empty list if no `types = ` substring is found or
+    the bracketed block is empty (`types = []`). -/
+def parseTAdtGenericTypes (s : String) : List String :=
+  let parts := s.splitOn "types = ["
+  match parts with
+  | _ :: rest :: _ =>
+    let notRBrack : Char → Bool := fun c => c ≠ ']'
+    let inner : String := (rest.takeWhile notRBrack).toString
+    let trimmed : String := trimBothEnds inner
+    if trimmed.isEmpty then []
+    else
+      let pieces : List String :=
+        (trimmed.splitOn ";").map trimBothEnds
+      pieces.filter fun p => ¬ p.isEmpty
+  | _ => []
+
 /-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping. Resolves
     `TAdtId N` references via [tdm]; falls back to the legacy
     substring-keyed heuristic when the type is a literal or contains
@@ -182,13 +248,33 @@ def isSliceTy (s : String) : Bool :=
     Order matters: we test for `TTuple` *before* `TAdtId` because the
     output type of a unit-returning function (`()`) is rendered as
     `TAdt {id = TTuple; ...}` with no `TAdtId` payload — but a
-    `TAdtId 0` substring can still appear inside *generic* args. -/
-def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy
+    `TAdtId 0` substring can still appear inside *generic* args.
+
+    M9.5i: this is a thin wrapper around [rawTyToPTyWithVars] with an
+    empty `typeParams` list. Callers that have a surrounding generic
+    declaration in scope (Forward's [translateFunWith], Driver's
+    [enumDeclOfTypeDecl] / [structDeclOfTypeDecl]) should call
+    [rawTyToPTyWithVars] directly so `TVar (Free K)` resolves to a
+    `PTy.tyVar` carrying the K-th param name. -/
+partial def rawTyToPTyWithVars
+    (tdm : TypeDeclMap) (typeParams : Array String) : RawTy → PTy
   | .opaque s =>
+    -- M9.5i: bare top-level `TVar (Free K)` — resolve via
+    -- `typeParams[K]?`. We must test this BEFORE the literal /
+    -- TAdt branches because a TVar string contains none of those
+    -- markers, but the catch-all at the bottom would silently
+    -- coerce it to `Std.U32`.
+    if isBareTVar s then
+      match parseTVarIndex s with
+      | some k =>
+        match typeParams[k]? with
+        | some nm => .tyVar nm
+        | none => .lit (.int .u32)
+      | none => .lit (.int .u32)
     -- M9.5c: TArray must come first. The const-generic length section
     -- includes a `Usize` tag, which would otherwise be misclassified
     -- as a bare `Usize` literal by the catch-all below.
-    if isArrayTy s then
+    else if isArrayTy s then
       -- For now we only carry element-kind information at the
       -- token-level (U32 / U64 / U8 / U16 / Usize / I32 / Bool); a
       -- full TArray opaque string for `[u32; 4]` starts with the
@@ -240,7 +326,16 @@ def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy
       match parseTAdtId s with
       | some id =>
         match tdm[id]? with
-        | some info => .adt info.name #[]
+        | some info =>
+          -- M9.5i: a generic ADT reference like `MyOption<T>` arrives
+          -- as `TAdt { id = TAdtId N; generics = { types = [TVar
+          -- (Free 0)]; ... } }`. Parse the generic-args list and
+          -- recursively resolve each; for our fixture the recursion
+          -- terminates at the bare `TVar` case above.
+          let argStrs := parseTAdtGenericTypes s
+          let args : Array PTy := (argStrs.map fun a =>
+            rawTyToPTyWithVars tdm typeParams (.opaque a)).toArray
+          .adt info.name args
         | none =>
           -- Unknown ADT id (shouldn't happen for in-crate decls;
           -- fall back to u32 to avoid crashing).
@@ -251,6 +346,14 @@ def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy
         else if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
         else .lit (.int .u32)
   | _ => .lit (.int .u32)
+
+/-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping with an empty
+    `typeParams` list (so any `TVar` reference falls back to `u32`).
+    Kept as the M9.5b-vintage entry point for callers without a
+    surrounding generic decl. M9.5i added [rawTyToPTyWithVars] for
+    the generic-aware case. -/
+def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy :=
+  rawTyToPTyWithVars tdm #[]
 
 /-- Crude `RawTy` → `PTy` mapping based on substring lookup in the
     opaque-tagged signature string, with no type-decl context. Kept
@@ -1751,22 +1854,36 @@ structure BackSig where
 /-- M9.5b: build the [BackSig] from a function signature, with a
     type-decl map for resolving `&mut Pair`-style inputs into a
     concrete `.adt "Pair" #[]` PTy (rather than the M11 placeholder
-    `u32`). Falls back to [rawTyToPTy] when `tdm` is empty. -/
-def backSigOfWith (tdm : TypeDeclMap) (sig : FnSignature) : BackSig := Id.run do
+    `u32`). Falls back to [rawTyToPTy] when `tdm` is empty.
+
+    M9.5i: takes the surrounding function's `typeParams` so a
+    `&mut T` input or a `T` output resolves to `.tyVar "T"` rather
+    than the placeholder. Use [backSigOfWith] for the no-generics
+    back-compat path. -/
+def backSigOfWithVars
+    (tdm : TypeDeclMap) (typeParams : Array String)
+    (sig : FnSignature) : BackSig := Id.run do
   let mut mutInputs : Array Nat := #[]
   let mut mutInputTys : Array PTy := #[]
   for i in [0:sig.inputs.size] do
     let t := sig.inputs[i]!
     if isMutRef t then
       mutInputs := mutInputs.push (i + 1)
-      mutInputTys := mutInputTys.push (rawTyToPTyWith tdm t)
+      mutInputTys := mutInputTys.push (rawTyToPTyWithVars tdm typeParams t)
   let bs : BackSig :=
     { mutInputs, mutInputTys
       outputIsMutRef := isMutRef sig.output
-      outputInnerTy := rawTyToPTyWith tdm sig.output
+      outputInnerTy := rawTyToPTyWithVars tdm typeParams sig.output
       outputIsUnit := isUnitTy sig.output
       outputTupleOfMuts := isOutputTupleOfMutRefs sig.output }
   return bs
+
+/-- M9.5b: build the [BackSig] from a function signature, with a
+    type-decl map for resolving `&mut Pair`-style inputs into a
+    concrete `.adt "Pair" #[]` PTy. M9.5i thin wrapper around
+    [backSigOfWithVars] with an empty `typeParams` list. -/
+def backSigOfWith (tdm : TypeDeclMap) (sig : FnSignature) : BackSig :=
+  backSigOfWithVars tdm #[] sig
 
 /-- Build the [BackSig] from a function signature. Kept for back-compat
     with callers that have no type-decl map; defers to
@@ -1959,10 +2076,15 @@ def buildBackwardTail (bs : BackSig) (vm : VarMap) : PExpr :=
     the input's root local rather than local 0. -/
 def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
   let numParams := f.signature.inputs.size
+  -- M9.5i: the function's type-parameter names flow into both the
+  -- emitted `Decl.typeParams` (for the `{T : Type}` binder line) and
+  -- into the type-translator so any `TVar (Free K)` inside an input /
+  -- output type resolves to `.tyVar (typeParams[K])`.
+  let typeParams := f.signature.typeParams
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
       let ty := match f.signature.inputs[i]? with
-        | some t => rawTyToPTyWith tdm t
+        | some t => rawTyToPTyWithVars tdm typeParams t
         | none => placeholderTy
       { name := paramName (i + 1), ty }
   -- M12.1: loop-bearing functions are handled separately by
@@ -1982,7 +2104,9 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
     walkEvents f.events { vm := initVm, numParams, tdm }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
-  let bs := backSigOfWith tdm f.signature
+  -- M9.5i: thread the function's `typeParams` through so a `T`
+  -- output / `&mut T` input resolves to `.tyVar "T"`.
+  let bs := backSigOfWithVars tdm typeParams f.signature
   let retTy : PTy := emitRetTy bs
   -- M12.2a-2: branch-tailed bodies (the `choose` pattern) compute
   -- their per-branch tail value through [buildBackwardTail] on each
@@ -2051,7 +2175,10 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
   { name := innerName f.fnName
     qualifiedName := f.fnName
     params, retTy, body
-    sourceSpan := f.sourceSpan }
+    sourceSpan := f.sourceSpan
+    -- M9.5i: emit `{T : Type}` binders. Empty for monomorphic
+    -- functions, so the emit shape stays byte-identical with M9.5h.
+    typeParams }
 
 /-- M9.5b: kept-for-back-compat wrapper around [translateFunWith]
     with an empty type-decl map. Real translation goes through
