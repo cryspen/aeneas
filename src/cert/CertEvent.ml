@@ -42,13 +42,20 @@ type cert_sym_expr =
       adt_id : int;
       variant_id : int;
       variant_name : string;
+      fields : cert_sym_expr list;
     }
       (** [M9.5d] A C-style enum-variant construction: the result of an
           [Rvalue.Aggregate (AggregatedAdt (..., Some variant_id, None), [])]
           with zero fields. The Lean translator renders this as
           [<adt_name>.<variant_name>] (the adt name is resolved via
-          [adt_id] against the cert's type-decl table). Payload-bearing
-          variants (M9.5e+) extend this with a [fields] list. *)
+          [adt_id] against the cert's type-decl table).
+
+          [M9.5f] Extends this with a [fields] list: a payload-bearing
+          ctor application like [NumOrZero::Num(x)] carries one entry per
+          field's [cert_sym_expr] (the operand was a place read or a
+          literal). C-style variants keep [fields = []] and emit the
+          bare ctor name; payload-bearing variants emit
+          [<adt_name>.<variant_name> e1 e2 ... eN]. *)
 [@@deriving show]
 
 (** A coarse summary of the abstract state at a particular point.

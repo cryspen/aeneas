@@ -149,11 +149,15 @@
           "properties": {
             "SymVariant": {
               "type": "object",
-              "required": ["adt_id", "variant_id", "variant_name"],
+              "required": ["adt_id", "variant_id", "variant_name", "fields"],
               "properties": {
                 "adt_id": { "type": "integer", "minimum": 0 },
                 "variant_id": { "type": "integer", "minimum": 0 },
-                "variant_name": { "type": "string" }
+                "variant_name": { "type": "string" },
+                "fields": {
+                  "type": "array",
+                  "items": { "$ref": "#/definitions/sym_expr" }
+                }
               }
             }
           }

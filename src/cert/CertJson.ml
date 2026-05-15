@@ -126,7 +126,7 @@ let rec json_cert_sym_expr (e : cert_sym_expr) : Yojson.Basic.t =
   | SymCopy p -> `Assoc [ "SymCopy", json_cert_place p ]
   | SymMove p -> `Assoc [ "SymMove", json_cert_place p ]
   | SymMutBorrowTok bid -> `Assoc [ "SymMutBorrowTok", json_borrow_id bid ]
-  | SymVariant { adt_id; variant_id; variant_name } ->
+  | SymVariant { adt_id; variant_id; variant_name; fields } ->
       `Assoc
         [
           ( "SymVariant",
@@ -135,6 +135,7 @@ let rec json_cert_sym_expr (e : cert_sym_expr) : Yojson.Basic.t =
                 "adt_id", `Int adt_id;
                 "variant_id", `Int variant_id;
                 "variant_name", `String variant_name;
+                "fields", `List (List.map json_cert_sym_expr fields);
               ] );
         ]
 

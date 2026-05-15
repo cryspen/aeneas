@@ -922,19 +922,20 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                        ( { id = TAdtId def_id; _ },
                          Some variant_id,
                          None ),
-                     [] ) ->
-                   (* M9.5d: a nullary-variant ADT construction (the
-                      RHS of `Sign::Pos` in a C-style enum match arm).
-                      Emit an `EvAssign dst=p rhs=SymVariant {…}` so
-                      the Lean translator's match-arm body picks up
-                      the constructor application.
+                     operands ) ->
+                   (* M9.5d / M9.5f: an enum-variant ADT construction.
+                      M9.5d handled only the nullary case (operands =
+                      []); M9.5f extends this to payload-bearing
+                      variants by carrying the operands' cert-sym
+                      forms inside [SymVariant.fields].
 
-                      We don't fire this for tuple / struct aggregates
-                      (those produce VAdt values too but with non-empty
-                      [fields]); the M9.5b struct-update path already
-                      covers struct-shape rewrites via Field projections.
-                      Payload-bearing variants will need an extension
-                      that carries the fields. *)
+                      Emit an `EvAssign dst=p rhs=SymVariant {…; fields}`
+                      so the Lean translator can render the ctor
+                      application as `<adt_name>.<variant_name> e1 …
+                      eN`. We do not fire this for tuple / struct
+                      aggregates (those use [None] for the variant id);
+                      the M9.5b struct-update path covers struct-shape
+                      rewrites via Field projections. *)
                    let type_decl =
                      ctx_lookup_type_decl st.span ctx def_id
                    in
@@ -945,8 +946,27 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                            .variant_name
                      | _ -> "Variant"
                    in
-                   (match CertEvent.cert_place_of_place p with
-                    | Some cp ->
+                   (* Lift each operand to a [cert_sym_expr]. If any
+                      operand fails to lift (e.g. references a global),
+                      we conservatively skip the whole event — the
+                      translator will fall through to the trace's other
+                      EvCopy/EvAssign events. *)
+                   let fields_opt =
+                     List.fold_right
+                       (fun op acc ->
+                         match acc with
+                         | None -> None
+                         | Some xs ->
+                             (match CertEvent.cert_sym_expr_of_operand op with
+                              | Some e -> Some (e :: xs)
+                              | None -> None))
+                       operands (Some [])
+                   in
+                   (match
+                      ( CertEvent.cert_place_of_place p,
+                        fields_opt )
+                    with
+                    | Some cp, Some fields ->
                         ctx_emit_event ctx
                           (CertEvent.EvAssign
                              { dst = cp
@@ -955,9 +975,10 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                                    { adt_id = Types.TypeDeclId.to_int def_id
                                    ; variant_id =
                                        Types.VariantId.to_int variant_id
-                                   ; variant_name }
+                                   ; variant_name
+                                   ; fields }
                              })
-                    | None -> ())
+                    | _ -> ())
                | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
                    (* M12.2a: a reborrow assignment `v@N := &mut *(local)`
                       previously emitted only an `EvMutBorrow` /

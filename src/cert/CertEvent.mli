@@ -20,6 +20,7 @@ type cert_sym_expr =
       adt_id : int;
       variant_id : int;
       variant_name : string;
+      fields : cert_sym_expr list;
     }
 
 type cert_state_summary = {
