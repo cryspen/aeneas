@@ -285,39 +285,66 @@ def lookupPlaceWithBinders
     | none => lookupPlace vm p
   | _ => lookupPlace vm p
 
+/-- M9.5f: resolve a variant ctor to its pure form. For a nullary
+    variant we emit `.var "<adtName>.<variantName>"` (a single
+    qualified token). For a payload-bearing variant we emit
+    `.app "<adtName>.<variantName>" #[field-pexprs]`. When the
+    `adtName` can't be resolved via `tdm` (legacy fixture / stale
+    cert), we fall back to the unqualified variant name — the
+    pre-M9.5f match-arm path used to call `lookupSymExpr` on a
+    `symVariant` it had already qualified, and we preserve that
+    bare-name shape for the parent walker's downstream `qualify`
+    pass. -/
+private partial def variantPExpr
+    (tdm : TypeDeclMap) (adtId : Nat) (variantName : String)
+    (fieldEs : Array PExpr) : PExpr :=
+  let headName : String :=
+    match tdm[adtId]? with
+    | some info => s!"{info.name}.{variantName}"
+    | none => variantName
+  if fieldEs.isEmpty then .var headName
+  else .app headName fieldEs
+
 /-- Resolve a `SymExpr` against the current var map to a Pure
     expression. Symbolic ids (`SymVal n`) fall back to a generated
-    name `sN`. -/
-def lookupSymExpr (vm : VarMap) : SymExpr → PExpr
+    name `sN`.
+
+    M9.5f: takes `tdm` so a `symVariant` resolves to a properly
+    qualified ctor application (`NumOrZero.Num x1` rather than a
+    bare `Num`). C-style nullary variants still go through
+    [variantPExpr] which qualifies them; the parent walker's
+    match-arm `qualify` pass becomes a no-op for already-qualified
+    names. -/
+partial def lookupSymExpr (tdm : TypeDeclMap) (vm : VarMap) : SymExpr → PExpr
   | .symVal n => .var s!"s{n}"
   | .symLit l => .lit l
   | .symCopy p => lookupPlace vm p
   | .symMove p => lookupPlace vm p
   | .symMutBorrowTok n => .var s!"b{n}"
-  -- M9.5d: an enum-variant ctor (the RHS of an EvAssign whose source
-  -- was a nullary `AggregatedAdt`). The bare-name fallback here is
-  -- correct only when the caller has already qualified the ctor
-  -- (i.e. the walker resolves `<adtName>.<variantName>` via the
-  -- type-decl map before calling `lookupSymExpr`). The default uses
-  -- the unqualified variant name; if no qualification has been done
-  -- the result still compiles in the rare case the variant lives in
-  -- an `open`ed namespace.
-  | .symVariant _ _ variantName => .var variantName
+  -- M9.5d / M9.5f: an enum-variant ctor (the RHS of an EvAssign
+  -- whose source was an `AggregatedAdt`). We qualify the name
+  -- against the type-decl map and apply payload fields when present.
+  | .symVariant adtId _ variantName fields =>
+    variantPExpr tdm adtId variantName
+      (fields.map (lookupSymExpr tdm vm))
 
-/-- M9.5e: payload-binder-aware variant of [lookupSymExpr]. Same
+/-- M9.5e/f: payload-binder-aware variant of [lookupSymExpr]. Same
     semantics as [lookupSymExpr] except a `symCopy` / `symMove` of a
     `[..., Field K]`-projected place consults `payloadBinders` first
     via [lookupPlaceWithBinders]. The match-arm sub-walk calls this in
     place of [lookupSymExpr]. -/
-def lookupSymExprWithBinders
-    (vm : VarMap) (payloadBinders : Std.HashMap (Nat × Nat) String) :
+partial def lookupSymExprWithBinders
+    (tdm : TypeDeclMap) (vm : VarMap)
+    (payloadBinders : Std.HashMap (Nat × Nat) String) :
     SymExpr → PExpr
   | .symVal n => .var s!"s{n}"
   | .symLit l => .lit l
   | .symCopy p => lookupPlaceWithBinders vm payloadBinders p
   | .symMove p => lookupPlaceWithBinders vm payloadBinders p
   | .symMutBorrowTok n => .var s!"b{n}"
-  | .symVariant _ _ variantName => .var variantName
+  | .symVariant adtId _ variantName fields =>
+    variantPExpr tdm adtId variantName
+      (fields.map (lookupSymExprWithBinders tdm vm payloadBinders))
 
 /-- Map an OCaml `cert_binop_string` tag onto a Pure `App` head. The
     head string is what the Lean emitter pretty-prints — see
@@ -499,7 +526,7 @@ end WalkState
 def postLocalOfArg (vm : VarMap) : SymExpr → Nat
   | .symCopy p | .symMove p =>
     if vm.contains p.local_ then p.local_ else 1
-  | .symVal _ | .symLit _ | .symMutBorrowTok _ | .symVariant _ _ _ => 0
+  | .symVal _ | .symLit _ | .symMutBorrowTok _ | .symVariant _ _ _ _ => 0
 
 /-- M12.2a-2: outcome of [findBranchEnd]'s lookahead.
     * `joined jIdx kIdx` — standard M11.2 if/else with a closing
@@ -665,7 +692,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- one entry per payload field of the matched variant, a SymCopy
     -- / SymMove of `scrutLocal.[Field K]` resolves to the arm-scoped
     -- binder name instead of the scrutinee's root expression.
-    let rhsE := lookupSymExprWithBinders st.vm st.payloadBinders rhs
+    let rhsE := lookupSymExprWithBinders st.tdm st.vm st.payloadBinders rhs
     let derefTail : Bool :=
       match d.projection.toList.getLast? with
       | some ProjElem.deref => true
@@ -811,8 +838,8 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         vm := st.vm.insert d.local_ rhsE
         lastWrite := some d.local_ }
   | .binop op lhs rhs d =>
-    let lhsE := lookupSymExpr st.vm lhs
-    let rhsE := lookupSymExpr st.vm rhs
+    let lhsE := lookupSymExpr st.tdm st.vm lhs
+    let rhsE := lookupSymExpr st.tdm st.vm rhs
     let app : PExpr := .app (binopHead op) #[lhsE, rhsE]
     let (nm, st) := st.freshName
     { st with
@@ -841,7 +868,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- arrays (since `index_mut` followed by a write IS the update —
     -- there's no "value side" to keep).
     if fnName == "@ArrayIndexMut" && args.size == 2 then
-      let argEs := args.map (lookupSymExpr st.vm)
+      let argEs := args.map (lookupSymExpr st.tdm st.vm)
       let arrayE := argEs[0]!
       let idxE := argEs[1]!
       -- Identify the array's root input-parameter local so we can
@@ -875,7 +902,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- binding's name to a `<input>_post` form (renaming the most
     -- recent binding rather than re-emitting) and update `vm` for
     -- the borrowed input's caller-side local.
-    let argEs := args.map (lookupSymExpr st.vm)
+    let argEs := args.map (lookupSymExpr st.tdm st.vm)
     let postLocals : Array Nat := args.map (postLocalOfArg st.vm)
     -- Pick the binding name: a generic `tN` for forward-only
     -- calls; an `<input>_post` shape when we know which `&mut`
@@ -1074,7 +1101,8 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     local. We prefer the sub-walk's `vm` over the raw cert SymExpr
     because the sub-walk has already lifted symbolic ids into named
     `t<N>` / `x<N>` bindings through the events. -/
-def renderJoinSide (vm : VarMap) (cs_env : Array (Nat × SymExpr))
+def renderJoinSide (tdm : TypeDeclMap) (vm : VarMap)
+    (cs_env : Array (Nat × SymExpr))
     (target : Nat) : Option PExpr :=
   match vm[target]? with
   | some e => some e
@@ -1083,7 +1111,7 @@ def renderJoinSide (vm : VarMap) (cs_env : Array (Nat × SymExpr))
     -- an entry. (Should be rare — sub-walks populate vm for every
     -- local they touch.)
     let entry := cs_env.find? (fun (l, _) => l == target)
-    entry.map fun (_, se) => lookupSymExpr vm se
+    entry.map fun (_, se) => lookupSymExpr tdm vm se
 
 /-- Identify locals whose post-join value should be expressed as an
     `if cond then <left> else <right>` binding. Pragmatic heuristic:
@@ -1124,10 +1152,19 @@ def joinedLocals (left right result : StateSummary) : Array Nat :=
     expression. Binops emit `Result α`-typed apps already; double-
     wrapping them would change semantics. M12.2a-2: also recognize
     `ifThenElse` whose branches are themselves already Result-typed
-    (each branch was built via [assembleBody] which wraps in `ok`). -/
+    (each branch was built via [assembleBody] which wraps in `ok`).
+    M9.5f: an `.app` whose head contains a `.` is a *qualified
+    constructor application* (`NumOrZero.Num x1`) — pure, not Result-
+    typed, so it must be wrapped in `ok`. The OCaml interpreter
+    never threads a binop / wrapping-op result directly into the
+    return slot (those go through a fresh `tN` binding), so the
+    `.app` branch only ever sees ctor applications. -/
 def tailToResult (e : PExpr) : PExpr :=
   match e with
-  | .app _ _ => e  -- Already monadic — binops are Result-typed.
+  | .app head _ =>
+    -- A qualified constructor (`<TypeName>.<Variant>` or
+    -- `<Type>.<assoc>`) is a pure value and must be wrapped.
+    if head.contains '.' then .ok e else e
   | .ifThenElse _ _ _ => e  -- Branches are already Result-typed.
   | .matchE _ _ => e  -- M9.5d: arms are already Result-typed.
   | _ => .ok e
@@ -1331,21 +1368,16 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
               -- Tail value = vm[0] (the LLBC return slot). For arms
               -- whose body is just an EvAssign to local 0 of a
               -- SymVariant rhs, vm[0] is that variant ctor expression.
-              -- Qualify variant ctors with the adt name here so the
-              -- emitter produces `Sign.Pos` not bare `Pos`.
+              -- M9.5d: qualify variant ctors with the adt name here so
+              -- the emitter produces `Sign.Pos` not bare `Pos`.
+              -- M9.5f: the [lookupSymExpr] path now qualifies on its
+              -- own via `tdm`, so this fallback is idempotent — we
+              -- only prepend `<adtName>.` when the name is a bare
+              -- capitalised token (no embedded `.`). This keeps older
+              -- code paths and the `.var "()"` fallback safe.
               let qualify : PExpr → PExpr
                 | .var name =>
-                  -- Heuristic: if the bare name matches a known
-                  -- variant of `adtName`, prepend `<adtName>.`.
-                  -- Since the bare name was stored from
-                  -- `symVariant`'s `variantName` field, we just
-                  -- always qualify here (the var name was the bare
-                  -- variant name and can't accidentally match a
-                  -- normal local because locals are `xK`/`tK`/`sK`/
-                  -- `bK` which all start with a lowercase letter
-                  -- followed by a digit). M9.5e: payload binders are
-                  -- lowercase `xK` so they're untouched.
-                  if name.length ≥ 1 ∧ name.front.isUpper then
+                  if name.length ≥ 1 ∧ name.front.isUpper ∧ !name.contains '.' then
                     .var s!"{adtName}.{name}"
                   else .var name
                 | e => e
@@ -1499,8 +1531,8 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
             let st' := locals.foldl (init := { st with
               fresh := rightSub.fresh
               vm := st.vm }) fun acc target =>
-              let leftValOpt := renderJoinSide leftSub.vm leftSummary.env target
-              let rightValOpt := renderJoinSide rightSub.vm rightSummary.env target
+              let leftValOpt := renderJoinSide st.tdm leftSub.vm leftSummary.env target
+              let rightValOpt := renderJoinSide st.tdm rightSub.vm rightSummary.env target
               match leftValOpt, rightValOpt with
               | some lE, some rE =>
                 -- Wrap each branch with the sub-walk's binds so the

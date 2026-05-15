@@ -113,7 +113,16 @@ partial def parseSymExpr (j : Json) : Result SymExpr := do
     let adtId ← asNat (← field payload "adt_id")
     let variantId ← asNat (← field payload "variant_id")
     let variantName ← asStr (← field payload "variant_name")
-    return .symVariant adtId variantId variantName
+    -- M9.5f: the `fields` array carries one cert sym-expr per payload
+    -- operand of an `AggregatedAdt`. Empty for C-style nullary
+    -- variants. We tolerate a missing key for backward compatibility
+    -- with M9.5d/M9.5e-vintage certs that pre-date the field.
+    let fields ← match payload.getObjValD "fields" with
+      | .null => pure (#[] : Array SymExpr)
+      | fj =>
+        let arr ← asArr fj
+        arr.mapM parseSymExpr
+    return .symVariant adtId variantId variantName fields
   | _ => fail s!"unknown SymExpr tag: {tag}"
 
 def parseRestoreInfo (j : Json) : Result RestoreInfo := do

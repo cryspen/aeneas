@@ -40,13 +40,14 @@ def evalSymExpr (st : SymState) (e : SymExpr) : Result Val := do
     let v := st.getLocal (placeRootLocal p)
     return v
   | .symMutBorrowTok b => return .mutLoan b
-  | .symVariant _ vid _ =>
-    -- M9.5d: a C-style enum variant ctor. The abstract symbolic state
+  | .symVariant _ vid _ _ =>
+    -- M9.5d / M9.5f: an enum variant ctor. The abstract symbolic state
     -- doesn't (yet) model ADT values structurally; we project the
     -- variant id onto a fresh symbolic value tag so the replayer can
     -- thread it through subsequent reads. This is sound for M9.5d's
     -- forward-only checking — the Lean translator handles the actual
-    -- match-arm semantics through the EvMatchArm event log.
+    -- match-arm semantics through the EvMatchArm event log. M9.5f's
+    -- payload fields don't affect the abstract state at this layer.
     return .sym vid
 
 /-! ## E-MutBorrow
@@ -272,7 +273,7 @@ def valOfSymExpr : SymExpr → Val
   | .symLit l => .lit l
   | .symCopy _ | .symMove _ => .bottom
   | .symMutBorrowTok b => .mutLoan b
-  | .symVariant _ vid _ => .sym vid
+  | .symVariant _ vid _ _ => .sym vid
 
 /-- Decide whether two `SymExpr` cert values are observationally equal
     for the purposes of the M11 join check. Two `SymVal n` are equal

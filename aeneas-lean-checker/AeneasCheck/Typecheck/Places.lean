@@ -37,6 +37,6 @@ def checkSymExpr (e : SymExpr) : TC Unit := do
   | .symCopy p => checkPlace p
   | .symMove p => checkPlace p
   | .symMutBorrowTok _ => pure ()
-  | .symVariant _ _ _ => pure ()
+  | .symVariant _ _ _ _ => pure ()
 
 end AeneasCheck.Typecheck

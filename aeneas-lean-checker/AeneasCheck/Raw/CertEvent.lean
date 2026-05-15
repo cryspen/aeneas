@@ -18,13 +18,19 @@ inductive SymExpr
   | symCopy (p : Place)
   | symMove (p : Place)
   | symMutBorrowTok (borrowId : Nat)
-  /-- M9.5d: a C-style enum variant construction. `adtId` keys into the
+  /-- M9.5d / M9.5f: an enum variant construction. `adtId` keys into the
       crate's `typeDecls` table; `variantName` is the bare constructor
       name. Used as the RHS of an `EvAssign` whose Charon source was
-      a nullary-variant `AggregatedAdt`. The Lean emitter renders this
-      as `<adtName>.<variantName>` (where `adtName` is resolved via
-      the type-decl map). -/
+      a variant `AggregatedAdt`.
+
+      M9.5d covered only the nullary case (empty [fields]); M9.5f
+      extends this with one [SymExpr] per payload field. The Lean
+      emitter renders nullary variants as `<adtName>.<variantName>`
+      and payload-bearing ones as
+      `<adtName>.<variantName> <e1> ... <eN>` (with the qualification
+      resolved via the type-decl map). -/
   | symVariant (adtId variantId : Nat) (variantName : String)
+               (fields : Array SymExpr)
   deriving Repr
 
 /-- Restoration info for an EvEndBorrow event. -/

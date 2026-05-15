@@ -230,7 +230,7 @@ def buildLoopBody (fnName : String)
           let trimmed := setupSt.binds.pop
           return (PExpr.app head args, { setupSt with binds := trimmed })
         | _ => return (PExpr.var nm, setupSt)
-      | _ => return (lookupSymExpr setupSt.vm cond, setupSt)
+      | _ => return (lookupSymExpr setupSt.tdm setupSt.vm cond, setupSt)
     -- Continue branch: events tIdx+1 .. fIdx-1.
     let contEvs := bodyEvs.extract (tIdx + 1) fIdx
     let contSt : WalkState :=

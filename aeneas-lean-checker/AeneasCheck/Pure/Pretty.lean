@@ -341,8 +341,16 @@ def Decl.toLean (d : Decl) : String :=
     if retStr.contains ' ' && !retStr.startsWith "(" then
       s!"({retStr})"
     else retStr
+  -- M9.5f: a zero-param function (e.g. `zero : Result NumOrZero`)
+  -- has empty `params`. The standard backend emits `def zero :
+  -- Result …` with a single space before `:`; concatenating `params`
+  -- naively would yield `def zero  :` (double space). Build the
+  -- signature head explicitly so both shapes are byte-clean.
+  let sigHead :=
+    if d.params.isEmpty then s!"def {d.name} : Result {retParens}"
+    else s!"def {d.name} {params} : Result {retParens}"
   d.docComment ++ d.noteBlock ++ d.attrPrefix ++
-  s!"def {d.name} {params} : Result {retParens} := do\n  {d.body.toLeanDo}"
+  s!"{sigHead} := do\n  {d.body.toLeanDo}"
 
 /-- M9.5b: docstring for a `structure` decl. Mirrors `Decl.docComment`
     but uses the `[crate::Foo]` form without a trailing colon (the
