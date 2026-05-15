@@ -338,7 +338,10 @@ def parseTypeDecl (j : Json) : Result TypeDecl := do
       | .bool b => pure b
       | _ => pure false
     | none => pure false
-  return { id, name, kind, typeParams, isTupleStruct }
+  let sourceSpan ← match (j.getObjVal? "source_span").toOption with
+    | some sj => do let s ← parseSourceSpan sj; pure (some s)
+    | none => pure none
+  return { id, name, kind, typeParams, isTupleStruct, sourceSpan }
 
 /-- M9.5l: parse one `TraitMethodDecl`. -/
 def parseTraitMethodDecl (j : Json) : Result TraitMethodDecl := do
@@ -350,9 +353,15 @@ def parseTraitMethodDecl (j : Json) : Result TraitMethodDecl := do
 def parseTraitDecl (j : Json) : Result TraitDecl := do
   let id ← asNat (← field j "id")
   let name ← asStr (← field j "name")
+  let qualifiedName ← match (j.getObjVal? "qualified_name").toOption with
+    | some qj => asStr qj
+    | none => pure name
   let methodArr ← asArr (← field j "methods")
   let methods ← methodArr.mapM parseTraitMethodDecl
-  return { id, name, methods }
+  let sourceSpan ← match (j.getObjVal? "source_span").toOption with
+    | some sj => do let s ← parseSourceSpan sj; pure (some s)
+    | none => pure none
+  return { id, name, qualifiedName, methods, sourceSpan }
 
 /-- M9.5l: parse one `TraitImplMethod`. -/
 def parseTraitImplMethod (j : Json) : Result TraitImplMethod := do
@@ -366,13 +375,19 @@ def parseTraitImplMethod (j : Json) : Result TraitImplMethod := do
 def parseTraitImpl (j : Json) : Result TraitImpl := do
   let id ← asNat (← field j "id")
   let prettyName ← asStr (← field j "pretty_name")
+  let qualifiedName ← match (j.getObjVal? "qualified_name").toOption with
+    | some qj => asStr qj
+    | none => pure prettyName
   let traitDeclId ← asNat (← field j "trait_decl_id")
   let selfTypeDeclId : Option Nat ← match (j.getObjVal? "self_type_decl_id").toOption with
     | some sj => do let n ← asNat sj; pure (some n)
     | none => pure none
   let methodArr ← asArr (← field j "methods")
   let methods ← methodArr.mapM parseTraitImplMethod
-  return { id, prettyName, traitDeclId, selfTypeDeclId, methods }
+  let sourceSpan ← match (j.getObjVal? "source_span").toOption with
+    | some sj => do let s ← parseSourceSpan sj; pure (some s)
+    | none => pure none
+  return { id, prettyName, qualifiedName, traitDeclId, selfTypeDeclId, methods, sourceSpan }
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")

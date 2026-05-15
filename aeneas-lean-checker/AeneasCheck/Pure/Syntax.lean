@@ -141,6 +141,15 @@ structure StructDecl where
       printer renders these as `(T : Type)` parameters on the
       `structure` header. -/
   typeParams : Array String := #[]
+  /-- M9.5l: true iff the struct uses tuple-style (positional) fields,
+      OR is a unit struct (`struct Tag;` — zero-field tuple struct).
+      For a zero-field tuple struct the pretty-printer emits
+      `@[reducible] def <Name> := Unit` (no `structure` block);
+      for N-field tuple structs it would emit field names like
+      `field0`, `field1`, … (deferred — out of M9.5l scope for now
+      since the fixture only exercises the unit case). Defaults to
+      false (named-field struct, the M9.5b shape). -/
+  isTupleStruct : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5d / M9.5e: a single variant in an `EnumDecl`. M9.5d's C-style
@@ -213,16 +222,71 @@ structure Decl where
   trailer : Option String := none
   deriving Repr, Inhabited
 
+/-- M9.5l: one method declared in a trait. `name` is the bare method
+    name (`value`). `ty` is the method's Lean-level type signature
+    *as a function type from `Self` to the result*, e.g.
+    `Self → Result Std.U32`. We keep the full type as a single `PTy`
+    (`.arrow (.tyVar "Self") (.result …)` etc.) rather than splitting
+    into `params + retTy` so the pretty-printer can render the method
+    body uniformly. -/
+structure TraitMethod where
+  name : String
+  ty : PTy
+  deriving Repr, Inhabited
+
+/-- M9.5l: a `structure <Name> (Self : Type) where …` declaration —
+    the standard Aeneas backend's encoding of a Rust trait. M9.5l only
+    handles single-method, no-associated-types, no-default-methods
+    traits. The pretty-printer renders each method as one
+    `<name> : <ty>` line under the structure header. -/
+structure TraitDecl where
+  name : String
+  qualifiedName : String
+  methods : Array TraitMethod
+  sourceSpan : Option Raw.SourceSpan := none
+  deriving Repr, Inhabited
+
+/-- M9.5l: one method's body binding inside a trait impl. `name` is
+    the trait method's bare name (matches an entry in the trait's
+    `methods` array). `body` is the qualified Lean name of the body
+    function (e.g. `Tag.Insts.Traits_basicNumeric.value`) — pre-
+    computed by the OCaml cert side and threaded through the
+    translator. The instance literal renders as
+    `{ <name> := <body> }`. -/
+structure TraitImplMethod where
+  name : String
+  body : String
+  deriving Repr, Inhabited
+
+/-- M9.5l: an `@[reducible] def <Name> : <TraitName> <SelfTy> := { … }`
+    declaration — the standard Aeneas backend's encoding of a Rust
+    trait impl. `name` is the standard-backend's full Lean name
+    (e.g. `Tag.Insts.Traits_basicNumeric`); `traitName` is the bare
+    trait name (`Numeric`); `selfTy` is the Self ADT (e.g. `.adt "Tag" #[]`).
+    M9.5l only handles single-method, concrete-Self impls. -/
+structure TraitImpl where
+  name : String
+  qualifiedName : String
+  traitName : String
+  selfTy : PTy
+  methods : Array TraitImplMethod
+  sourceSpan : Option Raw.SourceSpan := none
+  deriving Repr, Inhabited
+
 /-- M9.5b: a crate-level emit unit. The translator now interleaves
     struct / enum decls and function decls so the emitter can render
     them in cert order (with type decls forced to come before any
     function that uses them, in [LeanEmit]'s ordering pass).
 
-    M9.5d added `enum`. -/
+    M9.5d added `enum`. M9.5l added `traitDecl` + `traitImpl` so trait
+    + impl blocks can be emitted alongside structs / enums in the
+    crate namespace. -/
 inductive TopDecl
   | struct (sd : StructDecl)
   | enum (ed : EnumDecl)
   | function (d : Decl)
+  | traitDecl (td : TraitDecl)
+  | traitImpl (ti : TraitImpl)
   deriving Repr, Inhabited
 
 /-- M9.5b: derive the `crate::…` qualified name of a top decl, for
@@ -231,5 +295,7 @@ def TopDecl.qualifiedName : TopDecl → String
   | .struct sd => sd.qualifiedName
   | .enum ed => ed.qualifiedName
   | .function d => d.qualifiedName
+  | .traitDecl td => td.qualifiedName
+  | .traitImpl ti => ti.qualifiedName
 
 end AeneasCheck.Pure

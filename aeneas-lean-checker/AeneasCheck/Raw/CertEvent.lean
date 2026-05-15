@@ -184,6 +184,9 @@ structure TypeDecl where
       (tuple struct with N fields). Defaults to false on the Lean
       side when the cert key is absent (pre-M9.5l certs). -/
   isTupleStruct : Bool := false
+  /-- M9.5l: source span for the type decl's source-code definition.
+      Optional for back-compat (pre-M9.5l certs have no span). -/
+  sourceSpan : Option SourceSpan := none
   deriving Repr, Inhabited
 
 /-- M9.5l: one method declared in a trait. Mirrors `cert_trait_method`
@@ -202,7 +205,11 @@ structure TraitMethodDecl where
 structure TraitDecl where
   id : Nat
   name : String
+  /-- Crate-prefixed qualified name (`traits_basic::Numeric`) used in
+      the Lean per-decl docstring. -/
+  qualifiedName : String
   methods : Array TraitMethodDecl
+  sourceSpan : Option SourceSpan := none
   deriving Repr, Inhabited
 
 /-- M9.5l: one method implemented in a trait impl. `fnId` is the
@@ -223,9 +230,14 @@ structure TraitImplMethod where
 structure TraitImpl where
   id : Nat
   prettyName : String
+  /-- Crate-prefixed qualified name
+      (`traits_basic::{traits_basic::Numeric for traits_basic::Tag}`)
+      used in the Lean per-decl docstring. -/
+  qualifiedName : String
   traitDeclId : Nat
   selfTypeDeclId : Option Nat
   methods : Array TraitImplMethod
+  sourceSpan : Option SourceSpan := none
   deriving Repr, Inhabited
 
 /-- Top-level cert. -/

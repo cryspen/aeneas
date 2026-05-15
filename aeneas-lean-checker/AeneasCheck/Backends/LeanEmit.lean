@@ -51,6 +51,12 @@ def emitStruct (sd : StructDecl) : String := sd.toLean ++ "\n"
 /-- M9.5d: render one `inductive Foo where …` block. -/
 def emitEnum (ed : EnumDecl) : String := ed.toLean ++ "\n"
 
+/-- M9.5l: render one `structure <Trait> (Self : Type) where …` block. -/
+def emitTraitDecl (td : TraitDecl) : String := td.toLean ++ "\n"
+
+/-- M9.5l: render one `@[reducible] def <Impl> : <Trait> <Self> := { … }` block. -/
+def emitTraitImpl (ti : TraitImpl) : String := ti.toLean ++ "\n"
+
 /-- Group function decls into namespace blocks keyed by their crate
     prefix. Order within each group is preserved (cert iteration
     order). -/
@@ -86,26 +92,85 @@ private def groupEnumsByCrate (eds : Array EnumDecl) :
       buckets := buckets.insert c ((buckets.getD c #[]).push ed)
     return buckets
 
-/-- Emit one `namespace …` block: structs and enums first, then `def`s.
-    The Aeneas standard backend emits type decls before any function
-    that mentions them; for the M9.5b/d subset (single-crate, no
-    cross-crate ADT use) putting all type decls first is equivalent. -/
-def emitNamespace (c : String) (structs : Array StructDecl)
-    (enums : Array EnumDecl) (decls : Array Decl) : String :=
+/-- M9.5l: same grouping for trait decls. -/
+private def groupTraitDeclsByCrate (tds : Array TraitDecl) :
+    Std.HashMap String (Array TraitDecl) :=
+  Id.run do
+    let mut buckets : Std.HashMap String (Array TraitDecl) := {}
+    for td in tds do
+      let c := crateOf td.qualifiedName
+      buckets := buckets.insert c ((buckets.getD c #[]).push td)
+    return buckets
+
+/-- M9.5l: same grouping for trait impls. -/
+private def groupTraitImplsByCrate (tis : Array TraitImpl) :
+    Std.HashMap String (Array TraitImpl) :=
+  Id.run do
+    let mut buckets : Std.HashMap String (Array TraitImpl) := {}
+    for ti in tis do
+      let c := crateOf ti.qualifiedName
+      buckets := buckets.insert c ((buckets.getD c #[]).push ti)
+    return buckets
+
+/-- M9.5l: a function decl is an "impl method body" when its `name`
+    contains `.Insts.` — the standard-Aeneas naming convention for a
+    trait-impl method body (e.g. `Tag.Insts.Traits_basicNumeric.value`).
+    The translator rewrites the impl method body's `def`-header name
+    to this shape from the Charon `{...}::value` form. -/
+private def isImplMethodBody (d : Decl) : Bool :=
+  (d.name.splitOn ".Insts.").length ≥ 2
+
+/-- Emit one `namespace …` block. Ordering, mirroring the standard
+    Aeneas backend's output for a `traits_basic`-shaped crate:
+    1. trait decls
+    2. struct + enum decls
+    3. impl method body `def`s
+    4. trait impl instance `@[reducible] def`s
+    5. remaining (caller) `def`s
+
+    For a crate with no traits / no impls the order collapses to
+    the M9.5b shape (structs/enums first, then all functions). -/
+def emitNamespace (c : String) (traits : Array TraitDecl)
+    (structs : Array StructDecl) (enums : Array EnumDecl)
+    (impls : Array TraitImpl) (decls : Array Decl) : String :=
+  let traitBody := String.intercalate "\n" (traits.toList.map emitTraitDecl)
   let structBody := String.intercalate "\n" (structs.toList.map emitStruct)
   let enumBody := String.intercalate "\n" (enums.toList.map emitEnum)
-  let fnBody := String.intercalate "\n" (decls.toList.map emitDecl)
+  -- Split function decls into impl-method bodies vs caller bodies.
+  let implMethods := decls.filter isImplMethodBody
+  let callerDecls := decls.filter (fun d => !isImplMethodBody d)
+  let implFnBody :=
+    String.intercalate "\n" (implMethods.toList.map emitDecl)
+  let implInstBody :=
+    String.intercalate "\n" (impls.toList.map emitTraitImpl)
+  let callerFnBody :=
+    String.intercalate "\n" (callerDecls.toList.map emitDecl)
+  let sepT := if traits.isEmpty then "" else "\n"
   let sepS := if structs.isEmpty then "" else "\n"
   let sepE := if enums.isEmpty then "" else "\n"
-  s!"namespace {c}\n\n" ++ structBody ++ sepS ++ enumBody ++ sepE ++
-    fnBody ++ s!"\nend {c}\n"
+  let sepIM := if implMethods.isEmpty then "" else "\n"
+  let sepII := if impls.isEmpty then "" else "\n"
+  s!"namespace {c}\n\n"
+    ++ traitBody ++ sepT
+    ++ structBody ++ sepS
+    ++ enumBody ++ sepE
+    ++ implFnBody ++ sepIM
+    ++ implInstBody ++ sepII
+    ++ callerFnBody
+    ++ s!"\nend {c}\n"
 
 /-- Top-level entry: header + one namespace block per crate. Type
-    decls (structs + enums) come before functions in each namespace. -/
+    decls (structs + enums) come before functions in each namespace.
+
+    M9.5l: trait decls come BEFORE structs/enums; trait impls go
+    between impl method body `def`s and caller `def`s — see
+    `emitNamespace` for the full ordering. -/
 def emitTranslatedCrate (crateName : String) (tc : TranslatedCrate) : String :=
   let groups := groupByCrate tc.decls
   let structBuckets := groupStructsByCrate tc.structs
   let enumBuckets := groupEnumsByCrate tc.enums
+  let traitDeclBuckets := groupTraitDeclsByCrate tc.traitDecls
+  let traitImplBuckets := groupTraitImplsByCrate tc.traitImpls
   let header := emitHeader crateName
   -- M9.5b: a crate may have type decls but no function decls (rare).
   -- For now the grouping iterates only crates that have function
@@ -113,7 +178,12 @@ def emitTranslatedCrate (crateName : String) (tc : TranslatedCrate) : String :=
   -- fixtures under test all have at least one function per crate.
   let namespaces :=
     String.intercalate "\n" (groups.toList.map fun (c, ds) =>
-      emitNamespace c (structBuckets.getD c #[]) (enumBuckets.getD c #[]) ds)
+      emitNamespace c
+        (traitDeclBuckets.getD c #[])
+        (structBuckets.getD c #[])
+        (enumBuckets.getD c #[])
+        (traitImplBuckets.getD c #[])
+        ds)
   header ++ namespaces
 
 end AeneasCheck.Backends

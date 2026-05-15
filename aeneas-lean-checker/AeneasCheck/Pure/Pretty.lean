@@ -430,20 +430,49 @@ def StructDecl.docComment (sd : StructDecl) : String :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
     s!"/-- [{sd.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
 
+/-- M9.5l: docstring for a unit-struct alias. The standard Aeneas
+    backend adds a `Visibility: public` line that we elide (we
+    universally elide it across all decls — known cosmetic drift). -/
+private def StructDecl.unitAliasDocComment (sd : StructDecl) : String :=
+  match sd.sourceSpan with
+  | none => ""
+  | some sp =>
+    let loc :=
+      s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
+    s!"/-- [{sd.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+
 /-- M9.5b: render a `structure Foo where …` block. Each field becomes
     one `  name : ty` line. Empty-field structs still emit the
-    `structure` header (so the type is constructable as `{}` in Lean). -/
+    `structure` header (so the type is constructable as `{}` in Lean).
+
+    M9.5l: a tuple struct with zero fields renders as
+    `@[reducible] def <Name> := Unit` instead — matching the standard
+    Aeneas backend's encoding of `pub struct Tag;`. The `@[reducible]`
+    attribute is needed so Lean's elaborator unfolds the alias when
+    typechecking a `Numeric Tag` instance ascription. -/
 def StructDecl.toLean (sd : StructDecl) : String :=
-  -- M9.5i: explicit type-param binders go between the name and the
-  -- `where`, rendered as `(T : Type) (U : Type) …`. Empty for
-  -- monomorphic structs (the M9.5b shape).
-  let typeBinders :=
-    if sd.typeParams.isEmpty then ""
-    else " " ++ String.intercalate " "
-      (sd.typeParams.toList.map fun n => s!"({n} : Type)")
-  let header := s!"structure {sd.name}{typeBinders} where"
-  let body := sd.fields.toList.map fun f => s!"  {f.name} : {f.ty.toLean}"
-  sd.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
+  if sd.isTupleStruct ∧ sd.fields.isEmpty then
+    -- M9.5l: unit struct → `@[reducible] def <Name> := Unit`.
+    -- Type parameters on a unit struct are a degenerate case
+    -- (e.g. `struct Phantom<T>;`); we render them anyway as
+    -- `(T : Type)` binders before the `:=` for forward-compat.
+    let typeBinders :=
+      if sd.typeParams.isEmpty then ""
+      else " " ++ String.intercalate " "
+        (sd.typeParams.toList.map fun n => s!"({n} : Type)")
+    sd.unitAliasDocComment ++ "@[reducible]\n" ++
+      s!"def {sd.name}{typeBinders} := Unit"
+  else
+    -- M9.5i: explicit type-param binders go between the name and the
+    -- `where`, rendered as `(T : Type) (U : Type) …`. Empty for
+    -- monomorphic structs (the M9.5b shape).
+    let typeBinders :=
+      if sd.typeParams.isEmpty then ""
+      else " " ++ String.intercalate " "
+        (sd.typeParams.toList.map fun n => s!"({n} : Type)")
+    let header := s!"structure {sd.name}{typeBinders} where"
+    let body := sd.fields.toList.map fun f => s!"  {f.name} : {f.ty.toLean}"
+    sd.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
 
 /-- M9.5d: docstring for an `inductive` decl, same shape as
     [StructDecl.docComment]. -/
@@ -487,11 +516,64 @@ def EnumDecl.toLean (ed : EnumDecl) : String :=
       s!"| {v.name} : {signature}"
   ed.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
 
+/-- M9.5l: docstring for a `trait` decl. The standard Aeneas backend
+    prefixes the comment with `Trait declaration: ` and lists the
+    qualified name in `[...]` brackets — mirror that exactly. -/
+def TraitDecl.docComment (td : TraitDecl) : String :=
+  match td.sourceSpan with
+  | none => ""
+  | some sp =>
+    let loc :=
+      s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
+    s!"/-- Trait declaration: [{td.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+
+/-- M9.5l: render a method type at the trait-method-row top level —
+    i.e. strip the outer `( … )` that `PTy.toLean` would add around an
+    `.arrow` so the standard backend's `value : Self → Result Std.U32`
+    shape comes out unwrapped (the `app`-arg form keeps its parens). -/
+private def PTy.toLeanMethodSlot : PTy → String
+  | .arrow dom cod => s!"{dom.toLean} → {cod.toLean}"
+  | other => other.toLean
+
+/-- M9.5l: render a `structure <Name> (Self : Type) where …` block.
+    Each method becomes one `  <name> : <ty>` line under the header.
+    Matches the standard Aeneas backend's encoding of a Rust trait —
+    Aeneas uses a Lean `structure`, not a typeclass, so impl resolution
+    happens via named instances rather than implicit search. -/
+def TraitDecl.toLean (td : TraitDecl) : String :=
+  let header := s!"structure {td.name} (Self : Type) where"
+  let body := td.methods.toList.map fun m =>
+    s!"  {m.name} : {PTy.toLeanMethodSlot m.ty}"
+  td.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
+
+/-- M9.5l: docstring for a trait impl. Mirrors the standard backend's
+    `Trait implementation: [<qualified>]` prefix shape. -/
+def TraitImpl.docComment (ti : TraitImpl) : String :=
+  match ti.sourceSpan with
+  | none => ""
+  | some sp =>
+    let loc :=
+      s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
+    s!"/-- Trait implementation: [{ti.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+
+/-- M9.5l: render an `@[reducible] def <Name> : <TraitName> <SelfTy>
+    := { … }` block. The instance literal binds each method to its
+    pre-computed body name (already qualified, e.g.
+    `Tag.Insts.Traits_basicNumeric.value`). -/
+def TraitImpl.toLean (ti : TraitImpl) : String :=
+  let methodLines := ti.methods.toList.map fun m =>
+    s!"  {m.name} := {m.body}"
+  let header := s!"@[reducible]\ndef {ti.name} : {ti.traitName} {ti.selfTy.toLean} := \{"
+  ti.docComment ++ header ++ "\n" ++
+    String.intercalate "\n" methodLines ++ "\n}"
+
 /-- M9.5b: render a `TopDecl` (struct / enum / function) into Lean
-    source. M9.5d added the enum case. -/
+    source. M9.5d added the enum case. M9.5l added trait decls + impls. -/
 def TopDecl.toLean : TopDecl → String
   | .struct sd => sd.toLean
   | .enum ed => ed.toLean
   | .function d => d.toLean
+  | .traitDecl td => td.toLean
+  | .traitImpl ti => ti.toLean
 
 end AeneasCheck.Pure

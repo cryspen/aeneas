@@ -24,6 +24,15 @@ structure TranslatedCrate where
   /-- M9.5d: ADT enum decls, in cert order. Emitted alongside struct
       decls (before function decls). Empty for crates with no enums. -/
   enums : Array EnumDecl := #[]
+  /-- M9.5l: trait decls, in cert order. Emitted before any impl that
+      references them (impls come after); both go in the crate
+      namespace alongside structs / enums. -/
+  traitDecls : Array Pure.TraitDecl := #[]
+  /-- M9.5l: trait impls, in cert order. Each impl's `methods`
+      reference body functions by their pre-computed `prettyName`,
+      which the call-site emitter also uses (via the
+      `fnIdPrettyName` table threaded through `translateFunWith`). -/
+  traitImpls : Array Pure.TraitImpl := #[]
   deriving Inhabited
 
 /-- M9.5b: build the [TypeDeclMap] used by the per-function translator
@@ -60,7 +69,10 @@ def buildTypeDeclMap (cc : CrateCert) : TypeDeclMap := Id.run do
     silently skip those — M9.5c+ will surface them). Field types
     come through as opaque cert strings; we feed them through
     `rawTyToPTyWith` (defined in Forward.lean) to get a concrete
-    Pure type. -/
+    Pure type.
+
+    M9.5l: `isTupleStruct` flows through so the pretty-printer can
+    render unit structs as `@[reducible] def Tag := Unit`. -/
 def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) :
     Option StructDecl :=
   match td.kind with
@@ -78,7 +90,9 @@ def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl
       { name := td.name
         qualifiedName := s!"{crateName}::{td.name}"
         fields := pureFields
-        typeParams := td.typeParams }
+        typeParams := td.typeParams
+        isTupleStruct := td.isTupleStruct
+        sourceSpan := td.sourceSpan }
   | .enum _ => none
   | .opaque => none
 
@@ -108,9 +122,148 @@ def enumDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) 
       { name := td.name
         qualifiedName := s!"{crateName}::{td.name}"
         variants := pureVariants
-        typeParams := td.typeParams }
+        typeParams := td.typeParams
+        sourceSpan := td.sourceSpan }
   | .struct _ => none
   | .opaque => none
+
+/-- M9.5l: heuristic strip of an outer `TRef (…, RShared)` /
+    `TRef (…, RMut)` wrapper around a cert type string, returning the
+    inner type substring. The standard backend's pure layer drops
+    the borrow shape from method input types; we mirror that for the
+    trait-declaration's `self` parameter.
+
+    The cert string for `&T` arrives as
+    `(Generated_Types.TRef (<region>, <inner>, Generated_Types.RShared))`
+    where `<inner>` is itself a parenthesised cert type. We find the
+    second top-level comma inside the outer `TRef (…)` and return
+    the slice between the two commas, trimmed. Returns the original
+    string when the shape doesn't match (so the regular
+    `rawTyToPTyWithVars` path handles non-ref types). -/
+private def stripOuterRef (s : String) : String := Id.run do
+  -- Locate the start of the outer `TRef`.
+  let parts := s.splitOn "TRef"
+  if parts.length < 2 then return s
+  -- After the first `TRef`, scan for the opening `(` of the args list,
+  -- then walk the chars tracking paren depth. Two top-level commas
+  -- (depth = 1) delimit the three args: region, inner, ref-kind.
+  let after := parts.tail!.head!
+  let chars := after.toList
+  let mut depth : Nat := 0
+  let mut innerStart : Option Nat := none
+  let mut innerEnd : Option Nat := none
+  let mut commaCount : Nat := 0
+  let mut idx : Nat := 0
+  for c in chars do
+    if c = '(' then depth := depth + 1
+    else if c = ')' then
+      if depth = 0 then break
+      else depth := depth - 1
+    else if c = ',' ∧ depth = 1 then
+      commaCount := commaCount + 1
+      if commaCount = 1 then innerStart := some (idx + 1)
+      else if commaCount = 2 then innerEnd := some idx
+    idx := idx + 1
+  match innerStart, innerEnd with
+  | some a, some b =>
+    if a ≥ b then return s
+    let n := b - a
+    let chrs := (after.toList.drop a).take n
+    let trimmed := (chrs.dropWhile Char.isWhitespace).reverse.dropWhile
+      Char.isWhitespace
+    return String.ofList trimmed.reverse
+  | _, _ => return s
+
+/-- M9.5l: lift a cert `TraitDecl` into a Pure `TraitDecl`. The trait
+    method's signature in the cert always has `Self` as its first
+    parameter; we render the method as a `Self → Result <output>`
+    function-type. Borrow heads on input types are stripped (the
+    standard backend's pure layer does the same). -/
+def traitDeclOfCert (tdm : TypeDeclMap) (_crateName : String)
+    (td : Raw.TraitDecl) : Pure.TraitDecl :=
+  -- For the M9.5l minimal-case trait, the binder always introduces
+  -- exactly one type parameter named "Self". The cert's
+  -- `TVar (Free 0)` references resolve to this name.
+  let selfParams : Array String := #[ "Self" ]
+  let methods : Array Pure.TraitMethod := td.methods.map fun m =>
+    let inputs : Array PTy := m.signature.inputs.map fun rt =>
+      match rt with
+      | .opaque s =>
+        let stripped := stripOuterRef s
+        rawTyToPTyWithVars tdm selfParams (.opaque stripped)
+      | other => rawTyToPTyWithVars tdm selfParams other
+    let retInner : PTy :=
+      rawTyToPTyWithVars tdm selfParams m.signature.output
+    -- Build the method's full type: `inp1 → inp2 → … → Result retInner`.
+    -- For the minimal-case M9.5l fixture, `inputs` has exactly one
+    -- entry (`self : Self`), but we generalise to N inputs for
+    -- forward compatibility.
+    let buildArrow (acc : PTy) (xs : List PTy) : PTy :=
+      xs.foldr (fun a b => .arrow a b) acc
+    let ty := buildArrow (.result retInner) inputs.toList
+    { name := m.name, ty }
+  { name := td.name
+    qualifiedName := td.qualifiedName
+    methods
+    sourceSpan := td.sourceSpan }
+
+/-- M9.5l: lift a cert `TraitImpl` into a Pure `TraitImpl`. The impl
+    method's `body` is the trait-impl-method body function's
+    standard-backend Lean name (`<prettyName>.<methodName>`). The
+    Self type is resolved via `selfTypeDeclId` against the
+    `TypeDeclMap`. -/
+def traitImplOfCert (tdm : TypeDeclMap)
+    (traitNameById : Std.HashMap Nat String)
+    (_crateName : String) (ti : Raw.TraitImpl) : Pure.TraitImpl :=
+  let selfTy : PTy :=
+    match ti.selfTypeDeclId with
+    | some id =>
+      match tdm[id]? with
+      | some info => .adt info.name #[]
+      | none => .unit
+    | none => .unit
+  let traitName : String :=
+    traitNameById.getD ti.traitDeclId "__UnknownTrait"
+  let methods : Array Pure.TraitImplMethod := ti.methods.map fun m =>
+    { name := m.name, body := s!"{ti.prettyName}.{m.name}" }
+  { name := ti.prettyName
+    qualifiedName := ti.qualifiedName
+    traitName
+    selfTy
+    methods
+    sourceSpan := ti.sourceSpan }
+
+/-- M9.5l: traverse a `PExpr` and replace every `.app head args`
+    whose `head` matches a key in `pretty` with the corresponding
+    pretty name. Used to rewrite trait-impl-method call sites from
+    the Charon `traits_basic::{...}::value` form to the standard-
+    backend's `Tag.Insts.Traits_basicNumeric.value` form. -/
+partial def rewriteCalleeNames (pretty : Std.HashMap String String) :
+    PExpr → PExpr
+  | .var n => .var n
+  | .lit l => .lit l
+  | .app head args =>
+    let head' := pretty.getD head head
+    .app head' (args.map (rewriteCalleeNames pretty))
+  | .letIn n ty e1 e2 =>
+    .letIn n ty (rewriteCalleeNames pretty e1) (rewriteCalleeNames pretty e2)
+  | .ok e => .ok (rewriteCalleeNames pretty e)
+  | .ifThenElse c t e =>
+    .ifThenElse (rewriteCalleeNames pretty c)
+                (rewriteCalleeNames pretty t)
+                (rewriteCalleeNames pretty e)
+  | .tuple args => .tuple (args.map (rewriteCalleeNames pretty))
+  | .lam ps body => .lam ps (rewriteCalleeNames pretty body)
+  | .letPure n ty e1 e2 =>
+    .letPure n ty (rewriteCalleeNames pretty e1) (rewriteCalleeNames pretty e2)
+  | .letPat ps ty e1 e2 =>
+    .letPat ps ty (rewriteCalleeNames pretty e1) (rewriteCalleeNames pretty e2)
+  | .structUpdate base f v =>
+    .structUpdate (rewriteCalleeNames pretty base) f (rewriteCalleeNames pretty v)
+  | .matchE scr arms =>
+    .matchE (rewriteCalleeNames pretty scr)
+            (arms.map fun (ctor, binders, body) =>
+              (ctor, binders, rewriteCalleeNames pretty body))
 
 /-- Translate a whole crate cert. Per-function metadata (signature,
     source span) is taken from the cert's `FunCert`, while the
@@ -140,12 +293,54 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
     cc.typeDecls.filterMap (structDeclOfTypeDecl tdm crateName)
   let enums : Array EnumDecl :=
     cc.typeDecls.filterMap (enumDeclOfTypeDecl tdm crateName)
+  -- M9.5l: lift cert trait decls + impls into Pure IR. We also build
+  -- a `traitNameById` lookup so impls can resolve their target trait
+  -- by id.
+  let traitDecls : Array Pure.TraitDecl :=
+    cc.traitDecls.map (traitDeclOfCert tdm crateName)
+  let traitNameById : Std.HashMap Nat String :=
+    cc.traitDecls.foldl (init := {}) fun acc td =>
+      acc.insert td.id td.name
+  let traitImpls : Array Pure.TraitImpl :=
+    cc.traitImpls.map (traitImplOfCert tdm traitNameById crateName)
+  -- M9.5l: build a per-fn-id → pretty-name table so the Forward
+  -- translator can rewrite EvCall `fn_name` to its standard-backend
+  -- shape (e.g. `traits_basic::{...}::value` →
+  -- `Tag.Insts.Traits_basicNumeric.value`).
+  let fnPrettyByName : Std.HashMap String String :=
+    cc.functions.foldl (init := {}) fun acc f =>
+      match f.prettyName with
+      | some n => acc.insert f.fnName n
+      | none => acc
   let mut decls : Array Decl := #[]
   for i in [0:cc.functions.size] do
     let f := cc.functions[i]!
     match translateLoopFun f with
     | some loopDecls => decls := decls ++ loopDecls
     | none => decls := decls.push (translateFunWith tdm f traces[i]!)
-  return { decls, structs, enums }
+  -- M9.5l: rewrite each Decl's body to use pretty names for any
+  -- callee whose `fn_name` is in `fnPrettyByName`. Also rewrite the
+  -- Decl's own `name` when its qualifiedName carries a pretty-name
+  -- override (so the impl method body's `def` header uses
+  -- `Tag.Insts.Traits_basicNumeric.value` not `{...}.value`).
+  decls := decls.map fun d =>
+    let body := rewriteCalleeNames fnPrettyByName d.body
+    -- If this decl's *own* function name maps to a pretty name,
+    -- override its `name` (which the LeanEmit uses as the `def`
+    -- header). The impl-method body decl is the only case where
+    -- this triggers in M9.5l.
+    let nameOverride : Option String := fnPrettyByName[d.qualifiedName]?
+    match nameOverride with
+    | some n =>
+      -- Strip the leading crate segment to get the bare def name
+      -- within the crate namespace block. The pretty name format is
+      -- `Tag.Insts.<crateCap><Trait>.<method>` — we keep the full
+      -- name, since the namespace block in LeanEmit doesn't strip
+      -- it (the pretty name's segments aren't `::`-separated so the
+      -- existing splitOn logic ignores them).
+      { d with name := n, body }
+    | none =>
+      { d with body }
+  return { decls, structs, enums, traitDecls, traitImpls }
 
 end AeneasCheck.Translate
