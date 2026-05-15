@@ -322,6 +322,14 @@ type cert_type_decl = {
   ctd_source_span : cert_source_span option;
   (** [M9.5l] Source span for the type decl's source-code definition.
       Used by the Lean emitter for the per-decl docstring. *)
+  ctd_qualified_name : string;
+  (** [M9.5n] Crate-prefixed qualified name (e.g.
+      [core::option::Option], [alloc::alloc::Global],
+      [issue_194_recursive_struct_projector::AVLNode]). The Lean side
+      uses this to suppress emission of stdlib ADTs that already have
+      a Lean equivalent ([Option], [Result], [Ordering], …), avoiding
+      shadowing of the built-in [Option] in the emitted file's
+      `open Aeneas Aeneas.Std` scope. *)
 }
 [@@deriving show]
 

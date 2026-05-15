@@ -139,6 +139,7 @@ type cert_type_decl = {
   ctd_type_params : string list;
   ctd_is_tuple_struct : bool;
   ctd_source_span : cert_source_span option;
+  ctd_qualified_name : string;
 }
 
 type cert_trait_method = {

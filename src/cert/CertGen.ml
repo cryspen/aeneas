@@ -193,6 +193,12 @@ let collect_type_decls (crate : crate) : CertEvent.cert_type_decl list =
                td.generics.types;
            ctd_is_tuple_struct = is_tuple_struct;
            ctd_source_span = source_span_of_item_meta td.item_meta;
+           (* M9.5n: emit the qualified name so the Lean side can
+              recognise stdlib ADTs (`core::option::Option`,
+              `alloc::alloc::Global`, …) and skip re-emitting them
+              (they would shadow Lean's built-in `Option` and bloat
+              the output). *)
+           ctd_qualified_name = full_name;
          })
 
 (** [M9.5l] Bare last-segment name of a Charon item. For a trait

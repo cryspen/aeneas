@@ -389,6 +389,11 @@ let json_cert_type_decl (d : cert_type_decl) : Yojson.Basic.t =
           Defaults to false on the Lean side when the key is absent
           (older certs). *)
        "is_tuple_struct", `Bool d.ctd_is_tuple_struct;
+       (* M9.5n: crate-prefixed qualified name. The Lean side uses
+          this to suppress stdlib ADTs (`core::option::Option`,
+          `alloc::alloc::Global`, …) so they don't shadow / duplicate
+          Lean's built-ins in the emitted output. *)
+       "qualified_name", `String d.ctd_qualified_name;
      ]
     @ optional_span)
 
