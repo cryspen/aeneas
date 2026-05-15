@@ -81,6 +81,26 @@ def main : IO Unit := do
     IO.println s!"  ✓ saw {nEndAbsWithFinals} EvEndAbs with non-empty finalValues"
   else
     throw <| IO.userError "expected ≥ 1 EvEndAbs with non-empty finalValues (M10.2b)"
+  -- M11.2: the `pick` function's translation must spell out the
+  -- `if cond then ok x else ok y` shape. The fresh symbolic at the
+  -- join introduces the `let t<N> ← if ...` binding; subsequent
+  -- reads of the joined local pick up that binding.
+  match translateCrate callsCC with
+  | .error e => throw <| IO.userError s!"calls translate failed: {e}"
+  | .ok tc =>
+    let src := emitTranslatedCrate "calls" tc
+    let mustContain : List String := [
+      "def pick (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result Std.U32 := do",
+      "if x1 then ok x2 else ok x3",
+      "core.num.U32.wrapping_add"
+    ]
+    for c in mustContain do
+      if (src.splitOn c).length < 2 then
+        IO.eprintln s!"  ✗ missing expected substring: {c}"
+        IO.eprintln src
+        throw <| IO.userError "pick if/else translation missing (M11.2)"
+      else
+        IO.println s!"  ✓ contains: {c}"
   -- M11.1: the `pick` function exercises an in-body join. The cert
   -- must contain at least one EvJoin event whose `result` summary
   -- introduces a fresh symbolic value not equal to either branch's

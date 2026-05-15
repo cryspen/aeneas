@@ -130,6 +130,18 @@ partial def PExpr.toLeanDo : PExpr → String
       | .var _ | .lit _ => PExpr.toLeanDo inner
       | _ => "(" ++ PExpr.toLeanDo inner ++ ")"
     s!"ok {s}"
+  | .ifThenElse cond thenE elseE =>
+    -- M11.2: standard Aeneas backend's two-line shape for short
+    -- branches is `if c then <e1> else <e2>`. We keep that when both
+    -- branches are single-line; otherwise unfold into a multi-line
+    -- `if c\n  then …\n  else …` form.
+    let thenS := thenE.toLeanDo
+    let elseS := elseE.toLeanDo
+    let isSimple (s : String) : Bool := !s.contains '\n'
+    if isSimple thenS && isSimple elseS then
+      s!"if {cond.toLeanDo} then {thenS} else {elseS}"
+    else
+      s!"if {cond.toLeanDo}\n  then {thenS}\n  else {elseS}"
 
 /-- Non-monadic rendering. Retained for diagnostics; the Lean backend
     uses `toLeanDo` exclusively. -/
@@ -142,6 +154,8 @@ partial def PExpr.toLean : PExpr → String
   | .letIn name _ e1 e2 =>
     s!"let {name} := {e1.toLean}\n  {e2.toLean}"
   | .ok inner => s!".ok {inner.toLean}"
+  | .ifThenElse c t e =>
+    s!"if {c.toLean} then {t.toLean} else {e.toLean}"
 
 /-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
     `def`. Empty when no `sourceSpan` is attached. -/

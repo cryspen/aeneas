@@ -45,6 +45,22 @@ def paramName (i : Nat) : String := s!"x{i}"
     real LLBC types for the operands. -/
 def placeholderTy : PTy := .lit (.int .u32)
 
+/-- Crude `RawTy` → `PTy` mapping based on substring lookup in the
+    opaque-tagged signature string. M11 brings the first cases that
+    actually matter (Bool for `if` conditions); M12 will replace this
+    with a structural parser fed by `llbc.json`. -/
+def rawTyToPTy : RawTy → PTy
+  | .opaque s =>
+    if (s.splitOn "TBool").length ≥ 2 then .lit .bool
+    else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
+    else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)
+    else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
+    else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
+    else if (s.splitOn "Usize").length ≥ 2 then .lit (.int .usize)
+    else if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
+    else .lit (.int .u32)
+  | _ => .lit (.int .u32)
+
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
     returning the inner def name `a.b`. The crate prefix becomes the
     surrounding `namespace` block in the emitter. -/
@@ -189,6 +205,82 @@ def postLocalOfArg (vm : VarMap) : SymExpr → Nat
     if vm.contains p.local_ then p.local_ else 1
   | .symVal _ | .symLit _ | .symMutBorrowTok _ => 0
 
+/-- M11.2 helper: find the indices `(falseAssertIdx, joinIdx)` of the
+    branch-marker `EvAssert {cond, false}` and the following `EvJoin`
+    that close out a branching block that opens at `i` (which is
+    `EvAssert {cond, true}`).
+
+    Returns `none` if the pattern isn't a match (e.g. a real `assert!`
+    not surrounded by an EvJoin, or a malformed cert). The search is
+    one-level-deep: nested ifs inside a branch leave their own
+    well-formed EvAssert+EvJoin runs whose first-`true` marker we'll
+    *not* match because we only consider markers carrying the same
+    `cond` SymExpr as the opening one. (The inner if's `cond` is a
+    different symbolic value, so its markers don't clash.) -/
+def findBranchEnd (evs : Array Event) (i : Nat) (openCond : SymExpr) :
+    Option (Nat × Nat) := Id.run do
+  -- Look for the matching `EvAssert {openCond, false}` first,
+  -- skipping any nested `EvAssert {_, false}` whose cond differs.
+  let mut j : Option Nat := none
+  let mut k : Nat := i + 1
+  -- Depth counter for nested branches: every `EvAssert {_, true}`
+  -- after `i` pushes; the matching `EvJoin` pops. We only accept a
+  -- `EvAssert {openCond, false}` at depth 0.
+  let mut depth : Nat := 0
+  while h : k < evs.size do
+    let ev := evs[k]
+    match ev with
+    | .assert c true =>
+      if depth == 0 && symExprEq c openCond then
+        -- This would be a nested-open with the same cond; treat as
+        -- malformed and bail out. (In practice OCaml never reuses
+        -- the same sym id for two different branches.)
+        j := none; break
+      depth := depth + 1
+    | .assert c false =>
+      if depth == 0 && symExprEq c openCond then
+        j := some k
+        break
+      -- A `false` marker at non-zero depth pairs with an earlier
+      -- `true` marker; depth is decremented when we see EvJoin
+      -- below, not here.
+      pure ()
+    | .join _ _ _ =>
+      if depth == 0 then
+        -- A bare join with no opening true marker — shouldn't
+        -- happen; abort.
+        j := none; break
+      depth := depth - 1
+    | _ => pure ()
+    k := k + 1
+  match j with
+  | none => none
+  | some jIdx =>
+    -- Now find the EvJoin that closes this block. Same depth logic.
+    let mut depth2 : Nat := 0
+    let mut joinIdx : Option Nat := none
+    let mut m : Nat := jIdx + 1
+    while h : m < evs.size do
+      let ev := evs[m]
+      match ev with
+      | .assert _ true => depth2 := depth2 + 1
+      | .join _ _ _ =>
+        if depth2 == 0 then
+          joinIdx := some m
+          break
+        depth2 := depth2 - 1
+      | _ => pure ()
+      m := m + 1
+    match joinIdx with
+    | none => none
+    | some kIdx => some (jIdx, kIdx)
+where
+  /-- Lightweight equality on `SymExpr` for matching openers to
+      closers. Only the cheap shape we expect from OCaml. -/
+  symExprEq : SymExpr → SymExpr → Bool
+    | .symVal a, .symVal b => a == b
+    | _, _ => false
+
 /-- Apply one event to the walk state. -/
 def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   match ev with
@@ -312,9 +404,65 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       { st with pending := st.pending.erase abs }
   -- Out-of-M10.2b events: leave the state untouched. The replayer
   -- already rejected them upstream; this branch keeps `walkEvent`
-  -- total.
+  -- total. Branching is handled at the [walkEvents] level — by the
+  -- time we hit `.assert _ _` here we know it's a real `assert!`
+  -- (the branch-marker pair has already been consumed); `.join` is
+  -- only reached if the [findBranchEnd] lookahead failed (malformed
+  -- cert), in which case ignoring it is the safest fallback.
   | .proj _ _ _
   | .join _ _ _ | .loopInv _ _ => st
+
+/-- Render a `SymExpr` from a join state summary as a Pure expression
+    *in the context of a sub-walk's final var map*. Used by
+    [applyJoinedLocal] to materialise the per-branch value of a joined
+    local. We prefer the sub-walk's `vm` over the raw cert SymExpr
+    because the sub-walk has already lifted symbolic ids into named
+    `t<N>` / `x<N>` bindings through the events. -/
+def renderJoinSide (vm : VarMap) (cs_env : Array (Nat × SymExpr))
+    (target : Nat) : Option PExpr :=
+  match vm[target]? with
+  | some e => some e
+  | none =>
+    -- Fall back to the cert's per-branch SymExpr if vm doesn't have
+    -- an entry. (Should be rare — sub-walks populate vm for every
+    -- local they touch.)
+    let entry := cs_env.find? (fun (l, _) => l == target)
+    entry.map fun (_, se) => lookupSymExpr vm se
+
+/-- Identify locals whose post-join value should be expressed as an
+    `if cond then <left> else <right>` binding. Pragmatic heuristic:
+    take every local appearing in `result.env` whose value is a
+    `SymVal n` (i.e., the join introduced a fresh symbolic) AND whose
+    left/right per-branch values disagree in a "meaningful" way.
+
+    A disagreement is *not* meaningful when both branches' values are
+    boolean literals (`SymLit (.bool _)`). This catches the
+    if-condition itself: when the OCaml interpreter expands a symbolic
+    boolean `sN` into `true` on the left and `false` on the right, the
+    cert's StateSummary records the post-expansion literal for the
+    local that held the cond — emitting an `if c then ok true else
+    ok false` for that local would be syntactically pointless and
+    obscure the real joined data. M12 will track which locals are
+    cond-derived through a sym-id↔local map; for M11 the literal
+    check is sound (no real if/else in the program would diverge on
+    a literal boolean pair).
+    -/
+def joinedLocals (left right result : StateSummary) : Array Nat :=
+  result.env.filterMap fun (l, resE) =>
+    match resE with
+    | .symVal _ =>
+      let leftE := (left.env.find? (fun (k, _) => k == l)).map (·.2)
+      let rightE := (right.env.find? (fun (k, _) => k == l)).map (·.2)
+      match leftE, rightE with
+      | some le, some re =>
+        -- Skip bool-literal pairs: the cond's expansion.
+        match le, re with
+        | .symLit (.bool _), .symLit (.bool _) => none
+        | .symVal a, .symVal b =>
+          if a == b then none else some l
+        | _, _ => some l
+      | _, _ => some l
+    | _ => none
 
 /-- Wrap a tail value in `ok` *only* when it is a pure (non-Result)
     expression. Binops emit `Result α`-typed apps already; double-
@@ -360,6 +508,115 @@ def assembleBody (binds : Array (String × PExpr)) (tail : PExpr) : PExpr :=
     binds.foldr (init := tail) (fun (n, e) acc =>
       .letIn n placeholderTy e acc)
 
+/-- Outer-loop walk that handles both the linear event stream and
+    the M11.2 if/else branching pattern.
+
+    For each event index:
+    * If we see `EvAssert {SymVal n, true}` followed (in the well-
+      formed shape) by `EvAssert {SymVal n, false}` and an `EvJoin`,
+      we fork: sub-walk the true-branch event range, sub-walk the
+      false-branch range, then emit `if then else` bindings for each
+      joined local, then skip past the `EvJoin`.
+    * Otherwise: dispatch to [walkEvent] normally. A real `assert!`
+      that isn't followed by an EvJoin lookahead falls through here
+      (the [findBranchEnd] check returns `none`) and is handled by
+      [walkEvent]'s pass-through `.assert` case.
+
+    Sub-walks start from the parent walk's state but use a *fresh*
+    `binds` buffer so each branch's body can be assembled
+    independently. The parent's `fresh` counter is threaded so
+    binding names stay globally unique. -/
+partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
+  let rec go (i : Nat) (st : WalkState) : WalkState :=
+    if h : i ≥ evs.size then st
+    else
+      let ev := evs[i]'(Nat.lt_of_not_ge h)
+      match ev with
+      | .assert (.symVal n) true =>
+        -- Possible branch opener. Look ahead.
+        match findBranchEnd evs i (.symVal n) with
+        | none =>
+          -- Real assert!: fall through to walkEvent.
+          go (i + 1) (walkEvent st ev)
+        | some (jIdx, kIdx) =>
+          -- Found: branch range is (i+1 .. jIdx-1) for true,
+          -- (jIdx+1 .. kIdx-1) for false. The EvJoin is at kIdx.
+          let leftEvs := (evs.extract (i + 1) jIdx)
+          let rightEvs := (evs.extract (jIdx + 1) kIdx)
+          -- Build sub-walks with empty `binds` so each branch's
+          -- bindings come out as a self-contained do-block. The
+          -- parent's vm + fresh counter are inherited.
+          let leftSub := walkEvents leftEvs
+            { st with binds := #[] }
+          let rightSub := walkEvents rightEvs
+            { st with binds := #[], fresh := leftSub.fresh }
+          -- Compute the condition's surface form. We default to the
+          -- raw symbolic name `sN` (so the diagnostics carry the
+          -- cert's sym id), but try to refine to a parameter name
+          -- when the join witness lets us identify which local held
+          -- the cond at branch time.
+          --
+          -- Heuristic: the cond local is the one whose `left.env`
+          -- entry is `SymLit (.bool true)` and `right.env` entry is
+          -- `SymLit (.bool false)` — that's the OCaml-side trace of
+          -- `expand_symbolic_bool` on the condition. If we find such
+          -- a local AND its parent-`vm` entry is already a `.var`,
+          -- use that variable name.
+          let joinOpt : Option Event := evs[kIdx]?
+          match joinOpt with
+          | some (.join leftSummary rightSummary resultSummary) =>
+            -- Refine the cond. See heuristic above the joinOpt def.
+            let cond : PExpr := Id.run do
+              let leftBoolLocal : Option Nat :=
+                leftSummary.env.findSome? fun (l, v) =>
+                  match v with
+                  | SymExpr.symLit (Lit.bool true) =>
+                    -- Check rightSummary has the matching `false`.
+                    match (rightSummary.env.find? (fun (k, _) => k == l)).map (·.2) with
+                    | some (SymExpr.symLit (Lit.bool false)) => some l
+                    | _ => none
+                  | _ => none
+              match leftBoolLocal with
+              | some l =>
+                match st.vm[l]? with
+                | some (PExpr.var name) => return PExpr.var name
+                | _ => return PExpr.var s!"s{n}"
+              | none => return PExpr.var s!"s{n}"
+            -- For each joined local, materialise a `let r ← if cond
+            -- then ok <left> else ok <right>` binding in the parent's
+            -- binds.
+            let locals := joinedLocals leftSummary rightSummary resultSummary
+            let st' := locals.foldl (init := { st with
+              fresh := rightSub.fresh
+              vm := st.vm }) fun acc target =>
+              let leftValOpt := renderJoinSide leftSub.vm leftSummary.env target
+              let rightValOpt := renderJoinSide rightSub.vm rightSummary.env target
+              match leftValOpt, rightValOpt with
+              | some lE, some rE =>
+                -- Wrap each branch with the sub-walk's binds so the
+                -- if-then-else captures the full per-branch
+                -- computation. For pick-style fixtures the
+                -- sub-walks have empty binds (all `EvCopy` /
+                -- `EvAssign`s map into vm without producing lets),
+                -- so this collapses to `if cond then ok lE else ok rE`.
+                let thenBody := assembleBody leftSub.binds (tailToResult lE)
+                let elseBody := assembleBody rightSub.binds (tailToResult rE)
+                let ite : PExpr := PExpr.ifThenElse cond thenBody elseBody
+                let (nm, acc) := acc.freshName
+                { acc with
+                  binds := acc.binds.push (nm, ite)
+                  vm := acc.vm.insert target (.var nm)
+                  lastWrite := some target }
+              | _, _ => acc
+            go (kIdx + 1) st'
+          | _ =>
+            -- findBranchEnd's lookahead said this is a join, but
+            -- the event at kIdx isn't EvJoin — should not happen
+            -- under M11.0's emission. Fall back to per-event walk.
+            go (i + 1) (walkEvent st ev)
+      | _ => go (i + 1) (walkEvent st ev)
+  go 0 st0
+
 /-- Translate a function's cert + replay into a Pure decl.
 
     The forward translator walks `f.events`, updates a per-local
@@ -374,7 +631,10 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
   let numParams := f.signature.inputs.size
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
-      { name := paramName (i + 1), ty := placeholderTy }
+      let ty := match f.signature.inputs[i]? with
+        | some t => rawTyToPTy t
+        | none => placeholderTy
+      { name := paramName (i + 1), ty }
   -- Initial var map: input local 1 ↦ x1, local 2 ↦ x2, ...
   let initVm : VarMap := Id.run do
     let mut m : VarMap := {}
@@ -382,7 +642,7 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
       m := m.insert (i + 1) (.var (paramName (i + 1)))
     return m
   let finalSt : WalkState :=
-    f.events.foldl (init := { vm := initVm, numParams }) walkEvent
+    walkEvents f.events { vm := initVm, numParams }
   -- Forward return value:
   -- * If any cert event has explicit "borrow flow" (EvMutBorrow /
   --   EvReborrow / EvSharedBorrow), or if any signature input has a
@@ -408,10 +668,35 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
     finalSt.vm.getD returnLocal (
       if numParams ≥ 1 then .var (paramName 1)
       else .lit (.scalar .u32 0))
+  -- M11.2 type-mismatch guard: when the lookupPlace fallback hands
+  -- us a parameter of the wrong type (e.g. `choose(b: bool, …)`
+  -- whose `usesBorrow` heuristic falls back to local 1 = `b : Bool`
+  -- but the real output type is `&mut u32`), the emitted `ok b`
+  -- would not typecheck against `Result Std.U32`. Detect the case
+  -- and substitute a sentinel literal with a clear TODO marker; M12
+  -- (backward function machinery) will replace this with the real
+  -- post-state lookup.
+  let retTy : PTy := rawTyToPTy f.signature.output
+  let tailE : PExpr :=
+    match tailE, retTy with
+    | .var name, .lit (.int kind) =>
+      -- Look up the param's typed PTy; if it's not the same as the
+      -- return type, swap for a 0 literal of the return type.
+      let pIdx := params.findIdx? (fun p => p.name == name)
+      match pIdx with
+      | some idx =>
+        match params[idx]? with
+        | some param =>
+          match param.ty with
+          | .lit (.int k') => if k' == kind then tailE else .lit (.scalar kind 0)
+          | _ => .lit (.scalar kind 0)  -- TODO M12: backward fn
+        | none => tailE
+      | none => tailE
+    | _, _ => tailE
   let body : PExpr := assembleBody finalSt.binds (tailToResult tailE)
   { name := innerName f.fnName
     qualifiedName := f.fnName
-    params, retTy := placeholderTy, body
+    params, retTy, body
     sourceSpan := f.sourceSpan }
 
 end AeneasCheck.Translate

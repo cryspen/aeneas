@@ -42,6 +42,11 @@ inductive PExpr
   | letIn (name : String) (ty : PTy) (e1 e2 : PExpr)
   /-- The `Result.ok` constructor — emitted only in tail position. -/
   | ok (inner : PExpr)
+  /-- M11.2: an `if cond then thenE else elseE` expression. Both
+      branches are full do-blocks (sequences of `letIn` chains ending
+      in `ok`/`var`/`lit`). The standard Aeneas backend prints this
+      as `if cond then <thenE> else <elseE>`. -/
+  | ifThenElse (cond thenE elseE : PExpr)
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/

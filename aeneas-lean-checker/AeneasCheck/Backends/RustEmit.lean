@@ -87,6 +87,8 @@ partial def PExpr.toRust : PExpr → String
     s!"let {name} = {e1.toRust};\n    {e2.toRust}"
   -- M8 drops the .ok wrapper: the Rust model returns the value directly.
   | .ok inner => inner.toRust
+  | .ifThenElse c t e =>
+    "if " ++ c.toRust ++ " { " ++ t.toRust ++ " } else { " ++ e.toRust ++ " }"
 
 end AeneasCheck.Pure
 
