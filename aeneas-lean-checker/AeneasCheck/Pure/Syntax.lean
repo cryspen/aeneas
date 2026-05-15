@@ -114,6 +114,14 @@ inductive PExpr
       Lean's `inductive ... mutual` block doesn't compose with the
       `deriving Repr, Inhabited` pattern the rest of the IR uses. -/
   | matchE (scrutinee : PExpr) (arms : Array (String × Array String × PExpr))
+  /-- M9.5n: a struct field projection `<base>.<field>`. Emitted by
+      the place walker when an `EvAssign` / `EvCopy` / `EvMove`
+      source carries a trailing `[Field K]` projection on a place
+      whose root local has a struct type registered in the
+      `TypeDeclMap`. The standard Aeneas backend uses Lean's
+      dot-notation `x.value` rather than a `match`-based projection
+      lemma since `structure` decls auto-generate field accessors. -/
+  | fieldAccess (base : PExpr) (field : String)
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/

@@ -207,6 +207,9 @@ partial def PExpr.toLeanDo : PExpr → String
       -- M9.5b: `{ base with f := v }` self-delimits via braces, so
       -- skip parens — `ok { p with fst := v }` not `ok ({ … })`.
       | .structUpdate _ _ _ => PExpr.toLeanDo inner
+      -- M9.5n: a field access `<base>.<field>` is a single dotted
+      -- token; no parens needed (`ok x1.value` not `ok (x1.value)`).
+      | .fieldAccess _ _ => PExpr.toLeanDo inner
       | _ => "(" ++ PExpr.toLeanDo inner ++ ")"
     s!"ok {s}"
   | .ifThenElse cond thenE elseE =>
@@ -278,6 +281,16 @@ partial def PExpr.toLeanDo : PExpr → String
     -- the inner pieces; the outer `{ … }` self-delimits. `\{` and
     -- `}` escape the curly braces inside an `s!"..."` interpolation.
     s!"\{ {base.toLeanDo} with {field} := {value.toLeanDo} }"
+  | .fieldAccess base field =>
+    -- M9.5n: `<base>.<field>`. The standard Aeneas backend uses
+    -- Lean's dot-notation for struct field access since
+    -- `structure Foo where x : Ty` auto-generates `(_ : Foo).x`.
+    -- We never need parens around `<base>.<field>` itself because
+    -- `.` binds tighter than function application; the base might
+    -- itself need parens, but our M9.5n caller only constructs
+    -- field-access against a `.var` base so the issue doesn't arise.
+    let baseS := base.toLeanDo
+    s!"{baseS}.{field}"
   | .matchE scrutinee arms =>
     -- M9.5d / M9.5e: `match <scrutinee> with | Ctor1 b₁ … bₙ => body1
     -- | …`. The standard Aeneas backend renders each arm on its own
@@ -349,6 +362,7 @@ partial def PExpr.toLean : PExpr → String
     s!"let ({pats}) := {e1.toLean}\n  {e2.toLean}"
   | .structUpdate base field value =>
     s!"\{ {base.toLean} with {field} := {value.toLean} }"
+  | .fieldAccess base field => s!"{base.toLean}.{field}"
   | .matchE scrutinee arms =>
     let armS := arms.toList.map fun (ctor, binders, body) =>
       let pat :=

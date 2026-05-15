@@ -135,6 +135,10 @@ partial def PExpr.toRust : PExpr → String
     -- the M13 model can supply a matching helper. Real ADT support in the
     -- differential model is tracked separately.
     s!"with_{field}({base.toRust}, {value.toRust})"
+  | .fieldAccess base field =>
+    -- M9.5n: Rust uses the same dot-notation as Lean for struct
+    -- field reads. We pass it through verbatim.
+    s!"{base.toRust}.{field}"
   | .matchE scrutinee arms =>
     -- M9.5d / M9.5e: Rust's `match` syntax differs only in arm
     -- separator (comma) and ctor path. The Pure IR's ctor strings

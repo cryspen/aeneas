@@ -515,10 +515,49 @@ def innerName (qualified : String) : String :=
     inputs and updated as the event walk progresses. -/
 abbrev VarMap := Std.HashMap Nat PExpr
 
+/-- M9.5n: apply a trailing `[Field K]` projection to a root pure
+    expression `e`. Resolves the field name through `localTypes[L]`
+    (the local's root cert type) → `parseTAdtId` → `tdm` → the
+    struct's field-name list. If any step fails (no type tracked,
+    not a struct, missing field name), returns `e` unchanged so
+    pre-M9.5n callers (which never tracked types) still see the
+    M10-vintage behaviour.
+
+    Only the LAST projection element matters here — the M9.5b
+    structUpdate path handles `[Deref, Field K]` writes; here we
+    handle the read of `local.<field>` for a place whose projection
+    list ends with `Field K`. Non-`Field` last projections (`Deref`,
+    `ProjIndex`, …) fall through unmodified. -/
+private def applyFieldProj
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (localId : Nat) (proj : List Raw.ProjElem) (e : PExpr) : PExpr :=
+  match proj.getLast? with
+  | some (Raw.ProjElem.field k) =>
+    match localTypes[localId]? with
+    | some (Raw.RawTy.opaque s) =>
+      match parseTAdtId s with
+      | some adtId =>
+        match tdm[adtId]? with
+        | some info =>
+          match info.fieldNames[k]? with
+          | some fname => .fieldAccess e fname
+          | none => e
+        | none => e
+      | none => e
+    | _ => e
+  | _ => e
+
 /-- Resolve a place's *root* local to its current pure expression. M10.0
-    ignores projections (Deref, Field, ProjIndex) when computing the
-    pure value — the placeholder is sound for the direct-borrow
-    subset; M10.2 will refine for field-projected places.
+    ignored projections (Deref, Field, ProjIndex) when computing the
+    pure value — sound for the direct-borrow subset but lost field
+    reads.
+
+    M9.5n: a trailing `[Field K]` projection on a place whose root
+    local has a struct type registered in [localTypes] is lowered to
+    a `<root>.<fieldName>` access. The M9.5b structUpdate path
+    (write through `[Deref, Field K]`) is unaffected — it consumes
+    the projection list directly and goes through `applyFieldProj`'s
+    sister logic in the EvAssign branch.
 
     When the local has no entry in the map (typical for `[Deref]`
     reads through a borrow whose backing local was never observed
@@ -526,13 +565,14 @@ abbrev VarMap := Std.HashMap Nat PExpr
     `x1`. This is a deliberate over-approximation: for simple
     borrowed-input functions like `incr(x: &mut u32) { *x += 1 }`
     every Deref read of an intermediate temp ultimately resolves to
-    the input, so `x1` is the right pure-value substitute. M10.2's
-    real backward-function machinery will replace this heuristic
-    with a borrow-chain–aware lookup. -/
-def lookupPlace (vm : VarMap) (p : Place) : PExpr :=
-  match vm[p.local_]? with
-  | some e => e
-  | none => vm.getD 1 (.lit (.scalar .u32 0))
+    the input, so `x1` is the right pure-value substitute. -/
+def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (vm : VarMap) (p : Place) : PExpr :=
+  let root : PExpr :=
+    match vm[p.local_]? with
+    | some e => e
+    | none => vm.getD 1 (.lit (.scalar .u32 0))
+  applyFieldProj tdm localTypes p.local_ p.projection.toList root
 
 /-- M9.5e: consult a payload-binder map *before* falling back to the
     plain `lookupPlace`. When a place reads `local L` with a trailing
@@ -542,14 +582,15 @@ def lookupPlace (vm : VarMap) (p : Place) : PExpr :=
     so an `EvAssign { rhs = SymCopy(scrut.[Field K]) }` resolves to
     the binder introduced by the pattern. -/
 def lookupPlaceWithBinders
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
     (vm : VarMap) (payloadBinders : Std.HashMap (Nat × Nat) String)
     (p : Place) : PExpr :=
   match p.projection.toList.getLast? with
   | some (ProjElem.field k) =>
     match payloadBinders[(p.local_, k)]? with
     | some name => .var name
-    | none => lookupPlace vm p
-  | _ => lookupPlace vm p
+    | none => lookupPlace tdm localTypes vm p
+  | _ => lookupPlace tdm localTypes vm p
 
 /-- M9.5f: resolve a variant ctor to its pure form. For a nullary
     variant we emit `.var "<adtName>.<variantName>"` (a single
@@ -581,18 +622,20 @@ private partial def variantPExpr
     [variantPExpr] which qualifies them; the parent walker's
     match-arm `qualify` pass becomes a no-op for already-qualified
     names. -/
-partial def lookupSymExpr (tdm : TypeDeclMap) (vm : VarMap) : SymExpr → PExpr
+partial def lookupSymExpr
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (vm : VarMap) : SymExpr → PExpr
   | .symVal n => .var s!"s{n}"
   | .symLit l => .lit l
-  | .symCopy p => lookupPlace vm p
-  | .symMove p => lookupPlace vm p
+  | .symCopy p => lookupPlace tdm localTypes vm p
+  | .symMove p => lookupPlace tdm localTypes vm p
   | .symMutBorrowTok n => .var s!"b{n}"
   -- M9.5d / M9.5f: an enum-variant ctor (the RHS of an EvAssign
   -- whose source was an `AggregatedAdt`). We qualify the name
   -- against the type-decl map and apply payload fields when present.
   | .symVariant adtId _ variantName fields =>
     variantPExpr tdm adtId variantName
-      (fields.map (lookupSymExpr tdm vm))
+      (fields.map (lookupSymExpr tdm localTypes vm))
 
 /-- M9.5e/f: payload-binder-aware variant of [lookupSymExpr]. Same
     semantics as [lookupSymExpr] except a `symCopy` / `symMove` of a
@@ -600,17 +643,17 @@ partial def lookupSymExpr (tdm : TypeDeclMap) (vm : VarMap) : SymExpr → PExpr
     via [lookupPlaceWithBinders]. The match-arm sub-walk calls this in
     place of [lookupSymExpr]. -/
 partial def lookupSymExprWithBinders
-    (tdm : TypeDeclMap) (vm : VarMap)
-    (payloadBinders : Std.HashMap (Nat × Nat) String) :
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (vm : VarMap) (payloadBinders : Std.HashMap (Nat × Nat) String) :
     SymExpr → PExpr
   | .symVal n => .var s!"s{n}"
   | .symLit l => .lit l
-  | .symCopy p => lookupPlaceWithBinders vm payloadBinders p
-  | .symMove p => lookupPlaceWithBinders vm payloadBinders p
+  | .symCopy p => lookupPlaceWithBinders tdm localTypes vm payloadBinders p
+  | .symMove p => lookupPlaceWithBinders tdm localTypes vm payloadBinders p
   | .symMutBorrowTok n => .var s!"b{n}"
   | .symVariant adtId _ variantName fields =>
     variantPExpr tdm adtId variantName
-      (fields.map (lookupSymExprWithBinders tdm vm payloadBinders))
+      (fields.map (lookupSymExprWithBinders tdm localTypes vm payloadBinders))
 
 /-- Map an OCaml `cert_binop_string` tag onto a Pure `App` head. The
     head string is what the Lean emitter pretty-prints — see
@@ -816,6 +859,17 @@ structure WalkState where
       branch can pick the right head name (`Array.update` vs
       `Slice.update`) without re-scanning the dst type. -/
   sliceIndexMut : Std.HashMap Nat (PExpr × PExpr × Option Nat) := {}
+  /-- M9.5n: per-local cert type, used to resolve a `[Field K]`
+      projection on a `local L` to a `<vm[L]>.<fieldName>` field
+      access. Populated from the function's signature inputs at
+      WalkState init (local 1 ↦ input 0's type, etc.). Empty for
+      temp locals (no entry); a missing entry causes the field-
+      projection lookup to fall back to the projection-erasing
+      legacy behaviour (`lookupPlace` returns the root pure value
+      without projecting). The map covers only what's needed to
+      project struct-field reads in tail position; once tracking
+      is enabled, more sophisticated value-flow can lean on it. -/
+  localTypes : Std.HashMap Nat Raw.RawTy := {}
   deriving Inhabited
 
 namespace WalkState
@@ -979,13 +1033,13 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- than the scrutinee's root expression.
     if s.local_ == d.local_ then st
     else { st with
-      vm := st.vm.insert d.local_ (lookupPlaceWithBinders st.vm st.payloadBinders s)
+      vm := st.vm.insert d.local_ (lookupPlaceWithBinders st.tdm st.localTypes st.vm st.payloadBinders s)
       lastWrite := some d.local_ }
   | .move s d =>
     -- Move: same as copy but invalidate the source.
     if s.local_ == d.local_ then st
     else
-      let v := lookupPlaceWithBinders st.vm st.payloadBinders s
+      let v := lookupPlaceWithBinders st.tdm st.localTypes st.vm st.payloadBinders s
       { st with
         vm := (st.vm.erase s.local_).insert d.local_ v
         lastWrite := some d.local_ }
@@ -1003,7 +1057,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- one entry per payload field of the matched variant, a SymCopy
     -- / SymMove of `scrutLocal.[Field K]` resolves to the arm-scoped
     -- binder name instead of the scrutinee's root expression.
-    let rhsE := lookupSymExprWithBinders st.tdm st.vm st.payloadBinders rhs
+    let rhsE := lookupSymExprWithBinders st.tdm st.localTypes st.vm st.payloadBinders rhs
     let derefTail : Bool :=
       match d.projection.toList.getLast? with
       | some ProjElem.deref => true
@@ -1167,8 +1221,8 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         vm := st.vm.insert d.local_ rhsE
         lastWrite := some d.local_ }
   | .binop op lhs rhs d =>
-    let lhsE := lookupSymExpr st.tdm st.vm lhs
-    let rhsE := lookupSymExpr st.tdm st.vm rhs
+    let lhsE := lookupSymExpr st.tdm st.localTypes st.vm lhs
+    let rhsE := lookupSymExpr st.tdm st.localTypes st.vm rhs
     let app : PExpr := .app (binopHead op) #[lhsE, rhsE]
     let (nm, st) := st.freshName
     { st with
@@ -1197,7 +1251,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- arrays (since `index_mut` followed by a write IS the update —
     -- there's no "value side" to keep).
     if fnName == "@ArrayIndexMut" && args.size == 2 then
-      let argEs := args.map (lookupSymExpr st.tdm st.vm)
+      let argEs := args.map (lookupSymExpr st.tdm st.localTypes st.vm)
       let arrayE := argEs[0]!
       let idxE := argEs[1]!
       -- Identify the array's root input-parameter local so we can
@@ -1226,7 +1280,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       -- subsequent deref-write to the call's dst local can lower to
       -- a single `Slice.update <slice> <idx> <rhs>` binding. NO
       -- binding is emitted at EvCall time.
-      let argEs := args.map (lookupSymExpr st.tdm st.vm)
+      let argEs := args.map (lookupSymExpr st.tdm st.localTypes st.vm)
       let sliceE := argEs[0]!
       let idxE := argEs[1]!
       let paramNameOfPExpr : PExpr → Option Nat := fun e =>
@@ -1251,7 +1305,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       -- machinery would otherwise mis-route through the
       -- (forward, backward)-pair shape. We emit a regular forward
       -- binding directly here, bypassing the regionAbs-aware path.
-      let argEs := args.map (lookupSymExpr st.tdm st.vm)
+      let argEs := args.map (lookupSymExpr st.tdm st.localTypes st.vm)
       let app : PExpr := .app "Slice.index_usize" argEs
       let (nm, st) := st.freshName
       { st with
@@ -1269,7 +1323,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- binding's name to a `<input>_post` form (renaming the most
     -- recent binding rather than re-emitting) and update `vm` for
     -- the borrowed input's caller-side local.
-    let argEs := args.map (lookupSymExpr st.tdm st.vm)
+    let argEs := args.map (lookupSymExpr st.tdm st.localTypes st.vm)
     let postLocals : Array Nat := args.map (postLocalOfArg st.vm)
     -- Pick the binding name: a generic `tN` for forward-only
     -- calls; an `<input>_post` shape when we know which `&mut`
@@ -1481,7 +1535,8 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     local. We prefer the sub-walk's `vm` over the raw cert SymExpr
     because the sub-walk has already lifted symbolic ids into named
     `t<N>` / `x<N>` bindings through the events. -/
-def renderJoinSide (tdm : TypeDeclMap) (vm : VarMap)
+def renderJoinSide (tdm : TypeDeclMap)
+    (localTypes : Std.HashMap Nat Raw.RawTy) (vm : VarMap)
     (cs_env : Array (Nat × SymExpr))
     (target : Nat) : Option PExpr :=
   match vm[target]? with
@@ -1491,7 +1546,7 @@ def renderJoinSide (tdm : TypeDeclMap) (vm : VarMap)
     -- an entry. (Should be rare — sub-walks populate vm for every
     -- local they touch.)
     let entry := cs_env.find? (fun (l, _) => l == target)
-    entry.map fun (_, se) => lookupSymExpr tdm vm se
+    entry.map fun (_, se) => lookupSymExpr tdm localTypes vm se
 
 /-- Identify locals whose post-join value should be expressed as an
     `if cond then <left> else <right>` binding. Pragmatic heuristic:
@@ -1951,8 +2006,8 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
             let st' := locals.foldl (init := { st with
               fresh := rightSub.fresh
               vm := st.vm }) fun acc target =>
-              let leftValOpt := renderJoinSide st.tdm leftSub.vm leftSummary.env target
-              let rightValOpt := renderJoinSide st.tdm rightSub.vm rightSummary.env target
+              let leftValOpt := renderJoinSide st.tdm st.localTypes leftSub.vm leftSummary.env target
+              let rightValOpt := renderJoinSide st.tdm st.localTypes rightSub.vm rightSummary.env target
               match leftValOpt, rightValOpt with
               | some lE, some rE =>
                 -- Wrap each branch with the sub-walk's binds so the
@@ -2252,8 +2307,23 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
     for i in [0:numParams] do
       m := m.insert (i + 1) (.var (paramName (i + 1)))
     return m
+  -- M9.5n: seed `localTypes` from the function's input signature.
+  -- Each input parameter `i` (1-indexed) is `local (i+1)` in the
+  -- LLBC frame; we record its `RawTy` so the EvAssign/EvCopy walk
+  -- can lower a `local L.[Field K]` read to `<root>.<fieldName>`
+  -- via `applyFieldProj`. Output-local 0 and pure temps are not
+  -- seeded; they're typed by the events themselves (and don't
+  -- participate in field reads in M9.5n's fixture).
+  let initLocalTypes : Std.HashMap Nat Raw.RawTy := Id.run do
+    let mut m : Std.HashMap Nat Raw.RawTy := {}
+    for i in [0:numParams] do
+      match f.signature.inputs[i]? with
+      | some t => m := m.insert (i + 1) t
+      | none => ()
+    return m
   let finalSt : WalkState :=
-    walkEvents f.events { vm := initVm, numParams, tdm }
+    walkEvents f.events
+      { vm := initVm, numParams, tdm, localTypes := initLocalTypes }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
   -- M9.5i: thread the function's `typeParams` through so a `T`

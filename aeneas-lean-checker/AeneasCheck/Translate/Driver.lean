@@ -298,6 +298,8 @@ partial def rewriteCalleeNames (pretty : Std.HashMap String String) :
     .letPat ps ty (rewriteCalleeNames pretty e1) (rewriteCalleeNames pretty e2)
   | .structUpdate base f v =>
     .structUpdate (rewriteCalleeNames pretty base) f (rewriteCalleeNames pretty v)
+  | .fieldAccess base f =>
+    .fieldAccess (rewriteCalleeNames pretty base) f
   | .matchE scr arms =>
     .matchE (rewriteCalleeNames pretty scr)
             (arms.map fun (ctor, binders, body) =>
