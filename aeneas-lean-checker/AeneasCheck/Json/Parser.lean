@@ -245,15 +245,54 @@ def parseFunCert (j : Json) : Result FunCert := do
   let finalState ← parseStateSummary (← field j "final_state")
   return { fnId, fnName, signature, sourceSpan, events, finalState }
 
+/-- M9.5b: parse one `cert_field` JSON object into a `CertField`. -/
+def parseCertField (j : Json) : Result CertField := do
+  let idx ← asNat (← field j "idx")
+  let name : Option String ← match (j.getObjVal? "name").toOption with
+    | some nj => do let s ← asStr nj; pure (some s)
+    | none => pure none
+  let tyStr ← asStr (← field j "ty")
+  return { idx, name, ty := RawTy.opaque tyStr }
+
+/-- M9.5b: parse a `TypeDeclKind`. Nullary `"Opaque"` or
+    `{"Struct": [<fields>]}`. -/
+def parseTypeDeclKind (j : Json) : Result TypeDeclKind := do
+  match j with
+  | .str "Opaque" => return .opaque
+  | _ =>
+    let (tag, payload) ← asTaggedObj j
+    match tag with
+    | "Struct" =>
+      let arr ← asArr payload
+      let fields ← arr.mapM parseCertField
+      return .struct fields
+    | _ =>
+      -- Forward-compat: unknown kinds (Enum, Union, …) downgrade to
+      -- opaque so an early checker can still load a future cert.
+      return .opaque
+
+/-- M9.5b: parse one top-level `TypeDecl`. -/
+def parseTypeDecl (j : Json) : Result TypeDecl := do
+  let id ← asNat (← field j "id")
+  let name ← asStr (← field j "name")
+  let kind ← parseTypeDeclKind (← field j "kind")
+  return { id, name, kind }
+
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")
   if fmtVersion ≠ 1 then
     fail s!"unsupported cert fmt_version: {fmtVersion} (expected 1)"
   else
     let crateHash ← asStr (← field j "crate_hash")
+    -- `type_decls` is optional for back-compat with pre-M9.5b certs.
+    let typeDecls : Array TypeDecl ← match (j.getObjVal? "type_decls").toOption with
+      | some tj => do
+        let arr ← asArr tj
+        arr.mapM parseTypeDecl
+      | none => pure #[]
     let fnArr ← asArr (← field j "functions")
     let functions ← fnArr.mapM parseFunCert
-    return { fmtVersion, crateHash, functions }
+    return { fmtVersion, crateHash, typeDecls, functions }
 
 /-- Top-level entry: parse a cert JSON string. -/
 def parseCrateCertStr (s : String) : Result CrateCert := do

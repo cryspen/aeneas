@@ -99,10 +99,43 @@ structure FunCert where
   finalState : StateSummary
   deriving Repr, Inhabited
 
+/-- M9.5b: a single field inside a [TypeDecl]. `name` is `none` for
+    tuple-style positional fields; the emitter falls back to
+    `field<idx>` in that case. `ty` is the cert's opaque-tagged LLBC
+    type string. -/
+structure CertField where
+  idx : Nat
+  name : Option String
+  ty : RawTy
+  deriving Repr, Inhabited
+
+/-- M9.5b: kind of an ADT declaration. Only `struct` is supported in
+    the M9.5 chunk; other shapes (enum, union, alias) come through as
+    `opaque`. -/
+inductive TypeDeclKind
+  | struct (fields : Array CertField)
+  | opaque
+  deriving Repr, Inhabited
+
+/-- M9.5b: a crate-level ADT declaration. `id` is the LLBC
+    `TypeDeclId.id` that appears inside `TAdt {id = TAdtId N; ...}` in
+    cert-event place types; the Lean checker uses `id`→`name` lookups
+    to translate borrowed-struct signatures and field projections. -/
+structure TypeDecl where
+  id : Nat
+  name : String
+  kind : TypeDeclKind
+  deriving Repr, Inhabited
+
 /-- Top-level cert. -/
 structure CrateCert where
   fmtVersion : Nat
   crateHash : String
+  /-- M9.5b: ADT type decls. May be empty for crates with no struct/
+      enum types. The OCaml cert generator populates this from
+      `crate.type_decls`; old certs that pre-date M9.5b have an empty
+      array (the JSON parser tolerates a missing `type_decls` key). -/
+  typeDecls : Array TypeDecl
   functions : Array FunCert
   deriving Repr, Inhabited
 
