@@ -245,23 +245,61 @@ def traitDeclOfCert (tdm : TypeDeclMap) (_crateName : String)
     methods
     sourceSpan := td.sourceSpan }
 
+/-- M9.5o: given a per-clause obligation `(traitQualifiedName,
+    typeParamIdx)` and the surrounding decl's `typeParams` list,
+    build a Pure `TraitBoundParam`. The trait's bare name is looked
+    up via `traitNameByQualified`; if the qualified name isn't in
+    the table the bare name falls back to the last `::`-segment of
+    the qualified form. The binder name is canonically
+    `<TraitName>Inst`. -/
+def traitBoundParamOf
+    (traitNameByQualified : Std.HashMap String String)
+    (typeParams : Array String)
+    (c : Raw.TraitClause) : Pure.TraitBoundParam :=
+  let bareTrait : String :=
+    match traitNameByQualified[c.traitQualifiedName]? with
+    | some n => n
+    | none =>
+      match (c.traitQualifiedName.splitOn "::").getLast? with
+      | some n => n
+      | none => c.traitQualifiedName
+  let selfTypeName : String :=
+    match typeParams[c.typeParamIdx]? with
+    | some n => n
+    | none => "_"
+  { binderName := s!"{bareTrait}Inst"
+    traitName := bareTrait
+    selfTypeName }
+
 /-- M9.5l: lift a cert `TraitImpl` into a Pure `TraitImpl`. The impl
     method's `body` is the trait-impl-method body function's
     standard-backend Lean name (`<prettyName>.<methodName>`). The
     Self type is resolved via `selfTypeDeclId` against the
-    `TypeDeclMap`. -/
+    `TypeDeclMap`.
+
+    M9.5o: a blanket impl (Self is a type variable) is rendered with
+    `{T : Type} (Trait1Inst : Trait1 T) : Trait2 T` binders. The
+    cert's `selfTypeVar` carries the type variable's name; the
+    record literal's method bodies are applied to the trait-bound
+    binders so the impl forwards each clause to the body fn. -/
 def traitImplOfCert (tdm : TypeDeclMap)
     (traitNameById : Std.HashMap Nat String)
+    (traitNameByQualified : Std.HashMap String String)
     (_crateName : String) (ti : Raw.TraitImpl) : Pure.TraitImpl :=
   let selfTy : PTy :=
-    match ti.selfTypeDeclId with
-    | some id =>
-      match tdm[id]? with
-      | some info => .adt info.name #[]
+    match ti.selfTypeVar with
+    | some n => .tyVar n
+    | none =>
+      match ti.selfTypeDeclId with
+      | some id =>
+        match tdm[id]? with
+        | some info => .adt info.name #[]
+        | none => .unit
       | none => .unit
-    | none => .unit
   let traitName : String :=
     traitNameById.getD ti.traitDeclId "__UnknownTrait"
+  let traitBoundParams : Array Pure.TraitBoundParam :=
+    ti.traitClauses.map (traitBoundParamOf traitNameByQualified ti.typeParams)
   let methods : Array Pure.TraitImplMethod := ti.methods.map fun m =>
     { name := m.name, body := s!"{ti.prettyName}.{m.name}" }
   { name := ti.prettyName
@@ -269,7 +307,9 @@ def traitImplOfCert (tdm : TypeDeclMap)
     traitName
     selfTy
     methods
-    sourceSpan := ti.sourceSpan }
+    sourceSpan := ti.sourceSpan
+    typeParams := ti.typeParams
+    traitBoundParams }
 
 /-- M9.5l: traverse a `PExpr` and replace every `.app head args`
     whose `head` matches a key in `pretty` with the corresponding
@@ -304,6 +344,57 @@ partial def rewriteCalleeNames (pretty : Std.HashMap String String) :
     .matchE (rewriteCalleeNames pretty scr)
             (arms.map fun (ctor, binders, body) =>
               (ctor, binders, rewriteCalleeNames pretty body))
+
+/-- M9.5o: rewrite `TraitClause@N::method` heads inside a `PExpr`
+    body. For each `.app head args`, if `head` matches the pattern
+    `TraitClause@N::method` (sanitized form `TraitClause@N.method`
+    or the raw `TraitClause@N::method` from the cert), rewrite to
+    `<TraitName>Inst.method` using the N-th entry of
+    `traitBoundParams`. If N is out of range, leave the call
+    unchanged. -/
+partial def rewriteTraitClauseRefs (bounds : Array Pure.TraitBoundParam) :
+    PExpr → PExpr
+  | .var n => .var n
+  | .lit l => .lit l
+  | .app head args =>
+    let parts := head.splitOn "::"
+    let head' : String :=
+      match parts with
+      | first :: rest =>
+        if first.startsWith "TraitClause@" then
+          let nstr := first.drop "TraitClause@".length
+          match nstr.toNat? with
+          | some n =>
+            match bounds[n]? with
+            | some b =>
+              let suffix := String.intercalate "." rest
+              s!"{b.binderName}.{suffix}"
+            | none => head
+          | none => head
+        else head
+      | [] => head
+    .app head' (args.map (rewriteTraitClauseRefs bounds))
+  | .letIn n ty e1 e2 =>
+    .letIn n ty (rewriteTraitClauseRefs bounds e1) (rewriteTraitClauseRefs bounds e2)
+  | .ok e => .ok (rewriteTraitClauseRefs bounds e)
+  | .ifThenElse c t e =>
+    .ifThenElse (rewriteTraitClauseRefs bounds c)
+                (rewriteTraitClauseRefs bounds t)
+                (rewriteTraitClauseRefs bounds e)
+  | .tuple args => .tuple (args.map (rewriteTraitClauseRefs bounds))
+  | .lam ps body => .lam ps (rewriteTraitClauseRefs bounds body)
+  | .letPure n ty e1 e2 =>
+    .letPure n ty (rewriteTraitClauseRefs bounds e1) (rewriteTraitClauseRefs bounds e2)
+  | .letPat ps ty e1 e2 =>
+    .letPat ps ty (rewriteTraitClauseRefs bounds e1) (rewriteTraitClauseRefs bounds e2)
+  | .structUpdate base f v =>
+    .structUpdate (rewriteTraitClauseRefs bounds base) f (rewriteTraitClauseRefs bounds v)
+  | .fieldAccess base f =>
+    .fieldAccess (rewriteTraitClauseRefs bounds base) f
+  | .matchE scr arms =>
+    .matchE (rewriteTraitClauseRefs bounds scr)
+            (arms.map fun (ctor, binders, body) =>
+              (ctor, binders, rewriteTraitClauseRefs bounds body))
 
 /-- Translate a whole crate cert. Per-function metadata (signature,
     source span) is taken from the cert's `FunCert`, while the
@@ -341,8 +432,14 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
   let traitNameById : Std.HashMap Nat String :=
     cc.traitDecls.foldl (init := {}) fun acc td =>
       acc.insert td.id td.name
+  -- M9.5o: parallel `qualified_name → bare name` table for resolving
+  -- trait clauses (which carry qualified names) to the bare names
+  -- used in the emitted Lean source.
+  let traitNameByQualified : Std.HashMap String String :=
+    cc.traitDecls.foldl (init := {}) fun acc td =>
+      acc.insert td.qualifiedName td.name
   let traitImpls : Array Pure.TraitImpl :=
-    cc.traitImpls.map (traitImplOfCert tdm traitNameById crateName)
+    cc.traitImpls.map (traitImplOfCert tdm traitNameById traitNameByQualified crateName)
   -- M9.5l: build a per-fn-id → pretty-name table so the Forward
   -- translator can rewrite EvCall `fn_name` to its standard-backend
   -- shape (e.g. `traits_basic::{...}::value` →
@@ -363,24 +460,37 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
   -- Decl's own `name` when its qualifiedName carries a pretty-name
   -- override (so the impl method body's `def` header uses
   -- `Tag.Insts.Traits_basicNumeric.value` not `{...}.value`).
+  --
+  -- M9.5o: attach `traitBoundParams` to each decl by translating
+  -- the cert's `csig_trait_clauses` against the decl's typeParams.
+  -- For trait-impl method bodies, the impl-level type params are
+  -- inherited from the trait_impl entry (a body fn's own cert
+  -- signature carries the same type-params + clauses, since Charon
+  -- copies them to the standalone fun_decl).
   decls := decls.map fun d =>
     let body := rewriteCalleeNames fnPrettyByName d.body
+    let traitBoundParams : Array Pure.TraitBoundParam :=
+      match cc.functions.find? (·.fnName == d.qualifiedName) with
+      | some f =>
+        f.signature.traitClauses.map
+          (traitBoundParamOf traitNameByQualified d.typeParams)
+      | none => #[]
+    -- M9.5o: a body that references `TraitClause@N::method` resolves
+    -- against the function's clauses — for now we rewrite to
+    -- `<TraitName>Inst.method` using the first matching binder
+    -- (single-clause cases). Multi-clause disambiguation is M9.5p+.
+    let body2 :=
+      if traitBoundParams.isEmpty then body
+      else rewriteTraitClauseRefs traitBoundParams body
     -- If this decl's *own* function name maps to a pretty name,
     -- override its `name` (which the LeanEmit uses as the `def`
     -- header). The impl-method body decl is the only case where
     -- this triggers in M9.5l.
     let nameOverride : Option String := fnPrettyByName[d.qualifiedName]?
-    match nameOverride with
-    | some n =>
-      -- Strip the leading crate segment to get the bare def name
-      -- within the crate namespace block. The pretty name format is
-      -- `Tag.Insts.<crateCap><Trait>.<method>` — we keep the full
-      -- name, since the namespace block in LeanEmit doesn't strip
-      -- it (the pretty name's segments aren't `::`-separated so the
-      -- existing splitOn logic ignores them).
-      { d with name := n, body }
-    | none =>
-      { d with body }
+    let d := match nameOverride with
+      | some n => { d with name := n, body := body2 }
+      | none => { d with body := body2 }
+    { d with traitBoundParams }
   return { decls, structs, enums, traitDecls, traitImpls }
 
 end AeneasCheck.Translate

@@ -2372,8 +2372,17 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
       -- Linear body. Use the BackSig to pick the right tail.
       if bs.mutInputs.isEmpty then
         -- Regular function: standard return convention.
+        -- M9.5o: a unit-returning function whose trace ends without
+        -- writing local 0 (typical for trait-method default bodies
+        -- like `fn foo() {}`) should tail with `ok ()`, not
+        -- `ok (0 : Std.U32)`. Detect via the signature's output
+        -- type. Use `.var "()"` so [tailToResult]'s default
+        -- `.var _ → .ok _` path wraps it in `ok` (a bare `.app`
+        -- head would be treated as Result-typed).
+        let unitDefault : PExpr := .var "()"
         let tailE : PExpr := finalSt.vm.getD 0 (
-          if numParams ≥ 1 then .var (paramName 1)
+          if bs.outputIsUnit then unitDefault
+          else if numParams ≥ 1 then .var (paramName 1)
           else .lit (.scalar .u32 0))
         assembleBody finalSt.binds (tailToResult tailE)
       else if !finalSt.multiRegionTail.isEmpty then
