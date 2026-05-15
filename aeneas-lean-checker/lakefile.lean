@@ -58,10 +58,17 @@ lean_lib «RuntimeShim» where
     operand-type-typed built-in `HXor UInt32 UInt32 UInt32` via the
     `U32 := UInt32` reducible alias) and added `HShiftLeft` /
     `HShiftRight` instances over `U32 × Usize` and `I32 × Isize` to
-    cover `a >>> 16#usize` and `a >>> 16#isize` shapes. -/
+    cover `a >>> 16#usize` and `a >>> 16#isize` shapes.
+
+    M9.5i: `Generated.GenericsBasic` (generic enum + generic
+    function on `MyOption<T>`). No RuntimeShim work needed —
+    Lean's `Type` universe is a primitive and `inductive Foo
+    (T : Type) where | …` doesn't require any Aeneas.Std support
+    beyond what M9.5d/e already provide. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
              `Generated.LoopsSimple, `Generated.Reborrows,
              `Generated.EnumsBasic, `Generated.EnumsPayload,
-             `Generated.SlicesBasic, `Generated.Bitwise]
+             `Generated.SlicesBasic, `Generated.Bitwise,
+             `Generated.GenericsBasic]
