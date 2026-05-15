@@ -28,8 +28,14 @@ partial def PTy.toLean : PTy → String
   | .lit .char => "Char"
   | .lit (.float _) => "Float"
   | .adt name args =>
+    -- M9.5i: a generic ADT (e.g. `MyOption T`) renders as multiple
+    -- tokens without outer parens. Use sites wrap with parens when
+    -- the multi-token shape would re-parse incorrectly (the
+    -- `Result (...)` guard in [.result], and the `Decl.toLean`
+    -- return-type bracketing, both detect a space in the inner
+    -- form). Monomorphic ADTs (empty `args`) stay single-token.
     if args.isEmpty then name
-    else s!"({name} {String.intercalate " " (args.toList.map PTy.toLean)})"
+    else s!"{name} {String.intercalate " " (args.toList.map PTy.toLean)}"
   | .tuple args =>
     "(" ++ String.intercalate " × " (args.toList.map PTy.toLean) ++ ")"
   -- The standard Aeneas Lean backend's `open Aeneas Aeneas.Std`
@@ -61,6 +67,15 @@ partial def PTy.toLean : PTy → String
   -- parenthesisation is handled by the `Result (...)` guard above
   -- (since `Slice <elem>` is also a multi-token type).
   | .slice elem => s!"Slice {elem.toLean}"
+  -- M9.5i: a type-variable reference. Renders as just the parameter
+  -- name. Use-site disambiguation: when this is the result type
+  -- (`Result T`) or a single-arg ADT (`MyOption T`), the surrounding
+  -- printer wraps it (or leaves it bare — `T` is a single token so
+  -- no parens needed). When used as a multi-arg ADT's argument,
+  -- single-letter type-var names stay as single tokens (Greek alpha
+  -- would too); the catch-all branches above are the ones that
+  -- require parens.
+  | .tyVar name => name
 
 def litToLean : Lit → String
   | .scalar k v =>
@@ -346,14 +361,24 @@ def Decl.toLean (d : Decl) : String :=
     if retStr.contains ' ' && !retStr.startsWith "(" then
       s!"({retStr})"
     else retStr
+  -- M9.5i: implicit type-param binders, rendered before the value
+  -- params. Standard Aeneas backend emits `{T : Type}` (one per
+  -- declared param, space-separated). Empty for monomorphic
+  -- functions, so the surface stays byte-identical with the M9.5h
+  -- shape.
+  let typeBinders :=
+    if d.typeParams.isEmpty then ""
+    else
+      (String.intercalate " "
+        (d.typeParams.toList.map fun n => s!"\{{n} : Type}")) ++ " "
   -- M9.5f: a zero-param function (e.g. `zero : Result NumOrZero`)
   -- has empty `params`. The standard backend emits `def zero :
   -- Result …` with a single space before `:`; concatenating `params`
   -- naively would yield `def zero  :` (double space). Build the
   -- signature head explicitly so both shapes are byte-clean.
   let sigHead :=
-    if d.params.isEmpty then s!"def {d.name} : Result {retParens}"
-    else s!"def {d.name} {params} : Result {retParens}"
+    if d.params.isEmpty then s!"def {d.name} {typeBinders}: Result {retParens}"
+    else s!"def {d.name} {typeBinders}{params} : Result {retParens}"
   d.docComment ++ d.noteBlock ++ d.attrPrefix ++
   s!"{sigHead} := do\n  {d.body.toLeanDo}"
 
@@ -372,7 +397,14 @@ def StructDecl.docComment (sd : StructDecl) : String :=
     one `  name : ty` line. Empty-field structs still emit the
     `structure` header (so the type is constructable as `{}` in Lean). -/
 def StructDecl.toLean (sd : StructDecl) : String :=
-  let header := s!"structure {sd.name} where"
+  -- M9.5i: explicit type-param binders go between the name and the
+  -- `where`, rendered as `(T : Type) (U : Type) …`. Empty for
+  -- monomorphic structs (the M9.5b shape).
+  let typeBinders :=
+    if sd.typeParams.isEmpty then ""
+    else " " ++ String.intercalate " "
+      (sd.typeParams.toList.map fun n => s!"({n} : Type)")
+  let header := s!"structure {sd.name}{typeBinders} where"
   let body := sd.fields.toList.map fun f => s!"  {f.name} : {f.ty.toLean}"
   sd.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
 
@@ -393,13 +425,28 @@ def EnumDecl.docComment (ed : EnumDecl) : String :=
     the standard Aeneas backend renders tuple-style variants positionally,
     and we match that shape. -/
 def EnumDecl.toLean (ed : EnumDecl) : String :=
-  let header := s!"inductive {ed.name} where"
+  -- M9.5i: explicit type-param binders go between the name and the
+  -- `where`, rendered as `(T : Type) (U : Type) …` (matching the
+  -- standard Aeneas backend's shape). Empty for monomorphic enums
+  -- (the M9.5d/e shape).
+  let typeBinders :=
+    if ed.typeParams.isEmpty then ""
+    else " " ++ String.intercalate " "
+      (ed.typeParams.toList.map fun n => s!"({n} : Type)")
+  -- M9.5i: in each variant's `: ... → <Enum>` signature, the trailing
+  -- `<Enum>` becomes `<Enum> T₁ T₂ ...` for a generic enum so the
+  -- variant's return type is fully applied. Monomorphic enums keep
+  -- the bare `<Enum>` shape from M9.5d/e.
+  let appliedName : String :=
+    if ed.typeParams.isEmpty then ed.name
+    else ed.name ++ " " ++ String.intercalate " " ed.typeParams.toList
+  let header := s!"inductive {ed.name}{typeBinders} where"
   let body := ed.variants.toList.map fun v =>
     if v.fields.isEmpty then
-      s!"| {v.name} : {ed.name}"
+      s!"| {v.name} : {appliedName}"
     else
       let tys := v.fields.toList.map fun f => f.ty.toLean
-      let signature := String.intercalate " → " (tys ++ [ed.name])
+      let signature := String.intercalate " → " (tys ++ [appliedName])
       s!"| {v.name} : {signature}"
   ed.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
 

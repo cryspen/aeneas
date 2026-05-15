@@ -51,6 +51,16 @@ inductive PTy
       function signature only; at the pure-value layer a `&mut [T]`
       and a `[T]` post-state share the same `PTy.slice` shape. -/
   | slice (elem : PTy)
+  /-- M9.5i: a type variable reference (e.g. `T` inside the body of
+      a generic function or enum). The string is the parameter name
+      verbatim from the surrounding `Decl.typeParams` /
+      `EnumDecl.typeParams` / `StructDecl.typeParams` list — there is
+      no separate de-Bruijn-style numbering at the Pure layer
+      (resolution happens at translation time inside Forward.lean,
+      which converts `RawTy.tyVar K` to `PTy.tyVar "T"` using the
+      surrounding decl's typeParams list). The pretty-printer just
+      emits the name. -/
+  | tyVar (name : String)
   deriving Repr, Inhabited
 
 /-- Pure expressions. -/
@@ -126,6 +136,11 @@ structure StructDecl where
   qualifiedName : String
   fields : Array StructField
   sourceSpan : Option Raw.SourceSpan := none
+  /-- M9.5i: type-parameter names for a generic struct. Empty for a
+      monomorphic struct (M9.5b's `Pair`-style fixtures). The pretty-
+      printer renders these as `(T : Type)` parameters on the
+      `structure` header. -/
+  typeParams : Array String := #[]
   deriving Repr, Inhabited
 
 /-- M9.5d / M9.5e: a single variant in an `EnumDecl`. M9.5d's C-style
@@ -146,6 +161,12 @@ structure EnumDecl where
   qualifiedName : String
   variants : Array EnumVariant
   sourceSpan : Option Raw.SourceSpan := none
+  /-- M9.5i: type-parameter names for a generic enum. Empty for a
+      monomorphic enum (M9.5d/e's `Sign` / `NumOrZero` fixtures). The
+      pretty-printer renders these as `(T : Type)` parameters on the
+      `inductive` header and appends them to the trailing
+      `: <Enum> T` of each variant's signature. -/
+  typeParams : Array String := #[]
   deriving Repr, Inhabited
 
 /-- A pure function declaration.
@@ -176,6 +197,13 @@ structure Decl where
       Aeneas backend uses this for `rust_loop` / `rust_loop_body` /
       `reducible` on the synthesised loop decls. -/
   attributes : Array String := #[]
+  /-- M9.5i: type-parameter names for a generic function. Empty for
+      monomorphic functions (every M9.5a-h fixture). The pretty-
+      printer renders these as implicit `{T : Type}` binders BEFORE
+      the value parameters, matching the standard Aeneas backend's
+      shape (`def get {T : Type} (x : MyOption T) (default : T)
+      : Result T := do …`). -/
+  typeParams : Array String := #[]
   deriving Repr, Inhabited
 
 /-- M9.5b: a crate-level emit unit. The translator now interleaves

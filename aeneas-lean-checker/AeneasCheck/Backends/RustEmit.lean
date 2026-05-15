@@ -48,6 +48,11 @@ partial def PTy.toRust : PTy → String
   -- it does for `&mut [T; N]` (see `.array` above). This keeps the
   -- harness's `T_in == T_out` invariant intact.
   | .slice elem => s!"Vec<{elem.toRust}>"
+  -- M9.5i: a type-variable reference. Rust uses the same letter
+  -- convention as the original source; the differential harness's
+  -- generated `fn _model<T>` carries the binder so the inner `T`
+  -- needs no further qualification.
+  | .tyVar name => name
 
 def litToRust : Lit → String
   | .scalar k v => s!"{v}{IntKind.toRust k}"
