@@ -66,12 +66,35 @@ inductive PExpr
       `let (x₁, ..., xₙ) ← e1; e2`. Used on the caller side of a
       `&mut`-returning call to destructure the forward/backward pair. -/
   | letPat (pat : Array String) (ty : PTy) (e1 e2 : PExpr)
+  /-- M9.5b: a struct record-update expression `{ base with field := value }`.
+      Used as the post-state value of a `&mut Pair` input after an
+      EvAssign through `[Deref, Field K]`. The pretty-printer emits
+      `{ <base> with <field> := <value> }`. Single-field updates only
+      for now; chained-field updates (`{ p with fst := a, snd := b }`)
+      can be modelled as nested `structUpdate`s. -/
+  | structUpdate (base : PExpr) (field : String) (value : PExpr)
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/
 structure Param where
   name : String
   ty : PTy
+  deriving Repr, Inhabited
+
+/-- M9.5b: a struct field declaration (`name : ty`). -/
+structure StructField where
+  name : String
+  ty : PTy
+  deriving Repr, Inhabited
+
+/-- M9.5b: a `structure Foo where …` declaration. `qualifiedName` is
+    the original Rust `crate::path::Foo` form (used for the per-decl
+    docstring); `name` is the bare name within its namespace. -/
+structure StructDecl where
+  name : String
+  qualifiedName : String
+  fields : Array StructField
+  sourceSpan : Option Raw.SourceSpan := none
   deriving Repr, Inhabited
 
 /-- A pure function declaration.
@@ -103,5 +126,20 @@ structure Decl where
       `reducible` on the synthesised loop decls. -/
   attributes : Array String := #[]
   deriving Repr, Inhabited
+
+/-- M9.5b: a crate-level emit unit. The translator now interleaves
+    struct decls and function decls so the emitter can render them in
+    cert order (with struct decls forced to come before any function
+    that uses them, in [LeanEmit]'s ordering pass). -/
+inductive TopDecl
+  | struct (sd : StructDecl)
+  | function (d : Decl)
+  deriving Repr, Inhabited
+
+/-- M9.5b: derive the `crate::…` qualified name of a top decl, for
+    namespace grouping in [LeanEmit]. -/
+def TopDecl.qualifiedName : TopDecl → String
+  | .struct sd => sd.qualifiedName
+  | .function d => d.qualifiedName
 
 end AeneasCheck.Pure

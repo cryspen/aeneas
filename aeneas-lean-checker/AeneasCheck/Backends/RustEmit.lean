@@ -111,6 +111,14 @@ partial def PExpr.toRust : PExpr → String
   | .letPat pat _ e1 e2 =>
     let pats := String.intercalate ", " pat.toList
     s!"let ({pats}) = {e1.toRust};\n    {e2.toRust}"
+  | .structUpdate base field value =>
+    -- M9.5b: Rust's struct-update syntax is `Name { field: value, ..base }`.
+    -- We don't know the struct's name from PExpr alone; the differential
+    -- Rust model passes structs through as a coarse approximation. Render
+    -- as a function-call-style `with_<field>(base, value)` placeholder so
+    -- the M13 model can supply a matching helper. Real ADT support in the
+    -- differential model is tracked separately.
+    s!"with_{field}({base.toRust}, {value.toRust})"
 
 end AeneasCheck.Pure
 

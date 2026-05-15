@@ -111,7 +111,11 @@ def sanitizeCallName (n : String) : String :=
 private partial def parenIfNeeded (s : String) (e : PExpr) : String :=
   match e with
   | .lam _ _ | .ifThenElse _ _ _ | .letIn _ _ _ _
-  | .letPure _ _ _ _ | .letPat _ _ _ _ => "(" ++ s ++ ")"
+  | .letPure _ _ _ _ | .letPat _ _ _ _
+  -- M9.5b: a `{ base with f := v }` record-update token spans
+  -- multiple operators; wrap it when used as an `app` arg so it
+  -- can't be reparsed as `{ base` ` with f := v }`.
+  | .structUpdate _ _ _ => "(" ++ s ++ ")"
   | _ => s
 
 /-- Expression form used inside a `do`-block: tail `.ok` becomes a
@@ -213,6 +217,13 @@ partial def PExpr.toLeanDo : PExpr → String
     -- Aeneas backend uses `_` for the discard slot; we follow.
     let pats := String.intercalate ", " pat.toList
     s!"let ({pats}) ← {e1.toLeanDo}\n  {e2.toLeanDo}"
+  | .structUpdate base field value =>
+    -- M9.5b: `{ base with field := value }`. The standard Aeneas
+    -- backend renders this exact shape for a write through `&mut Pair`
+    -- (e.g. `set_fst`'s `ok { p with fst := v }`). We do not bracket
+    -- the inner pieces; the outer `{ … }` self-delimits. `\{` and
+    -- `}` escape the curly braces inside an `s!"..."` interpolation.
+    s!"\{ {base.toLeanDo} with {field} := {value.toLeanDo} }"
 
 /-- Non-monadic rendering. Retained for diagnostics; the Lean backend
     uses `toLeanDo` exclusively. -/
@@ -239,6 +250,8 @@ partial def PExpr.toLean : PExpr → String
   | .letPat pat _ e1 e2 =>
     let pats := String.intercalate ", " pat.toList
     s!"let ({pats}) := {e1.toLean}\n  {e2.toLean}"
+  | .structUpdate base field value =>
+    s!"\{ {base.toLean} with {field} := {value.toLean} }"
 
 /-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
     `def`. Empty when no `sourceSpan` is attached. -/
@@ -276,5 +289,29 @@ def Decl.toLean (d : Decl) : String :=
     (d.params.toList.map fun p => s!"({p.name} : {p.ty.toLean})")
   d.docComment ++ d.noteBlock ++ d.attrPrefix ++
   s!"def {d.name} {params} : Result {d.retTy.toLean} := do\n  {d.body.toLeanDo}"
+
+/-- M9.5b: docstring for a `structure` decl. Mirrors `Decl.docComment`
+    but uses the `[crate::Foo]` form without a trailing colon (the
+    standard Aeneas backend uses the same shape). -/
+def StructDecl.docComment (sd : StructDecl) : String :=
+  match sd.sourceSpan with
+  | none => ""
+  | some sp =>
+    let loc :=
+      s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
+    s!"/-- [{sd.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+
+/-- M9.5b: render a `structure Foo where …` block. Each field becomes
+    one `  name : ty` line. Empty-field structs still emit the
+    `structure` header (so the type is constructable as `{}` in Lean). -/
+def StructDecl.toLean (sd : StructDecl) : String :=
+  let header := s!"structure {sd.name} where"
+  let body := sd.fields.toList.map fun f => s!"  {f.name} : {f.ty.toLean}"
+  sd.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
+
+/-- M9.5b: render a `TopDecl` (struct or function) into Lean source. -/
+def TopDecl.toLean : TopDecl → String
+  | .struct sd => sd.toLean
+  | .function d => d.toLean
 
 end AeneasCheck.Pure

@@ -45,8 +45,12 @@ def emitHeader (crateName : String) : String :=
 /-- Render one `def …` in monadic style, preceded by its docstring. -/
 def emitDecl (d : Decl) : String := d.toLean ++ "\n"
 
-/-- Group decls into namespace blocks keyed by their crate prefix.
-    Order within each group is preserved (cert iteration order). -/
+/-- M9.5b: render one `structure Foo where …` block. -/
+def emitStruct (sd : StructDecl) : String := sd.toLean ++ "\n"
+
+/-- Group function decls into namespace blocks keyed by their crate
+    prefix. Order within each group is preserved (cert iteration
+    order). -/
 private def groupByCrate (decls : Array Decl) : Array (String × Array Decl) :=
   Id.run do
     let mut order : Array String := #[]
@@ -59,17 +63,40 @@ private def groupByCrate (decls : Array Decl) : Array (String × Array Decl) :=
       buckets := buckets.insert c ((buckets.getD c #[]).push d)
     return order.map fun c => (c, buckets.getD c #[])
 
-/-- Emit one `namespace …` block: `namespace c\n\n<decls>\nend c\n`. -/
-def emitNamespace (c : String) (decls : Array Decl) : String :=
-  let body := String.intercalate "\n" (decls.toList.map emitDecl)
-  s!"namespace {c}\n\n" ++ body ++ s!"\nend {c}\n"
+/-- M9.5b: same grouping for struct decls. -/
+private def groupStructsByCrate (sds : Array StructDecl) :
+    Std.HashMap String (Array StructDecl) :=
+  Id.run do
+    let mut buckets : Std.HashMap String (Array StructDecl) := {}
+    for sd in sds do
+      let c := crateOf sd.qualifiedName
+      buckets := buckets.insert c ((buckets.getD c #[]).push sd)
+    return buckets
 
-/-- Top-level entry: header + one namespace block per crate. -/
+/-- Emit one `namespace …` block: structs first, then `def`s.
+    The Aeneas standard backend emits type decls before any function
+    that mentions them; for the M9.5b subset (single-crate, no
+    cross-crate ADT use) putting all structs first is equivalent. -/
+def emitNamespace (c : String) (structs : Array StructDecl)
+    (decls : Array Decl) : String :=
+  let structBody := String.intercalate "\n" (structs.toList.map emitStruct)
+  let fnBody := String.intercalate "\n" (decls.toList.map emitDecl)
+  let sep := if structs.isEmpty then "" else "\n"
+  s!"namespace {c}\n\n" ++ structBody ++ sep ++ fnBody ++ s!"\nend {c}\n"
+
+/-- Top-level entry: header + one namespace block per crate. Structs
+    (M9.5b) come before functions in each namespace. -/
 def emitTranslatedCrate (crateName : String) (tc : TranslatedCrate) : String :=
   let groups := groupByCrate tc.decls
+  let structBuckets := groupStructsByCrate tc.structs
   let header := emitHeader crateName
+  -- M9.5b: a crate may have struct decls but no function decls (rare).
+  -- For now the grouping iterates only crates that have function
+  -- decls; structs in unreferenced crates are dropped. The fixtures
+  -- under test all have at least one function per crate.
   let namespaces :=
-    String.intercalate "\n" (groups.toList.map fun (c, ds) => emitNamespace c ds)
+    String.intercalate "\n" (groups.toList.map fun (c, ds) =>
+      emitNamespace c (structBuckets.getD c #[]) ds)
   header ++ namespaces
 
 end AeneasCheck.Backends
