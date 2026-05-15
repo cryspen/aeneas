@@ -38,3 +38,7 @@ lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
              `Generated.LoopsSimple]
+-- M9.5c TODO: add `Generated.Reborrows` once the RuntimeShim exposes
+-- `ArrayIndexMut` and the set_idx translator emits a body that
+-- typechecks against it. The Direct/Reborrows.lean test already
+-- asserts set_fst's shape; this entry covers shim compile-ability.

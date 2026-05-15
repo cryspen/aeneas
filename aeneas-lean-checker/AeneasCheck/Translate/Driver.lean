@@ -23,17 +23,32 @@ structure TranslatedCrate where
   structs : Array StructDecl := #[]
   deriving Inhabited
 
+/-- M9.5b: build the [TypeDeclMap] used by the per-function translator
+    to resolve `TAdtId N` references to struct names + field names.
+    Only struct decls populate entries; opaque/unknown kinds are
+    skipped (so `Field K` projections through them fall back to the
+    M11 non-struct paths). -/
+def buildTypeDeclMap (cc : CrateCert) : TypeDeclMap := Id.run do
+  let mut m : TypeDeclMap := {}
+  for td in cc.typeDecls do
+    match td.kind with
+    | .struct fields =>
+      let names : Array String := fields.map fun f =>
+        match f.name with
+        | some n => n
+        | none => s!"field{f.idx}"
+      m := m.insert td.id { name := td.name, fieldNames := names }
+    | .opaque => ()
+  return m
+
 /-- M9.5b: lift a cert `TypeDecl` into a Pure `StructDecl`, when the
     decl is a struct. Returns `none` for opaque/unknown kinds (we
-    silently skip those — M9.5c+ will surface them). The first
-    function-cert with a matching qualified-name prefix donates its
-    source span so the docstring can carry one; if no fn cert mentions
-    the struct (it isn't used), we leave the span empty.
-
-    Field types come through as opaque cert strings; we feed them
-    through `rawTyToPTy` (defined in Forward.lean) to get a concrete
+    silently skip those — M9.5c+ will surface them). Field types
+    come through as opaque cert strings; we feed them through
+    `rawTyToPTyWith` (defined in Forward.lean) to get a concrete
     Pure type. -/
-def structDeclOfTypeDecl (crateName : String) (td : TypeDecl) : Option StructDecl :=
+def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) :
+    Option StructDecl :=
   match td.kind with
   | .struct fields =>
     let pureFields : Array StructField := fields.map fun f =>
@@ -41,7 +56,7 @@ def structDeclOfTypeDecl (crateName : String) (td : TypeDecl) : Option StructDec
           match f.name with
           | some n => n
           | none => s!"field{f.idx}"
-        ty := rawTyToPTy f.ty }
+        ty := rawTyToPTyWith tdm f.ty }
     some
       { name := td.name
         qualifiedName := s!"{crateName}::{td.name}"
@@ -71,14 +86,15 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
     match cc.functions.toList with
     | f :: _ => (f.fnName.splitOn "::").headD "crate"
     | [] => "crate"
+  let tdm := buildTypeDeclMap cc
   let structs : Array StructDecl :=
-    cc.typeDecls.filterMap (structDeclOfTypeDecl crateName)
+    cc.typeDecls.filterMap (structDeclOfTypeDecl tdm crateName)
   let mut decls : Array Decl := #[]
   for i in [0:cc.functions.size] do
     let f := cc.functions[i]!
     match translateLoopFun f with
     | some loopDecls => decls := decls ++ loopDecls
-    | none => decls := decls.push (translateFun f traces[i]!)
+    | none => decls := decls.push (translateFunWith tdm f traces[i]!)
   return { decls, structs }
 
 end AeneasCheck.Translate

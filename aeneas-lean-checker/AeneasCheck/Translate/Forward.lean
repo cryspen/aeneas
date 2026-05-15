@@ -85,11 +85,63 @@ def isOutputTupleOfMutRefs : RawTy → Option Nat
       if nRef ≥ 2 && nMut ≥ nRef then some nRef else none
   | _ => none
 
-/-- Crude `RawTy` → `PTy` mapping based on substring lookup in the
-    opaque-tagged signature string. M11 brings the first cases that
-    actually matter (Bool for `if` conditions); M12 will replace this
-    with a structural parser fed by `llbc.json`. -/
-def rawTyToPTy : RawTy → PTy
+/-- M9.5b: information the translator needs about one ADT type
+    declaration: its bare Lean name and an ordered list of field
+    names. The Lean translator uses `name` when translating an
+    `&mut Pair`-typed signature input or a function whose return
+    type is `Pair`; `fieldNames[K]` resolves a `Field K` projection
+    to the surface field name (`fst` / `snd`). -/
+structure TypeDeclInfo where
+  name : String
+  fieldNames : Array String
+  deriving Repr, Inhabited
+
+/-- M9.5b: a TypeDeclId → TypeDeclInfo lookup, keyed by the integer
+    that appears inside `TAdt { id = TAdtId N; ... }` strings. The
+    Driver builds this from `cc.typeDecls`. -/
+abbrev TypeDeclMap := Std.HashMap Nat TypeDeclInfo
+
+/-- M9.5b: extract the `N` from a substring `TAdtId N`. Returns `none`
+    when the string contains no `TAdtId` reference (e.g., a tuple
+    type or a literal). When multiple `TAdtId` references appear
+    (parametric ADTs, nested types), this returns the *first* one —
+    enough for M9.5b's monomorphic-struct fixtures. -/
+def parseTAdtId (s : String) : Option Nat :=
+  let parts := s.splitOn "TAdtId"
+  match parts with
+  | _ :: rest :: _ =>
+    -- After `TAdtId` there's optional whitespace, then digits, then
+    -- closing punctuation. Skip leading whitespace, scan digits.
+    -- Lean 4 deprecated `trimLeft`; use a manual ASCII-space skip
+    -- that returns a `String` (not a `String.Slice`).
+    let trimmed := rest.dropWhile Char.isWhitespace
+    let digits := trimmed.takeWhile Char.isDigit
+    if digits.isEmpty then none else digits.toNat?
+  | _ => none
+
+/-- M9.5b: detect a `TAdt {... TTuple ...}` string. We use a substring
+    check; `TTuple` appears in the same nested form regardless of
+    generic args. -/
+def isTupleAdt (s : String) : Bool :=
+  (s.splitOn "TTuple").length ≥ 2
+
+/-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping. Resolves
+    `TAdtId N` references via [tdm]; falls back to the legacy
+    substring-keyed heuristic when the type is a literal or contains
+    no ADT reference.
+
+    Reference shapes (`TRef ... RMut` / `TRef ... RShared`) unwrap to
+    their inner type — at the pure layer, a `&mut Pair` and a `Pair`
+    have the same value type (the post-state of a `&mut T` IS the
+    `T`). The signature surface, separately, decides whether the
+    function takes a borrow (input position) or returns a forward
+    value (output position).
+
+    Order matters: we test for `TTuple` *before* `TAdtId` because the
+    output type of a unit-returning function (`()`) is rendered as
+    `TAdt {id = TTuple; ...}` with no `TAdtId` payload — but a
+    `TAdtId 0` substring can still appear inside *generic* args. -/
+def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy
   | .opaque s =>
     if (s.splitOn "TBool").length ≥ 2 then .lit .bool
     else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
@@ -97,9 +149,33 @@ def rawTyToPTy : RawTy → PTy
     else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
     else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
     else if (s.splitOn "Usize").length ≥ 2 then .lit (.int .usize)
-    else if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
-    else .lit (.int .u32)
+    else
+      -- Try to resolve an ADT reference (struct). For a `TRef …
+      -- TAdt …` we unwrap to the inner T (PTy is value-level; the
+      -- borrow shape is recovered separately by [isMutRef] when
+      -- building the BackSig).
+      match parseTAdtId s with
+      | some id =>
+        match tdm[id]? with
+        | some info => .adt info.name #[]
+        | none =>
+          -- Unknown ADT id (shouldn't happen for in-crate decls;
+          -- fall back to u32 to avoid crashing).
+          if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
+          else .lit (.int .u32)
+      | none =>
+        if isTupleAdt s then .unit
+        else if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
+        else .lit (.int .u32)
   | _ => .lit (.int .u32)
+
+/-- Crude `RawTy` → `PTy` mapping based on substring lookup in the
+    opaque-tagged signature string, with no type-decl context. Kept
+    as the M11-era default for call sites (e.g. struct-field decls
+    in [Translate.Driver]) that don't have a [TypeDeclMap] in scope.
+    M9.5b's translator passes a real [TypeDeclMap] via
+    [rawTyToPTyWith]. -/
+def rawTyToPTy : RawTy → PTy := rawTyToPTyWith {}
 
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
     returning the inner def name `a.b`. The crate prefix becomes the
@@ -276,6 +352,12 @@ structure WalkState where
       local. Lets deref-writes thread their `<back_K>` application
       into [multiRegionTail] at the right slot. -/
   multiRegionLocalIdx : Std.HashMap Nat Nat := {}
+  /-- M9.5b: crate-level type-decl table, threaded from the Driver.
+      Used by the EvAssign walker to resolve a `[Deref, Field K]`
+      projection on a `&mut Pair`-typed local to a struct-update
+      with the right field name. Also used by [rawTyToPTyWith] when
+      mapping signature inputs/outputs. -/
+  tdm : TypeDeclMap := {}
   deriving Inhabited
 
 namespace WalkState
@@ -459,6 +541,30 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       match d.projection.toList.getLast? with
       | some ProjElem.deref => true
       | _ => false
+    -- M9.5b: detect a struct-field write through a `&mut Pair`-style
+    -- input. Projection shape: `[..., Deref, Field K]` (last is
+    -- `Field K`, second-to-last is `Deref`). The pure-level effect
+    -- is `vm[root] := { vm[root] with <fieldName> := rhsE }` —
+    -- record-update preserving the rest of the struct. We resolve
+    -- the field name via `st.tdm` keyed by the TAdt id parsed from
+    -- the dst place's root-local type string.
+    let structFieldWrite : Option (String × PExpr) :=
+      let proj := d.projection.toList
+      let n := proj.length
+      if n < 2 then none
+      else
+        match proj[n - 2]?, proj[n - 1]? with
+        | some ProjElem.deref, some (ProjElem.field k) =>
+          match d.ty with
+          | RawTy.opaque s =>
+            (parseTAdtId s).bind fun adtId =>
+              st.tdm[adtId]?.bind fun info =>
+                info.fieldNames[k]?.map fun fname =>
+                  let base : PExpr :=
+                    st.vm.getD d.local_ (.var (paramName d.local_))
+                  (fname, .structUpdate base fname rhsE)
+          | _ => none
+        | _, _ => none
     -- M12.2b: detect a field-destructure of a multi-region call
     -- result, i.e. `EvAssign dst=L rhs=SymMove(L'.[Field K])`
     -- where `(L', K)` is keyed in [callBackByField]. Thread the
@@ -486,6 +592,14 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         multiRegionLocalIdx := st.multiRegionLocalIdx.insert d.local_ k
         -- Don't update vm[d.local_]: the destructured local has no
         -- pure-value meaning until a deref-write fires the closure.
+        lastWrite := some d.local_ }
+    else if let some (_fname, suExpr) := structFieldWrite then
+      -- M9.5b: write-through-`&mut` field assignment. The "value" of
+      -- the input's post-state IS the struct-update expression. We
+      -- stash it in vm[d.local_]; the BackSig wrap-up below picks it
+      -- up as the function's tail.
+      { st with
+        vm := st.vm.insert d.local_ suExpr
         lastWrite := some d.local_ }
     else if derefTail then
       match st.callBack[d.local_]? with
@@ -1063,22 +1177,30 @@ structure BackSig where
   outputTupleOfMuts : Option Nat
   deriving Repr, Inhabited
 
-/-- Build the [BackSig] from a function signature. -/
-def backSigOf (sig : FnSignature) : BackSig := Id.run do
+/-- M9.5b: build the [BackSig] from a function signature, with a
+    type-decl map for resolving `&mut Pair`-style inputs into a
+    concrete `.adt "Pair" #[]` PTy (rather than the M11 placeholder
+    `u32`). Falls back to [rawTyToPTy] when `tdm` is empty. -/
+def backSigOfWith (tdm : TypeDeclMap) (sig : FnSignature) : BackSig := Id.run do
   let mut mutInputs : Array Nat := #[]
   let mut mutInputTys : Array PTy := #[]
   for i in [0:sig.inputs.size] do
     let t := sig.inputs[i]!
     if isMutRef t then
       mutInputs := mutInputs.push (i + 1)
-      mutInputTys := mutInputTys.push (rawTyToPTy t)
+      mutInputTys := mutInputTys.push (rawTyToPTyWith tdm t)
   let bs : BackSig :=
     { mutInputs, mutInputTys
       outputIsMutRef := isMutRef sig.output
-      outputInnerTy := rawTyToPTy sig.output
+      outputInnerTy := rawTyToPTyWith tdm sig.output
       outputIsUnit := isUnitTy sig.output
       outputTupleOfMuts := isOutputTupleOfMutRefs sig.output }
   return bs
+
+/-- Build the [BackSig] from a function signature. Kept for back-compat
+    with callers that have no type-decl map; defers to
+    [backSigOfWith] with an empty map. -/
+def backSigOf (sig : FnSignature) : BackSig := backSigOfWith {} sig
 
 /-- M12.2a-2: backward closure type for a [BackSig]. Returns `none`
     when the function has no `&mut` inputs (no backward function
@@ -1264,12 +1386,12 @@ def buildBackwardTail (bs : BackSig) (vm : VarMap) : PExpr :=
     signatures. We approximate "did this function take a `&mut`?" by
     checking if any borrow event fired in the trace; if so, we pick
     the input's root local rather than local 0. -/
-def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
+def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
   let numParams := f.signature.inputs.size
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
       let ty := match f.signature.inputs[i]? with
-        | some t => rawTyToPTy t
+        | some t => rawTyToPTyWith tdm t
         | none => placeholderTy
       { name := paramName (i + 1), ty }
   -- M12.1: loop-bearing functions are handled separately by
@@ -1286,10 +1408,10 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
       m := m.insert (i + 1) (.var (paramName (i + 1)))
     return m
   let finalSt : WalkState :=
-    walkEvents f.events { vm := initVm, numParams }
+    walkEvents f.events { vm := initVm, numParams, tdm }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
-  let bs := backSigOf f.signature
+  let bs := backSigOfWith tdm f.signature
   let retTy : PTy := emitRetTy bs
   -- M12.2a-2: branch-tailed bodies (the `choose` pattern) compute
   -- their per-branch tail value through [buildBackwardTail] on each
@@ -1359,5 +1481,11 @@ def translateFun (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
     qualifiedName := f.fnName
     params, retTy, body
     sourceSpan := f.sourceSpan }
+
+/-- M9.5b: kept-for-back-compat wrapper around [translateFunWith]
+    with an empty type-decl map. Real translation goes through
+    [translateFunWith] from the Driver. -/
+def translateFun (f : Raw.FunCert) (t : CheckedTrace) : Decl :=
+  translateFunWith {} f t
 
 end AeneasCheck.Translate

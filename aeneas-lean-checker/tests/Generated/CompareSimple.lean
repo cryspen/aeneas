@@ -27,6 +27,7 @@ def incr_val (x1 : Std.U32) : Result Std.U32 := do
 /-- [compare_simple::add_u32]:
     Source: 'tests/src/compare_simple.rs', lines 15:0-17:1 -/
 def add_u32 (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
-  (core.num.U32.wrapping_add x1 x2)
+  let x1_post ← (core.num.U32.wrapping_add x1 x2)
+  ok x1_post
 
 end compare_simple

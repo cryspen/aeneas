@@ -153,6 +153,9 @@ partial def PExpr.toLeanDo : PExpr → String
       -- `.app` also self-parenthesises (`(head a b)`), so skip
       -- adding another pair — `ok (head a b)` not `ok ((head a b))`.
       | .app _ _ => PExpr.toLeanDo inner
+      -- M9.5b: `{ base with f := v }` self-delimits via braces, so
+      -- skip parens — `ok { p with fst := v }` not `ok ({ … })`.
+      | .structUpdate _ _ _ => PExpr.toLeanDo inner
       | _ => "(" ++ PExpr.toLeanDo inner ++ ")"
     s!"ok {s}"
   | .ifThenElse cond thenE elseE =>
