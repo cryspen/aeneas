@@ -396,6 +396,42 @@ def binopHead : String → String
   | "Cmp" => "Cmp"
   | s => s
 
+/-- M9.5h: distinguish pure (non-`Result`) binops from monadic ones.
+    `true` for binops whose Lean form returns the operand type (or
+    `Bool`) directly, NOT wrapped in `Result α`. The taxonomy follows
+    the standard Aeneas backend's emitter:
+
+    * **Pure** (this set): `BitXor` / `BitAnd` / `BitOr` (bit ops),
+      `AddWrap` / `SubWrap` / `MulWrap` (wrapping arithmetic — never
+      panic), `Eq` / `Ne` / `Lt` / `Le` / `Gt` / `Ge` (comparisons —
+      return `Bool`), `Cmp` (three-way compare — returns `Ordering`).
+    * **Monadic** (everything else): `Add` / `Sub` / `Mul` / `Div` /
+      `Rem` / `Shl` / `Shr` (panic on overflow / divide-by-zero /
+      out-of-range shift), `AddChecked` / `SubChecked` / `MulChecked`
+      (return `Option<T>` lifted into `Result`), `Offset`.
+
+    Note: `binopHead` lossily lumps `ShlPanic` / `ShlUB` / `ShlWrap`
+    together as `"Shl"` (likewise for `Shr`). The current cert format
+    only emits `*Panic` shift variants in fixtures under test, so the
+    `"Shl"` / `"Shr"` heads are always monadic at the PExpr level. If
+    a future fixture exercises `ShlWrap` / `ShrWrap` we'd need to
+    either thread the original tag through or extend `binopHead` to
+    keep `*Wrap` shifts as a distinct head.
+
+    Used by:
+    * [tailToResult] to decide whether to wrap a tail `.app` in `ok`
+      (pure binops MUST be wrapped — they're not Result-typed).
+    * [assembleBody] to decide whether the
+      `let nm ← e; ok (var nm)` collapse should drop the let entirely
+      (only safe when `e` is monadic) or instead emit `ok e` (when
+      `e` is a pure binop). -/
+def isPureBinop : String → Bool
+  | "BitXor" | "BitAnd" | "BitOr"
+  | "AddWrap" | "SubWrap" | "MulWrap"
+  | "Eq" | "Ne" | "Lt" | "Le" | "Gt" | "Ge"
+  | "Cmp" => true
+  | _ => false
+
 /-- Pending function call info, recorded at EvCall time and consumed
     at EvEndAbs time. Each region abstraction in a call's `regionAbs`
     list maps to one [PendingCall] entry; the call's binding is
@@ -1238,22 +1274,33 @@ def joinedLocals (left right result : StateSummary) : Array Nat :=
     | _ => none
 
 /-- Wrap a tail value in `ok` *only* when it is a pure (non-Result)
-    expression. Binops emit `Result α`-typed apps already; double-
+    expression. Monadic binops (`Add` / `Sub` / `Mul` / `Div` / `Rem` /
+    `Shl` / `Shr`, etc.) emit `Result α`-typed apps already; double-
     wrapping them would change semantics. M12.2a-2: also recognize
     `ifThenElse` whose branches are themselves already Result-typed
     (each branch was built via [assembleBody] which wraps in `ok`).
     M9.5f: an `.app` whose head contains a `.` is a *qualified
     constructor application* (`NumOrZero.Num x1`) — pure, not Result-
-    typed, so it must be wrapped in `ok`. The OCaml interpreter
-    never threads a binop / wrapping-op result directly into the
-    return slot (those go through a fresh `tN` binding), so the
-    `.app` branch only ever sees ctor applications. -/
+    typed, so it must be wrapped in `ok`. M9.5h: **pure binops**
+    (`BitXor` / `BitAnd` / `BitOr`, comparisons, `*Wrap` variants —
+    see [isPureBinop]) likewise return their operand type directly,
+    so they need an explicit `ok` wrap in tail position. Without this
+    the emitted body would be `do (x1 ^^^ x2)` rather than `do ok (x1
+    ^^^ x2)` — Lean would reject the bare `Std.U32` as a `Result
+    Std.U32`-shaped do-tail in the standard-backend semantics.
+    (Against the in-tree `RuntimeShim` the bare form happens to
+    typecheck because the shim overrides `HXor U32 U32 (Result U32)`;
+    that's an artifact of the shim, not the standard backend's
+    convention.) -/
 def tailToResult (e : PExpr) : PExpr :=
   match e with
   | .app head _ =>
     -- A qualified constructor (`<TypeName>.<Variant>` or
     -- `<Type>.<assoc>`) is a pure value and must be wrapped.
-    if head.contains '.' then .ok e else e
+    -- A pure binop (`BitXor`, `Lt`, `AddWrap`, …) similarly returns
+    -- a non-Result value; wrap it. Monadic binops (`Add`, `Shl`, …)
+    -- already produce `Result α` and are emitted bare.
+    if head.contains '.' || isPureBinop head then .ok e else e
   | .ifThenElse _ _ _ => e  -- Branches are already Result-typed.
   | .matchE _ _ => e  -- M9.5d: arms are already Result-typed.
   | _ => .ok e
@@ -1271,31 +1318,60 @@ def isFreshTempName (nm : String) : Bool :=
   | _ => false
 
 /-- Fold the accumulated bindings around a tail expression to form a
-    nested `do let … ← …; …` chain. -/
+    nested `do let … ← …; …` chain.
+
+    **Last-binding collapse.** If the *last* binding has the shape
+    `regular nm e` with `nm` a fresh temp (`isFreshTempName`) AND the
+    tail is `ok (var nm)`, we collapse: the last `let nm ← e` is
+    dropped and `e` (resp. `ok e` when `e` is a pure binop, see
+    below) becomes the new tail of the do-block. Prior bindings are
+    wrapped around the new tail. This produces:
+
+    * `def incr (x : U32) : Result U32 := do x + 1#u32`
+      (single binding, `e = x + 1#u32` monadic — bare in tail.)
+    * `def shift_u32 a : do let t ← a >>> 16#usize; t <<< 16#usize`
+      (two bindings; the last `t1 ← t0 <<< 16#usize` collapses into
+      the do-tail; the first binding is preserved as `let t ← …`.)
+    * `def xor_u32 a b : do ok (a ^^^ b)` (single pure-binop binding
+      — collapse with `ok` wrap, since `a ^^^ b` is `U32`, not
+      `Result U32`.)
+
+    M9.5h: the original M10.0 collapse rule unconditionally rewrote
+    `let nm ← e; ok (var nm)` to bare `e`, which is wrong when `e` is
+    a pure binop — `e` is not Result-typed and would be ill-formed
+    as a do-block tail. The pure-binop branch wraps in `ok` instead.
+
+    The collapse is only safe for "fresh temp" bindings (`tN`). A
+    M10.2b post-state binding (`x1_post`) carries information about
+    which `&mut` input's post-state we just bound, and the tail
+    `ok x1_post` is the canonical way of returning that post-state;
+    keeping the explicit `let x1_post ← …; ok x1_post` makes the
+    forward-and-backward correspondence visible in the emitted code. -/
 def assembleBody (binds : Array Bind) (tail : PExpr) : PExpr :=
-  -- Simplification: if there is exactly one binding and the tail is
-  -- just `ok (.var name)` for that name, drop the let and use the
-  -- bound expression directly (it already returns Result α). This
-  -- matches the standard backend's body shape for tiny functions
-  -- like `incr` (`x + 1#u32`).
-  --
-  -- The collapse is only safe for "fresh temp" bindings (`tN`). A
-  -- M10.2b post-state binding (`x1_post`) carries information about
-  -- which `&mut` input's post-state we just bound, and the tail
-  -- `ok x1_post` is the canonical way of returning that post-state;
-  -- keeping the explicit `let x1_post ← …; ok x1_post` makes the
-  -- forward-and-backward correspondence visible in the emitted code.
   let wrapOne (b : Bind) (acc : PExpr) : PExpr :=
     match b with
     | .regular nm e => .letIn nm placeholderTy e acc
     | .pair nm bnm e => .letPat #[nm, bnm] placeholderTy e acc
     | .tuple names e => .letPat names placeholderTy e acc
-  match binds.toList, tail with
-  | [.regular nm e], .ok (.var n) =>
-    if nm == n && isFreshTempName nm then e
-    else binds.foldr (init := tail) wrapOne
-  | _, _ =>
-    binds.foldr (init := tail) wrapOne
+  -- Determine whether the last-binding collapse should fire and, if
+  -- so, what the rewritten tail should be (`e` for monadic, `ok e`
+  -- for pure). Returns the new tail + the leading bindings minus
+  -- the collapsed last one; or `none` when the collapse doesn't
+  -- apply (and the unmodified `binds`/`tail` are used).
+  let collapse? : Option (Array Bind × PExpr) :=
+    match binds.back?, tail with
+    | some (.regular nm e), .ok (.var n) =>
+      if nm == n && isFreshTempName nm then
+        let newTail :=
+          match e with
+          | .app head _ => if isPureBinop head then .ok e else e
+          | _ => e
+        some (binds.pop, newTail)
+      else none
+    | _, _ => none
+  match collapse? with
+  | some (leading, newTail) => leading.foldr (init := newTail) wrapOne
+  | none => binds.foldr (init := tail) wrapOne
 
 /-- Outer-loop walk that handles both the linear event stream and
     the M11.2 if/else branching pattern.

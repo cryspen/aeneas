@@ -40,7 +40,6 @@ def use_choose (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result (Std.U32 × St
     Source: 'tests/src/calls.rs', lines 27:0-35:1 -/
 def pick (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result Std.U32 := do
   let t0 ← if x1 then ok x2 else ok x3
-  let t1 ← (core.num.U32.wrapping_add t0 (1 : Std.U32))
-  ok t1
+  (core.num.U32.wrapping_add t0 (1 : Std.U32))
 
 end calls
