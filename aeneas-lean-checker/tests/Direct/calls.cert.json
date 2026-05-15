@@ -138,7 +138,7 @@
             "region_abs": [ 1 ]
           }
         },
-        { "EvEndAbs": { "abs": 1, "final_values": [] } },
+        { "EvEndAbs": { "abs": 1, "final_values": [ { "SymVal": 3 } ] } },
         "EvReturn"
       ],
       "final_state": { "env": [], "live_loans": [] }

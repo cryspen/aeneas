@@ -1258,6 +1258,44 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
         comp cc (end_abs_borrows config span ~snapshots chain abs_id level ctx)
       in
 
+      (* M10.2b: capture the per-region post-state values flowing out of
+         the abstraction. We do this *after* [end_abs_borrows] has
+         replaced each [AMutBorrow] in the abs with [AEndedMutBorrow
+         { meta = { given_back; _ }; _ }], and *before*
+         [end_abs_synthesize] removes the abstraction from the context.
+
+         The pattern we look for is one [AEndedMutBorrow] per region
+         group: its [meta.given_back] is the freshly-generated symbolic
+         value that replaces the borrowed input upon termination. For a
+         single-region helper like [incr_inner(&mut u32)], we get a
+         singleton list whose sole entry is the post-state symbolic
+         value the caller should bind. For helpers that don't end any
+         concrete borrows (e.g. all-symbolic projector flows; M10.2b
+         doesn't yet thread those), the list is empty — the Lean side
+         falls back to its M10.1 placeholder shape. *)
+      let cert_final_values : CertEvent.cert_sym_expr list =
+        match ctx_lookup_abs_opt ctx abs_id with
+        | None -> []
+        | Some abs ->
+            let acc = ref [] in
+            let visitor =
+              object
+                inherit [_] iter_abs as super
+
+                method! visit_AEndedMutBorrow env meta child =
+                  acc := CertEvent.SymVal meta.given_back.sv_id :: !acc;
+                  super#visit_AEndedMutBorrow env meta child
+
+                method! visit_AEndedProjBorrows env aproj =
+                  acc :=
+                    CertEvent.SymVal aproj.mvalues.given_back.sv_id :: !acc;
+                  super#visit_AEndedProjBorrows env aproj
+              end
+            in
+            visitor#visit_abs () abs;
+            List.rev !acc
+      in
+
       (* End the regions owned by the abstraction - note that we don't need to
          relookup the abstraction: the set of regions in an abstraction never
          changes... *)
@@ -1276,13 +1314,14 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
       let ctx, cc = comp cc (end_abs_synthesize config span abs_id level ctx) in
 
       (* Cert: emit EvEndAbs marking the abstraction as closed. The
-         [final_values] field is left empty in M10.2 — the structural
-         marker is enough for the Lean translator to know the
-         abstraction's region was released; M10.2b will populate the
-         field with the per-loan given-back symbolic values so the
-         pure translator can emit backward-function applications. *)
+         [final_values] list — populated in M10.2b — carries one
+         symbolic-value reference per [AEndedMutBorrow] in the
+         abstraction, in left-to-right order matching the call site's
+         [region_abs] field. The Lean translator pairs the most recent
+         [EvCall] with this list and binds each entry as the post-state
+         of the corresponding [&mut] input. *)
       ctx_emit_event ctx
-        (CertEvent.EvEndAbs { abs = abs_id; final_values = [] });
+        (CertEvent.EvEndAbs { abs = abs_id; final_values = cert_final_values });
 
       (* Debugging *)
       [%ltrace
