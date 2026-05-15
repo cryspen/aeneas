@@ -38,5 +38,11 @@ def checkSymExpr (e : SymExpr) : TC Unit := do
   | .symMove p => checkPlace p
   | .symMutBorrowTok _ => pure ()
   | .symVariant _ _ _ _ => pure ()
+  -- M9.5p: tuple / struct aggregate. Same coarse treatment as
+  -- symVariant — the operand sym-exprs are well-formed by
+  -- construction (cert generator only emits operands that already
+  -- parsed); we skip deeper recursion here for minimal blast radius.
+  | .symTuple _ => pure ()
+  | .symRecord _ _ => pure ()
 
 end AeneasCheck.Typecheck

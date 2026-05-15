@@ -122,6 +122,14 @@ inductive PExpr
       dot-notation `x.value` rather than a `match`-based projection
       lemma since `structure` decls auto-generate field accessors. -/
   | fieldAccess (base : PExpr) (field : String)
+  /-- M9.5p: a Lean record literal `{ x := e1, y := e2 }`. Emitted as
+      the tail value of a `mk_pair1`-shaped constructor function
+      (`pub const fn mk_pair1(x, y) -> Pair<…> { Pair { x, y } }`)
+      and on RHS positions seeded from a `SymRecord` cert event. The
+      pretty-printer renders this as Lean's anonymous-constructor
+      syntax `{ x := e1, y := e2 }`, matching the standard Aeneas
+      backend's exact whitespace. -/
+  | recordLit (fields : Array (String × PExpr))
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/

@@ -139,6 +139,15 @@ partial def PExpr.toRust : PExpr → String
     -- M9.5n: Rust uses the same dot-notation as Lean for struct
     -- field reads. We pass it through verbatim.
     s!"{base.toRust}.{field}"
+  | .recordLit fields =>
+    -- M9.5p: a struct literal `Pair { x: e1, y: e2 }` in Rust. The
+    -- PExpr ctor doesn't carry the struct's qualified name, so the
+    -- differential Rust model emits a placeholder `record_lit(...)`
+    -- call carrying named-field key=value pairs. The real ADT path
+    -- through the differential model is tracked separately.
+    let body := String.intercalate ", "
+      (fields.toList.map fun (n, v) => s!"{n}: {v.toRust}")
+    s!"record_lit \{ {body} }"
   | .matchE scrutinee arms =>
     -- M9.5d / M9.5e: Rust's `match` syntax differs only in arm
     -- separator (comma) and ctor path. The Pure IR's ctor strings

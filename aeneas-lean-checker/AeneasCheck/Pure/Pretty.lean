@@ -207,6 +207,8 @@ partial def PExpr.toLeanDo : PExpr → String
       -- M9.5b: `{ base with f := v }` self-delimits via braces, so
       -- skip parens — `ok { p with fst := v }` not `ok ({ … })`.
       | .structUpdate _ _ _ => PExpr.toLeanDo inner
+      -- M9.5p: `{ x := e1, y := e2 }` self-delimits via braces too.
+      | .recordLit _ => PExpr.toLeanDo inner
       -- M9.5n: a field access `<base>.<field>` is a single dotted
       -- token; no parens needed (`ok x1.value` not `ok (x1.value)`).
       | .fieldAccess _ _ => PExpr.toLeanDo inner
@@ -291,6 +293,15 @@ partial def PExpr.toLeanDo : PExpr → String
     -- field-access against a `.var` base so the issue doesn't arise.
     let baseS := base.toLeanDo
     s!"{baseS}.{field}"
+  | .recordLit fields =>
+    -- M9.5p: a Lean record literal `{ x := e1, y := e2 }`. Matches the
+    -- standard Aeneas backend's whitespace for `ok { x := x1, y := x2 }`
+    -- (one space after `{`, one space before `}`, `, ` between fields,
+    -- ` := ` between each field name and value). `\{` escapes the
+    -- opening brace inside an `s!"..."` interpolation.
+    let body := String.intercalate ", "
+      (fields.toList.map fun (n, v) => s!"{n} := {v.toLeanDo}")
+    s!"\{ {body} }"
   | .matchE scrutinee arms =>
     -- M9.5d / M9.5e: `match <scrutinee> with | Ctor1 b₁ … bₙ => body1
     -- | …`. The standard Aeneas backend renders each arm on its own
@@ -363,6 +374,11 @@ partial def PExpr.toLean : PExpr → String
   | .structUpdate base field value =>
     s!"\{ {base.toLean} with {field} := {value.toLean} }"
   | .fieldAccess base field => s!"{base.toLean}.{field}"
+  | .recordLit fields =>
+    -- M9.5p: diagnostic-only rendering for `{ x := e1, y := e2 }`.
+    let body := String.intercalate ", "
+      (fields.toList.map fun (n, v) => s!"{n} := {v.toLean}")
+    s!"\{ {body} }"
   | .matchE scrutinee arms =>
     let armS := arms.toList.map fun (ctor, binders, body) =>
       let pat :=

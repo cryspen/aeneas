@@ -31,6 +31,16 @@ inductive SymExpr
       resolved via the type-decl map). -/
   | symVariant (adtId variantId : Nat) (variantName : String)
                (fields : Array SymExpr)
+  /-- M9.5p: a tuple aggregate construction, e.g. `(x, y)` on the RHS
+      of an `EvAssign`. The Lean translator renders this as
+      `(e1, e2, …, eN)`. -/
+  | symTuple (fields : Array SymExpr)
+  /-- M9.5p: a named-field struct aggregate construction, e.g.
+      `Pair { x, y }`. Each entry carries the field's surface name as
+      resolved by the OCaml cert generator (using the type-decl's
+      `field_name`; tuple-style structs fall back to `fieldK`). The
+      Lean translator renders this as `{ x := e1, y := e2 }`. -/
+  | symRecord (adtId : Nat) (fields : Array (String × SymExpr))
   deriving Repr
 
 /-- Restoration info for an EvEndBorrow event. -/

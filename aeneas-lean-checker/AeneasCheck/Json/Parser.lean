@@ -123,6 +123,24 @@ partial def parseSymExpr (j : Json) : Result SymExpr := do
         let arr ← asArr fj
         arr.mapM parseSymExpr
     return .symVariant adtId variantId variantName fields
+  | "SymTuple" =>
+    -- M9.5p: tuple aggregate. Payload is a flat array of cert sym-exprs.
+    let arr ← asArr payload
+    let fields ← arr.mapM parseSymExpr
+    return .symTuple fields
+  | "SymRecord" =>
+    -- M9.5p: named-field struct aggregate. Payload is
+    -- `{ adt_id, fields = [{ name, value }, …] }`. Each entry carries
+    -- the field's surface name (matching the cert type-decl's
+    -- CertField.name; tuple-style structs use the `fieldK` fallback
+    -- the OCaml side bakes in).
+    let adtId ← asNat (← field payload "adt_id")
+    let fieldArr ← asArr (← field payload "fields")
+    let fields ← fieldArr.mapM fun fj => do
+      let n ← asStr (← field fj "name")
+      let v ← parseSymExpr (← field fj "value")
+      return (n, v)
+    return .symRecord adtId fields
   | _ => fail s!"unknown SymExpr tag: {tag}"
 
 def parseRestoreInfo (j : Json) : Result RestoreInfo := do

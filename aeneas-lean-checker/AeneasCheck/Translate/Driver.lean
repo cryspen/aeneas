@@ -340,6 +340,9 @@ partial def rewriteCalleeNames (pretty : Std.HashMap String String) :
     .structUpdate (rewriteCalleeNames pretty base) f (rewriteCalleeNames pretty v)
   | .fieldAccess base f =>
     .fieldAccess (rewriteCalleeNames pretty base) f
+  -- M9.5p: aggregate record literals — recurse into each field value.
+  | .recordLit fields =>
+    .recordLit (fields.map fun (n, v) => (n, rewriteCalleeNames pretty v))
   | .matchE scr arms =>
     .matchE (rewriteCalleeNames pretty scr)
             (arms.map fun (ctor, binders, body) =>
@@ -391,6 +394,9 @@ partial def rewriteTraitClauseRefs (bounds : Array Pure.TraitBoundParam) :
     .structUpdate (rewriteTraitClauseRefs bounds base) f (rewriteTraitClauseRefs bounds v)
   | .fieldAccess base f =>
     .fieldAccess (rewriteTraitClauseRefs bounds base) f
+  -- M9.5p: aggregate record literals — recurse into each field value.
+  | .recordLit fields =>
+    .recordLit (fields.map fun (n, v) => (n, rewriteTraitClauseRefs bounds v))
   | .matchE scr arms =>
     .matchE (rewriteTraitClauseRefs bounds scr)
             (arms.map fun (ctor, binders, body) =>

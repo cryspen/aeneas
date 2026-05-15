@@ -534,7 +534,19 @@ partial def rawTyToPTyWithVars
           if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
           else .lit (.int .u32)
       | none =>
-        if isTupleAdt s then .unit
+        -- M9.5p: a TTuple type — `()` (unit) when empty, `(t1, t2, …)`
+        -- otherwise. Pre-M9.5p this branch always returned `.unit`,
+        -- which clobbered the return type of fns like
+        -- `mk_pair0 : (u32, u32) -> (u32, u32)` to `Result Unit`
+        -- whenever the cert's body emitted a SymTuple. The depth-aware
+        -- [parseTAdtGenericTypes] extracts each inner type string; we
+        -- recurse on them via `rawTyToPTyWithVars`.
+        if isTupleAdt s then
+          let inners := parseTAdtGenericTypes s
+          match inners with
+          | [] => .unit
+          | _ => .tuple ((inners.map fun a =>
+              rawTyToPTyWithVars tdm typeParams (.opaque a)).toArray)
         else if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
         else .lit (.int .u32)
   | _ => .lit (.int .u32)
@@ -689,6 +701,15 @@ partial def lookupSymExpr
   | .symVariant adtId _ variantName fields =>
     variantPExpr tdm adtId variantName
       (fields.map (lookupSymExpr tdm localTypes vm))
+  -- M9.5p: tuple aggregate. Recurse on each operand and assemble a
+  -- `PExpr.tuple` (the same ctor M12.2b uses for multi-region tails).
+  | .symTuple fields =>
+    .tuple (fields.map (lookupSymExpr tdm localTypes vm))
+  -- M9.5p: named-field struct aggregate. The OCaml cert generator
+  -- already resolved each field's surface name; recurse on the
+  -- values and emit a `PExpr.recordLit`.
+  | .symRecord _ fields =>
+    .recordLit (fields.map fun (n, e) => (n, lookupSymExpr tdm localTypes vm e))
 
 /-- M9.5e/f: payload-binder-aware variant of [lookupSymExpr]. Same
     semantics as [lookupSymExpr] except a `symCopy` / `symMove` of a
@@ -707,6 +728,15 @@ partial def lookupSymExprWithBinders
   | .symVariant adtId _ variantName fields =>
     variantPExpr tdm adtId variantName
       (fields.map (lookupSymExprWithBinders tdm localTypes vm payloadBinders))
+  -- M9.5p: tuple / record aggregate. Same shape as the non-binder
+  -- variant — the payload-binder map applies to `[Field K]`-style
+  -- projections inside a match arm, which can't surface inside the
+  -- operands of an aggregate construction in current LLBC.
+  | .symTuple fields =>
+    .tuple (fields.map (lookupSymExprWithBinders tdm localTypes vm payloadBinders))
+  | .symRecord _ fields =>
+    .recordLit (fields.map fun (n, e) =>
+      (n, lookupSymExprWithBinders tdm localTypes vm payloadBinders e))
 
 /-- Map an OCaml `cert_binop_string` tag onto a Pure `App` head. The
     head string is what the Lean emitter pretty-prints — see
@@ -944,7 +974,8 @@ end WalkState
 def postLocalOfArg (vm : VarMap) : SymExpr → Nat
   | .symCopy p | .symMove p =>
     if vm.contains p.local_ then p.local_ else 1
-  | .symVal _ | .symLit _ | .symMutBorrowTok _ | .symVariant _ _ _ _ => 0
+  | .symVal _ | .symLit _ | .symMutBorrowTok _ | .symVariant _ _ _ _
+  | .symTuple _ | .symRecord _ _ => 0
 
 /-- M12.2a-2: outcome of [findBranchEnd]'s lookahead.
     * `joined jIdx kIdx` — standard M11.2 if/else with a closing

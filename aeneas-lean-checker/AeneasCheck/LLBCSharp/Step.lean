@@ -49,6 +49,19 @@ def evalSymExpr (st : SymState) (e : SymExpr) : Result Val := do
     -- match-arm semantics through the EvMatchArm event log. M9.5f's
     -- payload fields don't affect the abstract state at this layer.
     return .sym vid
+  | .symTuple _ =>
+    -- M9.5p: tuple aggregate. Same treatment as `symVariant` — the
+    -- abstract state doesn't model tuple values structurally; the
+    -- Lean translator handles the rendering. Project to a fresh
+    -- sym-0 token; the trace's subsequent reads only need the
+    -- assignment to have *some* witness, which the EvAssign produces.
+    return .sym 0
+  | .symRecord _ _ =>
+    -- M9.5p: named-field struct aggregate. Same rationale as
+    -- `symTuple`: the abstract state is field-less; the Lean
+    -- translator handles record-literal rendering via the EvAssign
+    -- rhs. Project to a fresh sym-0 token.
+    return .sym 0
 
 /-! ## E-MutBorrow
 
@@ -274,6 +287,11 @@ def valOfSymExpr : SymExpr → Val
   | .symCopy _ | .symMove _ => .bottom
   | .symMutBorrowTok b => .mutLoan b
   | .symVariant _ vid _ _ => .sym vid
+  -- M9.5p: tuple / struct aggregate. The join witness doesn't carry
+  -- aggregate-structure information; fall back to `.bottom` like the
+  -- `symCopy`/`symMove` case.
+  | .symTuple _ => .bottom
+  | .symRecord _ _ => .bottom
 
 /-- Decide whether two `SymExpr` cert values are observationally equal
     for the purposes of the M11 join check. Two `SymVal n` are equal
