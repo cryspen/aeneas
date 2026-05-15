@@ -73,19 +73,37 @@ def main : IO Unit := do
   -- or some other broken tail. The deref-write through the reborrow
   -- chain must propagate to the input's vm slot so the unit-output
   -- back-closure builder sees the right post-state.
+  --
+  -- M9.5b: `set_fst(p: &mut Pair, v: u32) { p.fst = v; }` must emit
+  -- a `structure Pair` decl AND a `def set_fst (… : Pair) (… :
+  -- Std.U32) : Result Pair := do ok { … with fst := … }` shape. The
+  -- struct decl comes from cert.json's new `type_decls` table; the
+  -- record-update body comes from the walker's new structFieldWrite
+  -- handler in `Forward.lean`. We use `_` placeholders in the
+  -- substring checks where the standard backend's exact name differs
+  -- (the checker uses `x1`/`x2`, the standard backend uses `p`/`v`).
   match translateCrate cc with
   | .error e => throw <| IO.userError s!"translate failed: {e}"
   | .ok tc =>
     let src := emitTranslatedCrate "reborrows" tc
     let mustContain : List String := [
+      -- M9.5a, unchanged.
       "def reborrow_chain (x1 : Std.U32) : Result Std.U32 := do",
-      "ok (7 : Std.U32)"
+      "ok (7 : Std.U32)",
+      -- M9.5b: struct decl emitted ahead of any function that uses it.
+      "structure Pair where",
+      "  fst : Std.U32",
+      "  snd : Std.U32",
+      -- M9.5b: set_fst's signature carries `Pair` on both sides,
+      -- and the body is a struct record-update wrapped in `ok`.
+      "def set_fst (x1 : Pair) (x2 : Std.U32) : Result Pair := do",
+      "ok { x1 with fst := x2 }"
     ]
     for c in mustContain do
       if (src.splitOn c).length < 2 then
         IO.eprintln s!"  ✗ missing expected substring: {c}"
         IO.eprintln src
-        throw <| IO.userError "reborrow_chain tail regressed (M9.5a)"
+        throw <| IO.userError "set_fst / reborrow_chain output regressed"
       else
         IO.println s!"  ✓ contains: {c}"
   IO.println "all tests passed"
