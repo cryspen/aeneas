@@ -529,6 +529,15 @@ structure WalkState where
       consumed (and emitted as a regular monadic let) by the
       subsequent deref-write through the call's dst local. -/
   arrayIndexMut : Std.HashMap Nat (PExpr × PExpr × Option Nat) := {}
+  /-- M9.5g: in-flight `@SliceIndexMut` calls — slice analogue of
+      [arrayIndexMut]. Same shape (`slice × idx × sliceRoot`), same
+      lifecycle: stash at EvCall time, consume at the subsequent
+      deref-write to lower `xs[i] = v` into a single `Slice.update
+      <slice> <idx> <rhs>` binding. Kept as a separate map (rather
+      than a tagged union with arrayIndexMut) so the deref-write
+      branch can pick the right head name (`Array.update` vs
+      `Slice.update`) without re-scanning the dst type. -/
+  sliceIndexMut : Std.HashMap Nat (PExpr × PExpr × Option Nat) := {}
   deriving Inhabited
 
 namespace WalkState
@@ -807,6 +816,24 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
           arrayIndexMut := st'.arrayIndexMut.erase d.local_
           lastWrite := arrayRoot.orElse (fun _ => some d.local_) }
       | none =>
+      -- M9.5g: parallel consumption of a pending `@SliceIndexMut`.
+      -- Same routing logic as the array case; only the head name
+      -- and the underlying map differ.
+      match st.sliceIndexMut[d.local_]? with
+      | some (sliceE, idxE, sliceRoot) =>
+        let updateApp : PExpr :=
+          .app "Slice.update" #[sliceE, idxE, rhsE]
+        let (nm, st') := st.freshName
+        let vm' :=
+          match sliceRoot with
+          | some r => (st'.vm.insert r (.var nm)).insert d.local_ (.var nm)
+          | none => st'.vm.insert d.local_ (.var nm)
+        { st' with
+          binds := st'.binds.push (.regular nm updateApp)
+          vm := vm'
+          sliceIndexMut := st'.sliceIndexMut.erase d.local_
+          lastWrite := sliceRoot.orElse (fun _ => some d.local_) }
+      | none =>
       match st.callBack[d.local_]? with
       | some backName =>
         -- The backward closure was bound as `<backName> : T → tuple`.
@@ -915,6 +942,44 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         paramNameOfPExpr arrayE
       { st with
         arrayIndexMut := st.arrayIndexMut.insert dst.local_ (arrayE, idxE, arrayRoot) }
+    else if fnName == "@SliceIndexMut" && args.size == 2 then
+      -- M9.5g: parallel intercept for `&mut [T]` writes. Same shape as
+      -- `@ArrayIndexMut` — stash the slice/index pair so the
+      -- subsequent deref-write to the call's dst local can lower to
+      -- a single `Slice.update <slice> <idx> <rhs>` binding. NO
+      -- binding is emitted at EvCall time.
+      let argEs := args.map (lookupSymExpr st.tdm st.vm)
+      let sliceE := argEs[0]!
+      let idxE := argEs[1]!
+      let paramNameOfPExpr : PExpr → Option Nat := fun e =>
+        match e with
+        | .var name =>
+          if name.length ≥ 2 && name.front == 'x' then
+            match (name.drop 1).toNat? with
+            | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+            | none => none
+          else none
+        | _ => none
+      let sliceRoot : Option Nat := paramNameOfPExpr sliceE
+      { st with
+        sliceIndexMut := st.sliceIndexMut.insert dst.local_
+          (sliceE, idxE, sliceRoot) }
+    else if fnName == "@SliceIndexShared" && args.size == 2 then
+      -- M9.5g: immutable slice read. The standard backend lowers
+      -- `xs[i]` (when `xs : &[T]`) to a single `Slice.index_usize xs
+      -- i` forward call returning `Result T` — no backward closure.
+      -- The cert event marks the call with a non-empty `region_abs`
+      -- (the shared-region abstraction), which the generic call
+      -- machinery would otherwise mis-route through the
+      -- (forward, backward)-pair shape. We emit a regular forward
+      -- binding directly here, bypassing the regionAbs-aware path.
+      let argEs := args.map (lookupSymExpr st.tdm st.vm)
+      let app : PExpr := .app "Slice.index_usize" argEs
+      let (nm, st) := st.freshName
+      { st with
+        binds := st.binds.push (.regular nm app)
+        vm := st.vm.insert dst.local_ (.var nm)
+        lastWrite := some dst.local_ }
     else
     -- M10.1+M10.2b: forward call.
     --
