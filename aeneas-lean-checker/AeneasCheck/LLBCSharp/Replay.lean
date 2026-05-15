@@ -40,7 +40,7 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .call _ _ _ _ dst _ => stepCall st dst
   | .endAbs _ _ => return st
   | .proj _ _ _ => .error "proj: not implemented until M10"
-  | .join _ _ _ => .error "join: not implemented until M11"
+  | .join l r res => stepJoin st l r res
   | .loopInv _ _ => .error "loopInv: not implemented until M12"
 
 /-- Replay a function's cert. -/

@@ -1,6 +1,6 @@
 {
   "fmt_version": 1,
-  "crate_hash": "025b3500919430b85de536e01b0c3c83",
+  "crate_hash": "8447601926a20310b468da0f9dcff25a",
   "functions": [
     {
       "fn_id": 0,
@@ -12,7 +12,7 @@
         "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 4,
         "beg_col": 0,
         "end_line": 6,
@@ -95,7 +95,7 @@
         "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 8,
         "beg_col": 0,
         "end_line": 10,
@@ -155,7 +155,7 @@
         "output": "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 12,
         "beg_col": 0,
         "end_line": 14,
@@ -206,6 +206,7 @@
             }
           }
         },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": true } },
         {
           "EvReborrow": {
             "child": 2,
@@ -251,6 +252,7 @@
           }
         },
         "EvReturn",
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": false } },
         {
           "EvReborrow": {
             "child": 6,
@@ -300,7 +302,7 @@
         "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 16,
         "beg_col": 0,
         "end_line": 19,
@@ -423,6 +425,303 @@
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
             },
             "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "7" ] } } }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    },
+    {
+      "fn_id": 4,
+      "fn_name": "calls::pick",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TLiteral Generated_Values.TBool)",
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        ],
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+      },
+      "source_span": {
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
+        "beg_line": 27,
+        "beg_col": 0,
+        "end_line": 35,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": true } },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": false } },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvJoin": {
+            "left": {
+              "env": [
+                { "local": 4, "value": { "SymVal": 1 } },
+                { "local": 3, "value": { "SymVal": 2 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": true } } }
+              ],
+              "live_loans": []
+            },
+            "right": {
+              "env": [
+                { "local": 4, "value": { "SymVal": 2 } },
+                { "local": 3, "value": { "SymVal": 2 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": false } } }
+              ],
+              "live_loans": []
+            },
+            "result": {
+              "env": [
+                { "local": 4, "value": { "SymVal": 4 } },
+                { "local": 3, "value": { "SymVal": 2 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymVal": 3 } }
+              ],
+              "live_loans": []
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "core::num::{u32}::wrapping_add",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 8,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                }
+              },
+              { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "region_abs": []
           }
         },
         "EvReturn"

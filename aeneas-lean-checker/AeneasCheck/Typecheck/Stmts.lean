@@ -81,7 +81,15 @@ def checkEvent (ev : Event) : TC Unit := do
     -- bounds-check any place references that flow through it.
     for e in finals do checkSymExpr e
   | .proj _ _ _ => emitErr "EvProj: not supported until M10"
-  | .join _ _ _ => emitErr "EvJoin: not supported until M11"
+  | .join left right result => do
+    -- M11.1: structural check on the join witness. We bounds-check
+    -- the SymExprs in each side's env (so a malformed cert is
+    -- rejected up front), but defer the actual ≤-relation algebra
+    -- to the LLBC# replayer (`stepJoin`). The typechecker's job is
+    -- to ensure the witness is syntactically well-formed.
+    for (_, e) in left.env do checkSymExpr e
+    for (_, e) in right.env do checkSymExpr e
+    for (_, e) in result.env do checkSymExpr e
   | .loopInv _ _ => emitErr "EvLoopInv: not supported until M12"
 
 /-- Walk a function's event list. -/

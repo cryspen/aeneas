@@ -81,6 +81,27 @@ def main : IO Unit := do
     IO.println s!"  ✓ saw {nEndAbsWithFinals} EvEndAbs with non-empty finalValues"
   else
     throw <| IO.userError "expected ≥ 1 EvEndAbs with non-empty finalValues (M10.2b)"
+  -- M11.1: the `pick` function exercises an in-body join. The cert
+  -- must contain at least one EvJoin event whose `result` summary
+  -- introduces a fresh symbolic value not equal to either branch's
+  -- entry for the same local. Both EvAssert(branch-marker) and
+  -- EvJoin must replay cleanly under the new typecheck + step rules.
+  let nJoin := callsCC.functions.foldl (init := 0) fun acc f =>
+    acc + (f.events.foldl (init := 0) fun a e => match e with
+      | .join _ _ _ => a + 1
+      | _ => a)
+  if nJoin ≥ 1 then
+    IO.println s!"  ✓ saw {nJoin} EvJoin event(s) in calls.cert.json"
+  else
+    throw <| IO.userError "expected ≥ 1 EvJoin (M11.0)"
+  let nBranchAssert := callsCC.functions.foldl (init := 0) fun acc f =>
+    acc + (f.events.foldl (init := 0) fun a e => match e with
+      | .assert (.symVal _) _ => a + 1
+      | _ => a)
+  if nBranchAssert ≥ 2 then
+    IO.println s!"  ✓ saw {nBranchAssert} branch-marker EvAssert event(s)"
+  else
+    throw <| IO.userError "expected ≥ 2 branch-marker EvAssert (M11.0)"
   -- M10.2b: the emitted Lean must now spell out the backward-
   -- function bind for `incr_via_helper`:
   --   let x1_post ← (calls.incr_inner x1)
