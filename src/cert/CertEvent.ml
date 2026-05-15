@@ -319,6 +319,9 @@ type cert_type_decl = {
       instead of `structure Tag where`. Only meaningful for [CTDStruct];
       always false for [CTDEnum] / [CTDOpaque]. *)
   ctd_is_tuple_struct : bool;
+  ctd_source_span : cert_source_span option;
+  (** [M9.5l] Source span for the type decl's source-code definition.
+      Used by the Lean emitter for the per-decl docstring. *)
 }
 [@@deriving show]
 
@@ -344,7 +347,11 @@ type cert_trait_decl = {
   ctrd_id : int;
   ctrd_name : string;
   (** Bare trait name, e.g. [Numeric] for `traits_basic::Numeric`. *)
+  ctrd_qualified_name : string;
+  (** Crate-prefixed qualified name, used by the Lean docstring. *)
   ctrd_methods : cert_trait_method list;
+  ctrd_source_span : cert_source_span option;
+  (** Source span for the trait's `trait X { … }` block. *)
 }
 [@@deriving show]
 
@@ -372,11 +379,15 @@ type cert_trait_impl = {
   ctri_id : int;
   ctri_pretty_name : string;
   (** Lean name for the impl, e.g. [Tag.Insts.Traits_basicNumeric]. *)
+  ctri_qualified_name : string;
+  (** Crate-prefixed qualified name (`traits_basic::{traits_basic::Numeric
+      for traits_basic::Tag}`) used by the Lean docstring. *)
   ctri_trait_decl_id : int;
   ctri_self_type_decl_id : int option;
   (** [None] when [Self] is not a user-declared ADT. M9.5l only
       consumes the [Some] case. *)
   ctri_methods : cert_trait_impl_method list;
+  ctri_source_span : cert_source_span option;
 }
 [@@deriving show]
 

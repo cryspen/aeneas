@@ -371,20 +371,26 @@ let json_cert_type_decl_kind (k : cert_type_decl_kind) : Yojson.Basic.t =
   | CTDOpaque -> `String "Opaque"
 
 let json_cert_type_decl (d : cert_type_decl) : Yojson.Basic.t =
+  let optional_span : (string * Yojson.Basic.t) list =
+    match d.ctd_source_span with
+    | None -> []
+    | Some sp -> [ "source_span", json_cert_source_span sp ]
+  in
   `Assoc
-    [
-      "id", `Int d.ctd_id;
-      "name", `String d.ctd_name;
-      "kind", json_cert_type_decl_kind d.ctd_kind;
-      (* M9.5i: the ADT's type-parameter names, in declaration order.
-         Empty for monomorphic ADTs. *)
-      "type_params",
-        `List (List.map (fun n -> `String n) d.ctd_type_params);
-      (* M9.5l: tuple-style positional fields (including unit structs).
-         Defaults to false on the Lean side when the key is absent
-         (older certs). *)
-      "is_tuple_struct", `Bool d.ctd_is_tuple_struct;
-    ]
+    ([
+       "id", `Int d.ctd_id;
+       "name", `String d.ctd_name;
+       "kind", json_cert_type_decl_kind d.ctd_kind;
+       (* M9.5i: the ADT's type-parameter names, in declaration order.
+          Empty for monomorphic ADTs. *)
+       "type_params",
+         `List (List.map (fun n -> `String n) d.ctd_type_params);
+       (* M9.5l: tuple-style positional fields (including unit structs).
+          Defaults to false on the Lean side when the key is absent
+          (older certs). *)
+       "is_tuple_struct", `Bool d.ctd_is_tuple_struct;
+     ]
+    @ optional_span)
 
 (* ---------- Trait declarations (M9.5l) ---------- *)
 
@@ -396,12 +402,19 @@ let json_cert_trait_method (m : cert_trait_method) : Yojson.Basic.t =
     ]
 
 let json_cert_trait_decl (d : cert_trait_decl) : Yojson.Basic.t =
+  let optional_span : (string * Yojson.Basic.t) list =
+    match d.ctrd_source_span with
+    | None -> []
+    | Some sp -> [ "source_span", json_cert_source_span sp ]
+  in
   `Assoc
-    [
-      "id", `Int d.ctrd_id;
-      "name", `String d.ctrd_name;
-      "methods", `List (List.map json_cert_trait_method d.ctrd_methods);
-    ]
+    ([
+       "id", `Int d.ctrd_id;
+       "name", `String d.ctrd_name;
+       "qualified_name", `String d.ctrd_qualified_name;
+       "methods", `List (List.map json_cert_trait_method d.ctrd_methods);
+     ]
+    @ optional_span)
 
 let json_cert_trait_impl_method (m : cert_trait_impl_method) : Yojson.Basic.t =
   `Assoc
@@ -416,17 +429,24 @@ let json_cert_trait_impl (i : cert_trait_impl) : Yojson.Basic.t =
     | None -> []
     | Some id -> [ "self_type_decl_id", `Int id ]
   in
+  let optional_span : (string * Yojson.Basic.t) list =
+    match i.ctri_source_span with
+    | None -> []
+    | Some sp -> [ "source_span", json_cert_source_span sp ]
+  in
   `Assoc
     ([
        "id", `Int i.ctri_id;
        "pretty_name", `String i.ctri_pretty_name;
+       "qualified_name", `String i.ctri_qualified_name;
        "trait_decl_id", `Int i.ctri_trait_decl_id;
      ]
     @ optional_self
     @ [
         "methods",
           `List (List.map json_cert_trait_impl_method i.ctri_methods);
-      ])
+      ]
+    @ optional_span)
 
 (* ---------- Top-level ---------- *)
 

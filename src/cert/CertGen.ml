@@ -24,6 +24,19 @@ let capitalize_first_letter (s : string) : string =
     let c = Char.uppercase_ascii s.[0] in
     String.make 1 c ^ String.sub s 1 (String.length s - 1)
 
+(* M9.5l: extract a [cert_source_span] from a Charon [item_meta]. *)
+let source_span_of_item_meta (im : Types.item_meta) : CertEvent.cert_source_span option =
+  let sp = im.span.data in
+  let file = match sp.file.name with Virtual s | Local s | NotReal s -> s in
+  Some
+    {
+      CertEvent.ss_file = file;
+      ss_beg_line = sp.beg_loc.line;
+      ss_beg_col = sp.beg_loc.col;
+      ss_end_line = sp.end_loc.line;
+      ss_end_col = sp.end_loc.col;
+    }
+
 let log = Logging.main_log
 
 (** Run the symbolic interpreter, then steal the event buffer from the
@@ -179,6 +192,7 @@ let collect_type_decls (crate : crate) : CertEvent.cert_type_decl list =
                (fun (tp : Types.type_param) -> tp.name)
                td.generics.types;
            ctd_is_tuple_struct = is_tuple_struct;
+           ctd_source_span = source_span_of_item_meta td.item_meta;
          })
 
 (** [M9.5l] Bare last-segment name of a Charon item. For a trait
@@ -202,9 +216,11 @@ let crate_segment_of (n : Types.name) : string =
     signature only — bodies, if any, live as standalone [fun_decl]s
     already in [cc_functions]). *)
 let collect_trait_decls (crate : crate) : CertEvent.cert_trait_decl list =
+  let env = Print.Contexts.decls_ctx_to_fmt_env (compute_contexts crate) in
   LlbcAst.TraitDeclId.Map.values crate.trait_decls
   |> List.map (fun (td : trait_decl) : CertEvent.cert_trait_decl ->
          let name = bare_name_of td.item_meta.name in
+         let qualified = Print.name_to_string env td.item_meta.name in
          let methods : CertEvent.cert_trait_method list =
            List.map
              (fun (_, (b : trait_method Types.binder)) ->
@@ -227,7 +243,9 @@ let collect_trait_decls (crate : crate) : CertEvent.cert_trait_decl list =
          {
            ctrd_id = LlbcAst.TraitDeclId.to_int td.def_id;
            ctrd_name = name;
+           ctrd_qualified_name = qualified;
            ctrd_methods = methods;
+           ctrd_source_span = source_span_of_item_meta td.item_meta;
          })
 
 (** [M9.5l] Collect trait impls. For each impl, we compute the
@@ -237,6 +255,7 @@ let collect_trait_decls (crate : crate) : CertEvent.cert_trait_decl list =
     both the [@[reducible] def …] header and the per-method body
     references inside [use_…] callers. *)
 let collect_trait_impls (crate : crate) : CertEvent.cert_trait_impl list =
+  let env = Print.Contexts.decls_ctx_to_fmt_env (compute_contexts crate) in
   let trait_name_of (id : Types.trait_decl_id) : string =
     match LlbcAst.TraitDeclId.Map.find_opt id crate.trait_decls with
     | Some td -> bare_name_of td.item_meta.name
@@ -297,9 +316,11 @@ let collect_trait_impls (crate : crate) : CertEvent.cert_trait_impl list =
          {
            ctri_id = LlbcAst.TraitImplId.to_int impl.def_id;
            ctri_pretty_name = pretty_name;
+           ctri_qualified_name = Print.name_to_string env impl.item_meta.name;
            ctri_trait_decl_id = LlbcAst.TraitDeclId.to_int trait_id;
            ctri_self_type_decl_id = self_type_decl_id_of impl;
            ctri_methods = methods;
+           ctri_source_span = source_span_of_item_meta impl.item_meta;
          })
 
 (** [M9.5l] Build a [fun_decl_id → pretty_name] table from the trait

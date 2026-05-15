@@ -138,6 +138,7 @@ type cert_type_decl = {
   ctd_kind : cert_type_decl_kind;
   ctd_type_params : string list;
   ctd_is_tuple_struct : bool;
+  ctd_source_span : cert_source_span option;
 }
 
 type cert_trait_method = {
@@ -148,7 +149,9 @@ type cert_trait_method = {
 type cert_trait_decl = {
   ctrd_id : int;
   ctrd_name : string;
+  ctrd_qualified_name : string;
   ctrd_methods : cert_trait_method list;
+  ctrd_source_span : cert_source_span option;
 }
 
 type cert_trait_impl_method = {
@@ -159,9 +162,11 @@ type cert_trait_impl_method = {
 type cert_trait_impl = {
   ctri_id : int;
   ctri_pretty_name : string;
+  ctri_qualified_name : string;
   ctri_trait_decl_id : int;
   ctri_self_type_decl_id : int option;
   ctri_methods : cert_trait_impl_method list;
+  ctri_source_span : cert_source_span option;
 }
 
 type crate_cert = {
