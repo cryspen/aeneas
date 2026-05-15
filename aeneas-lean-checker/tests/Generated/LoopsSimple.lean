@@ -14,10 +14,25 @@ set_option maxRecDepth 2048
 
 namespace loops_simple
 
-/- TRANSLATOR NOTE: loop-containing function (loops_simple::count_to): body is a sentinel placeholder; M12.1 implements T-Loop-Fixpoint. -/
+/-- [loops_simple::count_to::loop_body]:
+    Source: 'tests/src/loops_simple.rs', lines 13:0-19:1 -/
+@[rust_loop_body]
+def count_to_loop.body (x1 : Std.U32) (i : Std.U32) : Result (ControlFlow Std.U32 Std.U32) := do
+  if (i < x1)
+  then let t1 ← (i + (1 : Std.U32))
+       ok (cont t1)
+  else ok (done i)
+
+/-- [loops_simple::count_to::loop]:
+    Source: 'tests/src/loops_simple.rs', lines 13:0-19:1 -/
+@[rust_loop]
+def count_to_loop (x1 : Std.U32) (i : Std.U32) : Result Std.U32 := do
+  (loop (fun i => (count_to_loop.body x1 i)) i)
+
 /-- [loops_simple::count_to]:
-    Source: '/Users/karthik/aeneas/tests/src/loops_simple.rs', lines 13:0-19:1 -/
+    Source: 'tests/src/loops_simple.rs', lines 13:0-19:1 -/
+@[reducible]
 def count_to (x1 : Std.U32) : Result Std.U32 := do
-  ok (0 : Std.U32)
+  (count_to_loop x1 (0 : Std.U32))
 
 end loops_simple
