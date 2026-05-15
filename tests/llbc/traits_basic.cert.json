@@ -8,6 +8,7 @@
       "kind": { "Struct": [] },
       "type_params": [],
       "is_tuple_struct": true,
+      "qualified_name": "traits_basic::Tag",
       "source_span": {
         "file": "tests/src/traits_basic.rs",
         "beg_line": 14,
@@ -30,8 +31,10 @@
               "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Bound (0, 0))),\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
             ],
             "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-            "type_params": []
-          }
+            "type_params": [],
+            "trait_clauses": []
+          },
+          "has_default": false
         }
       ],
       "source_span": {
@@ -50,6 +53,8 @@
       "qualified_name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}",
       "trait_decl_id": 0,
       "self_type_decl_id": 0,
+      "type_params": [],
+      "trait_clauses": [],
       "methods": [ { "name": "value", "fn_id": 2 } ],
       "source_span": {
         "file": "tests/src/traits_basic.rs",
@@ -69,7 +74,8 @@
           "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
         ],
         "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": []
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/traits_basic.rs",
@@ -127,7 +133,8 @@
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
         ],
         "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": []
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/traits_basic.rs",

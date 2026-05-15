@@ -164,6 +164,9 @@ let json_cert_source_span (s : cert_source_span) : Yojson.Basic.t =
       "end_col", `Int s.ss_end_col;
     ]
 
+let json_trait_clause ((name, idx) : string * int) : Yojson.Basic.t =
+  `Assoc [ "trait", `String name; "type_param", `Int idx ]
+
 let json_cert_signature (s : cert_signature) : Yojson.Basic.t =
   `Assoc
     [
@@ -173,6 +176,12 @@ let json_cert_signature (s : cert_signature) : Yojson.Basic.t =
          order. Empty for monomorphic functions. *)
       "type_params",
         `List (List.map (fun n -> `String n) s.csig_type_params);
+      (* M9.5o: per-clause trait obligation list. Each entry is a
+         `{trait, type_param}` record, where `trait` is the trait's
+         qualified name and `type_param` is the index into
+         `type_params`. *)
+      "trait_clauses",
+        `List (List.map json_trait_clause s.csig_trait_clauses);
     ]
 
 (* ---------- Events ---------- *)
@@ -404,6 +413,9 @@ let json_cert_trait_method (m : cert_trait_method) : Yojson.Basic.t =
     [
       "name", `String m.ctm_name;
       "signature", json_cert_signature m.ctm_signature;
+      (* M9.5o: has_default flag — true iff this method carries a
+         default implementation in the trait declaration. *)
+      "has_default", `Bool m.ctm_has_default;
     ]
 
 let json_cert_trait_decl (d : cert_trait_decl) : Yojson.Basic.t =
@@ -434,6 +446,11 @@ let json_cert_trait_impl (i : cert_trait_impl) : Yojson.Basic.t =
     | None -> []
     | Some id -> [ "self_type_decl_id", `Int id ]
   in
+  let optional_self_var : (string * Yojson.Basic.t) list =
+    match i.ctri_self_type_var with
+    | None -> []
+    | Some n -> [ "self_type_var", `String n ]
+  in
   let optional_span : (string * Yojson.Basic.t) list =
     match i.ctri_source_span with
     | None -> []
@@ -447,7 +464,13 @@ let json_cert_trait_impl (i : cert_trait_impl) : Yojson.Basic.t =
        "trait_decl_id", `Int i.ctri_trait_decl_id;
      ]
     @ optional_self
+    @ optional_self_var
     @ [
+        (* M9.5o: type-parameter names on the impl itself + trait clauses. *)
+        "type_params",
+          `List (List.map (fun n -> `String n) i.ctri_type_params);
+        "trait_clauses",
+          `List (List.map json_trait_clause i.ctri_trait_clauses);
         "methods",
           `List (List.map json_cert_trait_impl_method i.ctri_methods);
       ]

@@ -11,9 +11,21 @@
           { "id": 1, "name": "Neg", "fields": [] },
           { "id": 2, "name": "Zero", "fields": [] }
         ]
+      },
+      "type_params": [],
+      "is_tuple_struct": false,
+      "qualified_name": "enums_basic::Sign",
+      "source_span": {
+        "file": "tests/src/enums_basic.rs",
+        "beg_line": 9,
+        "beg_col": 0,
+        "end_line": 13,
+        "end_col": 1
       }
     }
   ],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -22,10 +34,12 @@
         "inputs": [
           "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/enums_basic.rs",
+        "file": "tests/src/enums_basic.rs",
         "beg_line": 15,
         "beg_col": 0,
         "end_line": 21,
@@ -51,7 +65,8 @@
               "SymVariant": {
                 "adt_id": 0,
                 "variant_id": 1,
-                "variant_name": "Neg"
+                "variant_name": "Neg",
+                "fields": []
               }
             }
           }
@@ -76,7 +91,8 @@
               "SymVariant": {
                 "adt_id": 0,
                 "variant_id": 0,
-                "variant_name": "Pos"
+                "variant_name": "Pos",
+                "fields": []
               }
             }
           }
@@ -101,7 +117,8 @@
               "SymVariant": {
                 "adt_id": 0,
                 "variant_id": 2,
-                "variant_name": "Zero"
+                "variant_name": "Zero",
+                "fields": []
               }
             }
           }

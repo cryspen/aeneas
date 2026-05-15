@@ -20,9 +20,20 @@
           { "id": 1, "name": "MyNone", "fields": [] }
         ]
       },
-      "type_params": [ "T" ]
+      "type_params": [ "T" ],
+      "is_tuple_struct": false,
+      "qualified_name": "generics_basic::MyOption",
+      "source_span": {
+        "file": "tests/src/generics_basic.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 14,
+        "end_col": 1
+      }
     }
   ],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -33,10 +44,11 @@
           "(Generated_Types.TVar (Generated_Types.Free 0))"
         ],
         "output": "(Generated_Types.TVar (Generated_Types.Free 0))",
-        "type_params": [ "T" ]
+        "type_params": [ "T" ],
+        "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/generics_basic.rs",
+        "file": "tests/src/generics_basic.rs",
         "beg_line": 16,
         "beg_col": 0,
         "end_line": 21,

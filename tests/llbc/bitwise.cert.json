@@ -2,6 +2,8 @@
   "fmt_version": 1,
   "crate_hash": "da10fa5fc310d85166a75335b6ad304b",
   "type_decls": [],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -10,7 +12,9 @@
         "inputs": [
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/bitwise.rs",
@@ -267,7 +271,9 @@
         "inputs": [
           "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/bitwise.rs",
@@ -525,7 +531,9 @@
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/bitwise.rs",
@@ -659,7 +667,9 @@
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/bitwise.rs",
@@ -793,7 +803,9 @@
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/bitwise.rs",

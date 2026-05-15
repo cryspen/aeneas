@@ -104,6 +104,14 @@ type cert_signature = {
       Lean side renders these as implicit `{T : Type}` binders before the
       value parameters. *)
   csig_type_params : string list;
+  (** [M9.5o] Trait obligations on this signature's type parameters.
+      Each entry is a [(trait_qualified_name, type_param_index)] pair:
+      e.g. for `fn f<T: Trait1>(...)`, an entry [("crate::Trait1", 0)]
+      means the 0-th type parameter ([T]) carries a [Trait1] bound.
+      Empty for signatures with no trait obligations. The Lean side
+      uses these to emit `(Trait1Inst : Trait1 T)` binders between
+      type-param binders and value params. *)
+  csig_trait_clauses : (string * int) list;
 }
 [@@deriving show]
 
@@ -339,6 +347,15 @@ type cert_type_decl = {
 type cert_trait_method = {
   ctm_name : string;
   ctm_signature : cert_signature;
+  (** [M9.5o] True iff this method has a default implementation in
+      the trait declaration. The Lean side emits these as
+      `Trait.<method>.default` decls (taking the trait itself as a
+      bound) alongside the trait. Default-method bodies still appear
+      in [cc_functions] as standalone fun_certs, but the Lean side
+      consumes the [ctm_has_default] flag here to know to emit them
+      with the `.default` shape (and to suppress the duplicate
+      standalone emission). *)
+  ctm_has_default : bool;
 }
 [@@deriving show]
 
@@ -394,6 +411,19 @@ type cert_trait_impl = {
   ctri_self_type_decl_id : int option;
   (** [None] when [Self] is not a user-declared ADT. M9.5l only
       consumes the [Some] case. *)
+  ctri_self_type_var : string option;
+  (** [M9.5o] When the impl's [Self] is a type parameter rather than a
+      concrete ADT, this carries its name (e.g. ["T"] for
+      `impl<T: Trait1> Trait2 for T`). Both [ctri_self_type_decl_id]
+      and [ctri_self_type_var] are [None] for impls whose Self is
+      neither a known ADT nor a type variable (out of scope). *)
+  ctri_type_params : string list;
+  (** [M9.5o] Type-parameter names declared on the impl itself
+      (i.e. the [T] in `impl<T: ...> ...`). Empty for monomorphic
+      (concrete-Self) impls. *)
+  ctri_trait_clauses : (string * int) list;
+  (** [M9.5o] Trait obligations on the impl's type parameters; same
+      shape as [csig_trait_clauses]. *)
   ctri_methods : cert_trait_impl_method list;
   ctri_source_span : cert_source_span option;
 }

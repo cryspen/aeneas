@@ -2,6 +2,8 @@
   "fmt_version": 1,
   "crate_hash": "88a34c2a8d6062db6c5d87b76fb7f3b7",
   "type_decls": [],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -10,7 +12,9 @@
         "inputs": [
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/loops_simple.rs",

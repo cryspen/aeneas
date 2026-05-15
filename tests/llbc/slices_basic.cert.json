@@ -2,6 +2,8 @@
   "fmt_version": 1,
   "crate_hash": "35c884e470998086d3d3eba709ec2cdf",
   "type_decls": [],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -10,7 +12,9 @@
         "inputs": [
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))),\n   Generated_Types.RShared))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/slices_basic.rs",
@@ -132,7 +136,9 @@
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))",
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/slices_basic.rs",
