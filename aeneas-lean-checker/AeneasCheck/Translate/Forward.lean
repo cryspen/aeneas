@@ -1190,7 +1190,20 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- names in callBackByField so subsequent field-destructure
     -- EvAssigns can thread them.
     let dstTupleOfMuts : Option Nat := isOutputTupleOfMutRefs dst.ty
-    if regionAbs.isEmpty then
+    -- M9.5l: a callee with only `&T` (shared) arguments still has
+    -- a non-empty `regionAbs` from the OCaml interpreter (a shared
+    -- borrow still registers an abstraction), but nothing flows
+    -- back through a shared borrow — the call returns just the
+    -- forward value, not a `(forward, backward)` pair. Detect this
+    -- shape by walking the args and checking that none has type
+    -- `&mut T`. We use the cert place type from `symCopy` / `symMove`
+    -- args; literal / tok / variant args contribute no mut refs.
+    let symExprIsMutRef : SymExpr → Bool := fun e =>
+      match e with
+      | .symCopy p | .symMove p => isMutRef p.ty
+      | _ => false
+    let anyArgIsMutRef : Bool := args.any symExprIsMutRef
+    if regionAbs.isEmpty || !anyArgIsMutRef then
       -- No &mut inputs on the callee — straight value-flow call.
       { st with
         binds := st.binds.push (.regular nm app)
