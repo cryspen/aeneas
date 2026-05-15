@@ -104,6 +104,14 @@ def checkEvent (ev : Event) : TC Unit := do
     -- M12.1: structural no-op. EvLoopEnd is a sentinel marker for the
     -- Forward translator's T-Loop-Fixpoint walker. The replayer
     -- ignores it.
+  | .matchArm scrutinee _ _ _ =>
+    -- M9.5d: structural well-formedness on the match-arm marker. The
+    -- arm body's events run separately and are checked one by one;
+    -- here we only bounds-check the scrutinee place (when the cert
+    -- emitted a SymCopy / SymMove form), which catches malformed
+    -- certs early. The Forward translator interprets the marker
+    -- semantically.
+    checkSymExpr scrutinee
 
 /-- Walk a function's event list. -/
 def checkEvents (events : Array Event) : TC Unit := do

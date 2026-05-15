@@ -48,6 +48,9 @@ def emitDecl (d : Decl) : String := d.toLean ++ "\n"
 /-- M9.5b: render one `structure Foo where …` block. -/
 def emitStruct (sd : StructDecl) : String := sd.toLean ++ "\n"
 
+/-- M9.5d: render one `inductive Foo where …` block. -/
+def emitEnum (ed : EnumDecl) : String := ed.toLean ++ "\n"
+
 /-- Group function decls into namespace blocks keyed by their crate
     prefix. Order within each group is preserved (cert iteration
     order). -/
@@ -73,30 +76,44 @@ private def groupStructsByCrate (sds : Array StructDecl) :
       buckets := buckets.insert c ((buckets.getD c #[]).push sd)
     return buckets
 
-/-- Emit one `namespace …` block: structs first, then `def`s.
-    The Aeneas standard backend emits type decls before any function
-    that mentions them; for the M9.5b subset (single-crate, no
-    cross-crate ADT use) putting all structs first is equivalent. -/
-def emitNamespace (c : String) (structs : Array StructDecl)
-    (decls : Array Decl) : String :=
-  let structBody := String.intercalate "\n" (structs.toList.map emitStruct)
-  let fnBody := String.intercalate "\n" (decls.toList.map emitDecl)
-  let sep := if structs.isEmpty then "" else "\n"
-  s!"namespace {c}\n\n" ++ structBody ++ sep ++ fnBody ++ s!"\nend {c}\n"
+/-- M9.5d: same grouping for enum decls. -/
+private def groupEnumsByCrate (eds : Array EnumDecl) :
+    Std.HashMap String (Array EnumDecl) :=
+  Id.run do
+    let mut buckets : Std.HashMap String (Array EnumDecl) := {}
+    for ed in eds do
+      let c := crateOf ed.qualifiedName
+      buckets := buckets.insert c ((buckets.getD c #[]).push ed)
+    return buckets
 
-/-- Top-level entry: header + one namespace block per crate. Structs
-    (M9.5b) come before functions in each namespace. -/
+/-- Emit one `namespace …` block: structs and enums first, then `def`s.
+    The Aeneas standard backend emits type decls before any function
+    that mentions them; for the M9.5b/d subset (single-crate, no
+    cross-crate ADT use) putting all type decls first is equivalent. -/
+def emitNamespace (c : String) (structs : Array StructDecl)
+    (enums : Array EnumDecl) (decls : Array Decl) : String :=
+  let structBody := String.intercalate "\n" (structs.toList.map emitStruct)
+  let enumBody := String.intercalate "\n" (enums.toList.map emitEnum)
+  let fnBody := String.intercalate "\n" (decls.toList.map emitDecl)
+  let sepS := if structs.isEmpty then "" else "\n"
+  let sepE := if enums.isEmpty then "" else "\n"
+  s!"namespace {c}\n\n" ++ structBody ++ sepS ++ enumBody ++ sepE ++
+    fnBody ++ s!"\nend {c}\n"
+
+/-- Top-level entry: header + one namespace block per crate. Type
+    decls (structs + enums) come before functions in each namespace. -/
 def emitTranslatedCrate (crateName : String) (tc : TranslatedCrate) : String :=
   let groups := groupByCrate tc.decls
   let structBuckets := groupStructsByCrate tc.structs
+  let enumBuckets := groupEnumsByCrate tc.enums
   let header := emitHeader crateName
-  -- M9.5b: a crate may have struct decls but no function decls (rare).
+  -- M9.5b: a crate may have type decls but no function decls (rare).
   -- For now the grouping iterates only crates that have function
-  -- decls; structs in unreferenced crates are dropped. The fixtures
-  -- under test all have at least one function per crate.
+  -- decls; type decls in unreferenced crates are dropped. The
+  -- fixtures under test all have at least one function per crate.
   let namespaces :=
     String.intercalate "\n" (groups.toList.map fun (c, ds) =>
-      emitNamespace c (structBuckets.getD c #[]) ds)
+      emitNamespace c (structBuckets.getD c #[]) (enumBuckets.getD c #[]) ds)
   header ++ namespaces
 
 end AeneasCheck.Backends

@@ -81,6 +81,18 @@ inductive PExpr
       for now; chained-field updates (`{ p with fst := a, snd := b }`)
       can be modelled as nested `structUpdate`s. -/
   | structUpdate (base : PExpr) (field : String) (value : PExpr)
+  /-- M9.5d: a `match scrutinee with | Ctor1 => body1 | Ctor2 => body2 …`
+      expression. M9.5d only supports nullary-constructor patterns
+      (C-style enums); payload-bearing patterns will extend the arm
+      shape to carry binders. Each arm is encoded as a `(ctor, body)`
+      pair; the constructor name is rendered verbatim by the
+      pretty-printer (the translator pre-qualifies it as
+      `<EnumName>.<VariantName>`). We keep the arm encoding flat
+      (`Array (String × PExpr)`) rather than introducing a mutually-
+      recursive `MatchArm` type — Lean's `inductive ... mutual` block
+      doesn't compose with the `deriving Repr, Inhabited` pattern the
+      rest of the IR uses. -/
+  | matchE (scrutinee : PExpr) (arms : Array (String × PExpr))
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/
@@ -102,6 +114,22 @@ structure StructDecl where
   name : String
   qualifiedName : String
   fields : Array StructField
+  sourceSpan : Option Raw.SourceSpan := none
+  deriving Repr, Inhabited
+
+/-- M9.5d: a single variant in an `EnumDecl`. M9.5d only carries the
+    bare variant name (zero payload); payload variants will extend
+    this with a fields array of `StructField`s. -/
+structure EnumVariant where
+  name : String
+  deriving Repr, Inhabited
+
+/-- M9.5d: an `inductive Foo where | A : Foo | B : Foo …` declaration.
+    Mirrors `StructDecl` in shape. -/
+structure EnumDecl where
+  name : String
+  qualifiedName : String
+  variants : Array EnumVariant
   sourceSpan : Option Raw.SourceSpan := none
   deriving Repr, Inhabited
 
@@ -136,11 +164,14 @@ structure Decl where
   deriving Repr, Inhabited
 
 /-- M9.5b: a crate-level emit unit. The translator now interleaves
-    struct decls and function decls so the emitter can render them in
-    cert order (with struct decls forced to come before any function
-    that uses them, in [LeanEmit]'s ordering pass). -/
+    struct / enum decls and function decls so the emitter can render
+    them in cert order (with type decls forced to come before any
+    function that uses them, in [LeanEmit]'s ordering pass).
+
+    M9.5d added `enum`. -/
 inductive TopDecl
   | struct (sd : StructDecl)
+  | enum (ed : EnumDecl)
   | function (d : Decl)
   deriving Repr, Inhabited
 
@@ -148,6 +179,7 @@ inductive TopDecl
     namespace grouping in [LeanEmit]. -/
 def TopDecl.qualifiedName : TopDecl → String
   | .struct sd => sd.qualifiedName
+  | .enum ed => ed.qualifiedName
   | .function d => d.qualifiedName
 
 end AeneasCheck.Pure

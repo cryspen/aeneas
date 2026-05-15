@@ -21,6 +21,9 @@ structure TranslatedCrate where
       decls in the same crate namespace. Empty for crates with no
       structs. -/
   structs : Array StructDecl := #[]
+  /-- M9.5d: ADT enum decls, in cert order. Emitted alongside struct
+      decls (before function decls). Empty for crates with no enums. -/
+  enums : Array EnumDecl := #[]
   deriving Inhabited
 
 /-- M9.5b: build the [TypeDeclMap] used by the per-function translator
@@ -38,6 +41,14 @@ def buildTypeDeclMap (cc : CrateCert) : TypeDeclMap := Id.run do
         | some n => n
         | none => s!"field{f.idx}"
       m := m.insert td.id { name := td.name, fieldNames := names }
+    | .enum _ =>
+      -- M9.5d: register the enum so [parseTAdtId]-driven type
+      -- resolution can produce a `.adt <name>` PTy for parameters
+      -- / return types of `Sign`-shaped enums. The Forward
+      -- translator needs the bare adt name to qualify the variant
+      -- constructors. We don't populate [fieldNames] (variants
+      -- aren't fields), but the empty array is a benign default.
+      m := m.insert td.id { name := td.name, fieldNames := #[] }
     | .opaque => ()
   return m
 
@@ -61,6 +72,24 @@ def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl
       { name := td.name
         qualifiedName := s!"{crateName}::{td.name}"
         fields := pureFields }
+  | .enum _ => none
+  | .opaque => none
+
+/-- M9.5d: lift a cert `TypeDecl` into a Pure `EnumDecl`, when the
+    decl is an enum. C-style only for now (we ignore variant fields).
+    Returns `none` for non-enum kinds; struct decls go through
+    [structDeclOfTypeDecl] instead. -/
+def enumDeclOfTypeDecl (_tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) :
+    Option EnumDecl :=
+  match td.kind with
+  | .enum variants =>
+    let pureVariants : Array EnumVariant := variants.map fun v =>
+      { name := v.name }
+    some
+      { name := td.name
+        qualifiedName := s!"{crateName}::{td.name}"
+        variants := pureVariants }
+  | .struct _ => none
   | .opaque => none
 
 /-- Translate a whole crate cert. Per-function metadata (signature,
@@ -89,12 +118,14 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
   let tdm := buildTypeDeclMap cc
   let structs : Array StructDecl :=
     cc.typeDecls.filterMap (structDeclOfTypeDecl tdm crateName)
+  let enums : Array EnumDecl :=
+    cc.typeDecls.filterMap (enumDeclOfTypeDecl tdm crateName)
   let mut decls : Array Decl := #[]
   for i in [0:cc.functions.size] do
     let f := cc.functions[i]!
     match translateLoopFun f with
     | some loopDecls => decls := decls ++ loopDecls
     | none => decls := decls.push (translateFunWith tdm f traces[i]!)
-  return { decls, structs }
+  return { decls, structs, enums }
 
 end AeneasCheck.Translate

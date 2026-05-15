@@ -109,6 +109,11 @@ partial def parseSymExpr (j : Json) : Result SymExpr := do
   | "SymCopy" => return .symCopy (← parsePlace payload)
   | "SymMove" => return .symMove (← parsePlace payload)
   | "SymMutBorrowTok" => return .symMutBorrowTok (← asNat payload)
+  | "SymVariant" =>
+    let adtId ← asNat (← field payload "adt_id")
+    let variantId ← asNat (← field payload "variant_id")
+    let variantName ← asStr (← field payload "variant_name")
+    return .symVariant adtId variantId variantName
   | _ => fail s!"unknown SymExpr tag: {tag}"
 
 def parseRestoreInfo (j : Json) : Result RestoreInfo := do
@@ -207,6 +212,12 @@ def parseEvent (j : Json) : Result Event := do
     | "EvLoopEnd" =>
       let loopId ← asNat (← field payload "loop_id")
       return .loopEnd loopId
+    | "EvMatchArm" =>
+      let scrutinee ← parseSymExpr (← field payload "scrutinee")
+      let adtId ← asNat (← field payload "adt_id")
+      let variantId ← asNat (← field payload "variant_id")
+      let variantName ← asStr (← field payload "variant_name")
+      return .matchArm scrutinee adtId variantId variantName
     | _ => fail s!"unknown Event tag: {tag}"
 
 /-- Parse a signature record. Types are kept as opaque-tagged strings:
@@ -254,8 +265,16 @@ def parseCertField (j : Json) : Result CertField := do
   let tyStr ← asStr (← field j "ty")
   return { idx, name, ty := RawTy.opaque tyStr }
 
-/-- M9.5b: parse a `TypeDeclKind`. Nullary `"Opaque"` or
-    `{"Struct": [<fields>]}`. -/
+/-- M9.5d: parse one `cert_variant` JSON object into a `CertVariant`. -/
+def parseCertVariant (j : Json) : Result CertVariant := do
+  let id ← asNat (← field j "id")
+  let name ← asStr (← field j "name")
+  let fieldsArr ← asArr (← field j "fields")
+  let fields ← fieldsArr.mapM parseCertField
+  return { id, name, fields }
+
+/-- M9.5b: parse a `TypeDeclKind`. Nullary `"Opaque"`, `{"Struct": [<fields>]}`,
+    or M9.5d `{"Enum": [<variants>]}`. -/
 def parseTypeDeclKind (j : Json) : Result TypeDeclKind := do
   match j with
   | .str "Opaque" => return .opaque
@@ -266,8 +285,12 @@ def parseTypeDeclKind (j : Json) : Result TypeDeclKind := do
       let arr ← asArr payload
       let fields ← arr.mapM parseCertField
       return .struct fields
+    | "Enum" =>
+      let arr ← asArr payload
+      let variants ← arr.mapM parseCertVariant
+      return .enum variants
     | _ =>
-      -- Forward-compat: unknown kinds (Enum, Union, …) downgrade to
+      -- Forward-compat: unknown kinds (Union, Alias, …) downgrade to
       -- opaque so an early checker can still load a future cert.
       return .opaque
 

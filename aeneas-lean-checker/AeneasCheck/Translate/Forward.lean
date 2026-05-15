@@ -269,6 +269,15 @@ def lookupSymExpr (vm : VarMap) : SymExpr → PExpr
   | .symCopy p => lookupPlace vm p
   | .symMove p => lookupPlace vm p
   | .symMutBorrowTok n => .var s!"b{n}"
+  -- M9.5d: an enum-variant ctor (the RHS of an EvAssign whose source
+  -- was a nullary `AggregatedAdt`). The bare-name fallback here is
+  -- correct only when the caller has already qualified the ctor
+  -- (i.e. the walker resolves `<adtName>.<variantName>` via the
+  -- type-decl map before calling `lookupSymExpr`). The default uses
+  -- the unqualified variant name; if no qualification has been done
+  -- the result still compiles in the rare case the variant lives in
+  -- an `open`ed namespace.
+  | .symVariant _ _ variantName => .var variantName
 
 /-- Map an OCaml `cert_binop_string` tag onto a Pure `App` head. The
     head string is what the Lean emitter pretty-prints — see
@@ -441,7 +450,7 @@ end WalkState
 def postLocalOfArg (vm : VarMap) : SymExpr → Nat
   | .symCopy p | .symMove p =>
     if vm.contains p.local_ then p.local_ else 1
-  | .symVal _ | .symLit _ | .symMutBorrowTok _ => 0
+  | .symVal _ | .symLit _ | .symMutBorrowTok _ | .symVariant _ _ _ => 0
 
 /-- M12.2a-2: outcome of [findBranchEnd]'s lookahead.
     * `joined jIdx kIdx` — standard M11.2 if/else with a closing
@@ -995,6 +1004,11 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- cert), in which case ignoring it is the safest fallback.
   | .proj _ _ _
   | .join _ _ _ | .loopInv _ _ | .loopEnd _ => st
+  -- M9.5d: match-arm markers are consumed by the outer [walkEvents]
+  -- loop (it groups arms into a `PExpr.matchE`). Hitting one here
+  -- means the lookahead failed to recognise a match block; treat
+  -- as a no-op so the walk stays total.
+  | .matchArm _ _ _ _ => st
 
 /-- Render a `SymExpr` from a join state summary as a Pure expression
     *in the context of a sub-walk's final var map*. Used by

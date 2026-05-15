@@ -51,6 +51,12 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
     -- M12.3. For M12.1 we thread the state through unchanged.
     return st
   | .loopEnd _ => return st
+  | .matchArm _ _ _ _ =>
+    -- M9.5d: structural no-op for the replayer. The `matchArm`
+    -- marker partitions the trace into per-arm event ranges; the
+    -- forward translator (not the replayer) walks those ranges and
+    -- materialises the `PExpr.match`. No abstract state update.
+    return st
 
 /-- Replay a function's cert. -/
 def replayFun (numLocals : Nat) (f : FunCert) : Except String CheckedTrace := do

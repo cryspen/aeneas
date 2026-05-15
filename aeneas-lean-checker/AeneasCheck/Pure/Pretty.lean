@@ -131,7 +131,10 @@ private partial def parenIfNeeded (s : String) (e : PExpr) : String :=
   -- M9.5b: a `{ base with f := v }` record-update token spans
   -- multiple operators; wrap it when used as an `app` arg so it
   -- can't be reparsed as `{ base` ` with f := v }`.
-  | .structUpdate _ _ _ => "(" ++ s ++ ")"
+  | .structUpdate _ _ _
+  -- M9.5d: a `match … with …` token chain similarly spans multiple
+  -- arms; wrap it when used as an `app` arg.
+  | .matchE _ _ => "(" ++ s ++ ")"
   | _ => s
 
 /-- Expression form used inside a `do`-block: tail `.ok` becomes a
@@ -243,6 +246,17 @@ partial def PExpr.toLeanDo : PExpr → String
     -- the inner pieces; the outer `{ … }` self-delimits. `\{` and
     -- `}` escape the curly braces inside an `s!"..."` interpolation.
     s!"\{ {base.toLeanDo} with {field} := {value.toLeanDo} }"
+  | .matchE scrutinee arms =>
+    -- M9.5d: `match <scrutinee> with | Ctor1 => body1 | …`. The
+    -- standard Aeneas backend renders each arm on its own line,
+    -- two-space indented under the `def`'s opening line. The first
+    -- line `match … with` continues the surrounding do-block; the
+    -- subsequent `| Ctor => body` lines need the same `  ` prefix
+    -- so they align with the `match` token. Arm bodies are
+    -- monadic-position expressions (typically `ok <ctor>`).
+    let armS := arms.toList.map fun (ctor, body) =>
+      s!"  | {ctor} => {body.toLeanDo}"
+    s!"match {scrutinee.toLeanDo} with\n" ++ String.intercalate "\n" armS
 
 /-- Non-monadic rendering. Retained for diagnostics; the Lean backend
     uses `toLeanDo` exclusively. -/
@@ -271,6 +285,10 @@ partial def PExpr.toLean : PExpr → String
     s!"let ({pats}) := {e1.toLean}\n  {e2.toLean}"
   | .structUpdate base field value =>
     s!"\{ {base.toLean} with {field} := {value.toLean} }"
+  | .matchE scrutinee arms =>
+    let armS := arms.toList.map fun (ctor, body) =>
+      s!"| {ctor} => {body.toLean}"
+    s!"match {scrutinee.toLean} with\n" ++ String.intercalate "\n" armS
 
 /-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
     `def`. Empty when no `sourceSpan` is attached. -/
@@ -337,9 +355,29 @@ def StructDecl.toLean (sd : StructDecl) : String :=
   let body := sd.fields.toList.map fun f => s!"  {f.name} : {f.ty.toLean}"
   sd.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
 
-/-- M9.5b: render a `TopDecl` (struct or function) into Lean source. -/
+/-- M9.5d: docstring for an `inductive` decl, same shape as
+    [StructDecl.docComment]. -/
+def EnumDecl.docComment (ed : EnumDecl) : String :=
+  match ed.sourceSpan with
+  | none => ""
+  | some sp =>
+    let loc :=
+      s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
+    s!"/-- [{ed.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+
+/-- M9.5d: render an `inductive Foo where …` block. Each variant
+    becomes one `| Variant : Foo` line. C-style only for now (no
+    payload). -/
+def EnumDecl.toLean (ed : EnumDecl) : String :=
+  let header := s!"inductive {ed.name} where"
+  let body := ed.variants.toList.map fun v => s!"| {v.name} : {ed.name}"
+  ed.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
+
+/-- M9.5b: render a `TopDecl` (struct / enum / function) into Lean
+    source. M9.5d added the enum case. -/
 def TopDecl.toLean : TopDecl → String
   | .struct sd => sd.toLean
+  | .enum ed => ed.toLean
   | .function d => d.toLean
 
 end AeneasCheck.Pure

@@ -18,6 +18,13 @@ inductive SymExpr
   | symCopy (p : Place)
   | symMove (p : Place)
   | symMutBorrowTok (borrowId : Nat)
+  /-- M9.5d: a C-style enum variant construction. `adtId` keys into the
+      crate's `typeDecls` table; `variantName` is the bare constructor
+      name. Used as the RHS of an `EvAssign` whose Charon source was
+      a nullary-variant `AggregatedAdt`. The Lean emitter renders this
+      as `<adtName>.<variantName>` (where `adtName` is resolved via
+      the type-decl map). -/
+  | symVariant (adtId variantId : Nat) (variantName : String)
   deriving Repr
 
 /-- Restoration info for an EvEndBorrow event. -/
@@ -67,6 +74,14 @@ inductive Event
       pair form the canonical loop body that the Lean translator
       lifts into a `<fn>_loop.body` decl. -/
   | loopEnd (loopId : Nat)
+  /-- M9.5d: per-arm marker for a `match` on a symbolic ADT
+      scrutinee. The `scrutinee` is the cert sym-expr for the
+      matched value (typically `SymVal` of the symbolic id that
+      was expanded). `variantId` / `variantName` identify which
+      arm follows. The arm's body events run until the next
+      `matchArm` for the same scrutinee, the closing `EvJoin`, or
+      an `EvReturn` at depth 0. -/
+  | matchArm (scrutinee : SymExpr) (adtId variantId : Nat) (variantName : String)
   deriving Repr, Inhabited
 
 /-- A source span attached to a cert function. Used by the Lean
@@ -109,11 +124,20 @@ structure CertField where
   ty : RawTy
   deriving Repr, Inhabited
 
-/-- M9.5b: kind of an ADT declaration. Only `struct` is supported in
-    the M9.5 chunk; other shapes (enum, union, alias) come through as
-    `opaque`. -/
+/-- M9.5d: a single variant of an enum ADT declaration. `fields` is
+    empty for C-style enums (no payload); future milestones will
+    populate it for payload-bearing variants. -/
+structure CertVariant where
+  id : Nat
+  name : String
+  fields : Array CertField
+  deriving Repr, Inhabited
+
+/-- M9.5b: kind of an ADT declaration. M9.5b supports struct; M9.5d
+    adds enum. Other shapes (union, alias) come through as `opaque`. -/
 inductive TypeDeclKind
   | struct (fields : Array CertField)
+  | enum (variants : Array CertVariant)
   | opaque
   deriving Repr, Inhabited
 
