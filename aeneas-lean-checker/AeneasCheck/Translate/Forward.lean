@@ -159,6 +159,14 @@ def parseArrayLen (s : String) : Option Nat :=
 def isArrayTy (s : String) : Bool :=
   (s.splitOn "TArray").length ≥ 2
 
+/-- M9.5g: detect a `TSlice` opaque type. Slices have no const-generic
+    length, so the dispatch is structurally simpler than [isArrayTy] —
+    we only need to know the element type. The same gating concern
+    applies: without an explicit slice branch, an `&[u32]` would fall
+    through to the catch-all and emit a bare `Std.U32`. -/
+def isSliceTy (s : String) : Bool :=
+  (s.splitOn "TSlice").length ≥ 2
+
 /-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping. Resolves
     `TAdtId N` references via [tdm]; falls back to the legacy
     substring-keyed heuristic when the type is a literal or contains
@@ -202,6 +210,22 @@ def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy
         else if (s.splitOn "U32").length ≥ 2 then .lit (.int .u32)
         else .lit (.int .u32)
       .array elem ((parseArrayLen s).getD 0)
+    else if isSliceTy s then
+      -- M9.5g: a `TSlice` carries only the element type — no length.
+      -- The element-kind scan mirrors the `isArrayTy` branch; we
+      -- intentionally skip `Usize` since `[usize]` would conflict
+      -- with the catch-all `Usize` substring check below in the same
+      -- way the array branch's length tag does. A separate fixture
+      -- can extend this if needed.
+      let elem : PTy :=
+        if (s.splitOn "TBool").length ≥ 2 then .lit .bool
+        else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
+        else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)
+        else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
+        else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
+        else if (s.splitOn "U32").length ≥ 2 then .lit (.int .u32)
+        else .lit (.int .u32)
+      .slice elem
     else if (s.splitOn "TBool").length ≥ 2 then .lit .bool
     else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
     else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)

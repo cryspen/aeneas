@@ -56,6 +56,11 @@ partial def PTy.toLean : PTy → String
   -- parenthesise the whole thing — at use site it's always preceded
   -- by `:` (param type) or `Result` (return type).
   | .array elem length => s!"Array {elem.toLean} {length}#usize"
+  -- M9.5g: a runtime-sized slice. The standard Aeneas backend emits
+  -- `Slice <elem>` — no length component. As with `Array`, use-site
+  -- parenthesisation is handled by the `Result (...)` guard above
+  -- (since `Slice <elem>` is also a multi-token type).
+  | .slice elem => s!"Slice {elem.toLean}"
 
 def litToLean : Lit → String
   | .scalar k v =>

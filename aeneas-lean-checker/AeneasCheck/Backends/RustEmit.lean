@@ -41,6 +41,13 @@ partial def PTy.toRust : PTy → String
   -- notation matches one-for-one; the differential harness can
   -- consume / produce these directly.
   | .array elem length => s!"[{elem.toRust}; {length}]"
+  -- M9.5g: a runtime-sized slice. Rust has no naked-value slice
+  -- type (it's always behind a reference), but for the
+  -- differential-test convention we lower the borrow into an owned
+  -- `Vec<T>` — the model returns the updated buffer in the same way
+  -- it does for `&mut [T; N]` (see `.array` above). This keeps the
+  -- harness's `T_in == T_out` invariant intact.
+  | .slice elem => s!"Vec<{elem.toRust}>"
 
 def litToRust : Lit → String
   | .scalar k v => s!"{v}{IntKind.toRust k}"

@@ -43,6 +43,14 @@ inductive PTy
       system, not the value layer; the pretty-printer is responsible
       for the `<N>#usize` rendering. -/
   | array (elem : PTy) (length : Nat)
+  /-- M9.5g: a runtime-sized Rust slice `[T]` (always behind a borrow
+      `&[T]` or `&mut [T]` at the value-level). The standard Aeneas
+      backend renders this as `Slice <elem>` — no const-generic
+      length, distinguishing it from the fixed-size `Array` case
+      above. The borrow shape (shared vs mut) flows through the
+      function signature only; at the pure-value layer a `&mut [T]`
+      and a `[T]` post-state share the same `PTy.slice` shape. -/
+  | slice (elem : PTy)
   deriving Repr, Inhabited
 
 /-- Pure expressions. -/
