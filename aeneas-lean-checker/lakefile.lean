@@ -97,7 +97,18 @@ lean_lib «RuntimeShim» where
     `Option`), and `EvAssign { rhs = SymMove(local.[Field K]) }`
     lowers to `PExpr.fieldAccess`. The emitted file elaborates
     against `RuntimeShim`'s stdlib-`Option` since the suppressed
-    re-decl no longer shadows it. -/
+    re-decl no longer shadows it.
+
+    M9.5o: `Generated.BlanketImpl` (`impl<T: Trait1> Trait2 for T`
+    with a default-method body). Locks in the trait-clause-on-generic
+    machinery: a `(Trait1Inst : Trait1 T)` binder is emitted between
+    the type-param binders and value params; the impl decl is
+    rendered with the full `{T : Type} (Trait1Inst : Trait1 T) :
+    Trait2 T` shape; and the default method's standalone body is
+    emitted as `def Trait2.foo.default (Self : Type)` rather than
+    a regular function. No RuntimeShim surface is required —
+    `structure Trait2 (Self : Type)` is pure Lean and the empty
+    `Trait1` structure elaborates trivially as an instance. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
@@ -106,4 +117,4 @@ lean_lib «GeneratedTests» where
              `Generated.SlicesBasic, `Generated.Bitwise,
              `Generated.GenericsBasic, `Generated.ListBasic,
              `Generated.ListGeneric, `Generated.TraitsBasic,
-             `Generated.Issue194]
+             `Generated.Issue194, `Generated.BlanketImpl]
