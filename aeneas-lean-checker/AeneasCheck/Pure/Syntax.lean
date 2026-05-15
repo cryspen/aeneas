@@ -204,6 +204,13 @@ structure Decl where
       shape (`def get {T : Type} (x : MyOption T) (default : T)
       : Result T := do …`). -/
   typeParams : Array String := #[]
+  /-- M9.5j: optional trailing keyword line emitted on its own line
+      *after* the do-body, before the namespace's `end` marker. Used
+      for `partial_fixpoint` on self-recursive functions, which the
+      standard Aeneas backend appends so Lean's elaborator accepts a
+      definition that does not pass the structural-recursion check by
+      shape alone. `none` for non-recursive functions. -/
+  trailer : Option String := none
   deriving Repr, Inhabited
 
 /-- M9.5b: a crate-level emit unit. The translator now interleaves

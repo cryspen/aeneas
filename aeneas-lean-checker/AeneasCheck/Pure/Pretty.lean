@@ -276,11 +276,38 @@ partial def PExpr.toLeanDo : PExpr → String
     -- monadic-position expressions (typically `ok <ctor>` or
     -- `ok <binder>`). M9.5e: binders are space-prefixed after the
     -- ctor when present (`| NumOrZero.Num n => …`).
+    --
+    -- M9.5j: multi-line arm bodies (e.g. a recursive call binding
+    -- followed by a tail expression) need every continuation line
+    -- indented under the body start, not under the `|`. We render
+    -- the body inline when single-line and on a new 4-space-indented
+    -- line block when multi-line, re-indenting each continuation
+    -- line to the same column. The standard Aeneas backend uses
+    -- this exact `=>` newline-and-4-spaces shape for
+    -- `let i ← … / ok …` arm bodies.
     let armS := arms.toList.map fun (ctor, binders, body) =>
       let pat :=
         if binders.isEmpty then ctor
         else ctor ++ " " ++ String.intercalate " " binders.toList
-      s!"  | {pat} => {body.toLeanDo}"
+      let bodyS := body.toLeanDo
+      if bodyS.contains '\n' then
+        -- Strip the default "  " (do-block sub-line indent) at the
+        -- start of each continuation line and replace with a
+        -- 4-space indent. Lean's parser is whitespace-sensitive on
+        -- monadic-do continuations and aligns them with the first
+        -- non-keyword token after `=>`; 4 spaces is the column the
+        -- standard backend uses.
+        let lines := bodyS.splitOn "\n"
+        let bodyIndented := (lines.zipIdx).foldl (init := "")
+          fun acc (line, i) =>
+            if i = 0 then line
+            else
+              let stripped :=
+                if line.startsWith "  " then line.drop 2 else line
+              acc ++ "\n    " ++ stripped
+        s!"  | {pat} =>\n    {bodyIndented}"
+      else
+        s!"  | {pat} => {bodyS}"
     s!"match {scrutinee.toLeanDo} with\n" ++ String.intercalate "\n" armS
 
 /-- Non-monadic rendering. Retained for diagnostics; the Lean backend
@@ -379,8 +406,18 @@ def Decl.toLean (d : Decl) : String :=
   let sigHead :=
     if d.params.isEmpty then s!"def {d.name} {typeBinders}: Result {retParens}"
     else s!"def {d.name} {typeBinders}{params} : Result {retParens}"
+  -- M9.5j: optional trailer keyword line (`partial_fixpoint`, etc.)
+  -- attaches at column 0 after the do-block. The standard Aeneas
+  -- backend emits this for recursive functions where Lean's
+  -- structural-recursion check would otherwise reject the body. We
+  -- emit it on its own line, no leading indent, so the surrounding
+  -- `end <namespace>` separator still injects the blank line.
+  let trailerS : String :=
+    match d.trailer with
+    | some kw => s!"\n{kw}"
+    | none => ""
   d.docComment ++ d.noteBlock ++ d.attrPrefix ++
-  s!"{sigHead} := do\n  {d.body.toLeanDo}"
+  s!"{sigHead} := do\n  {d.body.toLeanDo}{trailerS}"
 
 /-- M9.5b: docstring for a `structure` decl. Mirrors `Decl.docComment`
     but uses the `[crate::Foo]` form without a trailing colon (the
