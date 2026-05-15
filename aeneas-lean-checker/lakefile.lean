@@ -73,11 +73,17 @@ lean_lib «RuntimeShim» where
     field appears as a bare `List` because Charon strips `Box<T>`
     at the LLBC layer (boxes are semantically transparent in pure
     functional code), so no Box-specific surface is needed in the
-    RuntimeShim. -/
+    RuntimeShim.
+
+    M9.5k: `Generated.ListGeneric` (parametric recursive enum
+    `GList<T>` + `glist_len<T>`) — combination of M9.5i (generics)
+    and M9.5j (Box + recursion). No new surface beyond those two;
+    locks in that the two features compose without regressions. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
              `Generated.LoopsSimple, `Generated.Reborrows,
              `Generated.EnumsBasic, `Generated.EnumsPayload,
              `Generated.SlicesBasic, `Generated.Bitwise,
-             `Generated.GenericsBasic, `Generated.ListBasic]
+             `Generated.GenericsBasic, `Generated.ListBasic,
+             `Generated.ListGeneric]
