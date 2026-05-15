@@ -346,26 +346,21 @@ let eval_loop_symbolic (config : config) (span : span)
   (* Generate a fresh loop id *)
   let loop_id = ctx.fresh_loop_id () in
 
-  (* Compute the fixed point at the loop entrance *)
+  (* Compute the fixed point at the loop entrance.
+
+     M12.1: the fixed-point computation iterates [eval_loop_body]
+     multiple times to find a stable context, but each iteration
+     emits cert events for the speculative body it just walked.
+     Without suppression, the cert trace would record N-1 stale
+     iterations followed by the canonical synthesized body — the
+     Lean checker would have no way to tell them apart. We wrap
+     the fixed-point in a suppression scope so only the canonical
+     body (synthesized once from [fp_ctx], below) reaches the
+     trace. *)
   let fp_ctx, fixed_ids =
-    compute_loop_entry_fixed_point config span loop_id eval_loop_body ctx
+    ctx_with_cert_events_suppressed ctx (fun () ->
+      compute_loop_entry_fixed_point config span loop_id eval_loop_body ctx)
   in
-  (* M12.0: emit [EvLoopInv] capturing the fixpoint state summary.
-     The fixed-point computation above runs exactly once per syntactic
-     loop ([compute_loop_entry_fixed_point] returns a fixpoint, not a
-     trace of iterations), so a single [EvLoopInv] event per loop is
-     correct — no deduplication needed. The summary is best-effort:
-     bindings whose value cannot be flattened to a [cert_sym_expr]
-     are dropped (same convention as [EvJoin]'s summaries). M12.1
-     will consume the summary to drive the loop-translation rule
-     (T-Loop-Fixpoint); for M12.0 it is structurally validated by the
-     Lean checker but semantically inert. *)
-  ctx_emit_event ctx
-    (CertEvent.EvLoopInv
-       {
-         loop_id;
-         invariant = CertEvent.cert_state_summary_of_env fp_ctx.env;
-       });
   let input_abs_list =
     List.rev
       (env_filter_map_abs
@@ -384,12 +379,18 @@ let eval_loop_symbolic (config : config) (span : span)
     ^ "):\n- fp:\n"
     ^ eval_ctx_to_string ~span:(Some span) fp_ctx];
 
-  (* Compute the context at the breaks *)
+  (* Compute the context at the breaks.
+
+     M12.1: like [compute_loop_entry_fixed_point], this re-evaluates
+     the body to learn the break-context shape. Those speculative
+     events are also suppressed; only the canonical synthesized body
+     (below) reaches the cert. *)
   let fixed_aids = InterpJoinCore.compute_fixed_abs_ids ctx fp_ctx in
   let fixed_dids = ctx_get_dummy_var_ids ctx in
   let break_info =
-    compute_loop_break_context config span loop_id eval_loop_body fp_ctx
-      fixed_aids fixed_dids
+    ctx_with_cert_events_suppressed ctx (fun () ->
+      compute_loop_break_context config span loop_id eval_loop_body fp_ctx
+        fixed_aids fixed_dids)
   in
   (* Debug *)
   [%ltrace
@@ -455,6 +456,18 @@ let eval_loop_symbolic (config : config) (span : span)
 
   [%ltrace "matched the fixed-point context with the original context."];
 
+  (* M12.1: emit [EvLoopInv] right before the canonical body
+     synthesis, and [EvLoopEnd] right after. Together they bracket
+     the body events in the cert. The Lean translator
+     (T-Loop-Fixpoint) extracts everything between the two into a
+     separate body decl and synthesises the loop wrapper. *)
+  ctx_emit_event ctx
+    (CertEvent.EvLoopInv
+       {
+         loop_id;
+         invariant = CertEvent.cert_state_summary_of_env fp_ctx.env;
+       });
+
   (* Synthesize the loop body *)
   let break_info', loop_body =
     let fixed_aids = InterpJoinCore.compute_fixed_abs_ids ctx fp_ctx in
@@ -463,6 +476,8 @@ let eval_loop_symbolic (config : config) (span : span)
       fp_ctx input_abs_ids_list fp_input_svalue_ids fixed_aids fixed_dids
       break_info
   in
+
+  ctx_emit_event ctx (CertEvent.EvLoopEnd { loop_id });
 
   let break_ctx, break_abs, break_input_svalues =
     match break_info with

@@ -298,7 +298,20 @@
         { "type": "object", "required": ["EvEndAbs"] },
         { "type": "object", "required": ["EvProj"] },
         { "type": "object", "required": ["EvJoin"] },
-        { "type": "object", "required": ["EvLoopInv"] }
+        { "type": "object", "required": ["EvLoopInv"] },
+        {
+          "type": "object",
+          "required": ["EvLoopEnd"],
+          "properties": {
+            "EvLoopEnd": {
+              "type": "object",
+              "required": ["loop_id"],
+              "properties": {
+                "loop_id": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        }
       ]
     }
   }

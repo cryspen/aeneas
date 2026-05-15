@@ -306,6 +306,12 @@ let json_event (e : event) : Yojson.Basic.t =
                 "invariant", json_cert_state_summary invariant;
               ] );
         ]
+  | EvLoopEnd { loop_id } ->
+      `Assoc
+        [
+          ( "EvLoopEnd",
+            `Assoc [ "loop_id", json_loop_id loop_id ] );
+        ]
 
 (* ---------- Top-level ---------- *)
 

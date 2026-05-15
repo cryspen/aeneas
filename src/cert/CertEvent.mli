@@ -90,6 +90,7 @@ type event =
       loop_id : loop_id;
       invariant : cert_state_summary;
     }
+  | EvLoopEnd of { loop_id : loop_id }
 
 type fun_cert = {
   fc_fn_id : fun_decl_id;

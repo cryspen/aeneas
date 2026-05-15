@@ -160,11 +160,32 @@ type eval_ctx = {
       (** Append-only LLBC# event log, populated when the [-emit-cert] flag is
           on. Held behind a ref so that shared/copied contexts append to the
           same buffer; the interpreter never reads this back, only writes. *)
+  cert_events_suppressed : (bool ref[@opaque]);
+      (** When [true], [ctx_emit_event] silently drops the event. Used by
+          the loop fixed-point computation in [InterpLoopsFixedPoint]: the
+          fixpoint iterates [eval_loop_body] multiple times, but the cert
+          trace must only record one canonical evaluation (the post-fixpoint
+          one). M12.1 wraps the fixpoint and break-context body
+          evaluations with this flag so the cert is a linear, replayable
+          trace rather than an unrolled multi-iteration log. *)
 }
 [@@deriving show]
 
 let ctx_emit_event (ctx : eval_ctx) (ev : CertEvent.event) : unit =
-  ctx.cert_event_buffer := ev :: !(ctx.cert_event_buffer)
+  if !(ctx.cert_events_suppressed) then ()
+  else ctx.cert_event_buffer := ev :: !(ctx.cert_event_buffer)
+
+(** Run [f] with cert-event emission suppressed; restore the previous
+    suppression state on exit (also on exception). Used to silence the
+    speculative loop-body evaluations inside the fixed-point and
+    break-context computations. *)
+let ctx_with_cert_events_suppressed (ctx : eval_ctx) (f : unit -> 'a) : 'a =
+  let prev = !(ctx.cert_events_suppressed) in
+  ctx.cert_events_suppressed := true;
+  let restore () = ctx.cert_events_suppressed := prev in
+  match f () with
+  | r -> restore (); r
+  | exception e -> restore (); raise e
 
 let ctx_take_events (ctx : eval_ctx) : CertEvent.event list =
   let evs = List.rev !(ctx.cert_event_buffer) in

@@ -169,6 +169,31 @@ type event =
       loop_id : loop_id;
       invariant : cert_state_summary;
     }
+      (** [M12.0/M12.1] Emitted once per syntactic loop, immediately
+          before the loop's *synthesized* body events. The
+          [invariant] field carries the fixed-point's state summary
+          (the per-local symbolic values at loop entry).
+
+          M12.1 changed the placement: this event used to fire right
+          after [compute_loop_entry_fixed_point], but the speculative
+          body evaluations the fixed-point computation performed
+          were *also* leaking into the trace. M12.1's OCaml
+          restructuring suppresses those speculative emissions (see
+          [Contexts.ctx_with_cert_events_suppressed]) and moves the
+          [EvLoopInv] emission to right before the canonical body
+          (synthesized once from [fp_ctx]), so the cert reads as
+
+            [pre-loop events] [EvLoopInv] [body events] [EvLoopEnd]
+              [post-loop events].
+
+          The Lean translator (M12.1's T-Loop-Fixpoint walker) uses
+          [EvLoopInv] as the "begin loop body" marker and
+          [EvLoopEnd] as the closer. *)
+  | EvLoopEnd of { loop_id : loop_id }
+      (** [M12.1] Emitted immediately after the loop's synthesized
+          body events. Paired with the [EvLoopInv] for the same
+          [loop_id]: the events between the two form the body the
+          Lean translator extracts into a [<fn>_loop.body] decl. *)
 [@@deriving show]
 
 (** A per-function trace. *)
