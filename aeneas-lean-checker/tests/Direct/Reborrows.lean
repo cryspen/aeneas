@@ -14,7 +14,7 @@ Covers three patterns from plan §M9:
   (signature-supplied) and a previously-created reborrow.
 -/
 
-open AeneasCheck Json LLBCSharp Typecheck Translate
+open AeneasCheck Json LLBCSharp Typecheck Translate Backends
 
 def expectAccept (path : System.FilePath) : IO Unit := do
   let cc ← readCrateCert path
@@ -68,4 +68,24 @@ def main : IO Unit := do
     IO.println s!"  ✓ nested reborrow chain detected"
   else
     throw <| IO.userError "expected a nested reborrow (child of an earlier reborrow)"
+  -- M9.5a: `reborrow_chain(x: &mut u32) { let s = &mut *x; *s = 7; }`
+  -- must emit `ok (7 : Std.U32)` as the body, not a phantom `ok ret`
+  -- or some other broken tail. The deref-write through the reborrow
+  -- chain must propagate to the input's vm slot so the unit-output
+  -- back-closure builder sees the right post-state.
+  match translateCrate cc with
+  | .error e => throw <| IO.userError s!"translate failed: {e}"
+  | .ok tc =>
+    let src := emitTranslatedCrate "reborrows" tc
+    let mustContain : List String := [
+      "def reborrow_chain (x1 : Std.U32) : Result Std.U32 := do",
+      "ok (7 : Std.U32)"
+    ]
+    for c in mustContain do
+      if (src.splitOn c).length < 2 then
+        IO.eprintln s!"  ✗ missing expected substring: {c}"
+        IO.eprintln src
+        throw <| IO.userError "reborrow_chain tail regressed (M9.5a)"
+      else
+        IO.println s!"  ✓ contains: {c}"
   IO.println "all tests passed"

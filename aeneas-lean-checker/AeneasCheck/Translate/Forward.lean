@@ -509,14 +509,35 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
             vm := st.vm.insert 0 tailE
             lastWrite := some 0 }
       | none =>
-        -- No tracked backward closure; treat the deref-write as a
-        -- regular update to the root local's vm entry. This matches
-        -- the M10 behavior and is sound when the borrow's owner is
-        -- one of the function's own `&mut` inputs (the in-function
-        -- mutation case).
-        { st with
-          vm := st.vm.insert d.local_ rhsE
-          lastWrite := some d.local_ }
+        -- M9.5a: no tracked backward closure. The deref-write either
+        -- targets the function's own `&mut` input directly (e.g.
+        -- `incr`'s `*x = …`) or threads through a reborrow chain
+        -- whose underlying root is still one of the input parameters
+        -- (e.g. `reborrow_chain`'s `let s = &mut *x; *s = 7`). The
+        -- M12.2a-1 cert-hook fix makes vm[temp] resolve to the
+        -- input's `xK` var-name for every borrow-typed temp in such
+        -- a chain, so we can detect the propagation target by
+        -- inspecting `vm[d.local_]`: if it names an input
+        -- parameter, the write lands on that input's vm slot instead
+        -- of the temp's.
+        let resolveInputRoot : Option Nat :=
+          match st.vm[d.local_]? with
+          | some (.var name) =>
+            if name.length ≥ 2 && name.front == 'x' then
+              match (name.drop 1).toNat? with
+              | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+              | none => none
+            else none
+          | _ => none
+        match resolveInputRoot with
+        | some root =>
+          { st with
+            vm := st.vm.insert root rhsE
+            lastWrite := some root }
+        | none =>
+          { st with
+            vm := st.vm.insert d.local_ rhsE
+            lastWrite := some d.local_ }
     else
       { st with
         vm := st.vm.insert d.local_ rhsE
