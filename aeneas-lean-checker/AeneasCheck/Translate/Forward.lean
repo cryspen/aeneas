@@ -210,28 +210,152 @@ private def trimBothEnds (s : String) : String :=
     Char.isWhitespace
   String.ofList dropped
 
-/-- M9.5i: heuristic parser for a `TAdt`'s generic-type-args list.
+/-- Recursive helper for [extractTypesBlock]: scan a `List Char`
+    tracking only `[`/`]` depth, collecting characters until we
+    reach the matching close bracket (depth → 0). The initial call
+    passes [depth = 1] (we've already consumed the opening `[`). -/
+private partial def extractTypesBlockGo
+    (cs : List Char) (depth : Nat) (acc : List Char) : Option String :=
+  match cs with
+  | [] => none
+  | c :: rest =>
+    if c = '[' then
+      extractTypesBlockGo rest (depth + 1) (c :: acc)
+    else if c = ']' then
+      if depth = 1 then some (String.ofList acc.reverse)
+      else extractTypesBlockGo rest (depth - 1) (c :: acc)
+    else
+      extractTypesBlockGo rest depth (c :: acc)
+
+/-- M9.5n: depth-aware extractor for the outermost `types = [...]`
+    block. Returns the substring strictly between the matching
+    brackets (so a nested `regions = []` inside doesn't truncate
+    the result, as the M9.5i `takeWhile (≠ ']')` heuristic did).
+
+    Returns `none` when no `types = [` is present in `s`. The Lean
+    side passes opaque cert strings here, never untrusted input. -/
+private def extractTypesBlock (s : String) : Option String :=
+  -- Locate the first `types` key. We split on the bare `types` token
+  -- rather than `types = [` because OCaml's pretty-printer wraps long
+  -- lines, often inserting a newline between `types`, `=`, and `[`.
+  -- `splitOn` produces one piece per gap, so we rejoin pieces[1..]
+  -- with the separator to recover everything-from-first-`types`-on
+  -- (otherwise the depth-aware scan would only see the slice between
+  -- the first and second `types` token and miss the closing `]`).
+  let parts := s.splitOn "types"
+  match parts with
+  | _ :: rest :: tail =>
+    let afterFirst : String :=
+      if tail.isEmpty then rest
+      else rest ++ "types" ++ String.intercalate "types" tail
+    -- Skip `=` and any whitespace, then expect `[`.
+    let after : String :=
+      (afterFirst.dropWhile (fun c => c = '=' ∨ c.isWhitespace)).toString
+    let chars := after.toList
+    -- Verify we landed on `[`; otherwise this `types` occurrence is
+    -- not the start of a `types = [...]` block (shouldn't happen for
+    -- well-formed `show_ty` output, but stay defensive).
+    match chars with
+    | '[' :: rest_after_brack => extractTypesBlockGo rest_after_brack 1 []
+    | _ => none
+  | _ => none
+
+/-- Recursive helper for [splitTypeItems]: walks `cs` and splits on
+    top-level `;` separators. `dp/db/dk` are paren/brace/bracket
+    depths; `cur` is the in-progress item (reversed for O(1)
+    push). On a top-level `;` we flush `cur` into `acc` (also kept
+    reversed). On EOF we flush the final item and reverse `acc`. -/
+private partial def splitTypeItemsGo
+    (cs : List Char)
+    (dp db dk : Nat)
+    (cur : List Char)
+    (acc : List (List Char)) : List String :=
+  match cs with
+  | [] =>
+    let finalItems := (cur :: acc).reverse.map (fun l => String.ofList l.reverse)
+    let trimmed := finalItems.map trimBothEnds
+    trimmed.filter (fun p => ¬ p.isEmpty)
+  | c :: rest =>
+    if c = '(' then splitTypeItemsGo rest (dp+1) db dk (c :: cur) acc
+    else if c = ')' then
+      splitTypeItemsGo rest (if dp > 0 then dp - 1 else 0) db dk (c :: cur) acc
+    else if c = '{' then splitTypeItemsGo rest dp (db+1) dk (c :: cur) acc
+    else if c = '}' then
+      splitTypeItemsGo rest dp (if db > 0 then db - 1 else 0) dk (c :: cur) acc
+    else if c = '[' then splitTypeItemsGo rest dp db (dk+1) (c :: cur) acc
+    else if c = ']' then
+      splitTypeItemsGo rest dp db (if dk > 0 then dk - 1 else 0) (c :: cur) acc
+    else if c = ';' && dp = 0 && db = 0 && dk = 0 then
+      splitTypeItemsGo rest dp db dk [] (cur :: acc)
+    else
+      splitTypeItemsGo rest dp db dk (c :: cur) acc
+
+/-- M9.5n: depth-aware split of a `types = [...]` block's contents
+    into one substring per top-level item. Items are `;`-separated
+    at the depth where the `types = [...]` block lives, but `;` also
+    appears inside record bodies (`{ ... ; ... }`) and could in
+    principle appear inside other nested `[...]` blocks; both nest
+    INSIDE a top-level item rather than separating items. We track
+    brace-depth, paren-depth, and bracket-depth and only split when
+    all three are zero. -/
+private def splitTypeItems (inner : String) : List String :=
+  splitTypeItemsGo inner.toList 0 0 0 [] []
+
+/-- M9.5i / M9.5n: parser for a `TAdt`'s generic-type-args list.
     Given the full opaque type string for a `TAdt { id = TAdtId N;
     generics = { … types = [t1; t2; …]; … } }`, return the list of
-    inner type strings (one per argument). For our M9.5i fixture
-    the list contains a single `TVar` entry; the parser handles N
-    by splitting on `;` within the `types = [...]` block.
+    inner type strings (one per argument).
+
+    M9.5n note: pre-M9.5n the implementation used a `splitOn "]"`
+    heuristic that truncated at the first close bracket. For a
+    nested generic like `Option<Box<AVLNode<T>>>` (cert string carries
+    an inner `regions = []`), that truncation stripped everything
+    after `regions = ` and produced a single-bullet split-on-`;`
+    that drove the surface checker to render bare `Option` for the
+    field type. The depth-aware [extractTypesBlock] + [splitTypeItems]
+    handle arbitrary nesting.
 
     Returns the empty list if no `types = ` substring is found or
     the bracketed block is empty (`types = []`). -/
 def parseTAdtGenericTypes (s : String) : List String :=
-  let parts := s.splitOn "types = ["
+  match extractTypesBlock s with
+  | none => []
+  | some inner => splitTypeItems (trimBothEnds inner)
+
+/-- M9.5j / M9.5n: detect a `TBuiltin TBox` ADT shape at the OUTER
+    head of `s`. Charon treats `Box<T>` as transparent at the LLBC
+    layer (pure functional code does not distinguish), so the Lean
+    translator erases the `Box` wrapper to its single type argument.
+
+    The check anchors on the first `id = ` of the outermost `TAdt`:
+    if that occurrence is immediately followed (modulo whitespace and
+    a leading `(`) by `Generated_Types.TBuiltin Generated_Types.TBox`
+    (or the hand-written `TBuiltin TBox`), the outer type is a Box.
+    A nested Box (e.g. `Option<Box<T>>`) is NOT caught here — the
+    outer Option's head is `TAdtId`, not `TBuiltin`. -/
+def isTBox (s : String) : Bool :=
+  -- Split on the bare `id` token; the OCaml `show_ty` output often
+  -- wraps lines around the `=`, so we tolerate whitespace there.
+  let parts := s.splitOn "id"
   match parts with
   | _ :: rest :: _ =>
-    let notRBrack : Char → Bool := fun c => c ≠ ']'
-    let inner : String := (rest.takeWhile notRBrack).toString
-    let trimmed : String := trimBothEnds inner
-    if trimmed.isEmpty then []
+    -- Skip the `=`, whitespace, a leading `(`, more whitespace, then
+    -- check for the `TBuiltin` token immediately after.
+    let dropLead : Char → Bool :=
+      fun c => c = '=' ∨ c = '(' ∨ c.isWhitespace
+    let trimmed := rest.dropWhile dropLead
+    -- The standard `show_ty` output qualifies as `Generated_Types.TBuiltin`;
+    -- accept either form.
+    let isBuiltin :=
+      trimmed.startsWith "Generated_Types.TBuiltin" ∨
+      trimmed.startsWith "TBuiltin"
+    if ¬ isBuiltin then false
     else
-      let pieces : List String :=
-        (trimmed.splitOn ";").map trimBothEnds
-      pieces.filter fun p => ¬ p.isEmpty
-  | _ => []
+      -- Within this segment, the builtin variant name must be `TBox`
+      -- before the next closing brace.
+      let upToBrace : String := (trimmed.takeWhile (fun c => c ≠ '}')).toString
+      (upToBrace.splitOn "TBox").length ≥ 2
+  | _ => false
 
 /-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping. Resolves
     `TAdtId N` references via [tdm]; falls back to the legacy
@@ -318,6 +442,21 @@ partial def rawTyToPTyWithVars
     else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
     else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
     else if (s.splitOn "Usize").length ≥ 2 then .lit (.int .usize)
+    -- M9.5n: a `TAdt` whose head is `TBuiltin TBox` is transparent in
+    -- pure functional code — Charon's LLBC layer already treats
+    -- `Box<T>` as `T` (the inner heap allocation is invisible to the
+    -- type system). Erase the wrapper by recursing on the first
+    -- generic-args entry. We test this BEFORE [parseTAdtId] because
+    -- a `TBox<T>` cert string typically nests an inner `TAdtId N`
+    -- that [parseTAdtId] would otherwise pick up (silently bypassing
+    -- the Box, which used to be the M9.5j behaviour). The depth-aware
+    -- [parseTAdtGenericTypes] introduced in M9.5n means we can now
+    -- robustly extract Box's single type arg even when it nests
+    -- further `[...]` blocks (e.g. `Box<AVLNode<T>>`).
+    else if isTBox s then
+      match parseTAdtGenericTypes s with
+      | inner :: _ => rawTyToPTyWithVars tdm typeParams (.opaque inner)
+      | [] => .lit (.int .u32)
     else
       -- Try to resolve an ADT reference (struct). For a `TRef …
       -- TAdt …` we unwrap to the inner T (PTy is value-level; the

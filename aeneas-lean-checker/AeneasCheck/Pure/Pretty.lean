@@ -34,8 +34,20 @@ partial def PTy.toLean : PTy → String
     -- `Result (...)` guard in [.result], and the `Decl.toLean`
     -- return-type bracketing, both detect a space in the inner
     -- form). Monomorphic ADTs (empty `args`) stay single-token.
+    --
+    -- M9.5n: each argument that renders to a multi-token form (e.g.
+    -- nested `AVLNode T` inside `Option (AVLNode T)`) MUST be
+    -- parenthesised, otherwise `Option AVLNode T` re-parses as
+    -- `Option` applied to two args. We detect multi-token by the
+    -- presence of an internal space and by the form not already
+    -- self-parenthesising. Single tokens (`T`, `Std.U32`) stay bare.
     if args.isEmpty then name
-    else s!"{name} {String.intercalate " " (args.toList.map PTy.toLean)}"
+    else
+      let parenArg (a : PTy) : String :=
+        let s := a.toLean
+        let selfParen := s.startsWith "("
+        if s.contains ' ' ∧ !selfParen then "(" ++ s ++ ")" else s
+      s!"{name} {String.intercalate " " (args.toList.map parenArg)}"
   | .tuple args =>
     "(" ++ String.intercalate " × " (args.toList.map PTy.toLean) ++ ")"
   -- The standard Aeneas Lean backend's `open Aeneas Aeneas.Std`
