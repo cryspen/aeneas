@@ -123,22 +123,50 @@ end Result
 @[inline] private def liftRes2 {α β : Type} (op : α → α → β) (a b : α)
     : Result β := .ok (op a b)
 
+-- Monadic binops (panic on overflow / divide-by-zero / out-of-range
+-- shift). Match the real Aeneas runtime: result type is `Result α`,
+-- and the shim wraps the underlying pure operator with `.ok`. The
+-- emitter places these in `let nm ← …` bindings or bare in do-tail
+-- position (when at the end of a do-block, the `Result α` type
+-- already lines up).
 instance : HAdd U32 U32 (Result U32) :=
   ⟨liftRes2 (UInt32.add : UInt32 → UInt32 → UInt32)⟩
 instance : HSub U32 U32 (Result U32) :=
   ⟨liftRes2 (UInt32.sub : UInt32 → UInt32 → UInt32)⟩
 instance : HMul U32 U32 (Result U32) :=
   ⟨liftRes2 (UInt32.mul : UInt32 → UInt32 → UInt32)⟩
-instance : HXor U32 U32 (Result U32) :=
-  ⟨liftRes2 (UInt32.xor : UInt32 → UInt32 → UInt32)⟩
-instance : HAnd U32 U32 (Result U32) :=
-  ⟨liftRes2 (UInt32.land : UInt32 → UInt32 → UInt32)⟩
-instance : HOr  U32 U32 (Result U32) :=
-  ⟨liftRes2 (UInt32.lor : UInt32 → UInt32 → UInt32)⟩
+
+-- M9.5h: shift instances are *monadic* — shifts panic on out-of-range
+-- shift amounts. Real Rust source can use either an integer-typed
+-- shift amount (`a >> 16`, where `16 : usize`) or a same-width amount.
+-- The cert always types the rhs as a `Usize` (`Shl`/`Shr` always lift
+-- the second arg to platform `usize` per Rust semantics). Add both
+-- `U32` and `Usize`-amount instances so emitter-generated source like
+-- `a >>> 16#usize` resolves cleanly.
 instance : HShiftLeft U32 U32 (Result U32) :=
   ⟨liftRes2 (UInt32.shiftLeft : UInt32 → UInt32 → UInt32)⟩
 instance : HShiftRight U32 U32 (Result U32) :=
   ⟨liftRes2 (UInt32.shiftRight : UInt32 → UInt32 → UInt32)⟩
+instance : HShiftLeft U32 Usize (Result U32) :=
+  ⟨fun a n => .ok (UInt32.shiftLeft a (UInt32.ofNat n.toNat))⟩
+instance : HShiftRight U32 Usize (Result U32) :=
+  ⟨fun a n => .ok (UInt32.shiftRight a (UInt32.ofNat n.toNat))⟩
+
+-- M9.5h: I32 / Isize shift instances (signed shift). Match the
+-- standard Aeneas backend's `a >>> 16#isize` shape used in `shift_i32`.
+instance : HShiftLeft I32 Isize (Result I32) :=
+  ⟨fun a n => .ok (Int32.shiftLeft a (Int32.ofInt n.toInt))⟩
+instance : HShiftRight I32 Isize (Result I32) :=
+  ⟨fun a n => .ok (Int32.shiftRight a (Int32.ofInt n.toInt))⟩
+
+-- M9.5h: pure bitwise ops (`HXor` / `HAnd` / `HOr`) on `U32` are NOT
+-- shimmed here. The standard Aeneas backend treats bit ops as pure
+-- functions returning the operand type directly (`U32 → U32 → U32`);
+-- the emitter wraps them in `ok` at the do-tail. Because
+-- `U32 := UInt32` is `@[reducible]`, instance synthesis picks up
+-- Lean's built-in `HXor UInt32 UInt32 UInt32` / `HAnd` / `HOr` for
+-- the bare `(x1 ^^^ x2) : U32` form. Adding a `Result`-typed shim
+-- instance here would shadow the pure form and break `ok (x1 ^^^ x2)`.
 
 instance : HAdd U64 U64 (Result U64) :=
   ⟨liftRes2 (UInt64.add : UInt64 → UInt64 → UInt64)⟩

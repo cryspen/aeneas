@@ -49,10 +49,19 @@ lean_lib «RuntimeShim» where
     M9.5g: `Generated.SlicesBasic` (`&[T]` immutable read +
     `&mut [T]` write). RuntimeShim grew `Aeneas.Std.Slice` +
     `Slice.index_usize` + `Slice.update` for the emitted body to
-    typecheck. -/
+    typecheck.
+
+    M9.5h: `Generated.Bitwise` (pure bit ops + monadic shifts on
+    `U32` / `I32`). RuntimeShim dropped the `Result`-typed `HXor` /
+    `HAnd` / `HOr` overrides on `U32` (the standard backend treats
+    bit ops as pure functions, so `ok (x1 ^^^ x2)` resolves the
+    operand-type-typed built-in `HXor UInt32 UInt32 UInt32` via the
+    `U32 := UInt32` reducible alias) and added `HShiftLeft` /
+    `HShiftRight` instances over `U32 × Usize` and `I32 × Isize` to
+    cover `a >>> 16#usize` and `a >>> 16#isize` shapes. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
              `Generated.LoopsSimple, `Generated.Reborrows,
              `Generated.EnumsBasic, `Generated.EnumsPayload,
-             `Generated.SlicesBasic]
+             `Generated.SlicesBasic, `Generated.Bitwise]
