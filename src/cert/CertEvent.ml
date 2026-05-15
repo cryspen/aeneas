@@ -56,6 +56,20 @@ type cert_sym_expr =
           literal). C-style variants keep [fields = []] and emit the
           bare ctor name; payload-bearing variants emit
           [<adt_name>.<variant_name> e1 e2 ... eN]. *)
+  | SymTuple of cert_sym_expr list
+      (** [M9.5p] A tuple aggregate construction: the result of an
+          [Rvalue.Aggregate (AggregatedAdt ({id = TTuple; _}, None, None), ops)].
+          The Lean translator renders this as [(e1, e2, ..., eN)]. *)
+  | SymRecord of {
+      adt_id : int;
+      fields : (string * cert_sym_expr) list;
+    }
+      (** [M9.5p] A named-field struct aggregate construction: the result
+          of an [Rvalue.Aggregate (AggregatedAdt ({id = TAdtId K; _}, None, None), ops)]
+          where the underlying type-decl is a named-field struct. Each
+          field carries its surface name (resolved via the cert type-decl
+          table on the OCaml side). The Lean translator renders this as
+          [{ x := e1, y := e2, ... }] (Lean record-literal syntax). *)
 [@@deriving show]
 
 (** A coarse summary of the abstract state at a particular point.

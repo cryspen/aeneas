@@ -22,6 +22,11 @@ type cert_sym_expr =
       variant_name : string;
       fields : cert_sym_expr list;
     }
+  | SymTuple of cert_sym_expr list
+  | SymRecord of {
+      adt_id : int;
+      fields : (string * cert_sym_expr) list;
+    }
 
 type cert_state_summary = {
   cs_env : (local_id * cert_sym_expr) list;

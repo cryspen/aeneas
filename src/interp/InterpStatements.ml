@@ -979,6 +979,97 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                                    ; fields }
                              })
                     | _ -> ())
+               | Aggregate
+                   ( AggregatedAdt
+                       ( { id = TTuple; _ }, None, None ),
+                     operands ) ->
+                   (* M9.5p: a tuple aggregate `(x, y, ...)`. Emit an
+                      `EvAssign dst=p rhs=SymTuple [e1; …; eN]` so the
+                      Lean translator can render the tail as
+                      `ok (e1, …, eN)` instead of falling through to
+                      the M9.5o unit-fallback. *)
+                   let fields_opt =
+                     List.fold_right
+                       (fun op acc ->
+                         match acc with
+                         | None -> None
+                         | Some xs ->
+                             (match CertEvent.cert_sym_expr_of_operand op with
+                              | Some e -> Some (e :: xs)
+                              | None -> None))
+                       operands (Some [])
+                   in
+                   (match
+                      ( CertEvent.cert_place_of_place p,
+                        fields_opt )
+                    with
+                    | Some cp, Some fields ->
+                        ctx_emit_event ctx
+                          (CertEvent.EvAssign
+                             { dst = cp; rhs = CertEvent.SymTuple fields })
+                    | _ -> ())
+               | Aggregate
+                   ( AggregatedAdt
+                       ( { id = TAdtId def_id; _ }, None, None ),
+                     operands ) ->
+                   (* M9.5p: a named-field struct aggregate
+                      `Pair { x, y }`. Look the struct decl up to recover
+                      each field's surface name; emit
+                      `EvAssign dst=p rhs=SymRecord {adt_id; fields=[(n1,e1);…]}`
+                      so the Lean translator can render the tail as
+                      `ok { x := e1, y := e2 }`. For tuple-style structs
+                      (positional fields, no surface names) we fall back
+                      to `field<K>` as the field name; the Lean side will
+                      have the same name in its type-decl map and the
+                      record literal still type-checks. *)
+                   let type_decl =
+                     ctx_lookup_type_decl st.span ctx def_id
+                   in
+                   let field_names : string list =
+                     match type_decl.kind with
+                     | Struct fields ->
+                         List.mapi
+                           (fun i (f : Types.field) ->
+                             match f.field_name with
+                             | Some n -> n
+                             | None -> "field" ^ string_of_int i)
+                           fields
+                     | _ ->
+                         List.mapi
+                           (fun i _ -> "field" ^ string_of_int i)
+                           operands
+                   in
+                   let fields_opt =
+                     let rec pair_up names ops =
+                       match names, ops with
+                       | [], [] -> Some []
+                       | n :: ns, op :: rest ->
+                           (match
+                              CertEvent.cert_sym_expr_of_operand op
+                            with
+                            | None -> None
+                            | Some e ->
+                                (match pair_up ns rest with
+                                 | None -> None
+                                 | Some xs -> Some ((n, e) :: xs)))
+                       | _, _ -> None
+                     in
+                     pair_up field_names operands
+                   in
+                   (match
+                      ( CertEvent.cert_place_of_place p,
+                        fields_opt )
+                    with
+                    | Some cp, Some fields ->
+                        ctx_emit_event ctx
+                          (CertEvent.EvAssign
+                             { dst = cp
+                             ; rhs =
+                                 CertEvent.SymRecord
+                                   { adt_id = Types.TypeDeclId.to_int def_id
+                                   ; fields }
+                             })
+                    | _ -> ())
                | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
                    (* M12.2a: a reborrow assignment `v@N := &mut *(local)`
                       previously emitted only an `EvMutBorrow` /

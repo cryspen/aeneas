@@ -138,6 +138,30 @@ let rec json_cert_sym_expr (e : cert_sym_expr) : Yojson.Basic.t =
                 "fields", `List (List.map json_cert_sym_expr fields);
               ] );
         ]
+  | SymTuple fields ->
+      `Assoc
+        [
+          "SymTuple", `List (List.map json_cert_sym_expr fields);
+        ]
+  | SymRecord { adt_id; fields } ->
+      `Assoc
+        [
+          ( "SymRecord",
+            `Assoc
+              [
+                "adt_id", `Int adt_id;
+                "fields",
+                `List
+                  (List.map
+                     (fun (n, e) ->
+                       `Assoc
+                         [
+                           "name", `String n;
+                           "value", json_cert_sym_expr e;
+                         ])
+                     fields);
+              ] );
+        ]
 
 and json_cert_state_summary (s : cert_state_summary) : Yojson.Basic.t =
   `Assoc
