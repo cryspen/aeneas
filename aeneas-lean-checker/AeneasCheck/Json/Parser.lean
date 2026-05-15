@@ -204,6 +204,9 @@ def parseEvent (j : Json) : Result Event := do
       let loopId ← asNat (← field payload "loop_id")
       let invariant ← parseStateSummary (← field payload "invariant")
       return .loopInv loopId invariant
+    | "EvLoopEnd" =>
+      let loopId ← asNat (← field payload "loop_id")
+      return .loopEnd loopId
     | _ => fail s!"unknown Event tag: {tag}"
 
 /-- Parse a signature record. Types are kept as opaque-tagged strings:

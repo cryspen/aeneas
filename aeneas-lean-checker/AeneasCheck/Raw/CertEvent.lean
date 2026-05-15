@@ -62,7 +62,12 @@ inductive Event
   | proj (abs : Nat) (place : Place) (symval : Nat)
   | join (left right result : StateSummary)
   | loopInv (loopId : Nat) (invariant : StateSummary)
-  deriving Repr
+  /-- M12.1: end-of-loop-body marker. Paired with the preceding
+      `loopInv` carrying the same `loopId`; the events between the
+      pair form the canonical loop body that the Lean translator
+      lifts into a `<fn>_loop.body` decl. -/
+  | loopEnd (loopId : Nat)
+  deriving Repr, Inhabited
 
 /-- A source span attached to a cert function. Used by the Lean
     emitter to build the per-function `Source: ...` docstring. -/

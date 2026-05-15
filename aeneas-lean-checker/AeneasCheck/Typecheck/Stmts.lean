@@ -91,13 +91,19 @@ def checkEvent (ev : Event) : TC Unit := do
     for (_, e) in right.env do checkSymExpr e
     for (_, e) in result.env do checkSymExpr e
   | .loopInv _ invariant => do
-    -- M12.0: structural check on the loop-invariant witness. As with
-    -- EvJoin above, we bounds-check the SymExprs in the invariant
-    -- env so a malformed cert is rejected up front, but defer the
-    -- actual fixpoint ≤-relation algebra to a later milestone
-    -- (M12.1 plumbs the LLBC# loop rule through `Step`). For M12.0
-    -- the replayer treats this event as a semantic no-op.
+    -- M12.0/M12.1: structural check on the loop-invariant witness.
+    -- As with EvJoin above, we bounds-check the SymExprs in the
+    -- invariant env so a malformed cert is rejected up front, but
+    -- defer the actual fixpoint ≤-relation algebra to a later
+    -- milestone (M12.3 plumbs the LLBC# loop rule through `Step`).
+    -- For M12.1 the replayer treats this event as a semantic no-op,
+    -- and the Forward translator uses the position of EvLoopInv as
+    -- the "begin loop body" marker (paired with EvLoopEnd).
     for (_, e) in invariant.env do checkSymExpr e
+  | .loopEnd _ => pure ()
+    -- M12.1: structural no-op. EvLoopEnd is a sentinel marker for the
+    -- Forward translator's T-Loop-Fixpoint walker. The replayer
+    -- ignores it.
 
 /-- Walk a function's event list. -/
 def checkEvents (events : Array Event) : TC Unit := do
