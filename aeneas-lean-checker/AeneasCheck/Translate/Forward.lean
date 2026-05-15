@@ -1752,10 +1752,36 @@ def assembleBody (binds : Array Bind) (tail : PExpr) : PExpr :=
   -- for pure). Returns the new tail + the leading bindings minus
   -- the collapsed last one; or `none` when the collapse doesn't
   -- apply (and the unmodified `binds`/`tail` are used).
+  --
+  -- M9.5q-3: the rule used to gate on `isFreshTempName nm` to avoid
+  -- collapsing M10.2b post-state bindings whose `_post` suffix
+  -- carries forward/backward-correspondence info. But for a
+  -- *single* `.regular` binding whose rhs is a non-pure function
+  -- call (head contains `.`) and whose tail is `ok (.var nm)`, the
+  -- `_post` suffix is just naming noise — there's no back-closure
+  -- being threaded alongside (those are .pair / .tuple shapes, not
+  -- .regular). The standard Aeneas backend emits the bare tail-call
+  -- in this case (e.g. `use_numeric t := … Numeric.value t` rather
+  -- than `let x1_post ← Numeric.value t; ok x1_post`). Relax the
+  -- gate to also accept a `.regular` binding with a `.app` rhs
+  -- whose head looks like a qualified function call.
+  -- A function-call head looks like a qualified path: Charon's raw
+  -- `crate::module::{impl-path}::method`, or after sanitization the
+  -- dot-form `Crate.Module.X.method`. Either contains `:` or `.` —
+  -- pure binops (`Add`, `BitXor`, `Lt`, …) are single tokens with
+  -- neither. We accept both separator styles here because the IR
+  -- carries the raw form (pretty-print sanitizes at render time).
+  let isCallHead (head : String) : Bool :=
+    !isPureBinop head && (head.contains '.' || head.contains ':')
+  let collapseOk (nm : String) (rhs : PExpr) : Bool :=
+    isFreshTempName nm ||
+      (match rhs with
+       | .app head _ => isCallHead head
+       | _ => false)
   let collapse? : Option (Array Bind × PExpr) :=
     match binds.back?, tail with
     | some (.regular nm e), .ok (.var n) =>
-      if nm == n && isFreshTempName nm then
+      if nm == n && collapseOk nm e then
         let newTail :=
           match e with
           | .app head _ => if isPureBinop head then .ok e else e

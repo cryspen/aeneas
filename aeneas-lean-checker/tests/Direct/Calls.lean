@@ -122,28 +122,40 @@ def main : IO Unit := do
     IO.println s!"  ✓ saw {nBranchAssert} branch-marker EvAssert event(s)"
   else
     throw <| IO.userError "expected ≥ 2 branch-marker EvAssert (M11.0)"
-  -- M10.2b: the emitted Lean must now spell out the backward-
-  -- function bind for `incr_via_helper`:
-  --   let x1_post ← (calls.incr_inner x1)
-  --   ok x1_post
-  -- Compare with the standard backend's `incr_inner x` — our shape
-  -- is semantically equivalent but makes the post-state slot
-  -- explicit.
+  -- M10.2b/M9.5q-3: `incr_via_helper` is a single-result call with no
+  -- `&mut` inputs. The M10.2b post-state binding used to surface as
+  -- `let x1_post ← (calls.incr_inner x1); ok x1_post`; M9.5q-3
+  -- collapses that wrapper away (the standard backend just emits
+  -- the bare tail-call `calls.incr_inner x1`). The collapse is safe
+  -- because the binding is `.regular` (not `.pair`/`.tuple` — those
+  -- *do* thread a back-closure and must keep their explicit shape).
+  -- Assertion is now the post-collapse form.
   match translateCrate callsCC with
   | .error e => throw <| IO.userError s!"calls translate failed: {e}"
   | .ok tc =>
     let src := emitTranslatedCrate "calls" tc
     let mustContain : List String := [
-      "let x1_post ← (calls.incr_inner x1)",
-      "ok x1_post"
+      "(calls.incr_inner x1)"
+    ]
+    -- Regression guard: the pre-M9.5q-3 wrapper shape must NOT
+    -- resurface for a single-result no-`&mut` call.
+    let mustNotContain : List String := [
+      "let x1_post ← (calls.incr_inner x1)"
     ]
     for c in mustContain do
       if (src.splitOn c).length < 2 then
         IO.eprintln s!"  ✗ missing expected substring: {c}"
         IO.eprintln src
-        throw <| IO.userError "incr_via_helper post-state binding missing"
+        throw <| IO.userError "incr_via_helper tail-call collapse missing"
       else
         IO.println s!"  ✓ contains: {c}"
+    for c in mustNotContain do
+      if (src.splitOn c).length ≥ 2 then
+        IO.eprintln s!"  ✗ unexpected substring present: {c}"
+        IO.eprintln src
+        throw <| IO.userError "incr_via_helper M9.5q-3 collapse regressed"
+      else
+        IO.println s!"  ✓ absent: {c}"
   -- M12.2a-2: `choose` must now translate to the backward-function
   -- shape. Its signature has the (forward × closure) return type
   -- and each branch emits an `ok (fwd, fun ret => ...)` tail.
