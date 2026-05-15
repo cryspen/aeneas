@@ -87,7 +87,17 @@ lean_lib «RuntimeShim» where
     { value := … }` shapes are pure Lean and require no
     RuntimeShim surface. The unit struct alias
     `@[reducible] def Tag := Unit` similarly elaborates without
-    extra wiring. -/
+    extra wiring.
+
+    M9.5n: `Generated.Issue194` (recursive generic struct
+    `AVLNode<T>` with `Option<Box<AVLNode<T>>>`-typed fields, plus
+    getter functions whose bodies are pure field reads). Locks in
+    the four fixes for issue-194: nested-generic field types carry
+    type-args, stdlib ADT decls are suppressed (no shadowing of
+    `Option`), and `EvAssign { rhs = SymMove(local.[Field K]) }`
+    lowers to `PExpr.fieldAccess`. The emitted file elaborates
+    against `RuntimeShim`'s stdlib-`Option` since the suppressed
+    re-decl no longer shadows it. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
@@ -95,4 +105,5 @@ lean_lib «GeneratedTests» where
              `Generated.EnumsBasic, `Generated.EnumsPayload,
              `Generated.SlicesBasic, `Generated.Bitwise,
              `Generated.GenericsBasic, `Generated.ListBasic,
-             `Generated.ListGeneric, `Generated.TraitsBasic]
+             `Generated.ListGeneric, `Generated.TraitsBasic,
+             `Generated.Issue194]
