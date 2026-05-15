@@ -125,6 +125,13 @@ structure FunCert where
   sourceSpan : Option SourceSpan
   events : Array Event
   finalState : StateSummary
+  /-- M9.5l: optional Lean-shaped name pre-computed by the OCaml
+      cert generator. Set for trait-impl method bodies (e.g.
+      `Tag.Insts.Traits_basicNumeric.value`); `none` for regular
+      functions, in which case the emitter falls back to sanitizing
+      `fnName`. The translator threads this through the `EvCall`
+      callee lookup so caller sites see the same pretty name. -/
+  prettyName : Option String := none
   deriving Repr, Inhabited
 
 /-- M9.5b: a single field inside a [TypeDecl]. `name` is `none` for
@@ -170,6 +177,55 @@ structure TypeDecl where
       `TVar (Free K)` references inside the decl's variant /
       field types. -/
   typeParams : Array String := #[]
+  /-- M9.5l: tuple-style positional fields (or a unit struct's empty
+      field list). When set on a struct kind, the Lean emitter
+      renders the decl as `@[reducible] def <Name> := Unit` (zero
+      fields) or as a `structure` with positional `fieldK` names
+      (tuple struct with N fields). Defaults to false on the Lean
+      side when the cert key is absent (pre-M9.5l certs). -/
+  isTupleStruct : Bool := false
+  deriving Repr, Inhabited
+
+/-- M9.5l: one method declared in a trait. Mirrors `cert_trait_method`
+    on the OCaml side; the signature uses the same opaque-tagged
+    shape as `FnSignature` so the existing `RawTy` parser recovers
+    parameter / return types. -/
+structure TraitMethodDecl where
+  name : String
+  signature : FnSignature
+  deriving Repr, Inhabited
+
+/-- M9.5l: a crate-level trait declaration. M9.5l only handles the
+    minimal shape: no associated types, no associated consts, no
+    parent traits, no const generics, no default methods, no extra
+    generics beyond the implicit `Self`. -/
+structure TraitDecl where
+  id : Nat
+  name : String
+  methods : Array TraitMethodDecl
+  deriving Repr, Inhabited
+
+/-- M9.5l: one method implemented in a trait impl. `fnId` is the
+    `FunDeclId` of the concrete body (which also appears as a
+    standalone entry in `CrateCert.functions`). `name` is the trait
+    method's bare name (as it appears in the trait declaration),
+    not the impl method's qualified name. -/
+structure TraitImplMethod where
+  name : String
+  fnId : Nat
+  deriving Repr, Inhabited
+
+/-- M9.5l: a crate-level trait impl. `prettyName` is the
+    standard-Aeneas Lean impl name pre-computed by the OCaml side
+    (e.g. `Tag.Insts.Traits_basicNumeric`). `selfTypeDeclId` is the
+    Self-ADT's `TypeDeclId`, or `none` when Self is not a
+    user-declared ADT (out of M9.5l scope). -/
+structure TraitImpl where
+  id : Nat
+  prettyName : String
+  traitDeclId : Nat
+  selfTypeDeclId : Option Nat
+  methods : Array TraitImplMethod
   deriving Repr, Inhabited
 
 /-- Top-level cert. -/
@@ -181,6 +237,13 @@ structure CrateCert where
       `crate.type_decls`; old certs that pre-date M9.5b have an empty
       array (the JSON parser tolerates a missing `type_decls` key). -/
   typeDecls : Array TypeDecl
+  /-- M9.5l: trait declarations. Empty for crates with no traits;
+      the parser tolerates a missing `trait_decls` key for
+      back-compat with pre-M9.5l certs. -/
+  traitDecls : Array TraitDecl := #[]
+  /-- M9.5l: trait impls. Empty for crates with no impls; same
+      back-compat treatment as `traitDecls`. -/
+  traitImpls : Array TraitImpl := #[]
   functions : Array FunCert
   deriving Repr, Inhabited
 

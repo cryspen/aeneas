@@ -272,7 +272,11 @@ def parseFunCert (j : Json) : Result FunCert := do
   let evArr ← asArr (← field j "events")
   let events ← evArr.mapM parseEvent
   let finalState ← parseStateSummary (← field j "final_state")
-  return { fnId, fnName, signature, sourceSpan, events, finalState }
+  -- M9.5l: optional pre-computed Lean name (trait impl methods).
+  let prettyName : Option String ← match (j.getObjVal? "pretty_name").toOption with
+    | some pj => do let s ← asStr pj; pure (some s)
+    | none => pure none
+  return { fnId, fnName, signature, sourceSpan, events, finalState, prettyName }
 
 /-- M9.5b: parse one `cert_field` JSON object into a `CertField`. -/
 def parseCertField (j : Json) : Result CertField := do
@@ -316,7 +320,10 @@ def parseTypeDeclKind (j : Json) : Result TypeDeclKind := do
 
     M9.5i: `type_params` is optional for back-compat with pre-M9.5i
     certs (and with monomorphic-only crates whose OCaml emitter ran
-    before this milestone); the field defaults to empty when absent. -/
+    before this milestone); the field defaults to empty when absent.
+
+    M9.5l: `is_tuple_struct` is optional for the same reason and
+    defaults to false. -/
 def parseTypeDecl (j : Json) : Result TypeDecl := do
   let id ← asNat (← field j "id")
   let name ← asStr (← field j "name")
@@ -326,7 +333,46 @@ def parseTypeDecl (j : Json) : Result TypeDecl := do
       let arr ← asArr tj
       arr.mapM asStr
     | none => pure #[]
-  return { id, name, kind, typeParams }
+  let isTupleStruct : Bool ← match (j.getObjVal? "is_tuple_struct").toOption with
+    | some bj => match bj with
+      | .bool b => pure b
+      | _ => pure false
+    | none => pure false
+  return { id, name, kind, typeParams, isTupleStruct }
+
+/-- M9.5l: parse one `TraitMethodDecl`. -/
+def parseTraitMethodDecl (j : Json) : Result TraitMethodDecl := do
+  let name ← asStr (← field j "name")
+  let signature ← parseSignature (← field j "signature")
+  return { name, signature }
+
+/-- M9.5l: parse one top-level `TraitDecl`. -/
+def parseTraitDecl (j : Json) : Result TraitDecl := do
+  let id ← asNat (← field j "id")
+  let name ← asStr (← field j "name")
+  let methodArr ← asArr (← field j "methods")
+  let methods ← methodArr.mapM parseTraitMethodDecl
+  return { id, name, methods }
+
+/-- M9.5l: parse one `TraitImplMethod`. -/
+def parseTraitImplMethod (j : Json) : Result TraitImplMethod := do
+  let name ← asStr (← field j "name")
+  let fnId ← asNat (← field j "fn_id")
+  return { name, fnId }
+
+/-- M9.5l: parse one top-level `TraitImpl`. `self_type_decl_id` is
+    optional (the OCaml side emits it as `Some` only for the
+    minimal-case ADT-Self impls). -/
+def parseTraitImpl (j : Json) : Result TraitImpl := do
+  let id ← asNat (← field j "id")
+  let prettyName ← asStr (← field j "pretty_name")
+  let traitDeclId ← asNat (← field j "trait_decl_id")
+  let selfTypeDeclId : Option Nat ← match (j.getObjVal? "self_type_decl_id").toOption with
+    | some sj => do let n ← asNat sj; pure (some n)
+    | none => pure none
+  let methodArr ← asArr (← field j "methods")
+  let methods ← methodArr.mapM parseTraitImplMethod
+  return { id, prettyName, traitDeclId, selfTypeDeclId, methods }
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")
@@ -340,9 +386,21 @@ def parseCrateCert (j : Json) : Result CrateCert := do
         let arr ← asArr tj
         arr.mapM parseTypeDecl
       | none => pure #[]
+    -- M9.5l: `trait_decls` / `trait_impls` are optional for
+    -- back-compat with pre-M9.5l certs.
+    let traitDecls : Array TraitDecl ← match (j.getObjVal? "trait_decls").toOption with
+      | some tj => do
+        let arr ← asArr tj
+        arr.mapM parseTraitDecl
+      | none => pure #[]
+    let traitImpls : Array TraitImpl ← match (j.getObjVal? "trait_impls").toOption with
+      | some tj => do
+        let arr ← asArr tj
+        arr.mapM parseTraitImpl
+      | none => pure #[]
     let fnArr ← asArr (← field j "functions")
     let functions ← fnArr.mapM parseFunCert
-    return { fmtVersion, crateHash, typeDecls, functions }
+    return { fmtVersion, crateHash, typeDecls, traitDecls, traitImpls, functions }
 
 /-- Top-level entry: parse a cert JSON string. -/
 def parseCrateCertStr (s : String) : Result CrateCert := do
