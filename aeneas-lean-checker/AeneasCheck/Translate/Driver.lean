@@ -35,6 +35,33 @@ structure TranslatedCrate where
   traitImpls : Array Pure.TraitImpl := #[]
   deriving Inhabited
 
+/-- M9.5n: the set of stdlib ADT qualified names whose cert decl
+    must NOT be re-emitted by the Lean translator. Each one already
+    has a Lean equivalent that the emitted file's
+    `open Aeneas Aeneas.Std` brings into scope (e.g. `Option`,
+    `Result`, `Ordering`, `ControlFlow`). Re-declaring them inside
+    the crate namespace shadows the built-ins and breaks
+    elaboration of any reference to those types.
+
+    The list mirrors a subset of the standard Aeneas Lean backend's
+    `lean_builtin_types` table from
+    `src/extract/ExtractBuiltinLean.ml` — only the entries whose
+    cert decls show up in the M9.5n / pre-M9.5n fixtures. Future
+    fixtures may grow this list as they exercise more stdlib ADTs.
+
+    The `TypeDeclMap` still records suppressed decls so cert events
+    that mention `TAdtId N` for, e.g., the stdlib `Option` continue
+    to resolve to `.adt "Option" #[…]` in field types and signatures;
+    only the per-decl `structure`/`inductive` emission is skipped. -/
+def isStdlibTypeDecl (qualifiedName : String) : Bool :=
+  match qualifiedName with
+  | "alloc::alloc::Global"
+  | "core::option::Option"
+  | "core::result::Result"
+  | "core::cmp::Ordering"
+  | "core::ops::control_flow::ControlFlow" => true
+  | _ => false
+
 /-- M9.5b: build the [TypeDeclMap] used by the per-function translator
     to resolve `TAdtId N` references to struct names + field names.
     Only struct decls populate entries; opaque/unknown kinds are
@@ -75,7 +102,12 @@ def buildTypeDeclMap (cc : CrateCert) : TypeDeclMap := Id.run do
     render unit structs as `@[reducible] def Tag := Unit`. -/
 def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) :
     Option StructDecl :=
-  match td.kind with
+  -- M9.5n: skip stdlib ADTs (`alloc::alloc::Global`, …). They have
+  -- Lean equivalents already in scope via `open Aeneas Aeneas.Std`;
+  -- re-emitting them here would either bloat the file (`Global`) or
+  -- actively shadow the built-in (`Option`, `Result`).
+  if isStdlibTypeDecl td.qualifiedName then none
+  else match td.kind with
   | .struct fields =>
     -- M9.5i: pass the struct's `typeParams` into the field-type
     -- translator so a generic field type `T` resolves to
@@ -104,7 +136,13 @@ def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl
     [structDeclOfTypeDecl] instead. -/
 def enumDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) :
     Option EnumDecl :=
-  match td.kind with
+  -- M9.5n: skip stdlib ADTs (`core::option::Option`,
+  -- `core::result::Result`, `core::cmp::Ordering`, …). Re-emitting
+  -- e.g. `inductive Option (T : Type) where …` shadows Lean's
+  -- built-in `Option` and breaks any reference to the stdlib type
+  -- in the rest of the emitted file.
+  if isStdlibTypeDecl td.qualifiedName then none
+  else match td.kind with
   | .enum variants =>
     -- M9.5i: pass the enum's `typeParams` into the field-type
     -- translator so a generic variant payload type like
