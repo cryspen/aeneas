@@ -108,7 +108,15 @@ lean_lib «RuntimeShim» where
     emitted as `def Trait2.foo.default (Self : Type)` rather than
     a regular function. No RuntimeShim surface is required —
     `structure Trait2 (Self : Type)` is pure Lean and the empty
-    `Trait1` structure elaborates trivially as an instance. -/
+    `Trait1` structure elaborates trivially as an instance.
+
+    M9.5p: `Generated.AggregatesBasic` (tuple + named-field struct
+    aggregate construction). Locks in the SymTuple / SymRecord cert
+    event lowering: `mk_tuple` returns `Result (Std.U32 × Std.U32)
+    := do ok (x1, x2)` (the M9.5p-2 `rawTyToPTyWithVars` patch fixes
+    the pre-M9.5p tuple-to-unit collapse) and `mk_pair` returns
+    `Result Pair := do ok { x := x1, y := x2 }` (the Lean record-
+    literal shape, rendered by `Pure.Pretty.PExpr.recordLit`). -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
@@ -117,4 +125,5 @@ lean_lib «GeneratedTests» where
              `Generated.SlicesBasic, `Generated.Bitwise,
              `Generated.GenericsBasic, `Generated.ListBasic,
              `Generated.ListGeneric, `Generated.TraitsBasic,
-             `Generated.Issue194, `Generated.BlanketImpl]
+             `Generated.Issue194, `Generated.BlanketImpl,
+             `Generated.AggregatesBasic]

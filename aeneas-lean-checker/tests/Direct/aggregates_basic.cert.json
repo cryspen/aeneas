@@ -1,0 +1,325 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "801d8da22d41c4a3d4d8b045ec81ec07",
+  "type_decls": [
+    {
+      "id": 0,
+      "name": "Pair",
+      "kind": {
+        "Struct": [
+          {
+            "idx": 0,
+            "name": "x",
+            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+          },
+          {
+            "idx": 1,
+            "name": "y",
+            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+          }
+        ]
+      },
+      "type_params": [],
+      "is_tuple_struct": false,
+      "qualified_name": "aggregates_basic::Pair",
+      "source_span": {
+        "file": "tests/src/aggregates_basic.rs",
+        "beg_line": 9,
+        "beg_col": 0,
+        "end_line": 12,
+        "end_col": 1
+      }
+    }
+  ],
+  "trait_decls": [],
+  "trait_impls": [],
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "aggregates_basic::mk_tuple",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        ],
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.U32));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U32))\n         ];\n       const_generics = []; trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
+      },
+      "source_span": {
+        "file": "tests/src/aggregates_basic.rs",
+        "beg_line": 14,
+        "beg_col": 0,
+        "end_line": 16,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.U32));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U32))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymTuple": [
+                {
+                  "SymMove": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                  }
+                },
+                {
+                  "SymMove": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "aggregates_basic::mk_pair",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        ],
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
+      },
+      "source_span": {
+        "file": "tests/src/aggregates_basic.rs",
+        "beg_line": 18,
+        "beg_col": 0,
+        "end_line": 20,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymRecord": {
+                "adt_id": 0,
+                "fields": [
+                  {
+                    "name": "x",
+                    "value": {
+                      "SymMove": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                      }
+                    }
+                  },
+                  {
+                    "name": "y",
+                    "value": {
+                      "SymMove": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}
