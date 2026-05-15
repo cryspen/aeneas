@@ -341,7 +341,14 @@ def parseTypeDecl (j : Json) : Result TypeDecl := do
   let sourceSpan ← match (j.getObjVal? "source_span").toOption with
     | some sj => do let s ← parseSourceSpan sj; pure (some s)
     | none => pure none
-  return { id, name, kind, typeParams, isTupleStruct, sourceSpan }
+  -- M9.5n: `qualified_name` is optional for back-compat with pre-M9.5n
+  -- certs; falls back to the bare `name` so the standard `bare_name`
+  -- vs `qualified_name` distinction still works when the field is
+  -- absent (the suppression check below just won't match anything).
+  let qualifiedName : String ← match (j.getObjVal? "qualified_name").toOption with
+    | some qj => asStr qj
+    | none => pure ""
+  return { id, name, kind, typeParams, isTupleStruct, sourceSpan, qualifiedName }
 
 /-- M9.5l: parse one `TraitMethodDecl`. -/
 def parseTraitMethodDecl (j : Json) : Result TraitMethodDecl := do

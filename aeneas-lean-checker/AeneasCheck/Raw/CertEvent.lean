@@ -187,6 +187,16 @@ structure TypeDecl where
   /-- M9.5l: source span for the type decl's source-code definition.
       Optional for back-compat (pre-M9.5l certs have no span). -/
   sourceSpan : Option SourceSpan := none
+  /-- M9.5n: crate-prefixed qualified name (e.g.
+      `core::option::Option`, `alloc::alloc::Global`,
+      `issue_194_recursive_struct_projector::AVLNode`). Used by the
+      Driver's stdlib-suppression list to skip re-emitting ADTs that
+      already have a Lean equivalent — without this, the emitted
+      `inductive Option (T : Type) where …` would shadow Lean's
+      built-in `Option` and break the file's `open Aeneas Aeneas.Std`
+      scope. Defaults to empty for back-compat with pre-M9.5n
+      certs (which only carry the bare `name`). -/
+  qualifiedName : String := ""
   deriving Repr, Inhabited
 
 /-- M9.5l: one method declared in a trait. Mirrors `cert_trait_method`
