@@ -112,13 +112,18 @@ private def groupTraitImplsByCrate (tis : Array TraitImpl) :
       buckets := buckets.insert c ((buckets.getD c #[]).push ti)
     return buckets
 
-/-- M9.5l: a function decl is an "impl method body" when its `name`
-    contains `.Insts.` — the standard-Aeneas naming convention for a
-    trait-impl method body (e.g. `Tag.Insts.Traits_basicNumeric.value`).
-    The translator rewrites the impl method body's `def`-header name
-    to this shape from the Charon `{...}::value` form. -/
-private def isImplMethodBody (d : Decl) : Bool :=
-  (d.name.splitOn ".Insts.").length ≥ 2
+/-- M9.5l / M9.5o: a function decl is an "impl method body" when its
+    `name` appears as the `body` of some trait impl's method entry.
+    Two shape conventions arise: `<Self>.Insts.<Crate><Trait>.<m>`
+    (concrete-Self impls — M9.5l) and `<Trait>.Blanket.<m>` (blanket
+    impls — M9.5o). The membership check is robust to both forms.
+
+    The check also looks at the qualifiedName for cases where the
+    name override hasn't been applied (defensive — the translator
+    always applies it before reaching this point). -/
+private def isImplMethodBody (impls : Array TraitImpl) (d : Decl) : Bool :=
+  impls.any fun ti =>
+    ti.methods.any fun m => m.body == d.name
 
 /-- Emit one `namespace …` block. Ordering, mirroring the standard
     Aeneas backend's output for a `traits_basic`-shaped crate:
@@ -133,12 +138,25 @@ private def isImplMethodBody (d : Decl) : Bool :=
 def emitNamespace (c : String) (traits : Array TraitDecl)
     (structs : Array StructDecl) (enums : Array EnumDecl)
     (impls : Array TraitImpl) (decls : Array Decl) : String :=
-  let traitBody := String.intercalate "\n" (traits.toList.map emitTraitDecl)
+  -- M9.5o: each `emit*` already ends with `\n`; joining with another
+  -- `\n` would introduce a redundant blank line between siblings.
+  -- Use `String.join` so a chain of N traits is `td1\n + td2\n` not
+  -- `td1\n\ntd2\n`.
+  let traitBody := String.join (traits.toList.map emitTraitDecl)
   let structBody := String.intercalate "\n" (structs.toList.map emitStruct)
   let enumBody := String.intercalate "\n" (enums.toList.map emitEnum)
-  -- Split function decls into impl-method bodies vs caller bodies.
-  let implMethods := decls.filter isImplMethodBody
-  let callerDecls := decls.filter (fun d => !isImplMethodBody d)
+  -- M9.5o: default-method body decls are emitted between the trait
+  -- decl and the impl method bodies. Detect them by the `.default`
+  -- name suffix produced by the Driver's defaultRenameByName pass.
+  let isDefaultMethod := fun (d : Decl) => d.name.endsWith ".default"
+  -- Split function decls into default-method / impl-method / caller.
+  let defaults := decls.filter isDefaultMethod
+  let implMethods := decls.filter (fun d =>
+    !isDefaultMethod d && isImplMethodBody impls d)
+  let callerDecls := decls.filter (fun d =>
+    !isDefaultMethod d && !isImplMethodBody impls d)
+  let defaultBody :=
+    String.intercalate "\n" (defaults.toList.map emitDecl)
   let implFnBody :=
     String.intercalate "\n" (implMethods.toList.map emitDecl)
   let implInstBody :=
@@ -148,16 +166,22 @@ def emitNamespace (c : String) (traits : Array TraitDecl)
   let sepT := if traits.isEmpty then "" else "\n"
   let sepS := if structs.isEmpty then "" else "\n"
   let sepE := if enums.isEmpty then "" else "\n"
+  let sepD := if defaults.isEmpty then "" else "\n"
   let sepIM := if implMethods.isEmpty then "" else "\n"
   let sepII := if impls.isEmpty then "" else "\n"
+  -- M9.5o: when there are no caller decls, the preceding section's
+  -- trailing newline already provides the blank line before `end`;
+  -- adding another `\n` would yield two visible blank lines.
+  let endSep := if callerDecls.isEmpty then "" else "\n"
   s!"namespace {c}\n\n"
     ++ traitBody ++ sepT
     ++ structBody ++ sepS
     ++ enumBody ++ sepE
+    ++ defaultBody ++ sepD
     ++ implFnBody ++ sepIM
     ++ implInstBody ++ sepII
     ++ callerFnBody
-    ++ s!"\nend {c}\n"
+    ++ s!"{endSep}end {c}\n"
 
 /-- Top-level entry: header + one namespace block per crate. Type
     decls (structs + enums) come before functions in each namespace.

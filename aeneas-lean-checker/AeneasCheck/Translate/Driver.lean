@@ -449,6 +449,25 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
       match f.prettyName with
       | some n => acc.insert f.fnName n
       | none => acc
+  -- M9.5o: build a `fn_name → "<TraitName>.<methodName>.default"` table
+  -- for default-method body functions. The standard backend renders
+  -- these with a `.default` suffix and (depending on the default's
+  -- generics) an explicit `(Self : Type)` binder. The cert
+  -- identifies default methods via `TraitMethodDecl.hasDefault`.
+  -- The fn_name pattern for a default body is
+  -- `<crate>::<Trait>::<method>` (standalone fun_decl emitted by
+  -- Charon for the default body).
+  let defaultRenameByName : Std.HashMap String String :=
+    cc.traitDecls.foldl (init := {}) fun acc td =>
+      td.methods.foldl (init := acc) fun acc m =>
+        if m.hasDefault then
+          -- The default body's standalone fun_name is
+          -- `<traitQualifiedName>::<methodName>`. Map it to
+          -- `<bareTraitName>.<methodName>.default`.
+          let fnQual := s!"{td.qualifiedName}::{m.name}"
+          let pretty := s!"{td.name}.{m.name}.default"
+          acc.insert fnQual pretty
+        else acc
   let mut decls : Array Decl := #[]
   for i in [0:cc.functions.size] do
     let f := cc.functions[i]!
@@ -461,6 +480,12 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
   -- override (so the impl method body's `def` header uses
   -- `Tag.Insts.Traits_basicNumeric.value` not `{...}.value`).
   --
+  -- M9.5o: also rewrite default-body callsites. EvCall traces that
+  -- reference a trait's default body's fun_name (the standalone
+  -- `Trait::method` form) need to point to `<Trait>.<method>.default`.
+  -- We merge the default rename map into the same callee-rewrite pass.
+  let allCalleeRenames : Std.HashMap String String :=
+    defaultRenameByName.fold (init := fnPrettyByName) fun acc k v => acc.insert k v
   -- M9.5o: attach `traitBoundParams` to each decl by translating
   -- the cert's `csig_trait_clauses` against the decl's typeParams.
   -- For trait-impl method bodies, the impl-level type params are
@@ -468,7 +493,7 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
   -- signature carries the same type-params + clauses, since Charon
   -- copies them to the standalone fun_decl).
   decls := decls.map fun d =>
-    let body := rewriteCalleeNames fnPrettyByName d.body
+    let body := rewriteCalleeNames allCalleeRenames d.body
     let traitBoundParams : Array Pure.TraitBoundParam :=
       match cc.functions.find? (·.fnName == d.qualifiedName) with
       | some f =>
@@ -486,11 +511,34 @@ def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
     -- override its `name` (which the LeanEmit uses as the `def`
     -- header). The impl-method body decl is the only case where
     -- this triggers in M9.5l.
-    let nameOverride : Option String := fnPrettyByName[d.qualifiedName]?
+    -- M9.5o: extend to also rename default-method bodies.
+    let nameOverride : Option String :=
+      match fnPrettyByName[d.qualifiedName]? with
+      | some n => some n
+      | none => defaultRenameByName[d.qualifiedName]?
+    let isDefault : Bool := defaultRenameByName.contains d.qualifiedName
     let d := match nameOverride with
       | some n => { d with name := n, body := body2 }
       | none => { d with body := body2 }
-    { d with traitBoundParams }
+    -- M9.5o: when this decl is a default-method body and it carries
+    -- no trait-clause obligations of its own (i.e. the default body
+    -- doesn't reference `TraitClause@N::method`), the standard
+    -- backend emits the `Self` binder as an *explicit* `(Self :
+    -- Type)` rather than the implicit `{Self : Type}`. We model that
+    -- by clearing `typeParams` and inserting a value-level `Param`
+    -- at the head of `params`. (When trait-clause obligations ARE
+    -- present, the implicit-Self + TraitBoundParam shape is
+    -- correct.) Detect via the cert's hasDefault flag (via the
+    -- defaultRenameByName key) AND the absence of trait clauses.
+    if isDefault && traitBoundParams.isEmpty then
+      let explicitSelfParams : Array Param :=
+        d.typeParams.map fun n => { name := n, ty := .adt "Type" #[] }
+      { d with
+        typeParams := #[]
+        params := explicitSelfParams ++ d.params
+        traitBoundParams := #[] }
+    else
+      { d with traitBoundParams }
   return { decls, structs, enums, traitDecls, traitImpls }
 
 end AeneasCheck.Translate

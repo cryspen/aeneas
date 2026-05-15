@@ -357,6 +357,49 @@ def isTBox (s : String) : Bool :=
       (upToBrace.splitOn "TBox").length ≥ 2
   | _ => false
 
+/-- M9.5o: depth-aware extractor for the inner type substring of an
+    outer `TRef (<region>, <inner>, <kind>)` cert string. Returns
+    `none` when the outer head is not `TRef`. Used by
+    `rawTyToPTyWithVars` to recurse on the inner of `&T` and `&mut T`
+    so type-variable references (`&T` with T a generic) resolve to
+    `.tyVar "T"` instead of the legacy u32 fallback. -/
+private def stripOuterTRefInner (s : String) : Option String := Id.run do
+  let parts := s.splitOn "TRef"
+  if parts.length < 2 then return none
+  let after := parts.tail!.head!
+  let chars := after.toList
+  let mut depth : Nat := 0
+  let mut innerStart : Option Nat := none
+  let mut innerEnd : Option Nat := none
+  let mut commaCount : Nat := 0
+  let mut idx : Nat := 0
+  for c in chars do
+    if c = '(' then depth := depth + 1
+    else if c = ')' then
+      if depth = 0 then break
+      else depth := depth - 1
+    else if c = ',' ∧ depth = 1 then
+      commaCount := commaCount + 1
+      if commaCount = 1 then innerStart := some (idx + 1)
+      else if commaCount = 2 then innerEnd := some idx
+    idx := idx + 1
+  match innerStart, innerEnd with
+  | some a, some b =>
+    if a ≥ b then return none
+    let n := b - a
+    let chrs := (after.toList.drop a).take n
+    let trimmed := (chrs.dropWhile Char.isWhitespace).reverse.dropWhile
+      Char.isWhitespace
+    return some (String.ofList trimmed.reverse)
+  | _, _ => return none
+
+/-- M9.5o: detect a top-level `TRef (...)` head. Returns true for
+    cert type strings whose outermost constructor is `TRef`. Used to
+    gate the recurse-on-inner path. -/
+private def isTopLevelTRef (s : String) : Bool :=
+  let trimmed := s.dropWhile fun c => c = '(' ∨ c.isWhitespace
+  trimmed.startsWith "Generated_Types.TRef" ∨ trimmed.startsWith "TRef"
+
 /-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping. Resolves
     `TAdtId N` references via [tdm]; falls back to the legacy
     substring-keyed heuristic when the type is a literal or contains
@@ -383,6 +426,16 @@ def isTBox (s : String) : Bool :=
 partial def rawTyToPTyWithVars
     (tdm : TypeDeclMap) (typeParams : Array String) : RawTy → PTy
   | .opaque s =>
+    -- M9.5o: top-level `TRef (<region>, <inner>, <kind>)` — strip
+    -- the borrow shape and recurse on the inner type. Without this,
+    -- `&T` (T a generic) fell into the catch-all and rendered as
+    -- u32. The borrow shape is recovered separately by [isMutRef]
+    -- when building the BackSig.
+    if isTopLevelTRef s then
+      match stripOuterTRefInner s with
+      | some inner => rawTyToPTyWithVars tdm typeParams (.opaque inner)
+      | none => .lit (.int .u32)
+    else
     -- M9.5i: bare top-level `TVar (Free K)` — resolve via
     -- `typeParams[K]?`. We must test this BEFORE the literal /
     -- TAdt branches because a TVar string contains none of those
