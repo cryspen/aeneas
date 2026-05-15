@@ -121,6 +121,16 @@ val cert_sym_expr_of_operand : Expressions.operand -> cert_sym_expr option
     operand shapes the M10 subset cannot yet encode (globals,
     constants other than literals). *)
 
+val cert_sym_expr_of_tvalue : Values.tvalue -> cert_sym_expr option
+(** Best-effort flat summary of a [tvalue] as a [cert_sym_expr]. ADTs
+    and [⊥] return [None]. Used by [EvJoin] state summaries. *)
+
+val cert_state_summary_of_env : Values.env -> cert_state_summary
+(** Build a [cert_state_summary] from an eval ctx's env: one entry per
+    real (non-dummy) binding, plus a deduped list of live loan ids
+    appearing in bindings. M11 only — full structural fidelity is
+    deferred to M12. *)
+
 val pp_event : Format.formatter -> event -> unit
 val pp_fun_cert : Format.formatter -> fun_cert -> unit
 val pp_crate_cert : Format.formatter -> crate_cert -> unit

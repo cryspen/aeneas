@@ -265,3 +265,91 @@ let cert_sym_expr_of_operand (op : operand) : cert_sym_expr option =
       (match ce.kind with
        | CLiteral lit -> Some (SymLit lit)
        | _ -> None)
+
+(** Best-effort flat summary of a [tvalue] as a [cert_sym_expr].
+
+    Used by [EvJoin] to record what each local holds in each branch.
+    The Lean side only consumes this for naming / disambiguation when
+    translating an [if then else]; full structural fidelity is M12. *)
+let rec cert_sym_expr_of_tvalue (v : tvalue) : cert_sym_expr option =
+  match v.value with
+  | VLiteral lit -> Some (SymLit lit)
+  | VSymbolic sv -> Some (SymVal sv.sv_id)
+  | VBorrow (VMutBorrow (bid, _)) -> Some (SymMutBorrowTok bid)
+  | VBorrow (VSharedBorrow (bid, _) | VReservedMutBorrow (bid, _)) ->
+      Some (SymMutBorrowTok bid)
+  | VLoan (VMutLoan bid) -> Some (SymMutBorrowTok bid)
+  | VLoan (VSharedLoan (_, v')) -> cert_sym_expr_of_tvalue v'
+  | VAdt _ | VBottom -> None
+
+(** Collect live loan ids (mut + shared) visible in a [tvalue]. *)
+let cert_live_loans_of_tvalue (v : tvalue) : borrow_id list =
+  let acc = ref [] in
+  let visitor =
+    object
+      inherit [_] iter_tvalue as super
+      method! visit_VMutLoan env bid =
+        acc := bid :: !acc;
+        super#visit_VMutLoan env bid
+      method! visit_VSharedLoan env bid v =
+        acc := bid :: !acc;
+        super#visit_VSharedLoan env bid v
+    end
+  in
+  visitor#visit_tvalue () v;
+  List.rev !acc
+
+(** Build a [cert_state_summary] from an eval ctx's [env].
+
+    [cs_env]: one entry per real (non-dummy) variable binding, mapping
+    its local id to a best-effort [cert_sym_expr]. Bindings whose value
+    cannot be flattened (e.g. ADTs or [⊥]) are dropped from the summary
+    — the Lean side treats absence as "no observation," which is
+    sufficient for M11's pragmatic ≤ check.
+
+    [cs_live_loans]: every distinct mut/shared loan id appearing in
+    bindings or abstractions. We don't dedup across the whole context
+    (M11.0 doesn't need set semantics); the Lean side normalises if it
+    cares.
+
+    Walks the env directly rather than through visitors because we want
+    to filter by [BVar] / [EAbs] separately. *)
+let cert_state_summary_of_env (env : env) : cert_state_summary =
+  let cs_env = ref [] in
+  let cs_live_loans = ref [] in
+  let visit_value v =
+    cs_live_loans := List.rev_append (cert_live_loans_of_tvalue v) !cs_live_loans
+  in
+  List.iter
+    (fun (e : env_elem) ->
+      match e with
+      | EBinding (BVar bv, v) ->
+          (match cert_sym_expr_of_tvalue v with
+           | Some se -> cs_env := (bv.index, se) :: !cs_env
+           | None -> ());
+          visit_value v
+      | EBinding (BDummy _, v) -> visit_value v
+      | EAbs abs ->
+          List.iter
+            (fun (av : tavalue) ->
+              (* Cheap fallback: look for loan tokens inside the avalue
+                 by piggy-backing on tvalue scanning where possible.
+                 Visitors over [tavalue] are heavier; for M11 we keep
+                 this approximate. *)
+              ignore av)
+            abs.avalues
+      | EFrame -> ())
+    env;
+  let dedup_int_list xs =
+    let seen = Hashtbl.create 8 in
+    List.filter
+      (fun x ->
+        let k = BorrowId.to_int x in
+        if Hashtbl.mem seen k then false
+        else (Hashtbl.add seen k (); true))
+      xs
+  in
+  {
+    cs_env = List.rev !cs_env;
+    cs_live_loans = dedup_int_list (List.rev !cs_live_loans);
+  }

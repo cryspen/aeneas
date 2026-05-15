@@ -17,3 +17,19 @@ pub fn use_choose(b: bool, x: &mut u32, y: &mut u32) {
     let r = choose(b, x, y);
     *r = 7;
 }
+
+/// M11 fixture: in-body if-then-else with a join (no early return),
+/// so the cert exercises `EvJoin` + branch-marker [EvAssert] pairs.
+///
+/// The post-`if` `r + 1` ensures both branches fall through to a
+/// shared continuation rather than emitting a per-branch tail return,
+/// which is what triggers [eval_switch_with_join] to actually fire.
+pub fn pick(b: bool, x: u32, y: u32) -> u32 {
+    let mut r = 0u32;
+    if b {
+        r = x;
+    } else {
+        r = y;
+    }
+    r.wrapping_add(1)
+}

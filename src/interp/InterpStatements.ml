@@ -1055,7 +1055,25 @@ and eval_switch_raw (config : config) (span : Meta.span) (switch : switch) :
               (not (block_has_break_continue_return true_block))
               && not (block_has_break_continue_return false_block)
             in
+            (* M11.0 cert hook: emit branch markers so the Lean
+               translator can split the flat event log into per-branch
+               sub-walks at translation time.
+
+               We reuse [EvAssert] as the marker — its existing shape
+               [{ cond; expected }] already carries everything we need:
+               the symbolic boolean and which branch follows. Real
+               [assert!] statements emit a single [EvAssert] (no
+               surrounding [EvJoin]); the [if] / [SwitchInt] cases
+               always emit a pair, with an [EvJoin] closing them out.
+               The Lean walker disambiguates by lookahead. *)
+            let cond_se : CertEvent.cert_sym_expr =
+              CertEvent.SymVal sv.sv_id
+            in
+            ctx_emit_event true_ctx
+              (CertEvent.EvAssert { cond = cond_se; expected = true });
             let resl_true = eval_block config true_block true_ctx in
+            ctx_emit_event false_ctx
+              (CertEvent.EvAssert { cond = cond_se; expected = false });
             let resl_false = eval_block config false_block false_ctx in
             let ctx_resl, cf_branches =
               comp_seqs __FILE__ __LINE__ span [ resl_true; resl_false ]
@@ -1276,6 +1294,36 @@ and eval_switch_with_join (config : config) (span : Meta.span)
       InterpJoin.join_ctxs_list config span ~recoverable:!Config.recover_joins
         ~with_abs_conts:true Join ctx_to_join
     in
+    (* M11.0: emit [EvJoin] with the per-branch and post-join state
+       summaries. We take the first two contexts in [ctx_to_join] as
+       the canonical "left" and "right" branches — for [If] this
+       corresponds to the true/false pair; for [SwitchInt] and [Match]
+       with >2 arms this collapses extra arms into "right" (M12 will
+       generalise to N-ary joins).
+
+       The summaries are best-effort: locals whose values can't be
+       flattened to a [cert_sym_expr] are dropped from [cs_env].
+       Live loan ids are deduped across the env. *)
+    (let left_summary, right_summary =
+       match ctx_to_join with
+       | l :: r :: _ ->
+           ( CertEvent.cert_state_summary_of_env l.env,
+             CertEvent.cert_state_summary_of_env r.env )
+       | [ only ] ->
+           let s = CertEvent.cert_state_summary_of_env only.env in
+           (s, s)
+       | [] -> ([%internal_error] span)
+     in
+     let result_summary =
+       CertEvent.cert_state_summary_of_env joined_ctx.env
+     in
+     ctx_emit_event joined_ctx
+       (CertEvent.EvJoin
+          {
+            left = left_summary;
+            right = right_summary;
+            result = result_summary;
+          }));
     [%ldebug "Joined ctx:\n" ^ eval_ctx_to_string joined_ctx];
     let ctx0_aids = env_get_abs_ids ctx0.env in
     [%ldebug "ctx0_aids:\n" ^ AbsId.Set.to_string None ctx0_aids];
