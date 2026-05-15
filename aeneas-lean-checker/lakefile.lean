@@ -64,11 +64,20 @@ lean_lib «RuntimeShim» where
     function on `MyOption<T>`). No RuntimeShim work needed —
     Lean's `Type` universe is a primitive and `inductive Foo
     (T : Type) where | …` doesn't require any Aeneas.Std support
-    beyond what M9.5d/e already provide. -/
+    beyond what M9.5d/e already provide.
+
+    M9.5j: `Generated.ListBasic` (non-generic recursive enum
+    `List = Cons (U32, Box<List>) | Nil` + recursive walk
+    `list_len`). The emitted def carries the standard backend's
+    `partial_fixpoint` trailer; the inductive's recursive payload
+    field appears as a bare `List` because Charon strips `Box<T>`
+    at the LLBC layer (boxes are semantically transparent in pure
+    functional code), so no Box-specific surface is needed in the
+    RuntimeShim. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
              `Generated.LoopsSimple, `Generated.Reborrows,
              `Generated.EnumsBasic, `Generated.EnumsPayload,
              `Generated.SlicesBasic, `Generated.Bitwise,
-             `Generated.GenericsBasic]
+             `Generated.GenericsBasic, `Generated.ListBasic]

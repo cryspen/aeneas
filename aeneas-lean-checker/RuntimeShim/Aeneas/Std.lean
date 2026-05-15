@@ -93,10 +93,19 @@ inductive Error
   deriving Repr, BEq
 
 /-- Aeneas's pervasive return monad. The emitter wraps every function
-    body in `.ok` (forward direction) or `.error` (panic path). -/
+    body in `.ok` (forward direction) or `.error` (panic path).
+
+    M9.5j: a third constructor `div` represents "nontermination" /
+    "divergence". It is the partial-order bottom used by Lean's
+    `partial_fixpoint` machinery to elaborate recursive defs whose
+    structural-recursion check would otherwise fail. The real
+    Aeneas runtime in `backends/lean/Aeneas/Std/Primitives.lean`
+    uses the same shape; we mirror it so generated source carrying
+    a `partial_fixpoint` trailer compiles against the shim. -/
 inductive Result (α : Type) where
   | ok (value : α)
   | error (e : Error)
+  | div
   deriving Repr
 
 -- M12.1: needed so `partial def loop` can synthesize a default
@@ -106,16 +115,56 @@ instance : Inhabited (Result α) := ⟨.error .panic⟩
 namespace Result
 
 @[inline] def map (r : Result α) (f : α → β) : Result β :=
-  match r with | .ok x => .ok (f x) | .error e => .error e
+  match r with
+  | .ok x => .ok (f x)
+  | .error e => .error e
+  | .div => .div
 
 @[inline] def bind (r : Result α) (k : α → Result β) : Result β :=
-  match r with | .ok x => k x | .error e => .error e
+  match r with
+  | .ok x => k x
+  | .error e => .error e
+  | .div => .div
 
 instance : Monad Result where
   pure := .ok
   bind := bind
 
 end Result
+
+/-! ## Partial-order plumbing for `partial_fixpoint`
+
+The M9.5j emitter appends `partial_fixpoint` after the do-block of a
+self-recursive function (matching the standard Aeneas backend). Lean's
+`partial_fixpoint` elaborator needs `PartialOrder`, `CCPO`, and
+`MonoBind` instances for the function's monad — here `Result`.
+
+We mirror `backends/lean/Aeneas/Std/Primitives.lean`'s setup: treat
+`Result α` as `FlatOrder Result.div`, where `Result.div` is the bottom
+("nontermination") element. -/
+
+section Order
+
+open Lean.Order
+
+instance : PartialOrder (Result α) :=
+  inferInstanceAs (PartialOrder (FlatOrder (Result.div : Result α)))
+
+noncomputable instance : CCPO (Result α) where
+  has_csup hc := FlatOrder.instCCPO (b := Result.div).has_csup hc
+
+noncomputable instance : MonoBind Result where
+  bind_mono_left h := by
+    cases h
+    · exact FlatOrder.rel.bot
+    · exact FlatOrder.rel.refl
+  bind_mono_right h := by
+    cases ‹Result _›
+    · exact h _
+    · exact FlatOrder.rel.refl
+    · exact FlatOrder.rel.refl
+
+end Order
 
 -- Binop instances that lift the underlying-type operator into the
 -- Result monad. Defined here (after `Result`) so the result type is
@@ -197,6 +246,9 @@ partial def loop {α : Type} {β : Type}
     | .cont x => loop body x
     | .done x => .ok x
   | .error e => .error e
+  -- M9.5j: `Result` now carries a `.div` constructor for the
+  -- partial-fixpoint bottom. Propagate it through the loop.
+  | .div => .div
 
 /-! ## Array
 M9.5c: a fixed-length Rust array `[T; N]` maps to `Array T N` where
