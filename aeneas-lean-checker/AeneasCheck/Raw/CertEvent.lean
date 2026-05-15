@@ -106,6 +106,13 @@ structure SourceSpan where
 structure FnSignature where
   inputs : Array RawTy
   output : RawTy
+  /-- M9.5i: the function's type-parameter names, in declaration
+      order. Empty for monomorphic functions. The Forward translator
+      renders these as implicit `{T : Type}` binders before the value
+      parameters, and uses the index of each name as the de-Bruijn
+      identifier that resolves `TVar (Free K)` references inside
+      `inputs` / `output`. -/
+  typeParams : Array String := #[]
   deriving Repr, Inhabited
 
 /-- Per-function cert trace. -/
@@ -155,6 +162,14 @@ structure TypeDecl where
   id : Nat
   name : String
   kind : TypeDeclKind
+  /-- M9.5i: the ADT's type-parameter names, in declaration order.
+      Empty for monomorphic ADTs (Pair, Sign, NumOrZero, …). The
+      Lean translator renders these as `(T : Type)` parameters on
+      the emitted `inductive` / `structure` header and uses each
+      name's position as the de-Bruijn-style index that resolves
+      `TVar (Free K)` references inside the decl's variant /
+      field types. -/
+  typeParams : Array String := #[]
   deriving Repr, Inhabited
 
 /-- Top-level cert. -/

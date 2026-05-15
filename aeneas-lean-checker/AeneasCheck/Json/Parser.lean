@@ -230,14 +230,23 @@ def parseEvent (j : Json) : Result Event := do
     | _ => fail s!"unknown Event tag: {tag}"
 
 /-- Parse a signature record. Types are kept as opaque-tagged strings:
-    M9.0b carries them verbatim from the OCaml `show_ty` output. -/
+    M9.0b carries them verbatim from the OCaml `show_ty` output.
+
+    M9.5i: `type_params` is optional for back-compat with pre-M9.5i
+    certs (which carry no type-param info); the field defaults to
+    empty when absent. -/
 def parseSignature (j : Json) : Result FnSignature := do
   let inputsArr ← asArr (← field j "inputs")
   let inputs ← inputsArr.mapM fun ej => do
     let s ← asStr ej
     return RawTy.opaque s
   let outputStr ← asStr (← field j "output")
-  return { inputs, output := .opaque outputStr }
+  let typeParams : Array String ← match (j.getObjVal? "type_params").toOption with
+    | some tj => do
+      let arr ← asArr tj
+      arr.mapM asStr
+    | none => pure #[]
+  return { inputs, output := .opaque outputStr, typeParams }
 
 /-- Parse an optional source-span record. -/
 def parseSourceSpan (j : Json) : Result SourceSpan := do
@@ -303,12 +312,21 @@ def parseTypeDeclKind (j : Json) : Result TypeDeclKind := do
       -- opaque so an early checker can still load a future cert.
       return .opaque
 
-/-- M9.5b: parse one top-level `TypeDecl`. -/
+/-- M9.5b: parse one top-level `TypeDecl`.
+
+    M9.5i: `type_params` is optional for back-compat with pre-M9.5i
+    certs (and with monomorphic-only crates whose OCaml emitter ran
+    before this milestone); the field defaults to empty when absent. -/
 def parseTypeDecl (j : Json) : Result TypeDecl := do
   let id ← asNat (← field j "id")
   let name ← asStr (← field j "name")
   let kind ← parseTypeDeclKind (← field j "kind")
-  return { id, name, kind }
+  let typeParams : Array String ← match (j.getObjVal? "type_params").toOption with
+    | some tj => do
+      let arr ← asArr tj
+      arr.mapM asStr
+    | none => pure #[]
+  return { id, name, kind, typeParams }
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")

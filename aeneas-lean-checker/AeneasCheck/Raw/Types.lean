@@ -39,6 +39,12 @@ inductive RawTy
   | shrRef (region : Nat) (inner : RawTy)
   | adt (id : Nat) (args : Array RawTy)
   | tuple (args : Array RawTy)
+  /-- M9.5i: a type variable reference. `index` is the de-Bruijn-style
+      free-variable index that Charon emits inside `TVar (Free K)`
+      type strings. The Lean translator pairs this with the
+      surrounding declaration's `typeParams` list to resolve the
+      index to a parameter name (e.g. `0` → `"T"`). -/
+  | tyVar (index : Nat)
   /-- Opaque payload — the cert.json carries a fully-formed type as a
       pretty-printed string. The typechecker treats `.opaque` as `Top`
       (matches any RawTy when the canonical form is unavailable). -/
