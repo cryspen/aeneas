@@ -112,6 +112,7 @@ type fun_cert = {
   fc_source_span : cert_source_span option;
   fc_events : event list;
   fc_final_state : cert_state_summary;
+  fc_pretty_name : string option;
 }
 
 type cert_field = {
@@ -136,12 +137,39 @@ type cert_type_decl = {
   ctd_name : string;
   ctd_kind : cert_type_decl_kind;
   ctd_type_params : string list;
+  ctd_is_tuple_struct : bool;
+}
+
+type cert_trait_method = {
+  ctm_name : string;
+  ctm_signature : cert_signature;
+}
+
+type cert_trait_decl = {
+  ctrd_id : int;
+  ctrd_name : string;
+  ctrd_methods : cert_trait_method list;
+}
+
+type cert_trait_impl_method = {
+  ctim_name : string;
+  ctim_fn_id : int;
+}
+
+type cert_trait_impl = {
+  ctri_id : int;
+  ctri_pretty_name : string;
+  ctri_trait_decl_id : int;
+  ctri_self_type_decl_id : int option;
+  ctri_methods : cert_trait_impl_method list;
 }
 
 type crate_cert = {
   cc_fmt_version : int;
   cc_crate_hash : string;
   cc_type_decls : cert_type_decl list;
+  cc_trait_decls : cert_trait_decl list;
+  cc_trait_impls : cert_trait_impl list;
   cc_functions : fun_cert list;
 }
 

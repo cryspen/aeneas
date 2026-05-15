@@ -253,6 +253,14 @@ type fun_cert = {
           emitted Lean. [None] for synthetic/built-in items. *)
   fc_events : event list;
   fc_final_state : cert_state_summary;
+  fc_pretty_name : string option;
+      (** [M9.5l] Standard-Aeneas Lean name for the function. Set for
+          trait-impl method bodies (e.g.
+          [Tag.Insts.Traits_basicNumeric.value]), which would
+          otherwise sanitize from the Charon [{...}::value] form to
+          an unwieldy expression. [None] for plain functions; the
+          Lean checker falls back to sanitizing [fc_fn_name] in that
+          case. *)
 }
 [@@deriving show]
 
@@ -305,6 +313,70 @@ type cert_type_decl = {
       types referencing `TVar (Free K)` resolve to the K-th entry of
       this list. *)
   ctd_type_params : string list;
+  (** [M9.5l] True iff the struct uses tuple-style (positional) fields,
+      OR is a unit struct (`struct Tag;` — zero-field tuple struct).
+      The Lean side renders unit structs as `@[reducible] def Tag := Unit`
+      instead of `structure Tag where`. Only meaningful for [CTDStruct];
+      always false for [CTDEnum] / [CTDOpaque]. *)
+  ctd_is_tuple_struct : bool;
+}
+[@@deriving show]
+
+(** [M9.5l] One method declared in a trait. The signature uses the same
+    opaque-tagged form as [cert_signature] so the Lean side can recover
+    parameter / return types via the existing [RawTy] parser. *)
+type cert_trait_method = {
+  ctm_name : string;
+  ctm_signature : cert_signature;
+}
+[@@deriving show]
+
+(** [M9.5l] A crate-level trait declaration. M9.5l only handles the
+    minimal shape: no associated types, no associated constants, no
+    parent traits, no const generics, no default methods. The trait
+    may carry type parameters via [ctd_type_params]-style binders, but
+    the M9.5l fixture only exercises the [Self : Type] case (no extra
+    generics beyond Self).
+
+    The Lean side renders this as `structure <Name> (Self : Type) where
+    <method> : Self → Result <out>`. *)
+type cert_trait_decl = {
+  ctrd_id : int;
+  ctrd_name : string;
+  (** Bare trait name, e.g. [Numeric] for `traits_basic::Numeric`. *)
+  ctrd_methods : cert_trait_method list;
+}
+[@@deriving show]
+
+(** [M9.5l] One method implemented in a trait impl. [ctim_fn_id] is the
+    [fun_decl_id] of the concrete method body (which also appears as a
+    standalone entry in [cc_functions]). [ctim_name] is the trait
+    method's name (i.e., the name as it appears in the trait
+    declaration), not the impl method's qualified name. *)
+type cert_trait_impl_method = {
+  ctim_name : string;
+  ctim_fn_id : int;
+}
+[@@deriving show]
+
+(** [M9.5l] A crate-level trait impl. [ctri_self_type_decl_id] is the
+    [TypeDeclId] of the [Self] ADT (for the minimal M9.5l case where
+    [Self] is a concrete user-declared ADT — generic / primitive
+    self-types are out of scope). [ctri_pretty_name] is the
+    standard-Aeneas Lean name for the impl, pre-computed on the OCaml
+    side so the Lean checker does not have to reproduce the
+    [ExtractBase.ctx_compute_trait_impl_name] machinery (which would
+    require the full extraction context). For the M9.5l minimal case
+    this resolves to [<SelfBare>.Insts.<CrateCapitalized><TraitBare>]. *)
+type cert_trait_impl = {
+  ctri_id : int;
+  ctri_pretty_name : string;
+  (** Lean name for the impl, e.g. [Tag.Insts.Traits_basicNumeric]. *)
+  ctri_trait_decl_id : int;
+  ctri_self_type_decl_id : int option;
+  (** [None] when [Self] is not a user-declared ADT. M9.5l only
+      consumes the [Some] case. *)
+  ctri_methods : cert_trait_impl_method list;
 }
 [@@deriving show]
 
@@ -320,6 +392,14 @@ type crate_cert = {
           shape (the companion [llbc.json] is a stub); the Lean checker
           uses this to render [structure …] decls and to resolve
           [TAdtId N] references inside event places. *)
+  cc_trait_decls : cert_trait_decl list;
+      (** [M9.5l] The crate's trait declarations. Empty for crates with
+          no traits; the Lean parser tolerates a missing
+          [trait_decls] JSON key for backwards-compat with older
+          certs. *)
+  cc_trait_impls : cert_trait_impl list;
+      (** [M9.5l] The crate's trait implementations. Empty for crates
+          with no impls. *)
   cc_functions : fun_cert list;
 }
 [@@deriving show]

@@ -380,7 +380,53 @@ let json_cert_type_decl (d : cert_type_decl) : Yojson.Basic.t =
          Empty for monomorphic ADTs. *)
       "type_params",
         `List (List.map (fun n -> `String n) d.ctd_type_params);
+      (* M9.5l: tuple-style positional fields (including unit structs).
+         Defaults to false on the Lean side when the key is absent
+         (older certs). *)
+      "is_tuple_struct", `Bool d.ctd_is_tuple_struct;
     ]
+
+(* ---------- Trait declarations (M9.5l) ---------- *)
+
+let json_cert_trait_method (m : cert_trait_method) : Yojson.Basic.t =
+  `Assoc
+    [
+      "name", `String m.ctm_name;
+      "signature", json_cert_signature m.ctm_signature;
+    ]
+
+let json_cert_trait_decl (d : cert_trait_decl) : Yojson.Basic.t =
+  `Assoc
+    [
+      "id", `Int d.ctrd_id;
+      "name", `String d.ctrd_name;
+      "methods", `List (List.map json_cert_trait_method d.ctrd_methods);
+    ]
+
+let json_cert_trait_impl_method (m : cert_trait_impl_method) : Yojson.Basic.t =
+  `Assoc
+    [
+      "name", `String m.ctim_name;
+      "fn_id", `Int m.ctim_fn_id;
+    ]
+
+let json_cert_trait_impl (i : cert_trait_impl) : Yojson.Basic.t =
+  let optional_self : (string * Yojson.Basic.t) list =
+    match i.ctri_self_type_decl_id with
+    | None -> []
+    | Some id -> [ "self_type_decl_id", `Int id ]
+  in
+  `Assoc
+    ([
+       "id", `Int i.ctri_id;
+       "pretty_name", `String i.ctri_pretty_name;
+       "trait_decl_id", `Int i.ctri_trait_decl_id;
+     ]
+    @ optional_self
+    @ [
+        "methods",
+          `List (List.map json_cert_trait_impl_method i.ctri_methods);
+      ])
 
 (* ---------- Top-level ---------- *)
 
@@ -390,6 +436,11 @@ let json_fun_cert (fc : fun_cert) : Yojson.Basic.t =
     | None -> []
     | Some sp -> [ "source_span", json_cert_source_span sp ]
   in
+  let optional_pretty : (string * Yojson.Basic.t) list =
+    match fc.fc_pretty_name with
+    | None -> []
+    | Some n -> [ "pretty_name", `String n ]
+  in
   `Assoc
     ([
        "fn_id", json_fun_decl_id fc.fc_fn_id;
@@ -397,6 +448,7 @@ let json_fun_cert (fc : fun_cert) : Yojson.Basic.t =
        "signature", json_cert_signature fc.fc_signature;
      ]
     @ optional_span
+    @ optional_pretty
     @ [
         "events", `List (List.map json_event fc.fc_events);
         "final_state", json_cert_state_summary fc.fc_final_state;
@@ -408,6 +460,8 @@ let json_crate_cert (cc : crate_cert) : Yojson.Basic.t =
       "fmt_version", `Int cc.cc_fmt_version;
       "crate_hash", `String cc.cc_crate_hash;
       "type_decls", `List (List.map json_cert_type_decl cc.cc_type_decls);
+      "trait_decls", `List (List.map json_cert_trait_decl cc.cc_trait_decls);
+      "trait_impls", `List (List.map json_cert_trait_impl cc.cc_trait_impls);
       "functions", `List (List.map json_fun_cert cc.cc_functions);
     ]
 
