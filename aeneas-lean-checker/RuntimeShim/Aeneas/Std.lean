@@ -199,6 +199,40 @@ def Array.update {α : Type} {n : Usize} (v : Aeneas.Std.Array α n) (i : Usize)
   else
     .error .outOfBounds
 
+/-! ## Slice
+M9.5g: a runtime-sized Rust slice `[T]` (always behind a borrow at
+the value level) maps to `Slice T`. The real Aeneas runtime in
+`backends/lean/Aeneas/Std/Slice/Slice.lean` uses a `List`-backed
+record with an in-bounds proof obligation on every read/write; the
+shim collapses that to a thin `List`-wrapper and surfaces out-of-
+bounds as `.error .outOfBounds`, mirroring the `Array` shim. Just
+enough surface for `Slice.index_usize` and `Slice.update` (the two
+slice primitives that the M9.5g call intercepts emit) to typecheck. -/
+
+structure Slice (α : Type) where
+  val : List α
+
+/-- M9.5g: read the element at index `i` from a slice, returning
+    `Result α`. Matches
+    `backends/lean/Aeneas/Std/Slice/Slice.lean::Slice.index_usize`. -/
+def Slice.index_usize {α : Type} (s : Aeneas.Std.Slice α) (i : Usize) :
+    Result α :=
+  let idx : Nat := i.toNat
+  match s.val[idx]? with
+  | some x => .ok x
+  | none => .error .outOfBounds
+
+/-- M9.5g: write through a slice index, returning the updated slice.
+    Matches
+    `backends/lean/Aeneas/Std/Slice/Slice.lean::Slice.update`. -/
+def Slice.update {α : Type} (s : Aeneas.Std.Slice α) (i : Usize)
+    (x : α) : Result (Aeneas.Std.Slice α) :=
+  let idx : Nat := i.toNat
+  if idx < s.val.length then
+    .ok ⟨s.val.set idx x⟩
+  else
+    .error .outOfBounds
+
 end Std
 end Aeneas
 

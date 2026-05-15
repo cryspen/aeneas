@@ -44,9 +44,15 @@ lean_lib «RuntimeShim» where
 
     M9.5e: `Generated.EnumsPayload` (payload-bearing enum + match
     with binder extraction). Inductives are built-in so the
-    RuntimeShim needs no additional surface. -/
+    RuntimeShim needs no additional surface.
+
+    M9.5g: `Generated.SlicesBasic` (`&[T]` immutable read +
+    `&mut [T]` write). RuntimeShim grew `Aeneas.Std.Slice` +
+    `Slice.index_usize` + `Slice.update` for the emitted body to
+    typecheck. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
              `Generated.LoopsSimple, `Generated.Reborrows,
-             `Generated.EnumsBasic, `Generated.EnumsPayload]
+             `Generated.EnumsBasic, `Generated.EnumsPayload,
+             `Generated.SlicesBasic]
