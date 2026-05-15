@@ -424,14 +424,26 @@ def Decl.toLean (d : Decl) : String :=
     else
       (String.intercalate " "
         (d.typeParams.toList.map fun n => s!"\{{n} : Type}")) ++ " "
+  -- M9.5o: trait-bound binders between the type-param binders and
+  -- value params. Rendered as `(Trait1Inst : Trait1 T)`. Empty for
+  -- functions without where-clauses, so the M9.5i shape is
+  -- preserved byte-identically.
+  let traitBoundBinders :=
+    if d.traitBoundParams.isEmpty then ""
+    else
+      (String.intercalate " "
+        (d.traitBoundParams.toList.map fun b =>
+          s!"({b.binderName} : {b.traitName} {b.selfTypeName})")) ++ " "
   -- M9.5f: a zero-param function (e.g. `zero : Result NumOrZero`)
   -- has empty `params`. The standard backend emits `def zero :
   -- Result …` with a single space before `:`; concatenating `params`
   -- naively would yield `def zero  :` (double space). Build the
   -- signature head explicitly so both shapes are byte-clean.
   let sigHead :=
-    if d.params.isEmpty then s!"def {d.name} {typeBinders}: Result {retParens}"
-    else s!"def {d.name} {typeBinders}{params} : Result {retParens}"
+    if d.params.isEmpty then
+      s!"def {d.name} {typeBinders}{traitBoundBinders}: Result {retParens}"
+    else
+      s!"def {d.name} {typeBinders}{traitBoundBinders}{params} : Result {retParens}"
   -- M9.5j: optional trailer keyword line (`partial_fixpoint`, etc.)
   -- attaches at column 0 after the do-block. The standard Aeneas
   -- backend emits this for recursive functions where Lean's
@@ -585,11 +597,42 @@ def TraitImpl.docComment (ti : TraitImpl) : String :=
 /-- M9.5l: render an `@[reducible] def <Name> : <TraitName> <SelfTy>
     := { … }` block. The instance literal binds each method to its
     pre-computed body name (already qualified, e.g.
-    `Tag.Insts.Traits_basicNumeric.value`). -/
+    `Tag.Insts.Traits_basicNumeric.value`).
+
+    M9.5o: for a generic impl (e.g. blanket impl `impl<T: Trait1>
+    Trait2 for T`), the binders `{T : Type} (Trait1Inst : Trait1 T)`
+    go between the impl name and the `:`. Each method body in the
+    record literal is applied to the trait-bound binder names so
+    the inner def-call sites see the obligation forwarded
+    (e.g. `foo := Trait2.Blanket.foo Trait1Inst`). -/
 def TraitImpl.toLean (ti : TraitImpl) : String :=
+  let typeBinders :=
+    if ti.typeParams.isEmpty then ""
+    else
+      " " ++ String.intercalate " "
+        (ti.typeParams.toList.map fun n => s!"\{{n} : Type}")
+  let traitBoundBinders :=
+    if ti.traitBoundParams.isEmpty then ""
+    else
+      " " ++ String.intercalate " "
+        (ti.traitBoundParams.toList.map fun b =>
+          s!"({b.binderName} : {b.traitName} {b.selfTypeName})")
+  -- The Self type may render multi-token for a generic impl
+  -- (`Trait2 T` is fine but `selfTy.toLean` produces just `T` for
+  -- a tyVar). Wrap the selfTy in parens only when it has spaces.
+  let selfStr := ti.selfTy.toLean
   let methodLines := ti.methods.toList.map fun m =>
-    s!"  {m.name} := {m.body}"
-  let header := s!"@[reducible]\ndef {ti.name} : {ti.traitName} {ti.selfTy.toLean} := \{"
+    -- M9.5o: thread the trait-bound binder names into the body
+    -- application so the impl's record literal forwards the
+    -- obligation.
+    if ti.traitBoundParams.isEmpty then
+      s!"  {m.name} := {m.body}"
+    else
+      let appArgs := String.intercalate " "
+        (ti.traitBoundParams.toList.map (·.binderName))
+      s!"  {m.name} := {m.body} {appArgs}"
+  let header :=
+    s!"@[reducible]\ndef {ti.name}{typeBinders}{traitBoundBinders} : {ti.traitName} {selfStr} := \{"
   ti.docComment ++ header ++ "\n" ++
     String.intercalate "\n" methodLines ++ "\n}"
 

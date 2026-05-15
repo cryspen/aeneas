@@ -130,6 +130,19 @@ structure Param where
   ty : PTy
   deriving Repr, Inhabited
 
+/-- M9.5o: a trait-bound binder slot, e.g. `(Trait1Inst : Trait1 T)`.
+    Emitted between type-param binders and value params on functions
+    + trait impls that carry trait obligations. `binderName` is the
+    surface name (typically `<TraitName>Inst`); `traitName` is the
+    bare trait name; `selfTypeName` is the name of the type
+    parameter being constrained. The pretty-printer renders this as
+    `({binderName} : {traitName} {selfTypeName})`. -/
+structure TraitBoundParam where
+  binderName : String
+  traitName : String
+  selfTypeName : String
+  deriving Repr, Inhabited
+
 /-- M9.5b: a struct field declaration (`name : ty`). -/
 structure StructField where
   name : String
@@ -221,12 +234,18 @@ structure Decl where
       shape (`def get {T : Type} (x : MyOption T) (default : T)
       : Result T := do …`). -/
   typeParams : Array String := #[]
+  /-- M9.5o: trait-bound binders inserted between type-param binders
+      and value-param binders. Empty when the function carries no
+      trait obligations. Renders as `(Trait1Inst : Trait1 T)
+      (Trait2Inst : Trait2 U)` after the `{T : Type} {U : Type}`
+      type-param binders. -/
+  traitBoundParams : Array TraitBoundParam := #[]
   /-- M9.5j: optional trailing keyword line emitted on its own line
       *after* the do-body, before the namespace's `end` marker. Used
       for `partial_fixpoint` on self-recursive functions, which the
-      standard Aeneas backend appends so Lean's elaborator accepts a
-      definition that does not pass the structural-recursion check by
-      shape alone. `none` for non-recursive functions. -/
+      standard Aeneas backend appends so Lean's elaborator does not
+      reject a definition that does not pass the structural-recursion
+      check by shape alone. `none` for non-recursive functions. -/
   trailer : Option String := none
   deriving Repr, Inhabited
 
@@ -279,6 +298,14 @@ structure TraitImpl where
   selfTy : PTy
   methods : Array TraitImplMethod
   sourceSpan : Option Raw.SourceSpan := none
+  /-- M9.5o: type-parameter names on the impl (`{T : Type}`).
+      Empty for concrete-Self impls. -/
+  typeParams : Array String := #[]
+  /-- M9.5o: trait-bound binders on the impl
+      (`(Trait1Inst : Trait1 T)`). Empty for impls without
+      where-clauses. The pretty-printer renders these between the
+      `def <name>` and `: <traitName> <selfTy>`. -/
+  traitBoundParams : Array TraitBoundParam := #[]
   deriving Repr, Inhabited
 
 /-- M9.5b: a crate-level emit unit. The translator now interleaves
