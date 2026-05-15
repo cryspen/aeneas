@@ -90,7 +90,14 @@ def checkEvent (ev : Event) : TC Unit := do
     for (_, e) in left.env do checkSymExpr e
     for (_, e) in right.env do checkSymExpr e
     for (_, e) in result.env do checkSymExpr e
-  | .loopInv _ _ => emitErr "EvLoopInv: not supported until M12"
+  | .loopInv _ invariant => do
+    -- M12.0: structural check on the loop-invariant witness. As with
+    -- EvJoin above, we bounds-check the SymExprs in the invariant
+    -- env so a malformed cert is rejected up front, but defer the
+    -- actual fixpoint ≤-relation algebra to a later milestone
+    -- (M12.1 plumbs the LLBC# loop rule through `Step`). For M12.0
+    -- the replayer treats this event as a semantic no-op.
+    for (_, e) in invariant.env do checkSymExpr e
 
 /-- Walk a function's event list. -/
 def checkEvents (events : Array Event) : TC Unit := do

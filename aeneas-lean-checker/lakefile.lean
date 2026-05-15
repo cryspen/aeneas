@@ -36,4 +36,5 @@ lean_lib «RuntimeShim» where
     `scripts/check-vertical-slice.sh`). -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
-  roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls]
+  roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
+             `Generated.LoopsSimple]

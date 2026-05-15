@@ -41,7 +41,15 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .endAbs _ _ => return st
   | .proj _ _ _ => .error "proj: not implemented until M10"
   | .join l r res => stepJoin st l r res
-  | .loopInv _ _ => .error "loopInv: not implemented until M12"
+  | .loopInv _ _ =>
+    -- M12.0: structural no-op. The OCaml side emits one EvLoopInv per
+    -- syntactic loop carrying the fixpoint state summary; the cert is
+    -- already structurally checked by `checkEvent`. The LLBC# loop
+    -- rule (T-Loop-Fixpoint) lands in M12.1, at which point this
+    -- branch will dispatch to `stepLoopInv` and verify that the
+    -- invariant subsumes the post-iteration state. For now we thread
+    -- the state through unchanged so downstream events keep replaying.
+    return st
 
 /-- Replay a function's cert. -/
 def replayFun (numLocals : Nat) (f : FunCert) : Except String CheckedTrace := do

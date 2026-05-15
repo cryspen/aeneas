@@ -64,7 +64,12 @@ structure Param where
     `qualifiedName` to produce `name`.
 
     `sourceSpan` flows into the `Source: ...` docstring line; `none`
-    suppresses that line. -/
+    suppresses that line.
+
+    `note` is an optional translator-emitted disclaimer prepended to
+    the `def` as a Lean block comment. M12.0 uses this to flag loop-
+    containing functions whose body is a placeholder sentinel until
+    M12.1 lands the real loop-translation rule. -/
 structure Decl where
   name : String
   qualifiedName : String
@@ -72,6 +77,7 @@ structure Decl where
   retTy : PTy
   body : PExpr
   sourceSpan : Option Raw.SourceSpan := none
+  note : Option String := none
   deriving Repr, Inhabited
 
 end AeneasCheck.Pure

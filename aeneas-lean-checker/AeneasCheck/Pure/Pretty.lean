@@ -167,12 +167,20 @@ def Decl.docComment (d : Decl) : String :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
     s!"/-- [{d.qualifiedName}]:\n    Source: '{sp.file}', lines {loc} -/\n"
 
+/-- Build the `/- TRANSLATOR NOTE: … -/` block emitted *before*
+    `docComment` when the translator attached a `note`. M12.0 uses
+    this to flag loop-bearing functions whose body is a sentinel. -/
+def Decl.noteBlock (d : Decl) : String :=
+  match d.note with
+  | none => ""
+  | some n => s!"/- TRANSLATOR NOTE: {n} -/\n"
+
 /-- Render the Lean `def …` for `d`, with monadic body. The signature
     matches the standard Aeneas backend's output (Result, do-block). -/
 def Decl.toLean (d : Decl) : String :=
   let params := String.intercalate " "
     (d.params.toList.map fun p => s!"({p.name} : {p.ty.toLean})")
-  d.docComment ++
+  d.noteBlock ++ d.docComment ++
   s!"def {d.name} {params} : Result {d.retTy.toLean} := do\n  {d.body.toLeanDo}"
 
 end AeneasCheck.Pure
