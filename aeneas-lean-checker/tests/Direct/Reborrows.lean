@@ -82,6 +82,20 @@ def main : IO Unit := do
   -- handler in `Forward.lean`. We use `_` placeholders in the
   -- substring checks where the standard backend's exact name differs
   -- (the checker uses `x1`/`x2`, the standard backend uses `p`/`v`).
+  -- M9.5c: `set_idx(xs: &mut [u32; 4], i: usize, v: u32) { xs[i] = v; }`
+  -- must emit a `set_idx` whose signature carries `Array Std.U32
+  -- 4#usize` as both the first input and the wrapped return type, and
+  -- whose body is the single `Array.update <xs> <i> <v>` call (no
+  -- `(forward, backward)` pair destructuring — the standard backend
+  -- collapses `index_mut` + deref-store into a single update). The
+  -- translation builds on the new `PTy.array` shape (the const-generic
+  -- length flows through type-position; not the value layer), the
+  -- `rawTyToPTyWith` TArray-aware branch, and the `@ArrayIndexMut`
+  -- intercept that runs ahead of the generic call-walker. We assert
+  -- on the inner-name `set_idx` (the standard backend's docstring
+  -- uses the qualified path; the checker's `def` body uses the bare
+  -- name). The `Result (Array ...)` parens come from the M9.5c-1
+  -- multi-token-return guard in `Decl.toLean`.
   match translateCrate cc with
   | .error e => throw <| IO.userError s!"translate failed: {e}"
   | .ok tc =>
@@ -97,13 +111,26 @@ def main : IO Unit := do
       -- M9.5b: set_fst's signature carries `Pair` on both sides,
       -- and the body is a struct record-update wrapped in `ok`.
       "def set_fst (x1 : Pair) (x2 : Std.U32) : Result Pair := do",
-      "ok { x1 with fst := x2 }"
+      "ok { x1 with fst := x2 }",
+      -- M9.5c: set_idx — the `&mut [u32; 4]` input becomes the bare
+      -- `Array Std.U32 4#usize` post-state type; the unit return is
+      -- replaced by the updated array under the BackSig wrap-up. The
+      -- `Result (Array ...)` parens come from the M9.5c-1
+      -- multi-token-return guard.
+      "def set_idx (x1 : Array Std.U32 4#usize) (x2 : Std.Usize) (x3 : Std.U32) : Result (Array Std.U32 4#usize) := do",
+      -- The lowered body: a single Array.update call. The outer
+      -- parens around the app come from the existing `app`
+      -- pretty-print convention (multi-arg apps self-parenthesise);
+      -- the standard backend prints the bare `Array.update xs i v`
+      -- because OCaml drops the parens at the do-block tail. This is
+      -- a cosmetic-only diff per the M9.5c done criteria.
+      "Array.update x1 x2 x3"
     ]
     for c in mustContain do
       if (src.splitOn c).length < 2 then
         IO.eprintln s!"  ✗ missing expected substring: {c}"
         IO.eprintln src
-        throw <| IO.userError "set_fst / reborrow_chain output regressed"
+        throw <| IO.userError "set_fst / set_idx / reborrow_chain output regressed"
       else
         IO.println s!"  ✓ contains: {c}"
   IO.println "all tests passed"
