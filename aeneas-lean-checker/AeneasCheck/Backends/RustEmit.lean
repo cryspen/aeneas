@@ -124,13 +124,18 @@ partial def PExpr.toRust : PExpr → String
     -- differential model is tracked separately.
     s!"with_{field}({base.toRust}, {value.toRust})"
   | .matchE scrutinee arms =>
-    -- M9.5d: Rust's `match` syntax differs only in arm separator
-    -- (comma) and ctor path. The Pure IR's ctor strings already
-    -- carry the qualified form (e.g. `Sign.Pos`); we rewrite the
-    -- dot to Rust's `::` so the differential model compiles.
-    let armS := arms.toList.map fun (ctor, body) =>
+    -- M9.5d / M9.5e: Rust's `match` syntax differs only in arm
+    -- separator (comma) and ctor path. The Pure IR's ctor strings
+    -- already carry the qualified form (e.g. `Sign.Pos`); we
+    -- rewrite the dot to Rust's `::` so the differential model
+    -- compiles. M9.5e: payload binders are surfaced as a Rust
+    -- tuple-pattern after the ctor (`NumOrZero::Num(n) => …`).
+    let armS := arms.toList.map fun (ctor, binders, body) =>
       let ctor := ctor.replace "." "::"
-      s!"{ctor} => {body.toRust},"
+      let pat :=
+        if binders.isEmpty then ctor
+        else ctor ++ "(" ++ String.intercalate ", " binders.toList ++ ")"
+      s!"{pat} => {body.toRust},"
     s!"match {scrutinee.toRust} \{ {String.intercalate " " armS} }"
 
 end AeneasCheck.Pure

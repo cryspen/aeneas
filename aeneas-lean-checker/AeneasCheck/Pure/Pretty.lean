@@ -247,15 +247,20 @@ partial def PExpr.toLeanDo : PExpr → String
     -- `}` escape the curly braces inside an `s!"..."` interpolation.
     s!"\{ {base.toLeanDo} with {field} := {value.toLeanDo} }"
   | .matchE scrutinee arms =>
-    -- M9.5d: `match <scrutinee> with | Ctor1 => body1 | …`. The
-    -- standard Aeneas backend renders each arm on its own line,
-    -- two-space indented under the `def`'s opening line. The first
-    -- line `match … with` continues the surrounding do-block; the
-    -- subsequent `| Ctor => body` lines need the same `  ` prefix
-    -- so they align with the `match` token. Arm bodies are
-    -- monadic-position expressions (typically `ok <ctor>`).
-    let armS := arms.toList.map fun (ctor, body) =>
-      s!"  | {ctor} => {body.toLeanDo}"
+    -- M9.5d / M9.5e: `match <scrutinee> with | Ctor1 b₁ … bₙ => body1
+    -- | …`. The standard Aeneas backend renders each arm on its own
+    -- line, two-space indented under the `def`'s opening line. The
+    -- first line `match … with` continues the surrounding do-block;
+    -- the subsequent `| Ctor … => body` lines need the same `  `
+    -- prefix so they align with the `match` token. Arm bodies are
+    -- monadic-position expressions (typically `ok <ctor>` or
+    -- `ok <binder>`). M9.5e: binders are space-prefixed after the
+    -- ctor when present (`| NumOrZero.Num n => …`).
+    let armS := arms.toList.map fun (ctor, binders, body) =>
+      let pat :=
+        if binders.isEmpty then ctor
+        else ctor ++ " " ++ String.intercalate " " binders.toList
+      s!"  | {pat} => {body.toLeanDo}"
     s!"match {scrutinee.toLeanDo} with\n" ++ String.intercalate "\n" armS
 
 /-- Non-monadic rendering. Retained for diagnostics; the Lean backend
@@ -286,8 +291,11 @@ partial def PExpr.toLean : PExpr → String
   | .structUpdate base field value =>
     s!"\{ {base.toLean} with {field} := {value.toLean} }"
   | .matchE scrutinee arms =>
-    let armS := arms.toList.map fun (ctor, body) =>
-      s!"| {ctor} => {body.toLean}"
+    let armS := arms.toList.map fun (ctor, binders, body) =>
+      let pat :=
+        if binders.isEmpty then ctor
+        else ctor ++ " " ++ String.intercalate " " binders.toList
+      s!"| {pat} => {body.toLean}"
     s!"match {scrutinee.toLean} with\n" ++ String.intercalate "\n" armS
 
 /-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
@@ -365,12 +373,21 @@ def EnumDecl.docComment (ed : EnumDecl) : String :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
     s!"/-- [{ed.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
 
-/-- M9.5d: render an `inductive Foo where …` block. Each variant
-    becomes one `| Variant : Foo` line. C-style only for now (no
-    payload). -/
+/-- M9.5d / M9.5e: render an `inductive Foo where …` block. Each
+    variant becomes one line: `| Variant : Foo` for a nullary variant,
+    or `| Variant : Ty₁ → … → Tyₙ → Foo` for a payload-bearing variant
+    (M9.5e). Field names from the cert are discarded at this layer;
+    the standard Aeneas backend renders tuple-style variants positionally,
+    and we match that shape. -/
 def EnumDecl.toLean (ed : EnumDecl) : String :=
   let header := s!"inductive {ed.name} where"
-  let body := ed.variants.toList.map fun v => s!"| {v.name} : {ed.name}"
+  let body := ed.variants.toList.map fun v =>
+    if v.fields.isEmpty then
+      s!"| {v.name} : {ed.name}"
+    else
+      let tys := v.fields.toList.map fun f => f.ty.toLean
+      let signature := String.intercalate " → " (tys ++ [ed.name])
+      s!"| {v.name} : {signature}"
   ed.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
 
 /-- M9.5b: render a `TopDecl` (struct / enum / function) into Lean

@@ -85,15 +85,23 @@ def isOutputTupleOfMutRefs : RawTy → Option Nat
       if nRef ≥ 2 && nMut ≥ nRef then some nRef else none
   | _ => none
 
-/-- M9.5b: information the translator needs about one ADT type
-    declaration: its bare Lean name and an ordered list of field
-    names. The Lean translator uses `name` when translating an
-    `&mut Pair`-typed signature input or a function whose return
-    type is `Pair`; `fieldNames[K]` resolves a `Field K` projection
-    to the surface field name (`fst` / `snd`). -/
+/-- M9.5b / M9.5e: information the translator needs about one ADT
+    type declaration: its bare Lean name, an ordered list of field
+    names (struct case), and an ordered list of variants with their
+    field counts (enum case, M9.5e). The Lean translator uses `name`
+    when translating an `&mut Pair`-typed signature input or a
+    function whose return type is `Pair`; `fieldNames[K]` resolves a
+    `Field K` projection to the surface field name (`fst` / `snd`).
+    `variantFieldCounts[V]` gives the payload arity of variant `V`,
+    which M9.5e's Forward translator uses to pre-seed payload binders
+    in match-arm sub-walks. -/
 structure TypeDeclInfo where
   name : String
   fieldNames : Array String
+  /-- M9.5e: number of payload fields per variant, indexed by
+      variant id. Empty for struct decls; populated for enum decls
+      (zero for C-style nullary variants). -/
+  variantFieldCounts : Array Nat := #[]
   deriving Repr, Inhabited
 
 /-- M9.5b: a TypeDeclId → TypeDeclInfo lookup, keyed by the integer
@@ -260,6 +268,23 @@ def lookupPlace (vm : VarMap) (p : Place) : PExpr :=
   | some e => e
   | none => vm.getD 1 (.lit (.scalar .u32 0))
 
+/-- M9.5e: consult a payload-binder map *before* falling back to the
+    plain `lookupPlace`. When a place reads `local L` with a trailing
+    `[Field K]` projection and `(L, K)` is keyed in `payloadBinders`,
+    return the arm-scoped binder name (e.g. `.var "x2"`) instead of
+    the root local's pure expression. Used by the match-arm sub-walk
+    so an `EvAssign { rhs = SymCopy(scrut.[Field K]) }` resolves to
+    the binder introduced by the pattern. -/
+def lookupPlaceWithBinders
+    (vm : VarMap) (payloadBinders : Std.HashMap (Nat × Nat) String)
+    (p : Place) : PExpr :=
+  match p.projection.toList.getLast? with
+  | some (ProjElem.field k) =>
+    match payloadBinders[(p.local_, k)]? with
+    | some name => .var name
+    | none => lookupPlace vm p
+  | _ => lookupPlace vm p
+
 /-- Resolve a `SymExpr` against the current var map to a Pure
     expression. Symbolic ids (`SymVal n`) fall back to a generated
     name `sN`. -/
@@ -277,6 +302,21 @@ def lookupSymExpr (vm : VarMap) : SymExpr → PExpr
   -- the unqualified variant name; if no qualification has been done
   -- the result still compiles in the rare case the variant lives in
   -- an `open`ed namespace.
+  | .symVariant _ _ variantName => .var variantName
+
+/-- M9.5e: payload-binder-aware variant of [lookupSymExpr]. Same
+    semantics as [lookupSymExpr] except a `symCopy` / `symMove` of a
+    `[..., Field K]`-projected place consults `payloadBinders` first
+    via [lookupPlaceWithBinders]. The match-arm sub-walk calls this in
+    place of [lookupSymExpr]. -/
+def lookupSymExprWithBinders
+    (vm : VarMap) (payloadBinders : Std.HashMap (Nat × Nat) String) :
+    SymExpr → PExpr
+  | .symVal n => .var s!"s{n}"
+  | .symLit l => .lit l
+  | .symCopy p => lookupPlaceWithBinders vm payloadBinders p
+  | .symMove p => lookupPlaceWithBinders vm payloadBinders p
+  | .symMutBorrowTok n => .var s!"b{n}"
   | .symVariant _ _ variantName => .var variantName
 
 /-- Map an OCaml `cert_binop_string` tag onto a Pure `App` head. The
@@ -418,6 +458,15 @@ structure WalkState where
       with the right field name. Also used by [rawTyToPTyWith] when
       mapping signature inputs/outputs. -/
   tdm : TypeDeclMap := {}
+  /-- M9.5e: per-arm payload-binder map. Keyed by
+      `(scrutineeRootLocal, fieldIdx)`; the value is the pure binder
+      name the arm-body sub-walk should surface when an
+      `EvCopy`/`EvAssign`/`SymCopy`/`SymMove` reads through a
+      `[Field K]` projection of the scrutinee local. Empty in the
+      parent walk; populated by the match-arm sub-walk just before
+      it walks an arm's body events. Empty at function start; the
+      parent walker doesn't consult it. -/
+  payloadBinders : Std.HashMap (Nat × Nat) String := {}
   /-- M9.5c: in-flight `@ArrayIndexMut` calls. Keyed by the call's
       destination local (the temp that holds the returned
       `&mut elem`); the payload carries the *array* expression,
@@ -586,15 +635,19 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- cert EvCopy events have s = d (the OCaml hook records operand
     -- reads with src=dst); we skip the write in that case so the
     -- existing entry isn't clobbered by a self-reference.
+    --
+    -- M9.5e: when `s` is a `[..., Field K]` projection of an arm
+    -- scrutinee local, surface the arm-scoped payload binder rather
+    -- than the scrutinee's root expression.
     if s.local_ == d.local_ then st
     else { st with
-      vm := st.vm.insert d.local_ (lookupPlace st.vm s)
+      vm := st.vm.insert d.local_ (lookupPlaceWithBinders st.vm st.payloadBinders s)
       lastWrite := some d.local_ }
   | .move s d =>
     -- Move: same as copy but invalidate the source.
     if s.local_ == d.local_ then st
     else
-      let v := lookupPlace st.vm s
+      let v := lookupPlaceWithBinders st.vm st.payloadBinders s
       { st with
         vm := (st.vm.erase s.local_).insert d.local_ v
         lastWrite := some d.local_ }
@@ -607,7 +660,12 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- vm[0] (the LLBC return slot) so the wrap-up step picks it up
     -- as the function's tail. For non-deref EvAssigns, fall back
     -- to the M10 behavior (rewrite vm[dst.local_]).
-    let rhsE := lookupSymExpr st.vm rhs
+    --
+    -- M9.5e: in a match-arm sub-walk where `payloadBinders` carries
+    -- one entry per payload field of the matched variant, a SymCopy
+    -- / SymMove of `scrutLocal.[Field K]` resolves to the arm-scoped
+    -- binder name instead of the scrutinee's root expression.
+    let rhsE := lookupSymExprWithBinders st.vm st.payloadBinders rhs
     let derefTail : Bool :=
       match d.projection.toList.getLast? with
       | some ProjElem.deref => true
@@ -1199,13 +1257,15 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
             match st.tdm[adtId]? with
             | some info => info.name
             | none => "Enum"
-          -- Pick the scrutinee's surface form: walk vm looking for an
-          -- input parameter whose stored expression is `.var "xK"`.
-          -- For the C-style fixtures the scrutinee is always a direct
-          -- function parameter, so we just pick the first input that
-          -- maps to a `var`. Fall back to `s<n>` form when nothing
-          -- matches.
-          let scrutE : PExpr := Id.run do
+          -- Pick the scrutinee's surface form *and* root local: walk
+          -- vm looking for an input parameter whose stored expression
+          -- is `.var "xK"`. For the C-style fixtures the scrutinee is
+          -- always a direct function parameter, so we just pick the
+          -- first input that maps to a `var`. Fall back to `s<n>`
+          -- form when nothing matches. M9.5e: we also need the
+          -- *local id* of the scrutinee so the per-arm sub-walk can
+          -- key payload binders by it.
+          let (scrutE, scrutLocal) : PExpr × Nat := Id.run do
             let nFallback : Nat :=
               match scrutinee with
               | .symVal n => n
@@ -1221,11 +1281,26 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                     found := some e
                     bestLocal := l
                 | _ => pure ()
-            return found.getD (.var s!"s{nFallback}")
+            return (found.getD (.var s!"s{nFallback}"), bestLocal)
+          -- M9.5e: look up the enum's per-variant field counts. Empty
+          -- (or `none`) for older C-style fixtures; populated for
+          -- payload-bearing variants via the type-decl map.
+          let variantFieldCounts : Array Nat :=
+            match st.tdm[adtId]? with
+            | some info => info.variantFieldCounts
+            | none => #[]
+          -- M9.5e: derive a binder name for an arm's K-th payload
+          -- field. We pick `x{numParams + 1 + K}` — coincides with
+          -- the LLBC local index Charon assigns to the binding
+          -- (post-input locals start at numParams+1) for single-arm
+          -- bodies, and stays arm-scoped so reuse across arms is
+          -- safe. Cosmetic: the standard backend uses the Rust
+          -- source name (e.g. `n`) which the cert doesn't carry.
+          let binderName (k : Nat) : String := paramName (st.numParams + 1 + k)
           -- Build the arm bodies via sub-walks.
-          let armResults : Array (String × PExpr) × Nat :=
+          let armResults : Array (String × Array String × PExpr) × Nat :=
             arms.toArray.foldl (init := (#[], st.fresh)) fun (acc, fresh) arm =>
-              let (start, endIdx, _adtId, _vid, vname) := arm
+              let (start, endIdx, _adtId, vid, vname) := arm
               -- Body events are (start+1 .. endIdx); strip a trailing
               -- EvReturn (we'll re-wrap in `ok` via tailToResult).
               let bodyEnd :=
@@ -1235,8 +1310,24 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                   | _ => endIdx
                 else endIdx
               let bodyEvs := evs.extract (start + 1) bodyEnd
+              -- M9.5e: pre-seed the per-arm payload-binder map. For
+              -- the variant being matched, the body may project
+              -- `scrutLocal.[Field K]` to read the K-th payload; we
+              -- want those reads to surface the binder we'll write
+              -- in the arm's pattern (`| Foo.Num n => …`).
+              let nFields : Nat :=
+                if vid < variantFieldCounts.size then variantFieldCounts[vid]!
+                else 0
+              let binders : Array String :=
+                (List.range nFields).toArray.map binderName
+              let armPayloadBinders : Std.HashMap (Nat × Nat) String :=
+                (List.range nFields).foldl
+                  (init := st.payloadBinders) fun m k =>
+                    m.insert (scrutLocal, k) (binderName k)
               let sub := walkEvents bodyEvs
-                { st with binds := #[], fresh := fresh }
+                { st with
+                  binds := #[], fresh := fresh,
+                  payloadBinders := armPayloadBinders }
               -- Tail value = vm[0] (the LLBC return slot). For arms
               -- whose body is just an EvAssign to local 0 of a
               -- SymVariant rhs, vm[0] is that variant ctor expression.
@@ -1252,7 +1343,8 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                   -- variant name and can't accidentally match a
                   -- normal local because locals are `xK`/`tK`/`sK`/
                   -- `bK` which all start with a lowercase letter
-                  -- followed by a digit).
+                  -- followed by a digit). M9.5e: payload binders are
+                  -- lowercase `xK` so they're untouched.
                   if name.length ≥ 1 ∧ name.front.isUpper then
                     .var s!"{adtName}.{name}"
                   else .var name
@@ -1261,7 +1353,7 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
               let tail : PExpr := qualify tailRaw
               let armCtor := s!"{adtName}.{vname}"
               let body := assembleBody sub.binds (tailToResult tail)
-              (acc.push (armCtor, body), sub.fresh)
+              (acc.push (armCtor, binders, body), sub.fresh)
           let armsArr := armResults.1
           let nextFresh := armResults.2
           -- Skip past the entire run: end of last arm's range.

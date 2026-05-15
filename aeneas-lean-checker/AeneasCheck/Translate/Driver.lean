@@ -41,14 +41,17 @@ def buildTypeDeclMap (cc : CrateCert) : TypeDeclMap := Id.run do
         | some n => n
         | none => s!"field{f.idx}"
       m := m.insert td.id { name := td.name, fieldNames := names }
-    | .enum _ =>
+    | .enum variants =>
       -- M9.5d: register the enum so [parseTAdtId]-driven type
       -- resolution can produce a `.adt <name>` PTy for parameters
       -- / return types of `Sign`-shaped enums. The Forward
       -- translator needs the bare adt name to qualify the variant
-      -- constructors. We don't populate [fieldNames] (variants
-      -- aren't fields), but the empty array is a benign default.
-      m := m.insert td.id { name := td.name, fieldNames := #[] }
+      -- constructors. M9.5e: also record each variant's payload
+      -- arity so the match-arm sub-walk can pre-seed payload
+      -- binders (one per field) for the arm body.
+      let counts : Array Nat := variants.map fun v => v.fields.size
+      m := m.insert td.id
+        { name := td.name, fieldNames := #[], variantFieldCounts := counts }
     | .opaque => ()
   return m
 
@@ -75,16 +78,24 @@ def structDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl
   | .enum _ => none
   | .opaque => none
 
-/-- M9.5d: lift a cert `TypeDecl` into a Pure `EnumDecl`, when the
-    decl is an enum. C-style only for now (we ignore variant fields).
+/-- M9.5d / M9.5e: lift a cert `TypeDecl` into a Pure `EnumDecl`,
+    when the decl is an enum. M9.5e populates each variant's field
+    list (was empty under M9.5d) so payload-bearing variants render
+    with their parameter types (e.g. `| Num : Std.U32 → NumOrZero`).
     Returns `none` for non-enum kinds; struct decls go through
     [structDeclOfTypeDecl] instead. -/
-def enumDeclOfTypeDecl (_tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) :
+def enumDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) :
     Option EnumDecl :=
   match td.kind with
   | .enum variants =>
     let pureVariants : Array EnumVariant := variants.map fun v =>
-      { name := v.name }
+      let pureFields : Array StructField := v.fields.map fun f =>
+        { name :=
+            match f.name with
+            | some n => n
+            | none => s!"field{f.idx}"
+          ty := rawTyToPTyWith tdm f.ty }
+      { name := v.name, fields := pureFields }
     some
       { name := td.name
         qualifiedName := s!"{crateName}::{td.name}"

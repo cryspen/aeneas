@@ -81,18 +81,21 @@ inductive PExpr
       for now; chained-field updates (`{ p with fst := a, snd := b }`)
       can be modelled as nested `structUpdate`s. -/
   | structUpdate (base : PExpr) (field : String) (value : PExpr)
-  /-- M9.5d: a `match scrutinee with | Ctor1 => body1 | Ctor2 => body2 …`
-      expression. M9.5d only supports nullary-constructor patterns
-      (C-style enums); payload-bearing patterns will extend the arm
-      shape to carry binders. Each arm is encoded as a `(ctor, body)`
-      pair; the constructor name is rendered verbatim by the
-      pretty-printer (the translator pre-qualifies it as
-      `<EnumName>.<VariantName>`). We keep the arm encoding flat
-      (`Array (String × PExpr)`) rather than introducing a mutually-
-      recursive `MatchArm` type — Lean's `inductive ... mutual` block
-      doesn't compose with the `deriving Repr, Inhabited` pattern the
-      rest of the IR uses. -/
-  | matchE (scrutinee : PExpr) (arms : Array (String × PExpr))
+  /-- M9.5d / M9.5e: a `match scrutinee with | Ctor1 b₁ … bₙ => body1 | …`
+      expression. M9.5d supported only nullary-constructor patterns
+      (C-style enums); M9.5e extends each arm with an optional binder
+      list so payload-bearing variants like `Num(u32)` can introduce
+      `n` in the arm scope. Each arm is encoded as a triple
+      `(ctor, binders, body)`; an empty `binders` array reproduces
+      the M9.5d nullary shape. The pretty-printer renders binders
+      space-separated after the ctor token, e.g. `| Foo.Num n => …`.
+      The constructor name is rendered verbatim by the pretty-printer
+      (the translator pre-qualifies it as `<EnumName>.<VariantName>`).
+      We keep the arm encoding flat (`Array (String × Array String × PExpr)`)
+      rather than introducing a mutually-recursive `MatchArm` type —
+      Lean's `inductive ... mutual` block doesn't compose with the
+      `deriving Repr, Inhabited` pattern the rest of the IR uses. -/
+  | matchE (scrutinee : PExpr) (arms : Array (String × Array String × PExpr))
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/
@@ -117,11 +120,15 @@ structure StructDecl where
   sourceSpan : Option Raw.SourceSpan := none
   deriving Repr, Inhabited
 
-/-- M9.5d: a single variant in an `EnumDecl`. M9.5d only carries the
-    bare variant name (zero payload); payload variants will extend
-    this with a fields array of `StructField`s. -/
+/-- M9.5d / M9.5e: a single variant in an `EnumDecl`. M9.5d's C-style
+    fixtures had `fields` empty; M9.5e populates it for payload-bearing
+    variants (e.g. `Num(u32)` becomes `name := "Num"`, `fields :=
+    #[{ name := "field0", ty := .lit (.int .u32) }]`). The pretty
+    printer emits `| Num : Std.U32 → Enum` when fields is non-empty,
+    and the bare `| Num : Enum` when it's empty. -/
 structure EnumVariant where
   name : String
+  fields : Array StructField := #[]
   deriving Repr, Inhabited
 
 /-- M9.5d: an `inductive Foo where | A : Foo | B : Foo …` declaration.
