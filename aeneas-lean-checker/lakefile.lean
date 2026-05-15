@@ -38,9 +38,15 @@ lean_lib «RuntimeShim» where
     M9.5c: `Generated.Reborrows` covers the cert-translated
     `set_fst` / `set_idx` / `reborrow_chain` from `tests/src/reborrows.rs`.
     The RuntimeShim grew `Aeneas.Std.Array` + `Array.update` + the
-    `#usize` const-generic macro to make the shape compile. -/
+    `#usize` const-generic macro to make the shape compile.
+
+    M9.5d: `Generated.EnumsBasic` (C-style enum + match arms).
+
+    M9.5e: `Generated.EnumsPayload` (payload-bearing enum + match
+    with binder extraction). Inductives are built-in so the
+    RuntimeShim needs no additional surface. -/
 lean_lib «GeneratedTests» where
   srcDir := "tests"
   roots := #[`Generated.Incr, `Generated.CompareSimple, `Generated.Calls,
              `Generated.LoopsSimple, `Generated.Reborrows,
-             `Generated.EnumsBasic]
+             `Generated.EnumsBasic, `Generated.EnumsPayload]

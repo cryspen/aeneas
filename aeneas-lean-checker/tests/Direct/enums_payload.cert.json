@@ -1,0 +1,135 @@
+{
+  "fmt_version": 1,
+  "crate_hash": "b70f9158a9dc58c851955a4e1f04f942",
+  "type_decls": [
+    {
+      "id": 0,
+      "name": "NumOrZero",
+      "kind": {
+        "Enum": [
+          {
+            "id": 0,
+            "name": "Num",
+            "fields": [
+              {
+                "idx": 0,
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            ]
+          },
+          { "id": 1, "name": "Zero", "fields": [] }
+        ]
+      }
+    }
+  ],
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "enums_payload::value",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        ],
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+      },
+      "source_span": {
+        "file": "tests/src/enums_payload.rs",
+        "beg_line": 12,
+        "beg_col": 0,
+        "end_line": 17,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 0,
+            "variant_name": "Num"
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ { "Field": 0 } ],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 1,
+            "variant_name": "Zero"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        "EvReturn"
+      ],
+      "final_state": { "env": [], "live_loans": [] }
+    }
+  ]
+}
