@@ -5,6 +5,19 @@
     {
       "fn_id": 0,
       "fn_name": "incr_cert::incr",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+        ],
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+      },
+      "source_span": {
+        "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+        "beg_line": 7,
+        "beg_col": 0,
+        "end_line": 9,
+        "end_col": 1
+      },
       "events": [
         {
           "EvCopy": {
@@ -21,6 +34,24 @@
           }
         },
         {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
           "EvMove": {
             "src": {
               "local": 2,
@@ -31,6 +62,22 @@
               "local": 2,
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
             }
           }
         },
@@ -41,6 +88,19 @@
     {
       "fn_id": 1,
       "fn_name": "incr_cert::incr_local",
+      "signature": {
+        "inputs": [
+          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        ],
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+      },
+      "source_span": {
+        "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 15,
+        "end_col": 1
+      },
       "events": [
         {
           "EvMutBorrow": {
@@ -54,14 +114,14 @@
           }
         },
         {
-          "EvMutBorrow": {
-            "loan": 1,
+          "EvReborrow": {
+            "child": 1,
+            "parent": 0,
             "place": {
               "local": 3,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            },
-            "symval": 0
+            }
           }
         },
         {
@@ -75,6 +135,24 @@
               "local": 2,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             }
           }
         },
@@ -93,6 +171,22 @@
           }
         },
         {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
           "EvEndBorrow": {
             "loan": 1,
             "restore": { "given_back": { "SymVal": 1 } }
@@ -115,6 +209,22 @@
               "local": 1,
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
             }
           }
         },

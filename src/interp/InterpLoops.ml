@@ -350,6 +350,22 @@ let eval_loop_symbolic (config : config) (span : span)
   let fp_ctx, fixed_ids =
     compute_loop_entry_fixed_point config span loop_id eval_loop_body ctx
   in
+  (* M12.0: emit [EvLoopInv] capturing the fixpoint state summary.
+     The fixed-point computation above runs exactly once per syntactic
+     loop ([compute_loop_entry_fixed_point] returns a fixpoint, not a
+     trace of iterations), so a single [EvLoopInv] event per loop is
+     correct — no deduplication needed. The summary is best-effort:
+     bindings whose value cannot be flattened to a [cert_sym_expr]
+     are dropped (same convention as [EvJoin]'s summaries). M12.1
+     will consume the summary to drive the loop-translation rule
+     (T-Loop-Fixpoint); for M12.0 it is structurally validated by the
+     Lean checker but semantically inert. *)
+  ctx_emit_event ctx
+    (CertEvent.EvLoopInv
+       {
+         loop_id;
+         invariant = CertEvent.cert_state_summary_of_env fp_ctx.env;
+       });
   let input_abs_list =
     List.rev
       (env_filter_map_abs
