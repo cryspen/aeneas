@@ -199,6 +199,18 @@ type event =
   | EvEndAbs of {
       abs : abs_id;
       final_values : cert_sym_expr list;
+      released_loans : borrow_id list;
+          (** [M9.5s] The loan ids whose lifetime ends implicitly here:
+              for each [AMutBorrow (_, bid, _)] the abstraction held,
+              [end_abs_borrows] drains it (turning the borrow into
+              [AEndedMutBorrow] and [give_back_value]'ing the freshly
+              generated symbolic into the outer-context loan slot)
+              without emitting a paired [EvEndBorrow]. Listing those
+              ids here lets the Lean replayer drop them from
+              [SymState.loans] and [TC.liveLoans], so the
+              "function ended with live borrow(s)" post-condition
+              passes for the paper.rs [call_choose] pattern (input
+              borrows that flowed into the call's abstraction). *)
     }
   | EvProj of {
       abs : abs_id;

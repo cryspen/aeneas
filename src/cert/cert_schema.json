@@ -384,7 +384,24 @@
             }
           }
         },
-        { "type": "object", "required": ["EvEndAbs"] },
+        {
+          "type": "object",
+          "required": ["EvEndAbs"],
+          "properties": {
+            "EvEndAbs": {
+              "type": "object",
+              "required": ["abs", "final_values"],
+              "properties": {
+                "abs": { "type": "integer", "minimum": 0 },
+                "final_values": { "type": "array" },
+                "released_loans": {
+                  "type": "array",
+                  "items": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          }
+        },
         { "type": "object", "required": ["EvProj"] },
         {
           "type": "object",

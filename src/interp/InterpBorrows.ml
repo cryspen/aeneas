@@ -1273,27 +1273,36 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
          concrete borrows (e.g. all-symbolic projector flows; M10.2b
          doesn't yet thread those), the list is empty — the Lean side
          falls back to its M10.1 placeholder shape. *)
-      let cert_final_values : CertEvent.cert_sym_expr list =
+      let (cert_final_values, cert_released_loans) :
+          CertEvent.cert_sym_expr list * BorrowId.id list =
         match ctx_lookup_abs_opt ctx abs_id with
-        | None -> []
+        | None -> ([], [])
         | Some abs ->
-            let acc = ref [] in
+            let fvs = ref [] in
+            let rls = ref [] in
             let visitor =
               object
                 inherit [_] iter_abs as super
 
                 method! visit_AEndedMutBorrow env meta child =
-                  acc := CertEvent.SymVal meta.given_back.sv_id :: !acc;
+                  fvs := CertEvent.SymVal meta.given_back.sv_id :: !fvs;
+                  (* M9.5s: collect the abstraction-internal borrow
+                     id whose lifetime ends implicitly here (no paired
+                     EvEndBorrow gets emitted by [give_back_value]).
+                     The Lean replayer drops each released id from
+                     [SymState.loans] / [TC.liveLoans] if it's tracked
+                     there — silent no-op otherwise. *)
+                  rls := meta.bid :: !rls;
                   super#visit_AEndedMutBorrow env meta child
 
                 method! visit_AEndedProjBorrows env aproj =
-                  acc :=
-                    CertEvent.SymVal aproj.mvalues.given_back.sv_id :: !acc;
+                  fvs :=
+                    CertEvent.SymVal aproj.mvalues.given_back.sv_id :: !fvs;
                   super#visit_AEndedProjBorrows env aproj
               end
             in
             visitor#visit_abs () abs;
-            List.rev !acc
+            (List.rev !fvs, List.rev !rls)
       in
 
       (* End the regions owned by the abstraction - note that we don't need to
@@ -1321,7 +1330,12 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
          [EvCall] with this list and binds each entry as the post-state
          of the corresponding [&mut] input. *)
       ctx_emit_event ctx
-        (CertEvent.EvEndAbs { abs = abs_id; final_values = cert_final_values });
+        (CertEvent.EvEndAbs
+           {
+             abs = abs_id;
+             final_values = cert_final_values;
+             released_loans = cert_released_loans;
+           });
 
       (* Debugging *)
       [%ltrace

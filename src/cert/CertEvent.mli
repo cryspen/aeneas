@@ -95,7 +95,11 @@ type event =
       dst : cert_place;
       region_abs : abs_id list;
     }
-  | EvEndAbs of { abs : abs_id; final_values : cert_sym_expr list }
+  | EvEndAbs of {
+      abs : abs_id;
+      final_values : cert_sym_expr list;
+      released_loans : borrow_id list;
+    }
   | EvProj of {
       abs : abs_id;
       place : cert_place;

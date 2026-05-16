@@ -313,7 +313,7 @@ let json_event (e : event) : Yojson.Basic.t =
                 "region_abs", `List (List.map json_abs_id region_abs);
               ] );
         ]
-  | EvEndAbs { abs; final_values } ->
+  | EvEndAbs { abs; final_values; released_loans } ->
       `Assoc
         [
           ( "EvEndAbs",
@@ -321,6 +321,7 @@ let json_event (e : event) : Yojson.Basic.t =
               [
                 "abs", json_abs_id abs;
                 "final_values", `List (List.map json_cert_sym_expr final_values);
+                "released_loans", `List (List.map json_borrow_id released_loans);
               ] );
         ]
   | EvProj { abs; place; symval } ->

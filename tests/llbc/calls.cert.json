@@ -193,7 +193,13 @@
             "region_abs": [ 1 ]
           }
         },
-        { "EvEndAbs": { "abs": 1, "final_values": [ { "SymVal": 3 } ] } },
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [ { "SymVal": 3 } ],
+            "released_loans": [ 1 ]
+          }
+        },
         {
           "EvAssign": {
             "dst": {
