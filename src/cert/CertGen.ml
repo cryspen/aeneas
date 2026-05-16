@@ -97,8 +97,28 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
         in
         let _ =
           try
-            let _ctx_resl, _cc = eval_function_body config body.body ctx in
-            ()
+            let ctx_resl, _cc = eval_function_body config body.body ctx in
+            (* M9.5v: drive [pop_frame] on each Return branch so that the
+               function-exit cleanup ([drop_outer_loans_at_lplace] inside
+               [pop_frame]) emits EvEndBorrow events for outer loans that
+               are dropped when the frame dies. Without this, fixtures
+               like [paper::call_choose] leave loans live at EvReturn
+               (the borrow check passes because the frame goes away, but
+               the cert replay has no event to release them). Mirrors the
+               [finish] path in [evaluate_function_symbolic]. *)
+            List.iter
+              (fun (ctx, res) ->
+                match res with
+                | Cps.Return ->
+                    (try
+                       let _, _, _ =
+                         pop_frame config fdef.item_meta.span
+                           ~pop_locals:true ~pop_return_value:true ctx
+                       in
+                       ()
+                     with Errors.CFailure _ -> ())
+                | _ -> ())
+              ctx_resl
           with Errors.CFailure _ ->
             (* Match the behavior of evaluate_function_symbolic: tolerate
                failures during M3 so the cert covers as many functions as
