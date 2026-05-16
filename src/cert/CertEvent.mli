@@ -101,6 +101,11 @@ type event =
       place : cert_place;
       symval : symbolic_value_id;
     }
+  | EvSymExpandMutBorrow of {
+      sv_id : symbolic_value_id;
+      bid : borrow_id;
+      inner_sv : symbolic_value_id;
+    }
   | EvJoin of {
       left : cert_state_summary;
       right : cert_state_summary;

@@ -386,6 +386,21 @@
         },
         { "type": "object", "required": ["EvEndAbs"] },
         { "type": "object", "required": ["EvProj"] },
+        {
+          "type": "object",
+          "required": ["EvSymExpandMutBorrow"],
+          "properties": {
+            "EvSymExpandMutBorrow": {
+              "type": "object",
+              "required": ["sv_id", "bid", "inner_sv"],
+              "properties": {
+                "sv_id": { "type": "integer", "minimum": 0 },
+                "bid": { "type": "integer", "minimum": 0 },
+                "inner_sv": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        },
         { "type": "object", "required": ["EvJoin"] },
         { "type": "object", "required": ["EvLoopInv"] },
         {

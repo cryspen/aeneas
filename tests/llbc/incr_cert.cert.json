@@ -24,6 +24,7 @@
         "end_col": 1
       },
       "events": [
+        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 1 } },
         {
           "EvAssign": {
             "dst": {

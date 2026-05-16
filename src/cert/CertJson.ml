@@ -334,6 +334,17 @@ let json_event (e : event) : Yojson.Basic.t =
                 "symval", json_symbolic_value_id symval;
               ] );
         ]
+  | EvSymExpandMutBorrow { sv_id; bid; inner_sv } ->
+      `Assoc
+        [
+          ( "EvSymExpandMutBorrow",
+            `Assoc
+              [
+                "sv_id", json_symbolic_value_id sv_id;
+                "bid", json_borrow_id bid;
+                "inner_sv", json_symbolic_value_id inner_sv;
+              ] );
+        ]
   | EvJoin { left; right; result } ->
       `Assoc
         [

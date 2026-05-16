@@ -25,6 +25,8 @@
         "end_col": 1
       },
       "events": [
+        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 2 } },
+        { "EvSymExpandMutBorrow": { "sv_id": 1, "bid": 1, "inner_sv": 3 } },
         {
           "EvReborrow": {
             "child": 2,
@@ -107,6 +109,33 @@
             }
           }
         },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (Generated_Types.RErased,\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymTuple": [
+                {
+                  "SymMove": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+                  }
+                },
+                {
+                  "SymMove": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+                  }
+                }
+              ]
+            }
+          }
+        },
         "EvReturn"
       ],
       "final_state": { "env": [], "live_loans": [] }
@@ -131,6 +160,18 @@
         "end_col": 1
       },
       "events": [
+        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 2 } },
+        { "EvSymExpandMutBorrow": { "sv_id": 1, "bid": 1, "inner_sv": 3 } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -220,6 +261,8 @@
             "region_abs": [ 2, 3 ]
           }
         },
+        { "EvSymExpandMutBorrow": { "sv_id": 5, "bid": 4, "inner_sv": 7 } },
+        { "EvSymExpandMutBorrow": { "sv_id": 6, "bid": 5, "inner_sv": 8 } },
         {
           "EvMove": {
             "src": {
@@ -298,6 +341,16 @@
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
             },
             "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "9" ] } } }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
           }
         },
         "EvReturn"

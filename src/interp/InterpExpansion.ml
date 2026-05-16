@@ -515,6 +515,18 @@ let expand_symbolic_value_borrow (span : Meta.span)
       in
       (* Expand the symbolic avalues *)
       let ctx = apply_symbolic_expansion_to_aevalues span original_sv see ctx in
+      (* Cert (M9.5r): tell the Lean replayer about the just-minted
+         concrete borrow id [bid]. This is the lazy-borrow-creation
+         moment for [&mut T] symbolic values returned from function
+         calls (paper.rs [test_choose] pattern) and for [&mut]
+         function arguments accessed via [Deref]. The Lean side walks
+         every local / loan-given holding [.sym original_sv.sv_id]
+         and replaces it with [.mutLoan bid], registering loan [bid]
+         with [given := .sym sv.sv_id] so a subsequent [EvEndBorrow
+         loan=bid] can resolve. *)
+      ctx_emit_event ctx
+        (CertEvent.EvSymExpandMutBorrow
+           { sv_id = original_sv.sv_id; bid; inner_sv = sv.sv_id });
       (* Apply the continuation *)
       ( ctx,
         fun e ->

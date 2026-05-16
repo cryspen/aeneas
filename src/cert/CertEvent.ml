@@ -205,6 +205,26 @@ type event =
       place : cert_place;
       symval : symbolic_value_id;
     }
+  | EvSymExpandMutBorrow of {
+      sv_id : symbolic_value_id;
+      bid : borrow_id;
+      inner_sv : symbolic_value_id;
+    }
+      (** [M9.5r] The OCaml interpreter just expanded a symbolic value
+          of [&mut T] type into a concrete mutable borrow. This is the
+          lazy-borrow-creation moment: when a symbolic [&mut T] (e.g.
+          a function-call return value, or a [&mut] parameter) gets
+          dereferenced for the first time, [expand_symbolic_value_borrow]
+          mints a fresh [bid] and inner symbolic value [inner_sv], then
+          substitutes [sv_id ↦ SeMutRef(bid, inner_sv)] throughout the
+          context.
+
+          The Lean replayer uses this event to (a) walk every local /
+          loan-given holding [.sym sv_id] and replace with [.mutLoan bid],
+          (b) register loan [bid] in [SymState.loans] with [given := .sym
+          inner_sv]. Without this event, a subsequent in-body
+          [EvEndBorrow loan=bid] (paper.rs [test_choose] pattern) fails
+          because the Lean side has no record of [bid] being live. *)
   (* === Joins + loops (M11+) === *)
   | EvJoin of {
       left : cert_state_summary;
