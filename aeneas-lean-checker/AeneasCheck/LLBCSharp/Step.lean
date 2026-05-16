@@ -414,9 +414,15 @@ def symExprBeq : SymExpr → SymExpr → Bool
     freshly minted by the OCaml ssubst — the cert promise is that
     fresh sym ids in the result didn't appear in either pre-join
     branch's env, which is what `match_ctx_with_target`'s
-    [output_svalues] enforces. -/
+    [output_svalues] enforces.
+    M9.5y: `symMutBorrowTok n` is also accepted as a fresh form. The
+    OCaml interpreter's `Collapse-Dup-MutBorrow` rule introduces a
+    fresh borrow id in the join result to subsume two distinct
+    branch-local borrow ids (e.g. `call_choose`'s left:tok-0,
+    right:tok-2, result:tok-3). -/
 def isFreshSym : SymExpr → Bool
   | .symVal _ => true
+  | .symMutBorrowTok _ => true
   | _ => false
 
 /-- Per-entry join check: returns `none` on success, `some msg` on
