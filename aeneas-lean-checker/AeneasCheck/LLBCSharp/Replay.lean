@@ -43,14 +43,31 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .symExpandMutBorrow svId bid innerSv =>
     stepSymExpandMutBorrow st svId bid innerSv
   | .join l r res => stepJoin st l r res
-  | .loopInv _ _ =>
+  | .loopInv _ invariant =>
     -- M12.0/M12.1: structural no-op. The OCaml side emits an
     -- EvLoopInv at the start of each loop's canonical synthesized
     -- body, paired with an EvLoopEnd at the end (see InterpLoops.ml).
     -- The cert is already structurally checked by `checkEvent`; the
     -- LLBC# loop rule (T-Loop-Fixpoint) is structurally handled by
     -- the Forward translator. The semantic ≤-relation check lands in
-    -- M12.3. For M12.1 we thread the state through unchanged.
+    -- M12.3.
+    -- M9.5z: register loop-introduced borrow ids (those in
+    -- `invariant.liveLoans` and those appearing as `SymMutBorrowTok n`
+    -- in `invariant.env`) so a subsequent in-body `EvEndBorrow` finds
+    -- them in `loans`. Mark them `.reborrow`: their lifetime belongs
+    -- to the loop iteration's abstraction rather than to a discrete
+    -- in-body `EvMutBorrow`, so the function-exit leak check tolerates
+    -- residual liveness.
+    let mut st := st
+    for b in invariant.liveLoans do
+      if !st.loans.contains b then
+        st := st.addLoan b .bottom .reborrow
+    for (_, e) in invariant.env do
+      match e with
+      | .symMutBorrowTok b =>
+        if !st.loans.contains b then
+          st := st.addLoan b .bottom .reborrow
+      | _ => pure ()
     return st
   | .loopEnd _ => return st
   | .matchArm _ _ _ _ =>
