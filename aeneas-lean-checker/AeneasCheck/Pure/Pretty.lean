@@ -567,6 +567,12 @@ def EnumDecl.toLean (ed : EnumDecl) : String :=
   let appliedName : String :=
     if ed.typeParams.isEmpty then ed.name
     else ed.name ++ " " ++ String.intercalate " " ed.typeParams.toList
+  -- M9.5t: prefix the inductive with `@[discriminant isize]` to match
+  -- the standard Aeneas backend, which annotates every enum with the
+  -- Rust discriminant type. Aeneas's LLBC representation uses isize
+  -- for the discriminant regardless of the user's `#[repr(...)]`
+  -- choice (the standard backend hardcodes this shape).
+  let attr := "@[discriminant isize]\n"
   let header := s!"inductive {ed.name}{typeBinders} where"
   let body := ed.variants.toList.map fun v =>
     if v.fields.isEmpty then
@@ -575,7 +581,7 @@ def EnumDecl.toLean (ed : EnumDecl) : String :=
       let tys := v.fields.toList.map fun f => f.ty.toLean
       let signature := String.intercalate " → " (tys ++ [appliedName])
       s!"| {v.name} : {signature}"
-  ed.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
+  ed.docComment ++ attr ++ header ++ "\n" ++ String.intercalate "\n" body
 
 /-- M9.5l: docstring for a `trait` decl. The standard Aeneas backend
     prefixes the comment with `Trait declaration: ` and lists the
