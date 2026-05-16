@@ -295,7 +295,19 @@ def traitImplOfCert (tdm : TypeDeclMap)
         match tdm[id]? with
         | some info => .adt info.name #[]
         | none => .unit
-      | none => .unit
+      | none =>
+        -- M9.5u: primitive Self (e.g. [impl Tr for bool]) — neither
+        -- a declared ADT nor a type variable. The OCaml cert
+        -- generator already encoded the Self type's Lean name as
+        -- the prefix of [prettyName] (e.g. `Bool.Insts.…`,
+        -- `Std.U32.Insts.…`). Split on `.Insts.` to recover it and
+        -- bind as an opaque ADT name. Falls back to [.unit] when
+        -- the prettyName doesn't carry the `.Insts.` separator
+        -- (defensive — should never happen for a non-blanket impl).
+        let segs := ti.prettyName.splitOn ".Insts."
+        match segs with
+        | hd :: _ :: _ => .adt hd #[]
+        | _ => .unit
   let traitName : String :=
     traitNameById.getD ti.traitDeclId "__UnknownTrait"
   let traitBoundParams : Array Pure.TraitBoundParam :=
