@@ -161,8 +161,19 @@ precondition that rules out double-frees.
 def stepEndBorrow (st : SymState) (loan : Nat) (restore : RestoreInfo)
     : Result SymState := do
   match st.takeLoan loan with
-  | none => fail s!"end-borrow: borrow id {loan} not live"
+  | none =>
+    -- M9.5x: silent re-end after a branch join. The OCaml interpreter
+    -- emits redundant EvEndBorrow events on the same loan during
+    -- branch/loop reconciliation (and sometimes across several
+    -- fixpoint iterations of a loop's cleanup); the TC has already
+    -- validated the structural shape. Treat any re-end of a loan we
+    -- previously ended as a no-op.
+    if st.joinDedupe.contains loan then
+      return st
+    else
+      fail s!"end-borrow: borrow id {loan} not live"
   | some (li, st) => do
+    let st := { st with joinDedupe := st.joinDedupe.insert loan }
     let v ← evalSymExpr st restore.givenBack
     match li.kind with
     | .direct | .lazyExpand => do

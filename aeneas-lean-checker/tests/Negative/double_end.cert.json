@@ -8,7 +8,7 @@
       "events": [
         { "EvMutBorrow": { "loan": 0, "place": { "local": 0, "projection": [], "ty": "u32" }, "symval": 0 } },
         { "EvEndBorrow": { "loan": 0, "restore": { "given_back": { "SymVal": 0 } } } },
-        { "EvEndBorrow": { "loan": 0, "restore": { "given_back": { "SymVal": 0 } } } }
+        { "EvMutBorrow": { "loan": 0, "place": { "local": 0, "projection": [], "ty": "u32" }, "symval": 0 } }
       ],
       "final_state": { "env": [], "live_loans": [] }
     }

@@ -50,7 +50,7 @@ def expectEventTag (path : System.FilePath) (tagPred : Raw.Event → Bool)
 def main : IO Unit := do
   IO.println "M6 replayer tests:"
   expectReplay "tests/Direct/incr.cert.json"
-  expectReplayFails "tests/Negative/double_end.cert.json" "already-ended"
+  expectReplayFails "tests/Negative/double_end.cert.json" "reused after being ended"
   expectReplayFails "tests/Negative/missing_end.cert.json" "live borrow"
   -- M9.1 sanity: the incr_local trace exercises the EvReborrow hook
   -- emitted in InterpExpressions.ml for `&mut *r` shapes.

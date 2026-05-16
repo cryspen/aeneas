@@ -35,7 +35,7 @@ def expectReject (path : System.FilePath) (substring : String) : IO Unit := do
 def main : IO Unit := do
   IO.println "M5 typechecker tests:"
   expectAccept "tests/Direct/incr.cert.json"
-  expectReject "tests/Negative/double_end.cert.json" "already-ended"
+  expectReject "tests/Negative/double_end.cert.json" "reused after being ended"
   expectReject "tests/Negative/missing_end.cert.json" "live borrow"
   expectReject "tests/Negative/bad_projection.cert.json" "Subslice projection"
   IO.println "all tests passed"

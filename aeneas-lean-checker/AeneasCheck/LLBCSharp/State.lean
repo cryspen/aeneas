@@ -49,12 +49,20 @@ structure SymState where
   loans : Std.HashMap Nat LoanInfo
   /-- Number of locals declared in the current function. -/
   numLocals : Nat
+  /-- M9.5x: loans eligible for a silent re-end after a branch join.
+      `stepEndBorrow` adds the loan id here on a successful end and
+      consumes it on a subsequent "not live" end (the OCaml interpreter
+      emits a redundant post-join EvEndBorrow on the same loan as part
+      of join reconciliation). The TC has already verified that the
+      re-end appears in a post-join context, so the replayer treats
+      consumed re-ends as no-ops. -/
+  joinDedupe : Std.HashSet Nat
   deriving Inhabited
 
 namespace SymState
 
 def empty (numLocals : Nat) : SymState := {
-  env := {}, loans := {}, numLocals
+  env := {}, loans := {}, numLocals, joinDedupe := {}
 }
 
 /-- Lookup a local's current value; missing locals are `bottom`. -/

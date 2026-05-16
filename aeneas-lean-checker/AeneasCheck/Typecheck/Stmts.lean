@@ -31,9 +31,24 @@ def addLoan (loan : Nat) : TC Unit := do
 def removeLoan (loan : Nat) : TC Unit := do
   let st ← get
   if st.liveLoans.contains loan then
+    -- M9.5x: also seed `joinDedupe` so a subsequent same-loan end is
+    -- silently consumed. The OCaml interpreter linearizes branch /
+    -- loop-iteration cleanup paths and can emit redundant
+    -- EvEndBorrow events for the same loan (sometimes around an
+    -- EvJoin / EvLoopEnd marker, sometimes back-to-back without one).
+    -- A *genuine* double-end after a re-borrow would error in
+    -- `addLoan` ("reused after being ended"), so consuming the
+    -- duplicate here is safe.
     set { st with
       liveLoans := st.liveLoans.erase loan
-      endedLoans := st.endedLoans.insert loan }
+      endedLoans := st.endedLoans.insert loan
+      recentlyEnded := st.recentlyEnded.insert loan
+      joinDedupe := st.joinDedupe.insert loan }
+  else if st.joinDedupe.contains loan then
+    -- M9.5x: do not consume — some loops emit the same cleanup batch
+    -- across several fixpoint iterations (see issue-789), so the
+    -- same loan id may be re-ended more than once.
+    pure ()
   else if st.endedLoans.contains loan then
     emitErr s!"endBorrow on already-ended loan {loan}"
   else
@@ -112,6 +127,13 @@ def checkEvent (ev : Event) : TC Unit := do
     for (_, e) in left.env do checkSymExpr e
     for (_, e) in right.env do checkSymExpr e
     for (_, e) in result.env do checkSymExpr e
+    -- M9.5x: graduate `recentlyEnded` into `joinDedupe`. A subsequent
+    -- EvEndBorrow on one of these loans is silently consumed (the
+    -- OCaml interpreter emits per-branch end-borrows and then a
+    -- post-join end-borrow on the same loan during reconciliation).
+    modify fun st => { st with
+      joinDedupe := st.recentlyEnded.fold (·.insert ·) st.joinDedupe
+      recentlyEnded := {} }
   | .loopInv _ invariant => do
     -- M12.0/M12.1: structural check on the loop-invariant witness.
     -- As with EvJoin above, we bounds-check the SymExprs in the
@@ -122,10 +144,18 @@ def checkEvent (ev : Event) : TC Unit := do
     -- and the Forward translator uses the position of EvLoopInv as
     -- the "begin loop body" marker (paired with EvLoopEnd).
     for (_, e) in invariant.env do checkSymExpr e
-  | .loopEnd _ => pure ()
-    -- M12.1: structural no-op. EvLoopEnd is a sentinel marker for the
-    -- Forward translator's T-Loop-Fixpoint walker. The replayer
-    -- ignores it.
+  | .loopEnd _ =>
+    -- M12.1: structural no-op for the cert. EvLoopEnd is a sentinel
+    -- marker for the Forward translator's T-Loop-Fixpoint walker; the
+    -- replayer ignores it.
+    -- M9.5x: a loop body's exit acts like a join from the borrow
+    -- perspective — the OCaml interpreter emits end-borrows inside
+    -- the body and then redundant end-borrows once the loop has
+    -- terminated. Promote `recentlyEnded` into `joinDedupe` the same
+    -- way EvJoin does.
+    modify fun st => { st with
+      joinDedupe := st.recentlyEnded.fold (·.insert ·) st.joinDedupe
+      recentlyEnded := {} }
   | .matchArm scrutinee _ _ _ =>
     -- M9.5d: structural well-formedness on the match-arm marker. The
     -- arm body's events run separately and are checked one by one;
