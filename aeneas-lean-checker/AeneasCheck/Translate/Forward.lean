@@ -1612,6 +1612,11 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- means the lookahead failed to recognise a match block; treat
   -- as a no-op so the walk stays total.
   | .matchArm _ _ _ _ => st
+  -- M9.5r: lazy borrow expansion is purely a SymState mutation for
+  -- the LLBC# replayer; the Forward translator's value-flow walk
+  -- doesn't observe new bindings (the dst local that holds the
+  -- expanded borrow was already named at EvCall time). No-op.
+  | .symExpandMutBorrow _ _ _ => st
 
 /-- Render a `SymExpr` from a join state summary as a Pure expression
     *in the context of a sub-walk's final var map*. Used by

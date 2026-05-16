@@ -227,6 +227,11 @@ def parseEvent (j : Json) : Result Event := do
       let place ← parsePlace (← field payload "place")
       let symval ← asNat (← field payload "symval")
       return .proj abs place symval
+    | "EvSymExpandMutBorrow" =>
+      let svId ← asNat (← field payload "sv_id")
+      let bid ← asNat (← field payload "bid")
+      let innerSv ← asNat (← field payload "inner_sv")
+      return .symExpandMutBorrow svId bid innerSv
     | "EvJoin" =>
       let left ← parseStateSummary (← field payload "left")
       let right ← parseStateSummary (← field payload "right")

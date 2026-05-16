@@ -112,6 +112,16 @@ def checkEvent (ev : Event) : TC Unit := do
     -- certs early. The Forward translator interprets the marker
     -- semantically.
     checkSymExpr scrutinee
+  | .symExpandMutBorrow _ bid _ =>
+    -- M9.5r: register the freshly-minted concrete loan id so a
+    -- subsequent EvEndBorrow on it doesn't trip
+    -- "endBorrow on unknown loan". Mark it as a reborrow-class loan
+    -- so checkFnPost tolerates it leaking past function exit (the
+    -- loan's lifetime is owned by the abstraction created at the
+    -- call site, not by an in-body EvMutBorrow). The LLBC# replayer's
+    -- stepSymExpandMutBorrow does the corresponding state mutation.
+    addLoan bid
+    modify fun st => { st with reborrowLoans := st.reborrowLoans.insert bid }
 
 /-- Walk a function's event list. -/
 def checkEvents (events : Array Event) : TC Unit := do

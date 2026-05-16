@@ -20,11 +20,17 @@ open AeneasCheck.Raw
 /-- How a loan was created. Affects how `endBorrow` restores state:
     a direct mut borrow replaces the borrowed local with a `mutLoan`
     token that the end must clear; a reborrow leaves the original
-    parent's local untouched, so the end has no token to restore. -/
+    parent's local untouched, so the end has no token to restore.
+    M9.5r: `lazyExpand` loans come from EvSymExpandMutBorrow — they
+    park a `mutLoan` token in the dst local (so end-borrow restores
+    like `.direct`) but their lifetime is owned by the function's
+    region abstraction (so they're allowed to leak past function
+    exit, like `.reborrow`). -/
 inductive LoanKind
   | direct
   | shared
   | reborrow
+  | lazyExpand
   deriving Repr, BEq, Inhabited
 
 /-- Info recorded for each live mut borrow: the inner symbolic value

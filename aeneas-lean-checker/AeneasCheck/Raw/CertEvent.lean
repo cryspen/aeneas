@@ -83,6 +83,15 @@ inductive Event
       (dst : Place) (regionAbs : Array Nat)
   | endAbs (abs : Nat) (finalValues : Array SymExpr)
   | proj (abs : Nat) (place : Place) (symval : Nat)
+  /-- M9.5r: lazy mut-borrow expansion. The OCaml interpreter just
+      replaced symbolic value `svId` (some [&mut T]-typed value) with
+      a concrete mut-borrow whose id is `bid` and whose inner value is
+      a fresh symbolic value `innerSv`. The Lean replayer scans every
+      local / loan-given holding `.sym svId`, replaces with `.mutLoan
+      bid`, and registers loan `bid` with `given := .sym innerSv` —
+      so a subsequent in-body `EvEndBorrow loan=bid` (paper.rs
+      `test_choose` pattern) can resolve. -/
+  | symExpandMutBorrow (svId bid innerSv : Nat)
   | join (left right result : StateSummary)
   | loopInv (loopId : Nat) (invariant : StateSummary)
   /-- M12.1: end-of-loop-body marker. Paired with the preceding

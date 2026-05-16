@@ -152,10 +152,14 @@ def stepEndBorrow (st : SymState) (loan : Nat) (restore : RestoreInfo)
   | some (li, st) => do
     let v ← evalSymExpr st restore.givenBack
     match li.kind with
-    | .direct => do
-      -- The mut-borrow created via E-MutBorrow replaced its place
-      -- with a `mutLoan` token; end-borrow restores the local's
-      -- value from the cert-supplied `given_back`.
+    | .direct | .lazyExpand => do
+      -- `.direct`: created via E-MutBorrow — the place was replaced
+      -- with a `mutLoan` token; end-borrow restores from `given_back`.
+      -- `.lazyExpand` (M9.5r): created via E-SymExpandMutBorrow on a
+      -- function-call return; same end-borrow semantics, but its
+      -- lifetime is owned by an abstraction (so it's allowed to
+      -- "leak" past function exit per the post-condition in
+      -- Replay.lean).
       let mut found := false
       let mut newEnv := st.env
       for (l, vv) in st.env.toList do
@@ -165,7 +169,12 @@ def stepEndBorrow (st : SymState) (loan : Nat) (restore : RestoreInfo)
             found := true
         | _ => pure ()
       if not found then
-        fail s!"end-borrow: no local holds loan {loan}"
+        -- Lazy expansions may have substituted the token through
+        -- intermediate locals that the cert subsequently overwrote;
+        -- if no local currently holds the token, just release the
+        -- loan id without restoration.
+        if li.kind == .lazyExpand then return st
+        else fail s!"end-borrow: no local holds loan {loan}"
       else
         return { st with env := newEnv }
     | .reborrow =>
@@ -226,6 +235,40 @@ def stepCall (st : SymState) (dst : Place) : Result SymState := do
     fail s!"E-Call: dst local {root} out of bounds (have {st.numLocals})"
   else
     return st.setLocal root (.sym 0)
+
+/-! ## E-SymExpandMutBorrow
+
+M9.5r structural rule: the OCaml interpreter just expanded a symbolic
+[&mut T] value (typically a function-call return) into a concrete
+mut-borrow. We mirror the substitution in [SymState]: every local
+holding [.sym svId] becomes [.mutLoan bid], and we register loan
+[bid] with [given := .sym innerSv] so the inner value can flow back
+on a subsequent [EvEndBorrow loan=bid].
+
+We also walk loan-given values for the same substitution: if any
+existing loan was given a [.sym svId] (i.e. its restoration value was
+a not-yet-expanded borrow), it now carries [.mutLoan bid]. -/
+
+def stepSymExpandMutBorrow (st : SymState) (svId bid innerSv : Nat) :
+    Result SymState := do
+  if st.loans.contains bid then
+    fail s!"E-SymExpandMutBorrow: borrow id {bid} already live"
+  -- Substitute in env.
+  let mut newEnv := st.env
+  for (l, v) in st.env.toList do
+    match v with
+    | .sym k => if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
+    | _ => pure ()
+  -- Substitute in loan-given values.
+  let mut newLoans := st.loans
+  for (b, li) in st.loans.toList do
+    match li.given with
+    | .sym k =>
+      if k = svId then
+        newLoans := newLoans.insert b { li with given := .mutLoan bid }
+    | _ => pure ()
+  let st := { st with env := newEnv, loans := newLoans }
+  return st.addLoan bid (.sym innerSv) .lazyExpand
 
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :
     Result Unit := do
