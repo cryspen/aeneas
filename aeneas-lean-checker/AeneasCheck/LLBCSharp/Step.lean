@@ -94,8 +94,13 @@ def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
       else
         let inner := st.getLocal root
         let st := st.setLocal root (.mutLoan loan)
-        let st := st.addLoan loan inner
-        return st
+        -- M9.5aa: a direct `&mut local` issued inside a loop body has
+        -- no explicit end event (its lifetime is owned by the loop's
+        -- region abstraction). Use `.lazyExpand` so it parks the
+        -- mut-loan token like `.direct` but is allowed to leak past
+        -- function exit like `.reborrow`.
+        let kind := if st.loopDepth > 0 then LoanKind.lazyExpand else .direct
+        return st.addLoan loan inner kind
 
 /-! ## E-SharedBorrow
 

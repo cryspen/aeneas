@@ -57,12 +57,19 @@ structure SymState where
       re-end appears in a post-join context, so the replayer treats
       consumed re-ends as no-ops. -/
   joinDedupe : Std.HashSet Nat
+  /-- M9.5aa: number of currently-open loops; bumped by `EvLoopInv` and
+      decremented by `EvLoopEnd`. `EvMutBorrow` issued while
+      `loopDepth > 0` is classified as `.lazyExpand` so the exit
+      `leakedDirect` check tolerates it (the OCaml interpreter does
+      not emit an explicit `EvEndBorrow`; the loan's lifetime is owned
+      by the loop's region abstraction). -/
+  loopDepth : Nat
   deriving Inhabited
 
 namespace SymState
 
 def empty (numLocals : Nat) : SymState := {
-  env := {}, loans := {}, numLocals, joinDedupe := {}
+  env := {}, loans := {}, numLocals, joinDedupe := {}, loopDepth := 0
 }
 
 /-- Lookup a local's current value; missing locals are `bottom`. -/

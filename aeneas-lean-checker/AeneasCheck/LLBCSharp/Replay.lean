@@ -58,7 +58,9 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
     -- to the loop iteration's abstraction rather than to a discrete
     -- in-body `EvMutBorrow`, so the function-exit leak check tolerates
     -- residual liveness.
-    let mut st := st
+    -- M9.5aa: also open a loop scope so `stepMutBorrow` knows to
+    -- classify in-body direct `&mut local` as `.lazyExpand`.
+    let mut st := { st with loopDepth := st.loopDepth + 1 }
     for b in invariant.liveLoans do
       if !st.loans.contains b then
         st := st.addLoan b .bottom .reborrow
@@ -69,7 +71,9 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
           st := st.addLoan b .bottom .reborrow
       | _ => pure ()
     return st
-  | .loopEnd _ => return st
+  | .loopEnd _ =>
+    -- M9.5aa: close the matching loop scope.
+    return { st with loopDepth := st.loopDepth - 1 }
   | .matchArm _ _ _ _ =>
     -- M9.5d: structural no-op for the replayer. The `matchArm`
     -- marker partitions the trace into per-arm event ranges; the

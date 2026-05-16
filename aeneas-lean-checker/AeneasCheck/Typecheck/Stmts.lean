@@ -68,7 +68,12 @@ def checkEvent (ev : Event) : TC Unit := do
     -- abstraction (which our cert doesn't explicitly end yet), not
     -- by an in-body EvMutBorrow that we're expected to pair with an
     -- EvEndBorrow.
-    if place.projection.any (· == ProjElem.deref) then
+    -- M9.5aa: similarly, a `&mut` issued inside a loop body is owned
+    -- by the loop's region abstraction and has no explicit end event
+    -- in the cert; classify as reborrow-class so the exit check
+    -- tolerates it.
+    let st ← get
+    if place.projection.any (· == ProjElem.deref) || st.loopDepth > 0 then
       modify fun st => { st with reborrowLoans := st.reborrowLoans.insert loan }
   | .sharedBorrow loan _ place _ => do
     checkPlace place
@@ -135,6 +140,10 @@ def checkEvent (ev : Event) : TC Unit := do
       joinDedupe := st.recentlyEnded.fold (·.insert ·) st.joinDedupe
       recentlyEnded := {} }
   | .loopInv _ invariant => do
+    -- M9.5aa: open a new loop scope. `EvMutBorrow` issued while any
+    -- loop is open is reborrow-class (lifetime owned by the loop's
+    -- region abstraction, no explicit end event in the cert).
+    modify fun st => { st with loopDepth := st.loopDepth + 1 }
     -- M12.0/M12.1: structural check on the loop-invariant witness.
     -- As with EvJoin above, we bounds-check the SymExprs in the
     -- invariant env so a malformed cert is rejected up front, but
@@ -174,9 +183,11 @@ def checkEvent (ev : Event) : TC Unit := do
     -- the body and then redundant end-borrows once the loop has
     -- terminated. Promote `recentlyEnded` into `joinDedupe` the same
     -- way EvJoin does.
+    -- M9.5aa: close the corresponding loop scope.
     modify fun st => { st with
       joinDedupe := st.recentlyEnded.fold (·.insert ·) st.joinDedupe
-      recentlyEnded := {} }
+      recentlyEnded := {}
+      loopDepth := st.loopDepth - 1 }
   | .matchArm scrutinee _ _ _ =>
     -- M9.5d: structural well-formedness on the match-arm marker. The
     -- arm body's events run separately and are checked one by one;
