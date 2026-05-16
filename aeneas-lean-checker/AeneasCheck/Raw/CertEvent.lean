@@ -81,7 +81,23 @@ inductive Event
       End-Abstraction rule consumes. -/
   | call (fn callId : Nat) (fnName : String) (args : Array SymExpr)
       (dst : Place) (regionAbs : Array Nat)
+  /-- M10.2 / M9.5s: a region abstraction just closed. `finalValues`
+      carries one symbolic-value reference per [AEndedMutBorrow] the
+      abstraction held, in left-to-right order — the Forward
+      translator pairs each entry with the most recent EvCall's
+      [region_abs] field to bind post-state names. `releasedLoans`
+      (M9.5s) lists the loan ids whose lifetime the abstraction owned
+      and which the OCaml interpreter implicitly ended when destroying
+      the abstraction (paper.rs `call_choose` pattern: input borrows
+      that flowed into the call's abstraction and were never
+      explicitly ended via [EvEndBorrow]). The Lean replayer drops
+      each released loan from [SymState.loans] and the typechecker
+      moves it from [liveLoans] to [endedLoans], so the
+      "function ended with live borrow(s)" post-condition passes for
+      these implicitly-ended loans. Defaults to empty for back-compat
+      with pre-M9.5s certs. -/
   | endAbs (abs : Nat) (finalValues : Array SymExpr)
+           (releasedLoans : Array Nat := #[])
   | proj (abs : Nat) (place : Place) (symval : Nat)
   /-- M9.5r: lazy mut-borrow expansion. The OCaml interpreter just
       replaced symbolic value `svId` (some [&mut T]-typed value) with

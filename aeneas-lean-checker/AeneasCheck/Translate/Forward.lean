@@ -1547,7 +1547,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         vm := st.vm.insert dst.local_ (.var vName)
         callBack := st.callBack.insert dst.local_ backName
         lastWrite := some dst.local_ }
-  | .endAbs abs _finals =>
+  | .endAbs abs _finals _released =>
     -- M10.2b: a callee's region abstraction just closed. The call
     -- itself was already emitted at EvCall time; what's left to do
     -- here is update `vm[postLocal] := .var <bindingName>` so that

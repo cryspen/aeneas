@@ -75,11 +75,22 @@ def checkEvent (ev : Event) : TC Unit := do
   | .call _ _ _ args dst _ => do
     for a in args do checkSymExpr a
     checkPlace dst
-  | .endAbs _ finals => do
-    -- M10.2: structural no-op. The `finals` list will populate in
-    -- M10.2b once backward functions are translated; for now we just
-    -- bounds-check any place references that flow through it.
+  | .endAbs _ finals released => do
+    -- M10.2: bounds-check any place references that flow through the
+    -- abstraction's final-values list.
     for e in finals do checkSymExpr e
+    -- M9.5s: implicit end-of-loan inside an abstraction. For each
+    -- released loan: if it was tracked as live, move it to
+    -- endedLoans (mirrors EvEndBorrow); if not tracked, silently
+    -- accept — input-parameter loans created at the call's
+    -- abstraction-build time never appear in our liveLoans set.
+    let mut st ← get
+    for loan in released do
+      if st.liveLoans.contains loan then
+        st := { st with
+          liveLoans := st.liveLoans.erase loan
+          endedLoans := st.endedLoans.insert loan }
+    set st
   | .proj _ _ _ => emitErr "EvProj: not supported until M10"
   | .join left right result => do
     -- M11.1: structural check on the join witness. We bounds-check

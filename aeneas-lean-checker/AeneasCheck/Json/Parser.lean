@@ -221,7 +221,16 @@ def parseEvent (j : Json) : Result Event := do
       let abs ← asNat (← field payload "abs")
       let fvArr ← asArr (← field payload "final_values")
       let finalValues ← fvArr.mapM parseSymExpr
-      return .endAbs abs finalValues
+      -- M9.5s: `released_loans` is optional for back-compat with
+      -- pre-M9.5s certs (which had no implicit-end-loan tracking on
+      -- EvEndAbs). Defaults to empty.
+      let releasedLoans : Array Nat ←
+        match (payload.getObjVal? "released_loans").toOption with
+        | some rj => do
+          let arr ← asArr rj
+          arr.mapM asNat
+        | none => pure #[]
+      return .endAbs abs finalValues releasedLoans
     | "EvProj" =>
       let abs ← asNat (← field payload "abs")
       let place ← parsePlace (← field payload "place")

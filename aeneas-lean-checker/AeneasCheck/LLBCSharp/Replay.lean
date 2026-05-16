@@ -38,7 +38,7 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .retn => return st
   | .reborrow child parent place => stepReborrow st child parent place
   | .call _ _ _ _ dst _ => stepCall st dst
-  | .endAbs _ _ => return st
+  | .endAbs _ _ released => stepEndAbs st released
   | .proj _ _ _ => .error "proj: not implemented until M10"
   | .symExpandMutBorrow svId bid innerSv =>
     stepSymExpandMutBorrow st svId bid innerSv

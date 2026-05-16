@@ -270,6 +270,35 @@ def stepSymExpandMutBorrow (st : SymState) (svId bid innerSv : Nat) :
   let st := { st with env := newEnv, loans := newLoans }
   return st.addLoan bid (.sym innerSv) .lazyExpand
 
+/-! ## E-EndAbstraction
+
+M9.5s structural rule: a region abstraction just closed. Any loans
+listed in `released` are loans the abstraction owned and whose
+lifetime ends here — the OCaml interpreter's `end_abs_borrows`
+implicitly drains them as it converts each [AMutBorrow] in the abs to
+[AEndedMutBorrow] (and `give_back_value`s the symbolic into the
+outer-context loan slot), without emitting an [EvEndBorrow] for each.
+
+We mirror that here: drop each released loan from `st.loans`, and
+clear any local that still holds the loan's `.mutLoan b` token (so the
+post-check doesn't see a dead token). This is the missing piece that
+makes the paper.rs `call_choose` pattern check — loan 1 flowed into
+the call's abstraction, is implicitly ended on EvEndAbs, and so
+must no longer count as "live at function exit". -/
+
+def stepEndAbs (st : SymState) (released : Array Nat) : Result SymState := do
+  let mut st := st
+  for loan in released do
+    if st.loans.contains loan then
+      st := { st with loans := st.loans.erase loan }
+      let mut newEnv := st.env
+      for (l, v) in st.env.toList do
+        match v with
+        | .mutLoan b => if b = loan then newEnv := newEnv.insert l .bottom
+        | _ => pure ()
+      st := { st with env := newEnv }
+  return st
+
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :
     Result Unit := do
   -- We don't model the assertion's truth value (symbolic execution
