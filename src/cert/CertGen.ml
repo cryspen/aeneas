@@ -349,6 +349,24 @@ let collect_trait_impls (crate : crate) : CertEvent.cert_trait_impl list =
         | None -> None)
     | _ -> None
   in
+  (* M9.5u: map a Charon [literal_type] to the Lean type name the
+     standard backend uses for primitive-Self impls (`impl Tr for bool`
+     becomes [Bool.Insts.<Crate>Tr]). The string comes from the
+     Lean backend's [Builtin.literal_type_to_string] convention,
+     not Rust's keyword form. *)
+  let lean_name_of_lit_ty (lty : Types.literal_type) : string =
+    match lty with
+    | TBool -> "Bool"
+    | TChar -> "Char"
+    | TUInt U8 -> "Std.U8" | TUInt U16 -> "Std.U16"
+    | TUInt U32 -> "Std.U32" | TUInt U64 -> "Std.U64"
+    | TUInt U128 -> "Std.U128" | TUInt Usize -> "Std.Usize"
+    | TInt I8 -> "Std.I8" | TInt I16 -> "Std.I16"
+    | TInt I32 -> "Std.I32" | TInt I64 -> "Std.I64"
+    | TInt I128 -> "Std.I128" | TInt Isize -> "Std.Isize"
+    | TFloat F16 -> "Std.F16" | TFloat F32 -> "Std.F32"
+    | TFloat F64 -> "Std.F64" | TFloat F128 -> "Std.F128"
+  in
   let self_name_of (impl : trait_impl) : string =
     match impl.impl_trait.generics.types with
     | Types.TAdt { id = Types.TAdtId tid; _ } :: _ -> (
@@ -359,6 +377,12 @@ let collect_trait_impls (crate : crate) : CertEvent.cert_trait_impl list =
         (* M9.5o: blanket impl — Lean uses the "Blanket" suffix in
            place of a concrete Self ADT name. *)
         "Blanket"
+    | Types.TLiteral lty :: _ ->
+        (* M9.5u: primitive Self (e.g. [impl Tr for bool]). The
+           standard backend roots the impl's pretty name in the
+           literal type's Lean name (`Bool.Insts.…`, `Std.U32.Insts.…`),
+           not the [__UnknownSelf] sentinel. *)
+        lean_name_of_lit_ty lty
     | _ -> "__UnknownSelf"
   in
   LlbcAst.TraitImplId.Map.values crate.trait_impls
