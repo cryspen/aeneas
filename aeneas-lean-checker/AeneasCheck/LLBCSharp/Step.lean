@@ -79,10 +79,23 @@ def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
     if root ≥ st.numLocals then
       fail s!"E-MutBorrow: local {root} out of bounds (have {st.numLocals})"
     else
-      let inner := st.getLocal root
-      let st := st.setLocal root (.mutLoan loan)
-      let st := st.addLoan loan inner
-      return st
+      -- M9.5w: a `&mut (*x).…` (place projection has any Deref) is
+      -- conceptually a reborrow of `x`'s loan, even though the OCaml
+      -- cert emitter only recognizes the immediate-outer-Deref shape
+      -- as EvReborrow. Classify these as `.reborrow` kind so they're
+      -- allowed to leak past the function-exit `leakedDirect` check
+      -- (their lifetime is owned by the parent borrow's input
+      -- abstraction). For the `.reborrow` kind we also skip the
+      -- `setLocal root (.mutLoan loan)` token-park: the parent already
+      -- has a `mutLoan` token in `root`, and overwriting it would
+      -- corrupt the parent's loan-tracking.
+      if place.projection.any (· == ProjElem.deref) then
+        return st.addLoan loan .bottom .reborrow
+      else
+        let inner := st.getLocal root
+        let st := st.setLocal root (.mutLoan loan)
+        let st := st.addLoan loan inner
+        return st
 
 /-! ## E-SharedBorrow
 

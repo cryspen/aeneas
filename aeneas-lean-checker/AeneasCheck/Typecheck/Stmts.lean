@@ -44,6 +44,17 @@ def checkEvent (ev : Event) : TC Unit := do
   | .mutBorrow loan place _ => do
     checkPlace place
     addLoan loan
+    -- M9.5w: a `&mut (*x).f` (place has any Deref in its projection
+    -- chain) is conceptually a reborrow of `x`'s loan, even though the
+    -- OCaml cert emitter only recognizes the immediate-outer-Deref
+    -- shape as EvReborrow. We classify these as reborrow-class loans
+    -- so [checkFnPost] tolerates them leaking past function exit:
+    -- their lifetime is owned by the parent borrow's input
+    -- abstraction (which our cert doesn't explicitly end yet), not
+    -- by an in-body EvMutBorrow that we're expected to pair with an
+    -- EvEndBorrow.
+    if place.projection.any (· == ProjElem.deref) then
+      modify fun st => { st with reborrowLoans := st.reborrowLoans.insert loan }
   | .sharedBorrow loan _ place _ => do
     checkPlace place
     addLoan loan
