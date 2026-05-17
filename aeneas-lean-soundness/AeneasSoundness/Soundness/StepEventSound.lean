@@ -298,6 +298,71 @@ theorem stepBinop_sound
     simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
       Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
+/-! ### Shared borrow
+
+`stepSharedBorrow` is the first per-event lemma to consume
+`concretise_addLoan` (M10.1f). Like the move / copy lemmas it
+takes three Phase-D-dischargeable hypotheses: the place's
+projection is empty, the local is declared, and the loan id is
+strictly fresh w.r.t. the replayer's loan map (`maxKeyPlusOne
+st.loans ≤ loan`). The freshness premise is stronger than the
+replayer's `not (loans.contains loan)` guard but matches
+`LStep`'s `loanIdFresh` premise via the `concretise` lift; cert
+emission discipline (monotone id allocation) discharges it. -/
+
+/-- C7 / M10.2g — `E-SharedBorrow` (paper Fig. 3). The replayer
+    fails if the loan id is already live or the place's root is
+    out of range, otherwise records the new shared loan; on the
+    paper side this picks `LStep.sharedBorrow`, witnessing the
+    inner value as `liftVal vR`. -/
+theorem stepSharedBorrow_sound
+  (hRep : concretise st = Ω)
+  (loan sbId : Nat) (place : Place) (symval : Nat)
+  (hPlaceProj : place.projection = #[])
+  (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
+  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
+  stepEvent st (.sharedBorrow loan sbId place symval) = .ok st' →
+  ∃ Ω', Valid (.sharedBorrow loan sbId place symval) Ω ∧
+        LStep Ω (.sharedBorrow loan sbId place symval) Ω' ∧
+        concretise st' = Ω' := by
+  obtain ⟨vR, hvR⟩ := hPlaceEnv
+  intro h
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepSharedBorrow,
+    AeneasCheck.LLBCSharp.placeRootLocal,
+    AeneasCheck.LLBCSharp.SymState.getLocal] at h
+  -- Guard 1: `st.loans.contains loan = false` (on success).
+  by_cases hC : st.loans.contains loan = true
+  · rw [if_pos hC] at h; cases h
+  · rw [if_neg hC] at h
+    -- Guard 2: `place.local_ < st.numLocals` (on success).
+    by_cases hB : place.local_ ≥ st.numLocals
+    · rw [if_pos hB] at h; cases h
+    · rw [if_neg hB] at h
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+      subst h
+      -- Witness Ω' = (Ω.bumpLoanId loan).bumpSymValId symval.
+      have hResolve : Ω.resolvePlace place = some (Concretise.liftVal vR) := by
+        subst hRep
+        simp [LLBCState.resolvePlace, hPlaceProj, LLBCState.resolveProj,
+          LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
+      have hLoanIdFresh : Ω.loanIdFresh loan := by
+        subst hRep
+        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+      have hSymValIdFresh : Ω.symValIdFresh symval := by
+        subst hRep
+        simp [LLBCState.symValIdFresh, Concretise.concretise]
+      refine ⟨(Ω.bumpLoanId loan).bumpSymValId symval,
+              ⟨⟨_, hResolve⟩, hLoanIdFresh, hSymValIdFresh⟩,
+              LStep.sharedBorrow hResolve hLoanIdFresh hSymValIdFresh, ?_⟩
+      -- concretise (st.addLoan loan vR .shared) = Ω.bumpLoanId loan
+      -- (bumpSymValId is a no-op).
+      have hGetD :
+        (st.env.getD place.local_ (.bottom : Val)) = vR := by
+        rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
+      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+        hGetD, LLBCState.bumpSymValId,
+        Concretise.concretise_addLoan _ _ _ _ hLoanFresh, hRep]
+
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
 theorem stepMutBorrow_direct_sound
