@@ -28,7 +28,7 @@
       "is_tuple_struct": false,
       "qualified_name": "list_basic::List",
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/list_basic.rs",
+        "file": "tests/src/list_basic.rs",
         "beg_line": 11,
         "beg_col": 0,
         "end_line": 14,
@@ -66,7 +66,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/list_basic.rs",
+        "file": "tests/src/list_basic.rs",
         "beg_line": 16,
         "beg_col": 0,
         "end_line": 21,

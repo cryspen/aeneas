@@ -18,7 +18,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/multi_region.rs",
+        "file": "tests/src/multi_region.rs",
         "beg_line": 13,
         "beg_col": 0,
         "end_line": 15,
@@ -189,7 +189,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/multi_region.rs",
+        "file": "tests/src/multi_region.rs",
         "beg_line": 17,
         "beg_col": 0,
         "end_line": 21,

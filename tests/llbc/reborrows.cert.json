@@ -23,7 +23,7 @@
       "is_tuple_struct": false,
       "qualified_name": "reborrows::Pair",
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/reborrows.rs",
+        "file": "tests/src/reborrows.rs",
         "beg_line": 9,
         "beg_col": 0,
         "end_line": 12,
@@ -47,7 +47,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/reborrows.rs",
+        "file": "tests/src/reborrows.rs",
         "beg_line": 14,
         "beg_col": 0,
         "end_line": 16,
@@ -176,7 +176,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/reborrows.rs",
+        "file": "tests/src/reborrows.rs",
         "beg_line": 18,
         "beg_col": 0,
         "end_line": 20,
@@ -436,7 +436,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/reborrows.rs",
+        "file": "tests/src/reborrows.rs",
         "beg_line": 22,
         "beg_col": 0,
         "end_line": 25,

@@ -17,7 +17,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/compare_simple.rs",
+        "file": "tests/src/compare_simple.rs",
         "beg_line": 4,
         "beg_col": 0,
         "end_line": 6,
@@ -84,7 +84,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/compare_simple.rs",
+        "file": "tests/src/compare_simple.rs",
         "beg_line": 10,
         "beg_col": 0,
         "end_line": 12,
@@ -214,7 +214,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/compare_simple.rs",
+        "file": "tests/src/compare_simple.rs",
         "beg_line": 15,
         "beg_col": 0,
         "end_line": 17,

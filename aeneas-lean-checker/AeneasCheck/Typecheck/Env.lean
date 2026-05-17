@@ -50,15 +50,6 @@ structure FnEnv where
   /-- Borrow ids that were once live but have since been ended. We keep
       them so that a duplicate `endBorrow` produces a precise error. -/
   endedLoans : Std.HashSet Nat
-  /-- M9.5x: loans ended since the most recent `EvJoin` (or fn start).
-      EvJoin moves these into `joinDedupe`. -/
-  recentlyEnded : Std.HashSet Nat
-  /-- M9.5x: loans that may be silently re-ended once. Populated by
-      EvJoin from `recentlyEnded`; the OCaml interpreter emits a
-      branch-local EvEndBorrow inside each arm and then a post-join
-      EvEndBorrow on the same loan during join reconciliation, and the
-      latter would otherwise trip "already-ended". -/
-  joinDedupe : Std.HashSet Nat
   /-- M9.5aa: number of currently-open loops (each `EvLoopInv` opens
       one, each `EvLoopEnd` closes one). An `EvMutBorrow` issued while
       `loopDepth > 0` is loop-iteration-bound — the OCaml interpreter
@@ -73,7 +64,7 @@ structure FnEnv where
 def FnEnv.empty (fnId numLocals : Nat) : FnEnv := {
   fnId, numLocals,
   liveLoans := {}, reborrowLoans := {}, endedLoans := {},
-  recentlyEnded := {}, joinDedupe := {}, loopDepth := 0, cursor := 0
+  loopDepth := 0, cursor := 0
 }
 
 abbrev TC α := StateT FnEnv (Except CheckErr) α

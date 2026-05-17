@@ -1023,9 +1023,16 @@ let rec end_borrow_aux (config : config) (span : Meta.span) ~(snapshots : bool)
              replayer (which leaned on the [joinDedupe] fallback,
              removed in commit #20). The borrow_id allocator is
              monotonic per fun-decl so a "duplicate" id always
-             means redundant emit, never id reuse. *)
-          if Values.BorrowId.Set.mem loan_bid
-               !(ctx.cert_ended_loans)
+             means redundant emit, never id reuse.
+
+             We only touch [cert_ended_loans] when emission is
+             actually live — during a loop fixpoint's speculative
+             iterations (wrapped in [ctx_with_cert_events_suppressed])
+             we must NOT poison the set, otherwise the canonical
+             iteration's emits would themselves be dropped. *)
+          if !(ctx.cert_events_suppressed) then ()
+          else if Values.BorrowId.Set.mem loan_bid
+                    !(ctx.cert_ended_loans)
           then ()
           else begin
             ctx.cert_ended_loans :=

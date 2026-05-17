@@ -49,14 +49,6 @@ structure SymState where
   loans : Std.HashMap Nat LoanInfo
   /-- Number of locals declared in the current function. -/
   numLocals : Nat
-  /-- M9.5x: loans eligible for a silent re-end after a branch join.
-      `stepEndBorrow` adds the loan id here on a successful end and
-      consumes it on a subsequent "not live" end (the OCaml interpreter
-      emits a redundant post-join EvEndBorrow on the same loan as part
-      of join reconciliation). The TC has already verified that the
-      re-end appears in a post-join context, so the replayer treats
-      consumed re-ends as no-ops. -/
-  joinDedupe : Std.HashSet Nat
   /-- M9.5aa: number of currently-open loops; bumped by `EvLoopInv` and
       decremented by `EvLoopEnd`. `EvMutBorrow` issued while
       `loopDepth > 0` is classified as `.lazyExpand` so the exit
@@ -77,8 +69,7 @@ structure SymState where
 namespace SymState
 
 def empty (numLocals : Nat) : SymState := {
-  env := {}, loans := {}, numLocals, joinDedupe := {}, loopDepth := 0,
-  absRegistry := {}
+  env := {}, loans := {}, numLocals, loopDepth := 0, absRegistry := {}
 }
 
 /-- Lookup a local's current value; missing locals are `bottom`. -/

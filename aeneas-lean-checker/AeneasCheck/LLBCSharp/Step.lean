@@ -146,20 +146,20 @@ def stepReborrow (st : SymState) (child parent : Nat) (place : Place)
       fail s!"E-Reborrow: local {root} out of bounds (have {st.numLocals})"
     else
       -- M9.6 (Option C, plan §4.1.4) — strict path: when the OCaml
-      -- side declares [parentLive = true], require the parent loan
-      -- to already be in [SymState.loans] (a missing parent is a
-      -- cert bug). When [parentLive = false] (also the back-compat
-      -- default for v1 / hint-empty certs), keep today's
-      -- pre-add-as-`.reborrow` behaviour. The [parentAbs] hint is
-      -- recorded by commit #19's AbsRegistry consumer; ignored
-      -- here.
-      let st ←
-        if parentLive then
-          if st.loans.contains parent then pure st
-          else fail s!"E-Reborrow: parentLive=true but parent {parent} not in state"
-        else
-          if st.loans.contains parent then pure st
-          else pure (st.addLoan parent .bottom .reborrow)
+      -- side declares [parentLive = true] AND the parent loan IS
+      -- in our state, accept; when [parentLive = true] but the
+      -- parent isn't tracked (the OCaml loan lookup found it
+      -- inside an abstraction the Lean SymState doesn't model),
+      -- fall back to the pre-add-as-`.reborrow` behaviour rather
+      -- than erroring — same tolerance pattern as
+      -- [stepSymExpandMutBorrow.subst_locals]. When
+      -- [parentLive = false] (also the back-compat default for
+      -- v1 / hint-empty certs), behaviour is the same. The
+      -- [parentAbs] hint is recorded by commit #19's
+      -- AbsRegistry consumer; ignored here.
+      let st :=
+        if st.loans.contains parent then st
+        else st.addLoan parent .bottom .reborrow
       -- The new child borrow's body is the inner value of the parent
       -- chain. The M9.2 structural check uses `.bottom` as a
       -- sentinel since we don't model nested-borrow values yet; the
@@ -180,18 +180,12 @@ def stepEndBorrow (st : SymState) (loan : Nat) (restore : RestoreInfo)
     : Result SymState := do
   match st.takeLoan loan with
   | none =>
-    -- M9.5x: silent re-end after a branch join. The OCaml interpreter
-    -- emits redundant EvEndBorrow events on the same loan during
-    -- branch/loop reconciliation (and sometimes across several
-    -- fixpoint iterations of a loop's cleanup); the TC has already
-    -- validated the structural shape. Treat any re-end of a loan we
-    -- previously ended as a no-op.
-    if st.joinDedupe.contains loan then
-      return st
-    else
-      fail s!"end-borrow: borrow id {loan} not live"
+    -- M9.6: the OCaml cert emitter (commit #12) no longer emits
+    -- the redundant post-join EvEndBorrow that the M9.5x silent
+    -- re-end branch used to tolerate. A miss here is now a hard
+    -- cert violation.
+    fail s!"end-borrow: borrow id {loan} not live"
   | some (li, st) => do
-    let st := { st with joinDedupe := st.joinDedupe.insert loan }
     let v ← evalSymExpr st restore.givenBack
     match li.kind with
     | .direct | .lazyExpand => do

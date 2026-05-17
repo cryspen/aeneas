@@ -23,7 +23,7 @@
       "is_tuple_struct": false,
       "qualified_name": "aggregates_basic::Pair",
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/aggregates_basic.rs",
+        "file": "tests/src/aggregates_basic.rs",
         "beg_line": 9,
         "beg_col": 0,
         "end_line": 12,
@@ -47,7 +47,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/aggregates_basic.rs",
+        "file": "tests/src/aggregates_basic.rs",
         "beg_line": 14,
         "beg_col": 0,
         "end_line": 16,
@@ -200,7 +200,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/aggregates_basic.rs",
+        "file": "tests/src/aggregates_basic.rs",
         "beg_line": 18,
         "beg_col": 0,
         "end_line": 20,
