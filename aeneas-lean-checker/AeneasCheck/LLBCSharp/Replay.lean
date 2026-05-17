@@ -46,7 +46,7 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans =>
     stepSymExpandMutBorrow st svId bid innerSv parentAbs substLocals substLoans
   | .join l r res _ => stepJoin st l r res
-  | .loopInv _ invariant _ =>
+  | .loopInv _ invariant loanRegistry =>
     -- M12.0/M12.1: structural no-op. The OCaml side emits an
     -- EvLoopInv at the start of each loop's canonical synthesized
     -- body, paired with an EvLoopEnd at the end (see InterpLoops.ml).
@@ -54,25 +54,31 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
     -- LLBC# loop rule (T-Loop-Fixpoint) is structurally handled by
     -- the Forward translator. The semantic ≤-relation check lands in
     -- M12.3.
-    -- M9.5z: register loop-introduced borrow ids (those in
-    -- `invariant.liveLoans` and those appearing as `SymMutBorrowTok n`
-    -- in `invariant.env`) so a subsequent in-body `EvEndBorrow` finds
-    -- them in `loans`. Mark them `.reborrow`: their lifetime belongs
-    -- to the loop iteration's abstraction rather than to a discrete
-    -- in-body `EvMutBorrow`, so the function-exit leak check tolerates
-    -- residual liveness.
-    -- M9.5aa: also open a loop scope so `stepMutBorrow` knows to
+    -- M9.5aa: open a loop scope so `stepMutBorrow` knows to
     -- classify in-body direct `&mut local` as `.lazyExpand`.
     let mut st := { st with loopDepth := st.loopDepth + 1 }
-    for b in invariant.liveLoans do
-      if !st.loans.contains b then
-        st := st.addLoan b .bottom .reborrow
-    for (_, e) in invariant.env do
-      match e with
-      | .symMutBorrowTok b =>
+    -- M9.6 (Option C, plan §4.1.3) — strict path: when
+    -- [loanRegistry] is non-empty, register exactly the loans
+    -- the OCaml side identified in the loop's input
+    -- abstractions ((borrowId, parentAbsId) pairs from commit
+    -- #9). When empty (v1 / hint-empty default), fall back to
+    -- the M9.5z scan of [invariant.liveLoans] + [invariant.env]
+    -- for [SymMutBorrowTok n] tokens. The parent_abs id is
+    -- recorded by commit #19's AbsRegistry consumer.
+    if loanRegistry.isEmpty then
+      for b in invariant.liveLoans do
         if !st.loans.contains b then
           st := st.addLoan b .bottom .reborrow
-      | _ => pure ()
+      for (_, e) in invariant.env do
+        match e with
+        | .symMutBorrowTok b =>
+          if !st.loans.contains b then
+            st := st.addLoan b .bottom .reborrow
+        | _ => pure ()
+    else
+      for (b, _parentAbs) in loanRegistry do
+        if !st.loans.contains b then
+          st := st.addLoan b .bottom .reborrow
     return st
   | .loopEnd _ =>
     -- M9.5aa: close the matching loop scope.

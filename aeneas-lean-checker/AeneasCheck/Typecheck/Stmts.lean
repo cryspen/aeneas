@@ -137,37 +137,36 @@ def checkEvent (ev : Event) : TC Unit := do
     modify fun st => { st with
       joinDedupe := st.recentlyEnded.fold (·.insert ·) st.joinDedupe
       recentlyEnded := {} }
-  | .loopInv _ invariant _ => do
+  | .loopInv _ invariant loanRegistry => do
     -- M9.5aa: open a new loop scope. `EvMutBorrow` issued while any
     -- loop is open is reborrow-class (lifetime owned by the loop's
     -- region abstraction, no explicit end event in the cert).
     modify fun st => { st with loopDepth := st.loopDepth + 1 }
-    -- M12.0/M12.1: structural check on the loop-invariant witness.
-    -- As with EvJoin above, we bounds-check the SymExprs in the
-    -- invariant env so a malformed cert is rejected up front, but
-    -- defer the actual fixpoint ≤-relation algebra to a later
-    -- milestone (M12.3 plumbs the LLBC# loop rule through `Step`).
-    -- M9.5z: register loop-introduced borrow ids. The fixpoint may
-    -- materialise fresh `SymMutBorrowTok n` tokens in the invariant
-    -- env (representing each iteration's borrow on the input mut
-    -- ref); a subsequent in-body EvEndBorrow on those ids would
-    -- otherwise trip "unknown loan". Tag them as `.reborrow`-class
-    -- since their lifetime is tied to the loop iteration's
-    -- abstraction, not an in-body EvMutBorrow.
+    -- M9.6 (Option C, plan §4.1.3) — strict path: when
+    -- [loanRegistry] is non-empty, register exactly those
+    -- (borrowId, parentAbsId) pairs. Otherwise fall back to the
+    -- M9.5z scan of liveLoans + symMutBorrowTok tokens.
     modify fun st =>
-      let st := invariant.liveLoans.foldl (init := st) fun st b =>
-        if st.liveLoans.contains b || st.endedLoans.contains b then st
-        else { st with
-          liveLoans := st.liveLoans.insert b
-          reborrowLoans := st.reborrowLoans.insert b }
-      invariant.env.foldl (init := st) fun st (_, e) =>
-        match e with
-        | .symMutBorrowTok b =>
+      if loanRegistry.isEmpty then
+        let st := invariant.liveLoans.foldl (init := st) fun st b =>
           if st.liveLoans.contains b || st.endedLoans.contains b then st
           else { st with
             liveLoans := st.liveLoans.insert b
             reborrowLoans := st.reborrowLoans.insert b }
-        | _ => st
+        invariant.env.foldl (init := st) fun st (_, e) =>
+          match e with
+          | .symMutBorrowTok b =>
+            if st.liveLoans.contains b || st.endedLoans.contains b then st
+            else { st with
+              liveLoans := st.liveLoans.insert b
+              reborrowLoans := st.reborrowLoans.insert b }
+          | _ => st
+      else
+        loanRegistry.foldl (init := st) fun st (b, _) =>
+          if st.liveLoans.contains b || st.endedLoans.contains b then st
+          else { st with
+            liveLoans := st.liveLoans.insert b
+            reborrowLoans := st.reborrowLoans.insert b }
     -- For M12.1 the replayer treats this event as a semantic no-op,
     -- and the Forward translator uses the position of EvLoopInv as
     -- the "begin loop body" marker (paired with EvLoopEnd).
