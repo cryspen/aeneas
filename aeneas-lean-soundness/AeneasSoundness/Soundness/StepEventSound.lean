@@ -697,6 +697,57 @@ theorem stepReborrow_sound
                             = Concretise.concretise from rfl,
           Concretise.concretise_addLoan, hParentNoOp, hRep]
 
+/-! ### Call — empty-absSig (C15a)
+
+`stepCall` writes a fresh `Val.sym 0` to the dst local and folds the
+cert's `absSig` into `absRegistry`. The paper-side `LStep.call`'s
+post-state currently models *only* the dst-write (the absSig
+installation is a Phase-A surface gap; see plan §3.4 and the deferred
+M10.0m strengthening task). For the forward-only / empty-absSig
+subset — which covers the M10.1 fixture family — the two sides
+coincide. The Phase-D dispatch handles only the empty case until the
+LStep.call strengthening lands. -/
+
+/-- C15a / M10.2o — `EvCall fn callId fnName args dst regionAbs absSig`
+    with `absSig = #[]`. The replayer reduces to a single dst setLocal
+    of `.sym 0`; the paper picks `LStep.call hSymValIdFresh` with σ
+    instantiated to 0. The empty-absSig hypothesis is Phase-D-dischargeable
+    by cert-side discipline + the Phase-A strengthening (deferred). -/
+theorem stepCall_sound
+  (hRep : concretise st = Ω)
+  (fn callId : Nat) (fnName : String) (args : Array SymExpr)
+  (dst : Place) (regionAbs : Array Nat) (absSig : Array AbsShape)
+  (hDstInBounds : dst.local_ < st.numLocals)
+  (hAbsSigEmpty : absSig = #[]) :
+  stepEvent st
+    (.call fn callId fnName args dst regionAbs absSig) = .ok st' →
+  ∃ Ω', Valid (.call fn callId fnName args dst regionAbs absSig) Ω ∧
+        LStep Ω (.call fn callId fnName args dst regionAbs absSig) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  -- Replayer reduces to a single setLocal once absSig is empty.
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepCall,
+    AeneasCheck.LLBCSharp.placeRootLocal,
+    hAbsSigEmpty, Array.foldl_empty] at hStep
+  -- Guard: dst's root is in bounds.
+  have hNotGE : ¬ dst.local_ ≥ st.numLocals := Nat.not_le_of_lt hDstInBounds
+  rw [if_neg hNotGE] at hStep
+  simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+  subst hStep
+  -- Paper-side σ := 0 freshness (concretise sets nextSymValId := 0).
+  have hSymValIdFresh : Ω.symValIdFresh 0 := by
+    subst hRep
+    simp [LLBCState.symValIdFresh, Concretise.concretise]
+  refine ⟨(Ω.setLocal dst.local_ (.sym 0)).bumpSymValId 0,
+          ⟨0, hSymValIdFresh⟩,
+          LStep.call hSymValIdFresh, ?_⟩
+  -- concretise (st.setLocal dst.local_ (.sym 0))
+  --   = (Ω.setLocal dst.local_ (.sym 0)).bumpSymValId 0
+  -- via concretise_setLocal + bumpSymValId no-op + liftVal (.sym 0).
+  simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+    LLBCState.bumpSymValId, Concretise.concretise_setLocal, hRep,
+    Concretise.liftVal]
+
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
     rules named by each witness. Per-entry induction over
     [witnesses] is the heart of the join soundness proof. Closed by
