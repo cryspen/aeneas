@@ -61,4 +61,71 @@ theorem concretise_ctx_apply (st : SymState) (l : Nat) :
 theorem concretise_abs_apply (st : SymState) (a : Nat) :
     (concretise st).abs a = (st.absRegistry[a]?).map liftAbsShape := rfl
 
+/-! ## HashMap inversion lemmas
+
+Two small helpers tying `liftEnv` to `Function.update` so the
+`setLocal` commute below reduces by `funext` + per-key case-split.
+-/
+
+/-- `liftEnv (env.insert l v)` is the function-update of
+    `liftEnv env` at `l` with `some (liftVal v)`. Used by the
+    `setLocal` commute lemma. -/
+theorem liftEnv_insert (env : Std.HashMap Nat AeneasCheck.LLBCSharp.Val)
+    (l : Nat) (v : AeneasCheck.LLBCSharp.Val) :
+    liftEnv (env.insert l v) = Function.update (liftEnv env) l (some (liftVal v)) := by
+  funext l'
+  unfold liftEnv
+  by_cases h : l = l'
+  · subst h; simp [Function.update]
+  · simp [Std.HashMap.getElem?_insert, h, Function.update_of_ne (Ne.symm h)]
+
+/-! ## Commute lemmas (M10.1e)
+
+For each `SymState` mutator, prove `concretise` commutes with the
+matching paper-side mutator. Phase C per-event lemmas chain these
+to discharge the `concretise st' = Ω'` conjunct.
+-/
+
+/-- `setLocal` commute: `concretise (st.setLocal l v) = (concretise
+    st).setLocal l (liftVal v)`. The bedrock for every per-event
+    lemma that writes a local (move / copy / assign /
+    mutBorrow_direct / endBorrow_direct / loopOwned). -/
+theorem concretise_setLocal (st : SymState) (l : Nat)
+    (v : AeneasCheck.LLBCSharp.Val) :
+    concretise (st.setLocal l v) =
+      (concretise st).setLocal l (liftVal v) := by
+  unfold concretise SymState.setLocal LLBCState.setLocal
+  congr 1
+  exact liftEnv_insert st.env l v
+
+/-- `addLoan` commute (conditional on freshness): if the new loan
+    id `b` is at least the current `nextLoanId`, then
+    `concretise (st.addLoan b inner kind) = (concretise st).bumpLoanId b`.
+    The freshness premise mirrors `LStep`'s `loanIdFresh` premise;
+    Phase C lemmas discharge it from the cert's id allocation
+    monotonicity.
+
+    The hashmap-fold equality
+    `maxKeyPlusOne (loans.insert b _) = max (maxKeyPlusOne loans) (b+1)`
+    is the load-bearing step. Sorry'd at M10.1e (last Phase B
+    commit; G6 still exempt); Phase C closes when the first lemma
+    that needs the equality fires (likely M10.2h
+    `stepMutBorrow_direct_sound`). -/
+theorem concretise_addLoan (st : SymState) (b : Nat)
+    (inner : AeneasCheck.LLBCSharp.Val) (kind : LoanKind)
+    (_hFresh : maxKeyPlusOne st.loans ≤ b) :
+    concretise (st.addLoan b inner kind) =
+      (concretise st).bumpLoanId b := by
+  sorry
+
+/-- `takeLoan` commute: removing a loan from the replayer's loan
+    store is a no-op on the paper side (loans live inside `ctx` /
+    `abs`, not in a separate map). So if `takeLoan` returns `some
+    (_, st')`, then `concretise st' = concretise st`. -/
+theorem concretise_takeLoan (st : SymState) (b : Nat)
+    {li : LoanInfo} {st' : SymState}
+    (_hTake : st.takeLoan b = some (li, st')) :
+    concretise st' = concretise st := by
+  sorry
+
 end AeneasSoundness.Soundness.Concretise
