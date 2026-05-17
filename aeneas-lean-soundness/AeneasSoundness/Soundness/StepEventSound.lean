@@ -747,6 +747,68 @@ theorem stepCall_sound
     LLBCState.bumpSymValId, Concretise.concretise_setLocal,
     Concretise.concretise_foldl_addAbsShape, hRep, Concretise.liftVal]
 
+/-! ### EndAbs (C16)
+
+`stepEndAbs` validates the released loans against the registered
+abstraction's role list, drops each released loan from `st.loans`,
+clears the named `tokenClearLocals` (those holding `mutLoan _` tokens
+become `.bottom`), then erases the abstraction's registry entry. On
+the paper side `LStep.endAbs`'s post-state is `Ω.removeAbs abs`,
+mirrored by the `concretise_removeAbsShape` commute. The intermediate
+state pre-removal is folded into a single `stPre` argument plus a
+Phase-D-dischargeable `hConcPre : concretise stPre = concretise st`
+hypothesis (the loan-erase + token-clear together preserve
+concretise; the token-clear's `.mutLoan → .bottom` substitution is
+the part that needs `LoanTokenInvariant`-style discipline to be
+sound at the deep-Val level — Phase D territory).
+
+The `hShape` hypothesis pins `stepEvent` to `.ok (stPre.removeAbsShape
+absId)`, matching the C11-C13 result-shape pattern. -/
+
+/-- C16 / M10.2p — `EvEndAbs absId finalValues released tokenClearLocals`
+    triggers `Reorg-End-Abs` (paper Fig. 8). Two Phase-D-dischargeable
+    hypotheses: `hAbsInRegistry` lifts the abs entry to the paper
+    side via `concretise.abs = liftAbsRegistry`, and the
+    `(stPre, hConcPre, hShape)` triple folds the loan-erase plus
+    token-clear preamble into one `concretise`-preserving step.
+
+    Post-state matches `Ω.removeAbs absId` via
+    `concretise_removeAbsShape` (M10.1i) ; `hConcPre` ; `hRep`. -/
+theorem stepEndAbs_sound
+  (hRep : concretise st = Ω)
+  (absId : Nat) (finalValues : Array SymExpr) (releasedLoans : Array Nat)
+  (tokenClearLocals : Array Nat)
+  (shape : AbsShape)
+  (hAbsInRegistry : st.absRegistry[absId]? = some shape)
+  (stPre : SymState)
+  (hConcPre : concretise stPre = concretise st)
+  (hShape : stepEvent st
+            (.endAbs absId finalValues releasedLoans tokenClearLocals) =
+            .ok (stPre.removeAbsShape absId)) :
+  stepEvent st (.endAbs absId finalValues releasedLoans tokenClearLocals) = .ok st' →
+  ∃ Ω', Valid (.endAbs absId finalValues releasedLoans tokenClearLocals) Ω ∧
+        LStep Ω (.endAbs absId finalValues releasedLoans tokenClearLocals) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  -- Result-shape collapses st' = stPre.removeAbsShape absId.
+  rw [hShape] at hStep
+  simp only [Except.ok.injEq] at hStep
+  subst hStep
+  -- Lift the registry lookup to the paper-side via hRep ; concretise.abs.
+  have hAbsLifted : Ω.abs absId = some (LLBCSharpPaper.liftAbsShape shape) := by
+    subst hRep
+    simp [Concretise.concretise, Concretise.liftAbsRegistry, hAbsInRegistry]
+  refine ⟨Ω.removeAbs absId,
+          ⟨_, hAbsLifted⟩,
+          LStep.endAbs hAbsLifted,
+          ?_⟩
+  -- concretise (stPre.removeAbsShape absId)
+  --   = (concretise stPre).removeAbs absId  -- M10.1i commute
+  --   = (concretise st).removeAbs absId     -- hConcPre
+  --   = Ω.removeAbs absId                    -- hRep
+  exact (Concretise.concretise_removeAbsShape stPre absId).trans
+    (congrArg (·.removeAbs absId) (hConcPre.trans hRep))
+
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
     rules named by each witness. Per-entry induction over
     [witnesses] is the heart of the join soundness proof. Closed by
