@@ -715,9 +715,14 @@ partial def parseLlbcTy (j : Json) : Result LlbcTy := do
           let n ← asNat idPayload
           return .tAdt n args
         | "Builtin" =>
-          -- e.g. `"Box"`, `"Str"`. Keep as opaque for now.
+          -- M9.7m: stdlib `Box<T>` is transparent in the pure pipeline —
+          -- the flat-path's `isTBox` branch unwraps `TBox` to its
+          -- single generic argument, and the structured path needs to
+          -- mirror that. `Str` and other Builtin tags stay opaque.
           let bs ← asStr idPayload
-          return .tOpaque s!"Builtin({bs})"
+          match bs, args.toList with
+          | "Box", [inner] => return inner
+          | _, _ => return .tOpaque s!"Builtin({bs})"
         | _ => fail s!"parseLlbcTy[Adt.id]: unknown tag {idTag}"
     | "TypeVar" =>
       -- Charon's `TVar (Bound|Free) n`. Extract the trailing nat.
@@ -772,7 +777,14 @@ partial def parseLlbcTy (j : Json) : Result LlbcTy := do
             if v < 0 then return none else return some v.toNat) <|> pure none
         match lenOpt with
         | some n => return .tArray elem n
-        | none => return .tOpaque s!"Array(opaque-len)"
+        -- M9.7m: opaque length (const-generic var / global) — emit
+        -- `tArray elem 0` rather than `tOpaque "Array(opaque-len)"`
+        -- so the structured translator renders as `Array <elem>
+        -- 0#usize`, matching the flat path's [parseArrayLen] fallback
+        -- behaviour (which returns 0 when no literal length is
+        -- present). The "0" is a placeholder when the length is
+        -- symbolic; the typechecker doesn't constrain it.
+        | none => return .tArray elem 0
       else fail s!"parseLlbcTy[Array]: expected 2-elt list, got {arr.size}"
     | "Slice" =>
       let inner ← parseLlbcTy payload

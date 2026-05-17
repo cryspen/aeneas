@@ -131,13 +131,21 @@ and j_ty_kind (k : ty_kind) : Yojson.Basic.t =
       tagged "Ref" (`List [ `Int 0; j_ty inner; j_ref_kind k ])
   | TRawPtr (inner, k) ->
       tagged "RawPtr" (`List [ j_ty inner; j_ref_kind k ])
-  | TArray (elem, _ce) ->
-      (* Lean side reads `[ty, {kind: Literal: Scalar: ...}]`. We
-         emit an opaque-length constant; Lean degrades to `tOpaque`. *)
+  | TArray (elem, ce) ->
+      (* M9.7m: emit the real const-generic length when it's a
+         literal so the Lean parser's `Array` branch lifts to a
+         structured `tArray elem n` (the parity test needs this so
+         the structured-source translator emits `Array <elem> N#usize`
+         where the flat-source translator emits the same).
+         Non-literal lengths (CVar, CTraitConst, …) stay opaque. *)
+      let kind_json = match ce.kind with
+        | CLiteral lit -> tagged "Literal" (j_literal lit)
+        | _ -> tagged "Opaque" (`String "len")
+      in
       tagged "Array"
         (`List
           [ j_ty elem;
-            `Assoc [ "kind", tagged "Opaque" (`String "len") ] ])
+            `Assoc [ "kind", kind_json ] ])
   | TSlice inner -> tagged "Slice" (j_ty inner)
   | TFnPtr _ -> tagged "FnPtr" `Null
   | TFnDef _ -> tagged "FnDef" `Null
