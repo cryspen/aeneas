@@ -134,10 +134,14 @@ def bumpAbsId (Ω : LLBCState) (a : AbsId) : LLBCState :=
   { Ω with freshness :=
       { Ω.freshness with nextAbsId := max Ω.freshness.nextAbsId (a + 1) } }
 
-/-- Bump `nextSymValId` past `σ`. -/
-def bumpSymValId (Ω : LLBCState) (σ : SymValId) : LLBCState :=
-  { Ω with freshness :=
-      { Ω.freshness with nextSymValId := max Ω.freshness.nextSymValId (σ + 1) } }
+/-- Bump `nextSymValId` past `σ`. The replayer doesn't track
+    sym-value ids — `concretise` sets `nextSymValId := 0` and
+    `CertGen_faithful` carries the cert-side monotonicity guarantee.
+    To preserve `concretise st' = Ω'` across `LStep` constructors
+    that pick a fresh sym-value id, this is a no-op at the paper
+    level: Phase C M10.2f's stepBinop_sound is the first lemma to
+    rely on this. -/
+def bumpSymValId (Ω : LLBCState) (_σ : SymValId) : LLBCState := Ω
 
 /-- `ℓ` is fresh in `Ω` iff `nextLoanId ≤ ℓ`. -/
 def loanIdFresh (Ω : LLBCState) (ℓ : LoanId) : Prop :=

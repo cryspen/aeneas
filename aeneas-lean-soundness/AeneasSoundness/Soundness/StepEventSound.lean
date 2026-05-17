@@ -255,6 +255,49 @@ theorem stepAssert_sound
     · exact LStep.assert_false_panic
     · exact LStep.assert_true
 
+/-- C6 / M10.2f — `E-BinaryOp`. The replayer's `stepBinop` evaluates
+    both operands (`evalSymExpr` is total — both `let _ ← ...` binds
+    succeed), bounds-checks `dst.local_ < numLocals`, and writes
+    `.sym 0` to the destination. We witness σ = 0 in `LStep.binop`;
+    the freshness premise `Ω.symValIdFresh 0` is `0 ≤ 0` which holds
+    because `concretise` sets `nextSymValId := 0`. `bumpSymValId`'s
+    redefinition as a no-op (preceding commit material in State.lean)
+    is what makes `concretise st' = Ω'` close. -/
+theorem stepBinop_sound
+  (hRep : concretise st = Ω)
+  (op : String) (lhs rhs : SymExpr) (dst : Place) :
+  stepEvent st (.binop op lhs rhs dst) = .ok st' →
+  ∃ Ω', Valid (.binop op lhs rhs dst) Ω ∧
+        LStep Ω (.binop op lhs rhs dst) Ω' ∧
+        concretise st' = Ω' := by
+  intro h
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepBinop, bind, Except.bind,
+    AeneasCheck.LLBCSharp.placeRootLocal] at h
+  -- Two evalSymExpr binds and a numLocals bounds check.
+  match heval1 : AeneasCheck.LLBCSharp.evalSymExpr st lhs with
+  | .error _ => rw [heval1] at h; cases h
+  | .ok _ =>
+  rw [heval1] at h
+  match heval2 : AeneasCheck.LLBCSharp.evalSymExpr st rhs with
+  | .error _ => rw [heval2] at h; cases h
+  | .ok _ =>
+  rw [heval2] at h
+  by_cases hBounds : dst.local_ ≥ st.numLocals
+  · -- bounds-check failure: `fail _ = .error _`, contradicts h
+    simp only [hBounds, ite_true] at h
+    cases h
+  · simp only [hBounds, ite_false, Pure.pure, Except.pure, Except.ok.injEq] at h
+    subst h
+    -- Witness σ = 0; freshness premise is `0 ≤ 0`.
+    have hFresh : Ω.symValIdFresh 0 := by
+      subst hRep
+      simp [LLBCState.symValIdFresh, Concretise.concretise]
+    refine ⟨Ω.setLocal dst.local_ (.sym 0), ⟨0, hFresh⟩,
+            (LStep.binop hFresh : LStep Ω (.binop op lhs rhs dst) _), ?_⟩
+    -- bumpSymValId is a no-op, so the target reduces.
+    simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+      Concretise.concretise_setLocal, hRep, Concretise.liftVal]
+
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
 theorem stepMutBorrow_direct_sound
