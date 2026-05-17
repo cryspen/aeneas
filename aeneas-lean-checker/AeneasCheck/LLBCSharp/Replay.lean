@@ -42,8 +42,8 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .call _ _ _ _ dst _ _ => stepCall st dst
   | .endAbs _ _ released _ => stepEndAbs st released
   | .proj _ _ _ => .error "proj: not implemented until M10"
-  | .symExpandMutBorrow svId bid innerSv _ _ _ =>
-    stepSymExpandMutBorrow st svId bid innerSv
+  | .symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans =>
+    stepSymExpandMutBorrow st svId bid innerSv parentAbs substLocals substLoans
   | .join l r res _ => stepJoin st l r res
   | .loopInv _ invariant _ =>
     -- M12.0/M12.1: structural no-op. The OCaml side emits an

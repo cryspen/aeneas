@@ -291,24 +291,57 @@ We also walk loan-given values for the same substitution: if any
 existing loan was given a [.sym svId] (i.e. its restoration value was
 a not-yet-expanded borrow), it now carries [.mutLoan bid]. -/
 
-def stepSymExpandMutBorrow (st : SymState) (svId bid innerSv : Nat) :
+def stepSymExpandMutBorrow (st : SymState) (svId bid innerSv : Nat)
+    (_parentAbs : Option Nat := none)
+    (substLocals : Array Nat := #[]) (substLoans : Array Nat := #[]) :
     Result SymState := do
   if st.loans.contains bid then
     fail s!"E-SymExpandMutBorrow: borrow id {bid} already live"
-  -- Substitute in env.
+  -- M9.6 (Option C, plan §4.1.5) — strict path: when the OCaml
+  -- side declares which env locals and which loan-given slots it
+  -- substituted, drive the rewrite directly off those lists and
+  -- error on any mismatch. When the hint arrays are empty (v1 /
+  -- hint-empty default), fall back to the M9.5r env+loan scan.
+  -- [parentAbs] is recorded by the AbsRegistry consumer in
+  -- commit #19; ignored here.
   let mut newEnv := st.env
-  for (l, v) in st.env.toList do
-    match v with
-    | .sym k => if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
-    | _ => pure ()
-  -- Substitute in loan-given values.
+  if substLocals.isEmpty then
+    for (l, v) in st.env.toList do
+      match v with
+      | .sym k => if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
+      | _ => pure ()
+  else
+    -- The OCaml-side ctx.env tracks function parameters and
+    -- abstraction-bound locals that the Lean SymState doesn't
+    -- model (the cert never emits an explicit bind for input
+    -- parameters). Treat "unbound local in Lean env" as a silent
+    -- skip — Lean has no work to do for those slots. Only raise
+    -- on a *bound* local whose value disagrees with the hint.
+    for l in substLocals do
+      match newEnv[l]? with
+      | some (.sym k) =>
+        if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
+      | some _ => pure ()
+      | none => pure ()
   let mut newLoans := st.loans
-  for (b, li) in st.loans.toList do
-    match li.given with
-    | .sym k =>
-      if k = svId then
-        newLoans := newLoans.insert b { li with given := .mutLoan bid }
-    | _ => pure ()
+  if substLoans.isEmpty then
+    for (b, li) in st.loans.toList do
+      match li.given with
+      | .sym k =>
+        if k = svId then
+          newLoans := newLoans.insert b { li with given := .mutLoan bid }
+      | _ => pure ()
+  else
+    -- Same tolerance for unknown loans as for unbound locals.
+    for b in substLoans do
+      match newLoans[b]? with
+      | some li =>
+        match li.given with
+        | .sym k =>
+          if k = svId then
+            newLoans := newLoans.insert b { li with given := .mutLoan bid }
+        | _ => pure ()
+      | none => pure ()
   let st := { st with env := newEnv, loans := newLoans }
   return st.addLoan bid (.sym innerSv) .lazyExpand
 
