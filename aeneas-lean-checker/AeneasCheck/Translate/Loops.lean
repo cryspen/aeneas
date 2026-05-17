@@ -57,7 +57,7 @@ def findLoopBracket (evs : Array Event) :
   let mut invariant : StateSummary := default
   for i in [0:evs.size] do
     match evs[i]! with
-    | .loopInv lid inv =>
+    | .loopInv lid inv _ =>
       if invIdx.isNone then
         invIdx := some i
         loopId := lid

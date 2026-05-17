@@ -1027,7 +1027,7 @@ def findBranchEnd (evs : Array Event) (i : Nat) (openCond : SymExpr) :
       -- `true` marker; depth is decremented when we see EvJoin
       -- below, not here.
       pure ()
-    | .join _ _ _ =>
+    | .join _ _ _ _ =>
       if depth == 0 then
         -- A bare join with no opening true marker — shouldn't
         -- happen; abort.
@@ -1056,7 +1056,7 @@ def findBranchEnd (evs : Array Event) (i : Nat) (openCond : SymExpr) :
       let ev := evs[m]
       match ev with
       | .assert _ true => depth2 := depth2 + 1
-      | .join _ _ _ =>
+      | .join _ _ _ _ =>
         if depth2 == 0 then
           joinIdx := some m
           break
@@ -1081,7 +1081,7 @@ def findBranchEnd (evs : Array Event) (i : Nat) (openCond : SymExpr) :
           let ev := evs[t]
           match ev with
           | .assert _ true => depthT := depthT + 1
-          | .join _ _ _ =>
+          | .join _ _ _ _ =>
             if depthT == 0 then break
             depthT := depthT - 1
           | .retn =>
@@ -1316,12 +1316,12 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- Borrow events have no value-level effect in the forward
   -- direction; the mutation flows out via the function's return,
   -- modelled by M10.2's backward-function machinery.
-  | .mutBorrow _ _ _ | .sharedBorrow _ _ _ _
-  | .reborrow _ _ _ | .endBorrow _ _ => st
+  | .mutBorrow _ _ _ _ | .sharedBorrow _ _ _ _
+  | .reborrow _ _ _ _ _ | .endBorrow _ _ => st
   -- Control / panic / return are observed at the wrap-up step
   -- below; they don't affect the per-local value map.
   | .assert _ _ | .panic | .retn => st
-  | .call _ callId fnName args dst regionAbs =>
+  | .call _ callId fnName args dst regionAbs _ =>
     -- M9.5c: intercept Charon's builtin `@ArrayIndexMut` ahead of the
     -- generic call machinery. The standard Aeneas backend lowers
     -- `xs[i] = v` (which compiles to `index_mut` + a deref-store) to a
@@ -1547,7 +1547,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         vm := st.vm.insert dst.local_ (.var vName)
         callBack := st.callBack.insert dst.local_ backName
         lastWrite := some dst.local_ }
-  | .endAbs abs _finals _released =>
+  | .endAbs abs _finals _released _ =>
     -- M10.2b: a callee's region abstraction just closed. The call
     -- itself was already emitted at EvCall time; what's left to do
     -- here is update `vm[postLocal] := .var <bindingName>` so that
@@ -1606,7 +1606,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- only reached if the [findBranchEnd] lookahead failed (malformed
   -- cert), in which case ignoring it is the safest fallback.
   | .proj _ _ _
-  | .join _ _ _ | .loopInv _ _ | .loopEnd _ => st
+  | .join _ _ _ _ | .loopInv _ _ _ | .loopEnd _ => st
   -- M9.5d: match-arm markers are consumed by the outer [walkEvents]
   -- loop (it groups arms into a `PExpr.matchE`). Hitting one here
   -- means the lookahead failed to recognise a match block; treat
@@ -1616,7 +1616,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- the LLBC# replayer; the Forward translator's value-flow walk
   -- doesn't observe new bindings (the dst local that holds the
   -- expanded borrow was already named at EvCall time). No-op.
-  | .symExpandMutBorrow _ _ _ => st
+  | .symExpandMutBorrow _ _ _ _ _ _ => st
 
 /-- Render a `SymExpr` from a join state summary as a Pure expression
     *in the context of a sub-walk's final var map*. Used by
@@ -1864,7 +1864,7 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                     | .matchArm s' _ _ _ =>
                       if sameScrutinee (Event.matchArm s' 0 0 "") then j
                       else findEnd (j + 1)
-                    | .join _ _ _ => j
+                    | .join _ _ _ _ => j
                     | _ => findEnd (j + 1)
                 let endIdx := findEnd (k + 1)
                 collect endIdx ((k, endIdx, adtId, vid, vname) :: acc)
@@ -2533,7 +2533,7 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
   -- carry the same qualified path; intercepts start with `@`.
   let isSelfRecursive : Bool := f.events.any fun ev =>
     match ev with
-    | .call calleeId _ calleeName _ _ _ =>
+    | .call calleeId _ calleeName _ _ _ _ =>
         calleeId == f.fnId && calleeName == f.fnName
     | _ => false
   let trailer : Option String :=

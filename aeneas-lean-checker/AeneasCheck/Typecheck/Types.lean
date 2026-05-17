@@ -24,7 +24,7 @@ private def restoreMaxLocal (r : RestoreInfo) : Nat :=
   symExprMaxLocal r.givenBack
 
 private def eventMaxLocal : Event → Nat
-  | .mutBorrow _ p _ => placeMaxLocal p
+  | .mutBorrow _ p _ _ => placeMaxLocal p
   | .sharedBorrow _ _ p _ => placeMaxLocal p
   | .assign dst rhs => max (placeMaxLocal dst) (symExprMaxLocal rhs)
   | .move s d | .copy s d => max (placeMaxLocal s) (placeMaxLocal d)
@@ -32,11 +32,11 @@ private def eventMaxLocal : Event → Nat
   | .assert c _ => symExprMaxLocal c
   | .binop _ l r d =>
     max (max (symExprMaxLocal l) (symExprMaxLocal r)) (placeMaxLocal d)
-  | .reborrow _ _ p => placeMaxLocal p
-  | .call _ _ _ args dst _ =>
+  | .reborrow _ _ p _ _ => placeMaxLocal p
+  | .call _ _ _ args dst _ _ =>
     let argMax := args.foldl (fun a e => max a (symExprMaxLocal e)) 0
     max argMax (placeMaxLocal dst)
-  | .endAbs _ vs _ => vs.foldl (fun a e => max a (symExprMaxLocal e)) 0
+  | .endAbs _ vs _ _ => vs.foldl (fun a e => max a (symExprMaxLocal e)) 0
   | .proj _ p _ => placeMaxLocal p
   | _ => 0
 

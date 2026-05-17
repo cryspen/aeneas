@@ -56,7 +56,7 @@ def removeLoan (loan : Nat) : TC Unit := do
 
 def checkEvent (ev : Event) : TC Unit := do
   match ev with
-  | .mutBorrow loan place _ => do
+  | .mutBorrow loan place _ _ => do
     checkPlace place
     addLoan loan
     -- M9.5w: a `&mut (*x).f` (place has any Deref in its projection
@@ -98,15 +98,15 @@ def checkEvent (ev : Event) : TC Unit := do
     checkPlace dst
   | .panic => pure ()
   | .retn => pure ()
-  | .reborrow child _parent place => do
+  | .reborrow child _parent place _ _ => do
     checkPlace place
     addLoan child
     modify fun st => { st with reborrowLoans := st.reborrowLoans.insert child }
   -- Out-of-subset events: report a precise milestone.
-  | .call _ _ _ args dst _ => do
+  | .call _ _ _ args dst _ _ => do
     for a in args do checkSymExpr a
     checkPlace dst
-  | .endAbs _ finals released => do
+  | .endAbs _ finals released _ => do
     -- M10.2: bounds-check any place references that flow through the
     -- abstraction's final-values list.
     for e in finals do checkSymExpr e
@@ -123,7 +123,7 @@ def checkEvent (ev : Event) : TC Unit := do
           endedLoans := st.endedLoans.insert loan }
     set st
   | .proj _ _ _ => emitErr "EvProj: not supported until M10"
-  | .join left right result => do
+  | .join left right result _ => do
     -- M11.1: structural check on the join witness. We bounds-check
     -- the SymExprs in each side's env (so a malformed cert is
     -- rejected up front), but defer the actual ≤-relation algebra
@@ -139,7 +139,7 @@ def checkEvent (ev : Event) : TC Unit := do
     modify fun st => { st with
       joinDedupe := st.recentlyEnded.fold (·.insert ·) st.joinDedupe
       recentlyEnded := {} }
-  | .loopInv _ invariant => do
+  | .loopInv _ invariant _ => do
     -- M9.5aa: open a new loop scope. `EvMutBorrow` issued while any
     -- loop is open is reborrow-class (lifetime owned by the loop's
     -- region abstraction, no explicit end event in the cert).
@@ -196,7 +196,7 @@ def checkEvent (ev : Event) : TC Unit := do
     -- certs early. The Forward translator interprets the marker
     -- semantically.
     checkSymExpr scrutinee
-  | .symExpandMutBorrow _ bid _ =>
+  | .symExpandMutBorrow _ bid _ _ _ _ =>
     -- M9.5r: register the freshly-minted concrete loan id so a
     -- subsequent EvEndBorrow on it doesn't trip
     -- "endBorrow on unknown loan". Mark it as a reborrow-class loan

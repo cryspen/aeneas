@@ -23,7 +23,7 @@ structure CheckedTrace where
 /-- Apply one event to the running symbolic state. -/
 def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   match ev with
-  | .mutBorrow loan place symval => stepMutBorrow st loan place symval
+  | .mutBorrow loan place symval _ => stepMutBorrow st loan place symval
   | .sharedBorrow loan sbId place symval =>
     stepSharedBorrow st loan sbId place symval
   | .assign dst rhs => stepAssign st dst rhs
@@ -36,14 +36,14 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .binop op lhs rhs dst => stepBinop st op lhs rhs dst
   | .panic => return st
   | .retn => return st
-  | .reborrow child parent place => stepReborrow st child parent place
-  | .call _ _ _ _ dst _ => stepCall st dst
-  | .endAbs _ _ released => stepEndAbs st released
+  | .reborrow child parent place _ _ => stepReborrow st child parent place
+  | .call _ _ _ _ dst _ _ => stepCall st dst
+  | .endAbs _ _ released _ => stepEndAbs st released
   | .proj _ _ _ => .error "proj: not implemented until M10"
-  | .symExpandMutBorrow svId bid innerSv =>
+  | .symExpandMutBorrow svId bid innerSv _ _ _ =>
     stepSymExpandMutBorrow st svId bid innerSv
-  | .join l r res => stepJoin st l r res
-  | .loopInv _ invariant =>
+  | .join l r res _ => stepJoin st l r res
+  | .loopInv _ invariant _ =>
     -- M12.0/M12.1: structural no-op. The OCaml side emits an
     -- EvLoopInv at the start of each loop's canonical synthesized
     -- body, paired with an EvLoopEnd at the end (see InterpLoops.ml).

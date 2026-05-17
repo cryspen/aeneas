@@ -7,6 +7,11 @@ Raw certificate events — Lean mirror of `src/cert/CertEvent.ml`.
 Direct-borrow subset (M2-M8): mutBorrow, sharedBorrow, assign, move,
 copy, endBorrow, assert, panic, return. The rest are stubs that parse
 but the replayer rejects in milestone-specific ways.
+
+M9.6 (Option C): rule-choice hints are layered onto existing event
+constructors as optional fields with back-compat defaults — see the
+`MutBorrowKind` / `JoinRule` / `AbsRoleEntry` / `AbsShape` block
+below and the per-constructor `M9.6` docstrings.
 -/
 
 namespace AeneasCheck.Raw
@@ -54,11 +59,108 @@ structure StateSummary where
   liveLoans : Array Nat
   deriving Repr, Inhabited
 
+/-! ## Option C (M9.6) hint schema
+
+These types are the Lean mirror of the JSON hints introduced in
+`cert_fmt_version = 2`. They are carried as optional fields on the
+existing `Event` constructors (with defaults that preserve the
+pragmatic behaviour of v1 certs). The Lean checker's "strict path"
+(landed across plan §7.1 commits #13-#23) consumes them; the JSON
+parser fills the defaults for any v1 cert or any v2 cert that omits
+the field. See `documentation/option-c-implementation-plan.md` §1 for
+the per-field specification and `documentation/cert-format-and-soundness.md`
+§3.2 for the pragmatic shortcuts each hint eliminates. -/
+
+/-- M9.6: classification of an `EvMutBorrow`. Subsumes the
+    pragmatic M9.5w (Deref-projection ⇒ reborrow-class) and M9.5aa
+    (in-loop ⇒ lazyExpand) shortcuts:
+
+    * `direct` — in-body `&mut p` with no Deref in its projection
+      and no enclosing loop; must be explicitly ended before
+      function exit.
+    * `inAbsReborrow absId` — a `&mut (*x).f`-shaped borrow whose
+      lifetime is owned by the named region abstraction (typically
+      a caller-input abstraction); allowed to leak past exit.
+    * `loopOwned loopId` — a direct `&mut local` issued inside an
+      open loop body; the loop's region abstraction owns its
+      lifetime. -/
+inductive MutBorrowKind
+  | direct
+  | inAbsReborrow (absId : Nat)
+  | loopOwned (loopId : Nat)
+  deriving Repr, Inhabited
+
+/-- M9.6: per-local witness of which Fig. 11 (paper) rule the OCaml
+    interpreter applied to derive a `EvJoin` result entry. Carried
+    inside `JoinEntry`; one entry per result-env local in declaration
+    order. -/
+inductive JoinRule
+  /-- Both branches agreed on this local's value. -/
+  | joinSame
+  /-- Branches differed on a value containing no borrows/loans; the
+      OCaml side introduced a fresh symbolic value `freshSv` and the
+      result is `SymVal freshSv`. -/
+  | joinSymbolic (freshSv : Nat)
+  /-- Both branches held a `&mut` with different loan ids; the join
+      introduced a fresh borrow id `l_fresh` inside a fresh region
+      abstraction `abs` (Collapse-Dup-MutBorrow). -/
+  | joinMutBorrows (l_left l_right l_fresh : Nat) (abs : Nat)
+  /-- `Join-Var` rule (paper Fig. 11): a whole region abstraction is
+      folded into the result. (Marker only in this milestone; the
+      surrounding `EvEndAbs` carries the absorbed abstraction's
+      contents.) -/
+  | joinVar
+  /-- Left side is `⊥`; right side is wrapped into the abstraction
+      `abs`. -/
+  | joinBottomOther (abs : Nat)
+  /-- Mirror of `joinBottomOther`. -/
+  | joinOtherBottom (abs : Nat)
+  deriving Repr, Inhabited
+
+/-- M9.6: one entry of `EvJoin.witnesses`. -/
+structure JoinEntry where
+  localId : Nat
+  rule : JoinRule
+  deriving Repr, Inhabited
+
+/-- M9.6: per-`avalue` role of a `tavalue` inside a function-call's
+    input region abstraction (paper §4.1 `A_in(ρ)` content). Carried
+    inside `AbsShape.roles`. -/
+inductive AbsRoleEntry
+  /-- The abstraction holds a mutable input borrow whose loan id is
+      `loanId`; `argIdx` is the call-site argument position the
+      borrow originated from. -/
+  | mutBorrow (argIdx : Nat) (loanId : Nat)
+  /-- The abstraction owns the loan side of `loanId` — i.e. when the
+      abstraction ends, the loan is released and any held
+      `mutLoan loanId` token is cleared. -/
+  | mutLoan (loanId : Nat)
+  /-- A shared borrow owned by the abstraction. -/
+  | sharedBorrow (argIdx : Nat) (sharedBorrowId : Nat)
+  deriving Repr, Inhabited
+
+/-- M9.6: the shape of one region abstraction freshened by `EvCall`.
+    Mirrors the paper's `A_in(ρ) { borrow^m ℓ _, loan^m ℓ' }` shape:
+    an abstraction id, its ancestor ids (for nested-borrow contracts),
+    and one `AbsRoleEntry` per `tavalue` held. -/
+structure AbsShape where
+  absId : Nat
+  parentAbs : Array Nat
+  roles : Array AbsRoleEntry
+  deriving Repr, Inhabited
+
 /-- LLBC# trace events. Constructor names match `CertEvent.event`
     (without the `Ev` prefix). -/
 inductive Event
   -- direct-borrow subset
+  /-- M9.6 `kindHint` (Option C) subsumes M9.5w + M9.5aa: the OCaml
+      side declares whether this `&mut` is direct, reborrow-class
+      (held inside a named region abstraction), or loop-owned.
+      Defaults to `.direct` for back-compat with pre-M9.6 certs;
+      the M9.5w/aa pragmatic inference in `Step.lean` is the
+      fallback while the hint is absent. -/
   | mutBorrow (loan : Nat) (place : Place) (symval : Nat)
+              (kindHint : MutBorrowKind := .direct)
   | sharedBorrow (loan : Nat) (sharedBorrowId : Nat) (place : Place) (symval : Nat)
   | assign (dst : Place) (rhs : SymExpr)
   | move (src dst : Place)
@@ -73,14 +175,33 @@ inductive Event
       `AddUB`, etc.). -/
   | binop (op : String) (lhs rhs : SymExpr) (dst : Place)
   -- later milestones
+  /-- M9.6 `parentLive` / `parentAbs` (Option C): the OCaml side
+      asserts whether the parent borrow is still live in the
+      caller-state (`parentLive = true` requires
+      `st.loans.contains parent`) and which abstraction owns it.
+      Defaults to `false` / `none` for back-compat — the
+      `stepReborrow` pragmatic "pre-add a fake `.reborrow` parent
+      if missing" branch is the fallback while the hints are
+      absent. -/
   | reborrow (child parent : Nat) (place : Place)
+             (parentLive : Bool := false)
+             (parentAbs : Option Nat := none)
   /-- M10.1: a function call. `fnName` is the qualified callee name
       (e.g. `core::num::{u32}::wrapping_add`); the translator
       consumes it directly so we don't need a builtin-id lookup
       table. `regionAbs` is the abstraction-id list that M10.2's
-      End-Abstraction rule consumes. -/
+      End-Abstraction rule consumes.
+
+      M9.6 `absSig` (Option C): one `AbsShape` per region
+      abstraction freshened by this call (one-to-one with
+      `regionAbs`). Encodes the paper's `A_in(ρ)` content (per-arg
+      mut/shared borrows the call owns + the loan ids whose
+      lifetime flows into the abstraction). Defaults to empty for
+      back-compat — while absent, abstraction ids stay opaque
+      tokens and `EvEndAbs.releasedLoans` alone drives release. -/
   | call (fn callId : Nat) (fnName : String) (args : Array SymExpr)
       (dst : Place) (regionAbs : Array Nat)
+      (absSig : Array AbsShape := #[])
   /-- M10.2 / M9.5s: a region abstraction just closed. `finalValues`
       carries one symbolic-value reference per [AEndedMutBorrow] the
       abstraction held, in left-to-right order — the Forward
@@ -95,9 +216,16 @@ inductive Event
       moves it from [liveLoans] to [endedLoans], so the
       "function ended with live borrow(s)" post-condition passes for
       these implicitly-ended loans. Defaults to empty for back-compat
-      with pre-M9.5s certs. -/
+      with pre-M9.5s certs.
+
+      M9.6 `tokenClearLocals` (Option C) strengthens
+      `releasedLoans`: explicitly lists the locals whose `mutLoan`
+      token must be cleared when this abstraction ends. Defaults
+      to empty — while absent, `stepEndAbs` falls back to the
+      scan-env behaviour. -/
   | endAbs (abs : Nat) (finalValues : Array SymExpr)
            (releasedLoans : Array Nat := #[])
+           (tokenClearLocals : Array Nat := #[])
   | proj (abs : Nat) (place : Place) (symval : Nat)
   /-- M9.5r: lazy mut-borrow expansion. The OCaml interpreter just
       replaced symbolic value `svId` (some [&mut T]-typed value) with
@@ -106,10 +234,33 @@ inductive Event
       local / loan-given holding `.sym svId`, replaces with `.mutLoan
       bid`, and registers loan `bid` with `given := .sym innerSv` —
       so a subsequent in-body `EvEndBorrow loan=bid` (paper.rs
-      `test_choose` pattern) can resolve. -/
+      `test_choose` pattern) can resolve.
+
+      M9.6 `parentAbs` / `substLocals` / `substLoans` (Option C)
+      eliminate the M9.5r env-scan: `parentAbs` names the
+      abstraction that owns the now-expanded borrow, `substLocals`
+      lists every env local whose value was `.sym svId` (and is
+      now `.mutLoan bid`), and `substLoans` lists every loan-given
+      slot that was likewise rewritten. All default to empty/none
+      for back-compat. -/
   | symExpandMutBorrow (svId bid innerSv : Nat)
+                       (parentAbs : Option Nat := none)
+                       (substLocals : Array Nat := #[])
+                       (substLoans : Array Nat := #[])
+  /-- M9.6 `witnesses` (Option C): per-result-env-local rule
+      witness from the join algebra (paper Fig. 11). When
+      non-empty, drives the strict per-entry check; when empty,
+      `stepJoin` falls back to the pragmatic
+      `symExprBeq` + `isFreshSym` shortcut (M9.5y). -/
   | join (left right result : StateSummary)
+         (witnesses : Array JoinEntry := #[])
+  /-- M9.6 `loanRegistry` (Option C): explicit
+      `(borrowId, parentAbsId)` registry from the OCaml side's
+      `compute_loop_entry_fixed_point` output. When non-empty,
+      `Replay.stepEvent` for `loopInv` consumes it directly
+      (M9.5z scan-env fallback retained while empty). -/
   | loopInv (loopId : Nat) (invariant : StateSummary)
+            (loanRegistry : Array (Nat × Nat) := #[])
   /-- M12.1: end-of-loop-body marker. Paired with the preceding
       `loopInv` carrying the same `loopId`; the events between the
       pair form the canonical loop body that the Lean translator
