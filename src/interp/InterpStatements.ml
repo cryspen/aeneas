@@ -1557,14 +1557,72 @@ and eval_switch_with_join (config : config) (span : Meta.span)
      let result_summary =
        CertEvent.cert_state_summary_of_env joined_ctx.env
      in
+     (* M9.6 (Option C): per-result-env-local witness of which
+        Fig. 11 rule the join algebra fired. Commit #10 ships the
+        trivial cases — JoinSame (both sides agreed),
+        JoinSymbolic (result is a fresh SymVal not present in
+        either side), and a JoinVar marker for entries that
+        differ on a non-bottom, non-symbolic shape. The richer
+        JoinMutBorrows / JoinBottomOther / JoinOtherBottom rules
+        land in commit #11. *)
+     let cert_witnesses : CertEvent.cert_join_entry list =
+       let lookup env l =
+         try Some (List.assoc l env) with Not_found -> None
+       in
+       let sym_expr_eq (a : CertEvent.cert_sym_expr)
+           (b : CertEvent.cert_sym_expr) : bool =
+         (* Structural equality is fine — cert_sym_expr is a flat
+            algebraic type built from ints / strings / sub-exprs. *)
+         a = b
+       in
+       let is_sym_val (e : CertEvent.cert_sym_expr) :
+           Values.symbolic_value_id option =
+         match e with SymVal sv -> Some sv | _ -> None
+       in
+       List.filter_map
+         (fun (l, r_expr) ->
+           let l_left = lookup left_summary.cs_env l in
+           let l_right = lookup right_summary.cs_env l in
+           match l_left, l_right with
+           | Some le, Some re
+             when sym_expr_eq le re && sym_expr_eq le r_expr ->
+             Some
+               CertEvent.{
+                 je_local = l;
+                 je_rule = JrJoinSame;
+               }
+           | _, _ ->
+             (match is_sym_val r_expr with
+              | Some sv
+                when (match l_left with
+                      | Some le -> not (sym_expr_eq le r_expr)
+                      | None -> true)
+                  && (match l_right with
+                      | Some re -> not (sym_expr_eq re r_expr)
+                      | None -> true) ->
+                Some
+                  CertEvent.{
+                    je_local = l;
+                    je_rule = JrJoinSymbolic sv;
+                  }
+              | _ ->
+                (match l_left, l_right with
+                 | Some _, Some _ ->
+                   Some
+                     CertEvent.{
+                       je_local = l;
+                       je_rule = JrJoinVar;
+                     }
+                 | _ -> None)))
+         result_summary.cs_env
+     in
      ctx_emit_event joined_ctx
        (CertEvent.EvJoin
           {
             left = left_summary;
             right = right_summary;
             result = result_summary;
-            (* M9.6 (Option C): populated in commits #10/#11. *)
-            witnesses = [];
+            witnesses = cert_witnesses;
           }));
     [%ldebug "Joined ctx:\n" ^ eval_ctx_to_string joined_ctx];
     let ctx0_aids = env_get_abs_ids ctx0.env in

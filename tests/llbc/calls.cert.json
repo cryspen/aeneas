@@ -1061,7 +1061,12 @@
               ],
               "live_loans": []
             },
-            "witnesses": []
+            "witnesses": [
+              { "local": 4, "rule": { "JoinSymbolic": { "fresh_sv": 4 } } },
+              { "local": 3, "rule": "JoinSame" },
+              { "local": 2, "rule": "JoinSame" },
+              { "local": 1, "rule": { "JoinSymbolic": { "fresh_sv": 3 } } }
+            ]
           }
         },
         {
