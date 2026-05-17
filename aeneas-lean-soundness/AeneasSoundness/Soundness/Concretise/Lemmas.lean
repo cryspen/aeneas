@@ -206,4 +206,32 @@ theorem concretise_removeAbsShape (st : SymState) (absId : Nat) :
   refine LLBCState.mk.injEq .. |>.mpr ⟨rfl, ?_, rfl⟩
   exact liftAbsRegistry_erase st.absRegistry absId
 
+/-- Paper-side counterpart of `SymState.addAbsShape`: install one
+    shape via `setAbs` + `bumpAbsId`. Named so the M10.0m
+    `LStep.call` post-state and the M10.2o-revised C15 proof can
+    refer to it by name. -/
+def installAbsShapePaper (Ω : LLBCState) (shape : AbsShape) : LLBCState :=
+  (Ω.setAbs shape.absId (liftAbsShape shape)).bumpAbsId shape.absId
+
+/-- Fold-style commute lemma for `addAbsShape`: pushing `concretise`
+    through `absSig.foldl SymState.addAbsShape` reduces to
+    `absSig.foldl installAbsShapePaper (concretise st)`. Used by
+    M10.2o-revised C15 to discharge the `concretise st' = Ω'`
+    conjunct over the full (non-empty) absSig case. -/
+theorem concretise_foldl_addAbsShape (st : SymState) (absSig : Array AbsShape) :
+    concretise (absSig.foldl SymState.addAbsShape st) =
+      absSig.foldl installAbsShapePaper (concretise st) := by
+  -- Convert both Array.foldls to List.foldls over absSig.toList.
+  rw [show absSig.foldl SymState.addAbsShape st
+        = absSig.toList.foldl SymState.addAbsShape st from by simp [Array.foldl_toList],
+      show absSig.foldl installAbsShapePaper (concretise st)
+        = absSig.toList.foldl installAbsShapePaper (concretise st) from
+          by simp [Array.foldl_toList]]
+  induction absSig.toList generalizing st with
+  | nil => rfl
+  | cons shape rest ih =>
+    simp only [List.foldl_cons]
+    rw [ih (st.addAbsShape shape), concretise_addAbsShape]
+    rfl
+
 end AeneasSoundness.Soundness.Concretise

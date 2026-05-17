@@ -374,25 +374,31 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
   /-- `E-Call-Symbolic` (Fig. 9, included in the M10.0g batch). The
       cert emits `EvCall fn callId fnName args dst regionAbs absSig`.
 
-      Premises (baseline):
-      * Every abs id named in `regionAbs` is fresh in Ω.
-      * Every `AbsShape` in `absSig` has `absId` matching a
-        corresponding entry in `regionAbs` (paired by position).
+      Premise (baseline): `σ` fresh.
 
       Phase C strengthens with the per-role-entry premises (the
       `A_in(ρ)` content matches the callee's signature, by way of
-      `lookupFunDecl cc f`).
+      `lookupFunDecl cc f`) and abs-id freshness over `absSig`.
 
-      Post-state: for each `AbsShape r` in `absSig`, install
-      `Ω.abs r.absId := some (RegionAbs.singleton ...)`; bump
-      `nextAbsId` past every named abs. `dst` is written with a
-      fresh symbolic value (the call result). -/
+      Post-state (M10.0m strengthening): an `absSig.foldl` first
+      installs each `AbsShape shape` (`Ω.abs shape.absId := some
+      (liftAbsShape shape)` and `nextAbsId` bumped past `shape.absId`),
+      and then the dst is written with `Val.sym σ` and `nextSymValId`
+      bumped past `σ`. The order — fold-then-write — matches the
+      replayer's `stepCall` (which folds `absSig` via
+      `SymState.addAbsShape` and then calls `setLocal root (.sym 0)`).
+      Without this fold the paper's `Ω.abs` stays identically `none`,
+      which would make `LStep.endAbs`'s `Ω.abs abs = some r` premise
+      vacuous and block C16 (stepEndAbs) entirely. -/
   | call {Ω : LLBCState} {fn callId : Nat} {fnName : String}
       {args : Array SymExpr} {dst : Place} {regionAbs : Array AbsId}
       {absSig : Array AbsShape} {σ : SymValId} :
       Ω.symValIdFresh σ →
       LStep Ω (.call fn callId fnName args dst regionAbs absSig)
-        ((Ω.setLocal dst.local_ (.sym σ)).bumpSymValId σ)
+        (((absSig.foldl
+            (fun Ω' shape =>
+              (Ω'.setAbs shape.absId (liftAbsShape shape)).bumpAbsId shape.absId)
+            Ω).setLocal dst.local_ (.sym σ)).bumpSymValId σ)
 
   /-- `Reorg-End-Abs` (Fig. 8). The abstraction `abs` closes; its
       tracked loans are released and any `tokenClearLocals` are
