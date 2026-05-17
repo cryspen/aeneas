@@ -400,6 +400,129 @@ def traitImplOfCert (tdm : TypeDeclMap)
     typeParams := ti.typeParams
     traitBoundParams }
 
+/-- M9.7l: structured-source twin of [traitDeclOfCert]. Lifts an
+    `LlbcTraitDecl` into a `Pure.TraitDecl`. Method signatures are
+    translated via [llbcTyToPTyWithVars] with `selfParams := #["Self"]`
+    so any `LlbcTy.tVar 0` inside a method input/output resolves to
+    `.tyVar "Self"`. Borrow heads on inputs are stripped (the value
+    layer drops `&` / `&mut` shape). -/
+def traitDeclOfLlbcTraitDecl (tdm : TypeDeclMap) (_crateName : String)
+    (td : LlbcTraitDecl) : Pure.TraitDecl :=
+  let selfParams : Array String := #[ "Self" ]
+  let bareName := bareNameOfQualified td.itemMeta.name
+  let methods : Array Pure.TraitMethod := td.methods.map fun m =>
+    let inputs : Array PTy := m.signature.inputs.map fun rt =>
+      -- Strip an outer `&'r T` / `&'r mut T` (mirror of [stripOuterRef]
+      -- on the flat path) — the value layer renders `self : Self`,
+      -- not `&self`. The `tRef` case unwraps to the inner type.
+      match rt with
+      | .tRef _ inner _ => llbcTyToPTyWithVars tdm selfParams inner
+      | other => llbcTyToPTyWithVars tdm selfParams other
+    let retInner : PTy :=
+      llbcTyToPTyWithVars tdm selfParams m.signature.output
+    let buildArrow (acc : PTy) (xs : List PTy) : PTy :=
+      xs.foldr (fun a b => .arrow a b) acc
+    let ty := buildArrow (.result retInner) inputs.toList
+    { name := m.name, ty }
+  { name := bareName
+    qualifiedName := td.itemMeta.name
+    methods
+    sourceSpan := td.itemMeta.span }
+
+/-- M9.7l: capitalise the first character of a string (ASCII).
+    Helper for the standard-backend impl-pretty-name shape. -/
+def capitalizeFirstLetter (s : String) : String :=
+  match s.toList with
+  | [] => s
+  | c :: rest => String.ofList (c.toUpper :: rest)
+
+/-- M9.7l: extract the first `::`-segment of a qualified path. Helper
+    for the standard-backend impl-pretty-name shape. -/
+def crateSegmentOf (qualified : String) : String :=
+  match (qualified.splitOn "::").head? with
+  | some s => s
+  | none => qualified
+
+/-- M9.7l: Lean name of a primitive literal type, mirroring the
+    OCaml-side `lean_name_of_lit_ty`. Used to root the impl-pretty-
+    name for primitive-Self impls (e.g. `impl Tr for bool` →
+    `Bool.Insts.…`). -/
+def leanNameOfLitTy : LitTy → String
+  | .bool => "Bool"
+  | .int .u8 => "Std.U8"
+  | .int .u16 => "Std.U16"
+  | .int .u32 => "Std.U32"
+  | .int .u64 => "Std.U64"
+  | .int .u128 => "Std.U128"
+  | .int .usize => "Std.Usize"
+  | .int .i8 => "Std.I8"
+  | .int .i16 => "Std.I16"
+  | .int .i32 => "Std.I32"
+  | .int .i64 => "Std.I64"
+  | .int .i128 => "Std.I128"
+  | .int .isize => "Std.Isize"
+  | .char => "Char"
+  | .float _ => "Float"
+
+/-- M9.7l: structured-source twin of [traitImplOfCert]. Lifts an
+    `LlbcTraitImpl` into a `Pure.TraitImpl`. The standard-backend
+    impl-pretty-name shape is recomputed from the structured info:
+
+      * blanket impl (`selfType` is a type variable):
+        `<TraitBare>.Blanket`
+      * ADT Self:   `<SelfBare>.Insts.<CrateCap><TraitBare>`
+      * primitive Self: same but `<SelfBare>` is the literal's Lean
+        name (e.g. `Bool`, `Std.U32`).
+
+    Mirrors `CertGen.ml`'s computation around line 437. -/
+def traitImplOfLlbcTraitImpl (tdm : TypeDeclMap)
+    (traitNameById : Std.HashMap Nat String)
+    (traitQualifiedNameById : Std.HashMap Nat String)
+    (_crateName : String) (ti : LlbcTraitImpl) : Pure.TraitImpl :=
+  -- Resolve the Self type's bare name from the structured selfType.
+  let (selfTypeVar, selfBareName, selfTy) : Option String × String × PTy :=
+    match ti.selfType with
+    | .tVar k =>
+      let n := (ti.generics.types[k]?).getD "_"
+      (some n, "Blanket", .tyVar n)
+    | .tAdt id _ =>
+      match tdm[id]? with
+      | some info => (none, info.name, .adt info.name #[])
+      | none => (none, "__UnknownSelf", .unit)
+    | .litTy k =>
+      let n := leanNameOfLitTy k
+      (none, n, .adt n #[])
+    | _ => (none, "__UnknownSelf", .unit)
+  let traitBare : String :=
+    traitNameById.getD ti.traitDeclId "__UnknownTrait"
+  let traitQualified : String :=
+    traitQualifiedNameById.getD ti.traitDeclId ""
+  let traitCrateSeg : String := crateSegmentOf traitQualified
+  let prettyName : String :=
+    match selfTypeVar with
+    | some _ => s!"{traitBare}.Blanket"
+    | none => s!"{selfBareName}.Insts.{capitalizeFirstLetter traitCrateSeg}{traitBare}"
+  let traitNameByQualified : Std.HashMap String String :=
+    -- Build a local qualified→bare lookup from the same two maps so
+    -- [traitBoundParamOf] can resolve the impl's trait-clause names.
+    traitQualifiedNameById.fold (init := {}) fun acc id qn =>
+      match traitNameById[id]? with
+      | some bn => acc.insert qn bn
+      | none => acc
+  let traitBoundParams : Array Pure.TraitBoundParam :=
+    ti.generics.traitClauses.map
+      (traitBoundParamOf traitNameByQualified ti.generics.types)
+  let methods : Array Pure.TraitImplMethod := ti.methods.map fun m =>
+    { name := m.name, body := s!"{prettyName}.{m.name}" }
+  { name := prettyName
+    qualifiedName := ti.itemMeta.name
+    traitName := traitBare
+    selfTy
+    methods
+    sourceSpan := ti.itemMeta.span
+    typeParams := ti.generics.types
+    traitBoundParams }
+
 /-- M9.5l: traverse a `PExpr` and replace every `.app head args`
     whose `head` matches a key in `pretty` with the corresponding
     pretty name. Used to rewrite trait-impl-method call sites from
@@ -535,22 +658,50 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false)
       cc.llbcProgram.typeDecls.filterMap (enumDeclOfLlbcTypeDecl tdm crateName)
     else
       cc.typeDecls.filterMap (enumDeclOfTypeDecl tdm crateName)
-  -- M9.5l: lift cert trait decls + impls into Pure IR. We also build
-  -- a `traitNameById` lookup so impls can resolve their target trait
-  -- by id.
+  -- M9.5l / M9.7l: lift trait decls + impls into Pure IR. We also
+  -- build a `traitNameById` lookup so impls can resolve their target
+  -- trait by id. The structured path (M9.7l) sources the entries
+  -- from `cc.llbcProgram.traitDecls` / `.traitImpls`, deriving the
+  -- bare trait name from `itemMeta.name`'s last `::`-segment and
+  -- recomputing the standard-backend impl-pretty-name shape from
+  -- structured info.
+  let useStructuredTraits :=
+    useLlbcProgram ∧ (!cc.llbcProgram.traitDecls.isEmpty ∨ !cc.llbcProgram.traitImpls.isEmpty)
   let traitDecls : Array Pure.TraitDecl :=
-    cc.traitDecls.map (traitDeclOfCert tdm crateName)
+    if useStructuredTraits then
+      cc.llbcProgram.traitDecls.map (traitDeclOfLlbcTraitDecl tdm crateName)
+    else
+      cc.traitDecls.map (traitDeclOfCert tdm crateName)
   let traitNameById : Std.HashMap Nat String :=
-    cc.traitDecls.foldl (init := {}) fun acc td =>
-      acc.insert td.id td.name
+    if useStructuredTraits then
+      cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+        acc.insert td.id (bareNameOfQualified td.itemMeta.name)
+    else
+      cc.traitDecls.foldl (init := {}) fun acc td =>
+        acc.insert td.id td.name
   -- M9.5o: parallel `qualified_name → bare name` table for resolving
   -- trait clauses (which carry qualified names) to the bare names
   -- used in the emitted Lean source.
   let traitNameByQualified : Std.HashMap String String :=
-    cc.traitDecls.foldl (init := {}) fun acc td =>
-      acc.insert td.qualifiedName td.name
+    if useStructuredTraits then
+      cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+        acc.insert td.itemMeta.name (bareNameOfQualified td.itemMeta.name)
+    else
+      cc.traitDecls.foldl (init := {}) fun acc td =>
+        acc.insert td.qualifiedName td.name
+  let traitQualifiedNameById : Std.HashMap Nat String :=
+    -- Only used by the structured trait-impl pretty-name computation
+    -- (which needs the trait's qualified name for `crateSegmentOf`).
+    if useStructuredTraits then
+      cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+        acc.insert td.id td.itemMeta.name
+    else {}
   let traitImpls : Array Pure.TraitImpl :=
-    cc.traitImpls.map (traitImplOfCert tdm traitNameById traitNameByQualified crateName)
+    if useStructuredTraits then
+      cc.llbcProgram.traitImpls.map
+        (traitImplOfLlbcTraitImpl tdm traitNameById traitQualifiedNameById crateName)
+    else
+      cc.traitImpls.map (traitImplOfCert tdm traitNameById traitNameByQualified crateName)
   -- M9.5l: build a per-fn-id → pretty-name table so the Forward
   -- translator can rewrite EvCall `fn_name` to its standard-backend
   -- shape (e.g. `traits_basic::{...}::value` →
@@ -569,16 +720,26 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false)
   -- `<crate>::<Trait>::<method>` (standalone fun_decl emitted by
   -- Charon for the default body).
   let defaultRenameByName : Std.HashMap String String :=
-    cc.traitDecls.foldl (init := {}) fun acc td =>
-      td.methods.foldl (init := acc) fun acc m =>
-        if m.hasDefault then
-          -- The default body's standalone fun_name is
-          -- `<traitQualifiedName>::<methodName>`. Map it to
-          -- `<bareTraitName>.<methodName>.default`.
-          let fnQual := s!"{td.qualifiedName}::{m.name}"
-          let pretty := s!"{td.name}.{m.name}.default"
-          acc.insert fnQual pretty
-        else acc
+    if useStructuredTraits then
+      cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+        td.methods.foldl (init := acc) fun acc m =>
+          if m.hasDefault then
+            let bare := bareNameOfQualified td.itemMeta.name
+            let fnQual := s!"{td.itemMeta.name}::{m.name}"
+            let pretty := s!"{bare}.{m.name}.default"
+            acc.insert fnQual pretty
+          else acc
+    else
+      cc.traitDecls.foldl (init := {}) fun acc td =>
+        td.methods.foldl (init := acc) fun acc m =>
+          if m.hasDefault then
+            -- The default body's standalone fun_name is
+            -- `<traitQualifiedName>::<methodName>`. Map it to
+            -- `<bareTraitName>.<methodName>.default`.
+            let fnQual := s!"{td.qualifiedName}::{m.name}"
+            let pretty := s!"{td.name}.{m.name}.default"
+            acc.insert fnQual pretty
+          else acc
   let mut decls : Array Decl := #[]
   for i in [0:cc.functions.size] do
     let f := cc.functions[i]!
@@ -605,12 +766,24 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false)
   -- copies them to the standalone fun_decl).
   decls := decls.map fun d =>
     let body := rewriteCalleeNames allCalleeRenames d.body
+    -- M9.7l: structured-source path reads the function's trait
+    -- clauses from `cc.llbcProgram.funDecls[matching].signature.generics.traitClauses`
+    -- instead of the flat `f.signature.traitClauses`. Both carry the
+    -- same `Array TraitClause` shape — TraitClause is shared between
+    -- the two schemas.
     let traitBoundParams : Array Pure.TraitBoundParam :=
-      match cc.functions.find? (·.fnName == d.qualifiedName) with
-      | some f =>
-        f.signature.traitClauses.map
-          (traitBoundParamOf traitNameByQualified d.typeParams)
-      | none => #[]
+      if useStructuredTraits then
+        match cc.llbcProgram.funDecls.find? (·.itemMeta.name == d.qualifiedName) with
+        | some fd =>
+          fd.signature.generics.traitClauses.map
+            (traitBoundParamOf traitNameByQualified d.typeParams)
+        | none => #[]
+      else
+        match cc.functions.find? (·.fnName == d.qualifiedName) with
+        | some f =>
+          f.signature.traitClauses.map
+            (traitBoundParamOf traitNameByQualified d.typeParams)
+        | none => #[]
     -- M9.5o: a body that references `TraitClause@N::method` resolves
     -- against the function's clauses — for now we rewrite to
     -- `<TraitName>Inst.method` using the first matching binder
