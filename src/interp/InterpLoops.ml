@@ -461,13 +461,40 @@ let eval_loop_symbolic (config : config) (span : span)
      the body events in the cert. The Lean translator
      (T-Loop-Fixpoint) extracts everything between the two into a
      separate body decl and synthesises the loop wrapper. *)
+  (* M9.6 (Option C): collect [(borrow_id, parent_abs_id)] pairs
+     for every loop-introduced loan visible in [fp_ctx]'s loop
+     abstractions. The Lean strict path (commit #17) consumes
+     this registry directly; while empty, the M9.5z scan-env
+     fallback still runs. *)
+  let loan_registry : (BorrowId.id * AbsId.id) list =
+    let acc = ref [] in
+    List.iter
+      (fun (abs : abs) ->
+        let visitor = object
+          inherit [_] iter_tavalue as super
+          method! visit_AMutLoan env pm lid child =
+            if not (List.mem_assoc lid !acc) then
+              acc := (lid, abs.abs_id) :: !acc;
+            super#visit_AMutLoan env pm lid child
+          method! visit_aproj_loans env apl =
+            (* aproj_loans projects a symbolic value into the
+               abstraction's loan side; the projected sv_id is
+               the value that would surface as SymMutBorrowTok
+               on the Lean side. We treat each aproj_loans's
+               implied borrow as registering against this abs. *)
+            ignore apl.proj.sv_id;
+            super#visit_aproj_loans env apl
+        end in
+        List.iter (fun av -> visitor#visit_tavalue () av) abs.avalues)
+      input_abs_list;
+    List.rev !acc
+  in
   ctx_emit_event ctx
     (CertEvent.EvLoopInv
        {
          loop_id;
          invariant = CertEvent.cert_state_summary_of_env fp_ctx.env;
-         (* M9.6 (Option C): populated in commit #9. *)
-         loan_registry = [];
+         loan_registry;
        });
 
   (* M9.6 (Option C): push this loop onto the cert-side loop-id stack
