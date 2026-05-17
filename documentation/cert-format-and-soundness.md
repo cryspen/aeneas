@@ -403,27 +403,57 @@ errors are flagged before semantic ones), then replays each function.
 
 ### 3.2 Where the replayer is intentionally weaker than the paper
 
-Several deliberate simplifications:
+Several deliberate simplifications. M9.6 (Option C, see
+`option-c-implementation-plan.md`) closed weaknesses 1 and 2 by
+adding rule-choice *hints* on `EvCall` / `EvJoin` /
+`EvSymExpandMutBorrow` / etc.; the rest remain.
 
-1. **Region abstractions are not first-class.** The cert carries
-   abstraction ids in `EvCall.regionAbs` and `EvEndAbs.abs` but
-   `SymState` does not carry the abstraction grammar `A_in(ρ) {
-   borrow^m ℓ _, loan^m ℓ' }`. The replayer treats abstraction ids as
-   opaque tokens whose only effect is to release loans via `EvEndAbs`.
-2. **The join algebra is checked pragmatically.** `stepJoin` accepts
-   `Join-Same` and a *fresh-sym* rule that subsumes Join-Symbolic and
-   the Collapse-Merge-Abs / Collapse-Dup-MutBorrow rules together. The
-   full ≤-derivation of Fig. 11 is **not** re-run.
+1. ~~**Region abstractions are not first-class.**~~ (M9.6
+   eliminated.) `EvCall.absSig : Array AbsShape` now carries
+   the paper's `A_in(ρ)` content — for each freshened region
+   abstraction, the list of `MutBorrow` / `MutLoan` /
+   `SharedBorrow` roles plus ancestor abs ids. The Lean
+   replayer's `SymState.absRegistry` indexes these by abs id;
+   `stepEndAbs` validates that each released loan appears in
+   the recorded role list. Abstraction structure is still not
+   tracked at the value-grammar level (the role list is the
+   `A_in(ρ)` summary, not the full nested borrow grammar), but
+   the abs ids are no longer opaque tokens.
+2. ~~**The join algebra is checked pragmatically.**~~ (M9.6
+   eliminated.) `EvJoin.witnesses : Array JoinEntry` carries
+   one Fig. 11 rule witness per result-env local. The
+   `Step.joinEntryStrictOk` check re-runs the rule's side
+   conditions per entry (Join-Same / Join-Symbolic /
+   Join-MutBorrows / Join-Var / Join-Bottom-Other /
+   Join-Other-Bottom). The pragmatic `joinEntryOk` +
+   `isFreshSym` shortcuts were retired in commit M9.6v.
 3. **`EvProj` is not handled.** The replayer rejects it. Adding it
    requires modelling per-abstraction sub-borrow structure (M10+).
 4. **No type checking at the replayer level.** The paper's type-safety
    guarantee is left to the LLBC# semantics; the replayer's only check
    is structural (borrows are paired, loan ids fresh).
 
-These weaknesses are *load-bearing* for the soundness theorem: the
-theorem must say "if the cert passes the replayer, then there exists an
-LLBC# derivation that *would have* satisfied the omitted side
-conditions". §4 makes this precise.
+Remaining weaknesses (3 and 4) are *load-bearing* for the
+soundness theorem: the theorem must say "if the cert passes the
+replayer, then there exists an LLBC# derivation that *would have*
+satisfied the omitted side conditions". §4 makes this precise.
+
+### 3.2.1 M9.6 hint inventory (Option C — for the proof skeleton)
+
+The following hints (all optional fields on existing event
+constructors; defaults preserve v1 behaviour) drive the
+strict-only paths the soundness skeleton in
+`AeneasCheck/Theorems/StepEventSound.lean` will case-analyse:
+
+| Event | Hint | Eliminates the M9.5 pragmatic shortcut |
+|---|---|---|
+| `EvMutBorrow` | `kindHint : MutBorrowKind` | M9.5w + M9.5aa |
+| `EvReborrow` | `parentLive : Bool`, `parentAbs : Option Nat` | implicit-parent invention |
+| `EvSymExpandMutBorrow` | `parentAbs`, `substLocals`, `substLoans` | M9.5r env-scan + lazyExpand silent end |
+| `EvCall` | `absSig : Array AbsShape` | "abstraction ids are opaque tokens" |
+| `EvEndAbs` | `tokenClearLocals : Array Nat` | M9.5s env-scan |
+| `EvLoopInv` | `loanRegistry : Array (Nat × Nat)` | M9.5z |
+| `EvJoin` | `witnesses : Array JoinEntry` | M9.5y |
 
 ---
 
