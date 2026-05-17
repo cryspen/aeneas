@@ -809,6 +809,76 @@ theorem stepEndAbs_sound
   exact (Concretise.concretise_removeAbsShape stPre absId).trans
     (congrArg (·.removeAbs absId) (hConcPre.trans hRep))
 
+/-! ### SymExpandMutBorrow (C17, no-substitution subset)
+
+`stepSymExpandMutBorrow svId bid innerSv parentAbs substLocals
+substLoans` walks `substLocals` rewriting any `.sym svId` env entry
+to `.mutLoan bid`, walks `substLoans` doing the same to loan-given
+values, then calls `addLoan bid (.sym innerSv) .lazyExpand`. The
+paper's `LStep.symExpandMutBorrow` post-state is `(Ω.bumpLoanId bid).
+bumpSymValId innerSv` — just freshness bumps. The substitution
+itself is the deferred `SubstScope_Complete` (plan §3.4); for the
+no-substitution subset (`substLocals = #[] ∧ substLoans = #[]`) the
+replayer reduces to a single `addLoan` and the proof matches via
+`concretise_addLoan`.
+
+The `hBidNotInLoans` and `hBidFresh` hypotheses are
+Phase-D-dischargeable from the cert's monotone loan-id discipline
+(plan §11.1 #11 + the M10.1g invariant `∀ b ∈ st.loans, b <
+st.loanIdHwm`). -/
+
+/-- C17 / M10.2q — `EvSymExpandMutBorrow` (paper §4.1 lazy
+    expansion). Restricted to empty `substLocals` / `substLoans`;
+    the substitution-bearing case awaits a Phase-A surface
+    strengthening on `LStep.symExpandMutBorrow` (deferred to the
+    `SubstScope_Complete` premise per the constructor's docstring). -/
+theorem stepSymExpandMutBorrow_sound
+  (hRep : concretise st = Ω)
+  (svId bid innerSv : Nat) (parentAbs : Option Nat)
+  (substLocals substLoans : Array Nat)
+  (hSubstLocalsEmpty : substLocals = #[])
+  (hSubstLoansEmpty : substLoans = #[])
+  (hBidNotInLoans : st.loans.contains bid = false)
+  (hBidFresh : st.loanIdHwm ≤ bid) :
+  stepEvent st
+    (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans) = .ok st' →
+  ∃ Ω', Valid (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans) Ω ∧
+        LStep Ω (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  -- Replayer: guard ; empty fors collapse to a single addLoan call.
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepSymExpandMutBorrow,
+    hSubstLocalsEmpty, hSubstLoansEmpty] at hStep
+  rw [if_neg (by simp [hBidNotInLoans])] at hStep
+  simp at hStep
+  -- After `simp`, hStep is `pure (X.addLoan ...) = .ok st'`, where X
+  -- is the η-expanded record `{ env := st.env, ... }` (definitionally
+  -- equal to `st`). Push pure→ok and η-reduce simultaneously by
+  -- asserting the record equality via `rfl`.
+  have hEtaSt : ({ env := st.env, loans := st.loans, numLocals := st.numLocals,
+                   absRegistry := st.absRegistry, loanIdHwm := st.loanIdHwm,
+                   absIdHwm := st.absIdHwm } : SymState) = st := rfl
+  rw [hEtaSt] at hStep
+  simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+  subst hStep
+  -- Paper-side freshness witnesses.
+  have hLoanIdFresh : Ω.loanIdFresh bid := by
+    subst hRep
+    simpa [LLBCState.loanIdFresh, Concretise.concretise] using hBidFresh
+  have hSymValIdFresh : Ω.symValIdFresh innerSv := by
+    subst hRep
+    simp [LLBCState.symValIdFresh, Concretise.concretise]
+  refine ⟨(Ω.bumpLoanId bid).bumpSymValId innerSv,
+          ⟨hLoanIdFresh, hSymValIdFresh⟩,
+          LStep.symExpandMutBorrow hLoanIdFresh hSymValIdFresh,
+          ?_⟩
+  -- concretise (st.addLoan bid (.sym innerSv) .lazyExpand)
+  --   = (concretise st).bumpLoanId bid     -- M10.1h commute
+  --   = Ω.bumpLoanId bid                    -- hRep
+  --   = (Ω.bumpLoanId bid).bumpSymValId innerSv  -- bumpSymValId no-op
+  simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+    LLBCState.bumpSymValId, Concretise.concretise_addLoan, hRep]
+
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
     rules named by each witness. Per-entry induction over
     [witnesses] is the heart of the join soundness proof. Closed by
