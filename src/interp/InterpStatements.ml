@@ -1558,13 +1558,15 @@ and eval_switch_with_join (config : config) (span : Meta.span)
        CertEvent.cert_state_summary_of_env joined_ctx.env
      in
      (* M9.6 (Option C): per-result-env-local witness of which
-        Fig. 11 rule the join algebra fired. Commit #10 ships the
-        trivial cases — JoinSame (both sides agreed),
-        JoinSymbolic (result is a fresh SymVal not present in
-        either side), and a JoinVar marker for entries that
-        differ on a non-bottom, non-symbolic shape. The richer
-        JoinMutBorrows / JoinBottomOther / JoinOtherBottom rules
-        land in commit #11. *)
+        Fig. 11 rule the join algebra fired. Commit #10 shipped
+        JoinSame / JoinSymbolic / JoinVar; commit #11 extends
+        with the Collapse-Dup-MutBorrow case (JoinMutBorrows) and
+        the ⊥-propagation cases (JoinBottomOther /
+        JoinOtherBottom). For JoinMutBorrows.abs, we look up the
+        new fresh borrow id in [joined_ctx]'s abstractions to
+        find which one owns it; failing that, we record 0 (the
+        Lean AbsRegistry validation in commit #19 will reject
+        mismatched pairs). *)
      let cert_witnesses : CertEvent.cert_join_entry list =
        let lookup env l =
          try Some (List.assoc l env) with Not_found -> None
@@ -1579,6 +1581,30 @@ and eval_switch_with_join (config : config) (span : Meta.span)
            Values.symbolic_value_id option =
          match e with SymVal sv -> Some sv | _ -> None
        in
+       let is_sym_mut_borrow_tok (e : CertEvent.cert_sym_expr) :
+           Values.BorrowId.id option =
+         match e with SymMutBorrowTok bid -> Some bid | _ -> None
+       in
+       let abs_of_borrow (bid : Values.BorrowId.id) :
+           Values.AbsId.id option =
+         let found = ref None in
+         List.iter
+           (fun (e : env_elem) ->
+             match e with
+             | EAbs abs ->
+               let visitor = object
+                 inherit [_] iter_tavalue as super
+                 method! visit_AMutLoan env pm lid child =
+                   if lid = bid && Option.is_none !found then
+                     found := Some abs.abs_id;
+                   super#visit_AMutLoan env pm lid child
+               end in
+               List.iter (fun av -> visitor#visit_tavalue () av)
+                 abs.avalues
+             | _ -> ())
+           joined_ctx.env;
+         !found
+       in
        List.filter_map
          (fun (l, r_expr) ->
            let l_left = lookup left_summary.cs_env l in
@@ -1592,28 +1618,74 @@ and eval_switch_with_join (config : config) (span : Meta.span)
                  je_rule = JrJoinSame;
                }
            | _, _ ->
-             (match is_sym_val r_expr with
-              | Some sv
-                when (match l_left with
-                      | Some le -> not (sym_expr_eq le r_expr)
-                      | None -> true)
-                  && (match l_right with
-                      | Some re -> not (sym_expr_eq re r_expr)
-                      | None -> true) ->
+             (* JoinMutBorrows (Collapse-Dup-MutBorrow): both
+                sides hold a mut borrow with different ids, the
+                join introduces a fresh id. *)
+             (match l_left, l_right, is_sym_mut_borrow_tok r_expr with
+              | Some le, Some re, Some l_fresh
+                when (match is_sym_mut_borrow_tok le,
+                            is_sym_mut_borrow_tok re with
+                      | Some a, Some b ->
+                        a <> b
+                      | _ -> false) ->
+                let l_l =
+                  Option.get (is_sym_mut_borrow_tok le)
+                in
+                let l_r =
+                  Option.get (is_sym_mut_borrow_tok re)
+                in
+                let abs =
+                  match abs_of_borrow l_fresh with
+                  | Some a -> a
+                  | None -> Values.AbsId.of_int 0
+                in
                 Some
                   CertEvent.{
                     je_local = l;
-                    je_rule = JrJoinSymbolic sv;
+                    je_rule =
+                      JrJoinMutBorrows
+                        { l_left = l_l; l_right = l_r; l_fresh; abs };
                   }
               | _ ->
-                (match l_left, l_right with
-                 | Some _, Some _ ->
+                (match is_sym_val r_expr with
+                 | Some sv
+                   when (match l_left with
+                         | Some le -> not (sym_expr_eq le r_expr)
+                         | None -> true)
+                     && (match l_right with
+                         | Some re -> not (sym_expr_eq re r_expr)
+                         | None -> true) ->
                    Some
                      CertEvent.{
                        je_local = l;
-                       je_rule = JrJoinVar;
+                       je_rule = JrJoinSymbolic sv;
                      }
-                 | _ -> None)))
+                 | _ ->
+                   (match l_left, l_right with
+                    | Some _, Some _ ->
+                      Some
+                        CertEvent.{
+                          je_local = l;
+                          je_rule = JrJoinVar;
+                        }
+                    | None, Some _ ->
+                      (* Left was ⊥ / unflattenable, right
+                         carries something through to the
+                         result wrapped in an abs. *)
+                      Some
+                        CertEvent.{
+                          je_local = l;
+                          je_rule =
+                            JrJoinBottomOther (Values.AbsId.of_int 0);
+                        }
+                    | Some _, None ->
+                      Some
+                        CertEvent.{
+                          je_local = l;
+                          je_rule =
+                            JrJoinOtherBottom (Values.AbsId.of_int 0);
+                        }
+                    | None, None -> None))))
          result_summary.cs_env
      in
      ctx_emit_event joined_ctx
