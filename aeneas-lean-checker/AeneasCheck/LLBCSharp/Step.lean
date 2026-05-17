@@ -483,61 +483,20 @@ def valOfSymExpr : SymExpr → Val
   | .symTuple _ => .bottom
   | .symRecord _ _ => .bottom
 
-/-- Decide whether two `SymExpr` cert values are observationally equal
-    for the purposes of the M11 join check. Two `SymVal n` are equal
+/-- Structural equality on `SymExpr` cert values, used by the M9.6
+    strict join check (and only there). Two `SymVal n` are equal
     iff `n` matches; two `SymLit` iff their underlying literals are
-    `BEq`-equal; everything else is conservatively "not equal".
-
-    This is intentionally narrow — the M11 join only succeeds when
-    branches genuinely agree, and the fresh-sym fallback rule
-    handles the disagreement case. -/
+    `BEq`-equal; `SymMutBorrowTok` iff the borrow ids match;
+    everything else conservatively "not equal". -/
 def symExprBeq : SymExpr → SymExpr → Bool
   | .symVal a, .symVal b => a == b
   | .symLit (.bool a), .symLit (.bool b) => a == b
   | .symLit (.scalar ka a), .symLit (.scalar kb b) =>
     -- IntKind has no DecidableEq instance derived yet; compare via
-    -- the string form which is stable per the M9 emitter and good
-    -- enough for the join witness.
+    -- the string form which is stable per the M9 emitter.
     (Std.Format.pretty (repr ka)) == (Std.Format.pretty (repr kb)) && a == b
   | .symMutBorrowTok a, .symMutBorrowTok b => a == b
   | _, _ => false
-
-/-- Is `e` a "fresh symbolic value" form? The join-symbolic rule
-    accepts a fresh `SymVal n` on the result side as subsuming any
-    pair of branch values. We don't verify that `n` was actually
-    freshly minted by the OCaml ssubst — the cert promise is that
-    fresh sym ids in the result didn't appear in either pre-join
-    branch's env, which is what `match_ctx_with_target`'s
-    [output_svalues] enforces.
-    M9.5y: `symMutBorrowTok n` is also accepted as a fresh form. The
-    OCaml interpreter's `Collapse-Dup-MutBorrow` rule introduces a
-    fresh borrow id in the join result to subsume two distinct
-    branch-local borrow ids (e.g. `call_choose`'s left:tok-0,
-    right:tok-2, result:tok-3). -/
-def isFreshSym : SymExpr → Bool
-  | .symVal _ => true
-  | .symMutBorrowTok _ => true
-  | _ => false
-
-/-- Per-entry join check: returns `none` on success, `some msg` on
-    failure. -/
-def joinEntryOk (leftMap rightMap : Std.HashMap Nat SymExpr)
-    (localId : Nat) (resultE : SymExpr) : Option String :=
-  let leftE := leftMap[localId]?
-  let rightE := rightMap[localId]?
-  match leftE, rightE with
-  | some l, some r =>
-    if symExprBeq l resultE && symExprBeq r resultE then none  -- Join-Same
-    else if isFreshSym resultE then none  -- Join-Symbolic
-    else some s!"E-Join: local {localId} result {repr resultE} not ≤-related to left {repr l} / right {repr r}"
-  | some _, none | none, some _ =>
-    -- One branch dropped the local; accept if the result chose a
-    -- fresh sym or matches the surviving side.
-    if isFreshSym resultE then none else none
-  | none, none =>
-    -- Local wasn't bound in either branch but appears in result —
-    -- this can happen for join-introduced fresh locals; accept.
-    none
 
 /-- M9.6 (Option C, plan §4.1.2): strict per-entry validation
     driven by [EvJoin.witnesses]. Each [JoinEntry] names a
@@ -590,19 +549,18 @@ def stepJoin (st : SymState) (left right result : StateSummary)
     right.env.foldl (init := {}) fun m (l, v) => m.insert l v
   let resultMap : Std.HashMap Nat SymExpr :=
     result.env.foldl (init := {}) fun m (l, v) => m.insert l v
-  -- M9.6 (Option C): when strict mode is on AND witnesses are
-  -- present, use per-entry rule-driven validation. Otherwise the
-  -- M11.0 pragmatic ≤ check still runs. Once #22 flips strict
-  -- default-on and #23 retires the pragmatic fallback, the gate
-  -- and the helper [joinEntryOk] go away.
-  if strict && !witnesses.isEmpty then
+  -- M9.6 (Option C, plan §7.1 #22): strict mode is now the only
+  -- mode. When [witnesses] is non-empty (every v2 cert) the
+  -- per-entry rule check runs; when [witnesses] is empty (legacy
+  -- v1 cert that pre-dated the witnesses field) the join is
+  -- accepted without per-entry validation — the [stepJoin] state
+  -- overwrite below still runs so the SymState tracks the join
+  -- result. The [strict] flag is retained for now; commit #23
+  -- removes it altogether.
+  let _ := strict
+  if !witnesses.isEmpty then
     for entry in witnesses do
       match joinEntryStrictOk leftMap rightMap resultMap entry with
-      | none => pure ()
-      | some msg => fail msg
-  else
-    for (localId, resultE) in result.env do
-      match joinEntryOk leftMap rightMap localId resultE with
       | none => pure ()
       | some msg => fail msg
   -- Update the symbolic state to match the result.

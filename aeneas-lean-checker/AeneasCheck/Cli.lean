@@ -29,13 +29,16 @@ def main (args : List String) : IO UInt32 := do
   | _llbcJson :: certJson :: rest => do
     let cc ← readCrateCert certJson
     IO.println s!"parsed cert: fmt={cc.fmtVersion}, hash={cc.crateHash}, fns={cc.functions.size}"
-    -- M9.6 (Option C, plan §4.1.2): env-var-gated strict EvJoin
-    -- per-witness check. AENEAS_STRICT_JOIN=1 turns on per-entry
-    -- rule-driven validation against the cert's witnesses; off
-    -- by default falls back to the M11 pragmatic ≤ check.
+    -- M9.6 (Option C, plan §7.1 #22): strict EvJoin per-witness
+    -- check is now ON by default. Pass AENEAS_STRICT_JOIN=0 (or
+    -- "false") to opt out — the pragmatic ≤ helpers
+    -- ([joinEntryOk] / [isFreshSym] / [symExprBeq]) are removed
+    -- in this commit, so opting out only matters when the cert
+    -- carries no witnesses (in which case [stepJoin] degenerates
+    -- to a state-overwrite without per-entry validation).
     let strictJoin ← match (← IO.getEnv "AENEAS_STRICT_JOIN") with
-      | some "1" | some "true" => pure true
-      | _ => pure false
+      | some "0" | some "false" => pure false
+      | _ => pure true
     match translateCrate cc strictJoin with
     | .error e =>
       IO.eprintln s!"  ✗ pipeline error: {e}"

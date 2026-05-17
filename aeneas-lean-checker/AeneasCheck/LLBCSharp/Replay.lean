@@ -24,7 +24,7 @@ structure CheckedTrace where
     [strictJoin] flag (M9.6 / Option C, plan §4.1.2) enables the
     per-witness strict EvJoin check; it is propagated from
     [replayCrate]'s config and is off by default. -/
-def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := false) :
+def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := true) :
     Result SymState := do
   match ev with
   | .mutBorrow loan place symval kindHint =>
@@ -94,7 +94,7 @@ def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := false) :
 
 /-- Replay a function's cert. The [strictJoin] flag (M9.6) is
     threaded through to [stepEvent.stepJoin]. -/
-def replayFun (numLocals : Nat) (f : FunCert) (strictJoin : Bool := false) :
+def replayFun (numLocals : Nat) (f : FunCert) (strictJoin : Bool := true) :
     Except String CheckedTrace := do
   let mut st := SymState.empty numLocals
   -- Initialize input locals with fresh symbolic values. For the M6
@@ -124,7 +124,7 @@ def replayFun (numLocals : Nat) (f : FunCert) (strictJoin : Bool := false) :
     that don't care (tests/Direct) keep working unchanged. The
     CLI reads the [AENEAS_STRICT_JOIN] env var and threads the
     flag in. -/
-def replayCrate (cc : CrateCert) (strictJoin : Bool := false) :
+def replayCrate (cc : CrateCert) (strictJoin : Bool := true) :
     Except String (Array CheckedTrace) := do
   -- Reuse the typechecker as a syntactic guard.
   match Typecheck.checkCrateCert cc with
