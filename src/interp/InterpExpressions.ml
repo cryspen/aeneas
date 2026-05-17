@@ -1276,11 +1276,25 @@ let eval_rvalue_ref (config : config) (span : Meta.span) (p : place)
           in
           match parent_bid_opt with
           | Some parent ->
+              (* M9.6 (Option C): walk the borrow graph to decide
+                 whether the parent's loan side is still live, and
+                 (when so) which abstraction owns it. The Lean
+                 strict path uses these to skip the pragmatic
+                 "pre-add a fake .reborrow parent if missing"
+                 fallback in [Step.stepReborrow]. *)
+              let parent_live, parent_abs =
+                match
+                  InterpBorrowsCore.ctx_lookup_loan_opt span
+                    InterpBorrowsCore.ek_all parent ctx
+                with
+                | Some (AbsId aid, _) -> (true, Some aid)
+                | Some _ -> (true, None)
+                | None -> (false, None)
+              in
               ctx_emit_event ctx
                 (CertEvent.EvReborrow {
                   child = bid; parent; place = cp;
-                  (* M9.6 (Option C): populated in commit #5. *)
-                  parent_live = false; parent_abs = None;
+                  parent_live; parent_abs;
                 })
           | None ->
               (* M9.6 (Option C) — subsumes M9.5w + M9.5aa.

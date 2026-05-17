@@ -52,7 +52,8 @@
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
             },
-            "parent_live": false
+            "parent_live": true,
+            "parent_abs": 0
           }
         },
         {
@@ -80,7 +81,8 @@
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
             },
-            "parent_live": false
+            "parent_live": true,
+            "parent_abs": 1
           }
         },
         {
