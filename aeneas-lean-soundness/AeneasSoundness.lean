@@ -8,6 +8,7 @@ import AeneasSoundness.Soundness.Concretise.Defn
 import AeneasSoundness.Soundness.Concretise.Lemmas
 import AeneasSoundness.Soundness.JoinLemmas
 import AeneasSoundness.Soundness.StepEventSound
+import AeneasSoundness.Soundness.InitialFinal
 
 /-!
 Top-level module for the Aeneas LLBC# soundness package.
