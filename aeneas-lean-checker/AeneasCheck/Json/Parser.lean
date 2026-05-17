@@ -1414,20 +1414,30 @@ def parseLlbcFunDecl (j : Json) : Result LlbcFunDecl := do
             | .null => pure none
             | _ => do let b ← parseLlbcBlock inner; pure (some b)
           | _ => pure none) <|> pure none) <|> pure none
-  -- locals types: Charon's `locals = {arg_count, locals: [{index, name, ty}, …]}`.
+  -- M9.7i: locals_types. The Aeneas-side OCaml emitter
+  -- (`src/cert/LlbcJson.ml:556-561`) writes a flat array of types
+  -- under `"locals_types"` (each element a `j_ty l.local_ty` —
+  -- i.e. an `LlbcTy` JSON node, NOT a record). We also tolerate
+  -- the legacy Charon `"locals" = {arg_count, locals: [{ty, ...}]}`
+  -- shape for forward-compat with any pre-M9.7d cert files that
+  -- linger in caches.
   let localsTypes : Array LlbcTy ← (do
-    match fieldOpt j "locals" with
-    | none => pure #[]
-    | some lj =>
-      -- accept either a direct array or a record with `locals`.
-      let arr ← (asArr lj) <|> (do
-        match fieldOpt lj "locals" with
-        | some inner => asArr inner
-        | none => pure #[])
-      arr.mapM fun ej => do
-        match fieldOpt ej "ty" with
-        | some tj => parseLlbcTy tj
-        | none => pure (.tOpaque "")) <|> pure #[]
+    match fieldOpt j "locals_types" with
+    | some ltj =>
+      let arr ← asArr ltj
+      arr.mapM parseLlbcTy
+    | none =>
+      match fieldOpt j "locals" with
+      | none => pure #[]
+      | some lj =>
+        let arr ← (asArr lj) <|> (do
+          match fieldOpt lj "locals" with
+          | some inner => asArr inner
+          | none => pure #[])
+        arr.mapM fun ej => do
+          match fieldOpt ej "ty" with
+          | some tj => parseLlbcTy tj
+          | none => pure (.tOpaque "")) <|> pure #[]
   let isGlobalInitializer : Bool ← (do
     match fieldOpt j "is_global_initializer" with
     | some bj => match bj with

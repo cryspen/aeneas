@@ -237,14 +237,25 @@ def checkTraitImpls (ccImpls : Array TraitImpl)
 
 /-! ## Event reference checks
 
-Per-event referential validity *against the embedded LLBC's id sets*.
-Phase D will extend this with per-event place / projection validity
-against the function's body. Phase C only checks the two ids that
-every M9.5+ cert already exercises:
+Per-event referential validity *against the embedded LLBC's id sets*
+and *against the current function's declared locals*. Phase C
+(M9.7h) shipped the id-set checks; Phase D (M9.7i / j) adds the
+per-function place / arg-arity checks.
 
-* `EvCall.fn` — the callee's `FunDeclId`.
-* `EvMatchArm.adtId` / `variantId` — the (typedecl, variant) being
-  matched. -/
+Covered here (M9.7h + M9.7i):
+
+* `EvCall.fn` — the callee's `FunDeclId` (placeholder 0 accepted).
+* `EvCall` argument count vs the resolved callee's input arity
+  (when the callee name resolves to an `llbcProgram.fun_decls`
+  entry; built-in / trait-method calls are accepted).
+* `EvMatchArm.adtId` / `variantId` — the (typedecl, variant)
+  being matched.
+* Per-event place-root locals are in bounds of the function's
+  declared `localsTypes`.
+
+Deferred to M9.7j: full projection-path validity against the
+declared local type, control-flow well-nestedness (EvJoin /
+EvLoopInv / EvLoopEnd pairing), `EvEndAbs` lifecycle. -/
 
 private def lookupVariant (td : LlbcTypeDecl) (vid : Nat) :
     Option LlbcVariant :=
@@ -252,13 +263,83 @@ private def lookupVariant (td : LlbcTypeDecl) (vid : Nat) :
   | .enum vs => vs.find? fun v => v.id = vid
   | _ => none
 
-private def checkEventRefs1 (funCtx : String) (eIdx : Nat) (ev : Event)
+private def fnByName (lp : LlbcProgram) :
+    Std.HashMap String LlbcFunDecl :=
+  lp.funDecls.foldl (init := {}) fun m d => m.insert d.itemMeta.name d
+
+/-- M9.7i: per-event places whose root local must be in bounds. The
+    list isn't exhaustive — we surface only the explicit Place
+    fields the cert constructors carry, not the SymExpr-nested
+    places (those are reached transitively via the dst/src/place
+    field, plus event-specific carrier fields handled below). -/
+private def eventPlaceRefs : Event → Array (String × Place)
+  | .mutBorrow _ p _ _ => #[("mutBorrow.place", p)]
+  | .sharedBorrow _ _ p _ => #[("sharedBorrow.place", p)]
+  | .assign d _ => #[("assign.dst", d)]
+  | .move s d => #[("move.src", s), ("move.dst", d)]
+  | .copy s d => #[("copy.src", s), ("copy.dst", d)]
+  | .reborrow _ _ p _ _ => #[("reborrow.place", p)]
+  | .call _ _ _ _ d _ _ => #[("call.dst", d)]
+  | .binop _ _ _ d => #[("binop.dst", d)]
+  | .proj _ p _ => #[("proj.place", p)]
+  | _ => #[]
+
+/-- M9.7i: collect the (label, place) pairs that a `SymExpr` reaches.
+    Used to validate that places baked into the cert's symbolic-
+    expression terms (move/copy) also point at declared locals. -/
+private partial def symExprPlaceRefs : SymExpr → Array (String × Place)
+  | .symCopy p => #[("symCopy", p)]
+  | .symMove p => #[("symMove", p)]
+  | .symVariant _ _ _ fs =>
+    fs.foldl (init := #[]) fun acc f => acc ++ symExprPlaceRefs f
+  | .symTuple fs =>
+    fs.foldl (init := #[]) fun acc f => acc ++ symExprPlaceRefs f
+  | .symRecord _ fs =>
+    fs.foldl (init := #[]) fun acc (_, f) => acc ++ symExprPlaceRefs f
+  | _ => #[]
+
+/-- M9.7i: places that appear inside an `Event`'s rhs/args/witness
+    `SymExpr` fields (not the top-level Place fields covered by
+    `eventPlaceRefs`). -/
+private def eventSymExprPlaces : Event → Array (String × Place)
+  | .assign _ rhs => symExprPlaceRefs rhs
+  | .endBorrow _ r => symExprPlaceRefs r.givenBack
+  | .assert c _ => symExprPlaceRefs c
+  | .binop _ l r _ => symExprPlaceRefs l ++ symExprPlaceRefs r
+  | .call _ _ _ args _ _ _ =>
+    args.foldl (init := #[]) fun acc a => acc ++ symExprPlaceRefs a
+  | .endAbs _ vs _ _ =>
+    vs.foldl (init := #[]) fun acc v => acc ++ symExprPlaceRefs v
+  | .matchArm s _ _ _ => symExprPlaceRefs s
+  | _ => #[]
+
+/-- M9.7i: emit an error if `p.local_` is out of bounds against the
+    function's declared local count. Empty `numLocals` (e.g. when
+    the LLBC fun_decl has `body = None`) suppresses the check, since
+    we can't validate without a known local table. -/
+private def checkPlaceRoot (ctx : String) (label : String)
+    (numLocals : Nat) (p : Place) : List ConsErr := Id.run do
+  if numLocals = 0 then return []
+  if p.local_ < numLocals then return []
+  return [err ctx s!"{label}: local {p.local_} out of bounds (function has {numLocals} declared locals)"]
+
+private def checkEventRefs1 (funCtx : String) (numLocals : Nat) (eIdx : Nat)
+    (ev : Event)
     (tyMap : Std.HashMap Nat LlbcTypeDecl)
-    (fnMap : Std.HashMap Nat LlbcFunDecl) : List ConsErr := Id.run do
+    (fnMap : Std.HashMap Nat LlbcFunDecl)
+    (fnByName : Std.HashMap String LlbcFunDecl) : List ConsErr := Id.run do
   let ctx := s!"{funCtx}.events[{eIdx}]"
   let mut errs : List ConsErr := []
+  -- M9.7i: place-root local-id bounds (covers all events that
+  -- carry an explicit Place; SymExpr-nested places are walked
+  -- below).
+  for (label, p) in eventPlaceRefs ev do
+    errs := errs ++ checkPlaceRoot ctx label numLocals p
+  for (label, p) in eventSymExprPlaces ev do
+    errs := errs ++ checkPlaceRoot ctx label numLocals p
+  -- M9.7h + M9.7i: per-event id-set checks.
   match ev with
-  | .call fnId _callId fnName _args _dst _regionAbs _absSig =>
+  | .call fnId _callId fnName args _dst _regionAbs _absSig =>
     -- M9.7h: the OCaml side (`src/interp/InterpStatements.ml`)
     -- emits `fn = FunDeclId 0` as a placeholder for builtin calls
     -- (`FBuiltin _`) and trait-method dispatches (`TraitMethod _`).
@@ -278,6 +359,17 @@ private def checkEventRefs1 (funCtx : String) (eIdx : Nat) (ev : Event)
       if !fnMap.contains fnId then
         errs := errs ++ [err ctx
           s!"EvCall.fn={fnId} ('{fnName}') is missing from llbcProgram.fun_decls"]
+    -- M9.7i: arg-count vs callee arity, when the callee name
+    -- resolves to a regular fun_decl. Built-in / trait-method
+    -- calls don't have a corresponding fun_decl entry in
+    -- llbcProgram and are silently accepted (no arity info).
+    match fnByName.get? fnName with
+    | none => pure ()  -- builtin / trait-method
+    | some callee =>
+      let expected := callee.signature.inputs.size
+      if args.size ≠ expected then
+        errs := errs ++ [err ctx
+          s!"EvCall '{fnName}' arg-count disagrees: got {args.size} expected {expected}"]
   | .matchArm _scr adtId variantId variantName =>
     match tyMap.get? adtId with
     | none =>
@@ -298,13 +390,22 @@ private def checkEventRefs1 (funCtx : String) (eIdx : Nat) (ev : Event)
 def checkEventRefs (ccFns : Array FunCert) (lp : LlbcProgram) : CR Unit := do
   let tyMap := buildTypeDeclMap lp.typeDecls
   let fnMap := buildFunDeclMap lp.funDecls
+  let nameMap := fnByName lp
   let mut errs : List ConsErr := []
   for i in [0 : ccFns.size] do
     let f := ccFns[i]!
     let funCtx := s!"functions[{i}] id={f.fnId}"
+    -- M9.7i: local-id bounds come from the LLBC fun_decl's
+    -- `localsTypes`. When the cert references a function not in
+    -- the LLBC program (builtin / opaque), numLocals = 0 and the
+    -- bounds check is suppressed.
+    let numLocals : Nat :=
+      match fnMap.get? f.fnId with
+      | some lp => lp.localsTypes.size
+      | none => 0
     for j in [0 : f.events.size] do
       let ev := f.events[j]!
-      errs := errs ++ checkEventRefs1 funCtx j ev tyMap fnMap
+      errs := errs ++ checkEventRefs1 funCtx numLocals j ev tyMap fnMap nameMap
   if errs.isEmpty then .ok () else .error errs
 
 /-! ## Top-level driver -/
