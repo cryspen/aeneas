@@ -230,6 +230,31 @@ theorem stepAssign_sound
     simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
       Concretise.concretise_setLocal, hRep]
 
+/-- C5 / M10.2e — `E-Assert`. The dispatcher routes `.assert` to
+    `let _ ← stepAssert ...; return st`, so on success `st' = st`.
+    The paper has two `LStep` constructors (`assert_true`,
+    `assert_false_panic`) keyed by the `expected` bool; we case on
+    `expected` to pick the right one. `Valid (.assert _ _) = True`. -/
+theorem stepAssert_sound
+  (hRep : concretise st = Ω)
+  (cond : SymExpr) (expected : Bool) :
+  stepEvent st (.assert cond expected) = .ok st' →
+  ∃ Ω', Valid (.assert cond expected) Ω ∧
+        LStep Ω (.assert cond expected) Ω' ∧
+        concretise st' = Ω' := by
+  intro h
+  simp only [stepEvent, bind, Except.bind] at h
+  match heval : AeneasCheck.LLBCSharp.stepAssert st cond expected with
+  | .error _ => rw [heval] at h; cases h
+  | .ok _ =>
+    rw [heval] at h
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+    subst h
+    refine ⟨Ω, trivial, ?_, hRep⟩
+    cases expected
+    · exact LStep.assert_false_panic
+    · exact LStep.assert_true
+
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
 theorem stepMutBorrow_direct_sound
