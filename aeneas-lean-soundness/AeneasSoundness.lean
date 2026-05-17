@@ -4,6 +4,7 @@ import AeneasSoundness.LLBCSharpPaper.Program
 import AeneasSoundness.LLBCSharpPaper.WellFormed
 import AeneasSoundness.LLBCSharpPaper.Step
 import AeneasSoundness.LLBCSharpPaper.Valid
+import AeneasSoundness.Soundness.Concretise.Defn
 import AeneasSoundness.Soundness.StepEventSound
 
 /-!

@@ -1,6 +1,7 @@
 import AeneasCheck.LLBCSharp.Replay
 import AeneasSoundness.LLBCSharpPaper.Step
 import AeneasSoundness.LLBCSharpPaper.Valid
+import AeneasSoundness.Soundness.Concretise.Defn
 
 /-!
 # Soundness of `stepEvent`
@@ -48,22 +49,17 @@ namespace AeneasSoundness.Soundness
 open AeneasCheck.Raw AeneasCheck.LLBCSharp
 open AeneasSoundness.LLBCSharpPaper (LLBCState LStep Valid)
 
-/-! ## Concretisation (placeholder)
+/-! ## Concretisation
 
-M10.0k keeps `concretise` as a `def` returning the empty
-`LLBCState` so the file typechecks against real types. The real
-definition lands in `Concretise/Defn.lean` at M10.1a-b (Phase B);
-M10.1d-e prove its commute lemmas, which Phase C consumes to
-discharge each per-event sorry. -/
+M10.0k introduced `concretise` as a placeholder. M10.1a moves the
+real definition into `Concretise/Defn.lean` (env + numLocals half);
+M10.1b lands the rest (loans + absRegistry). This file re-exports
+the name so per-event lemma signatures stay short. -/
 
-/-- Placeholder concretisation. Returns the empty `LLBCState` for
-    every `SymState`. The Phase-B replacement
-    (`Concretise/Defn.lean`) is faithful: it lifts the SymState's
-    env / loans / absRegistry into the paper-side `LLBCState` per
-    plan §2.1. The placeholder is sound-by-vacuous-premise: every
-    per-event lemma below is `sorry`'d, so no proof presently
-    depends on `concretise`'s shape. -/
-def concretise (_ : SymState) : LLBCState := LLBCState.empty
+/-- Re-export of `Concretise.concretise` so per-event lemma
+    signatures (and Phase D's `stepEvent_sound`) can write
+    `concretise st` directly. -/
+abbrev concretise : SymState → LLBCState := Concretise.concretise
 
 /-! ## Per-event sub-soundness lemmas (all `sorry`'d) -/
 
