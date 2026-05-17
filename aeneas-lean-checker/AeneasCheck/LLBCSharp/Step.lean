@@ -80,19 +80,16 @@ def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
     if root ≥ st.numLocals then
       fail s!"E-MutBorrow: local {root} out of bounds (have {st.numLocals})"
     else
-      -- M9.6 (Option C, plan §4.1.1) — strict path: dispatch on the
-      -- OCaml-supplied `kindHint`. When the hint is an explicit
-      -- non-Direct constructor we trust it directly:
-      --   * .inAbsReborrow absId   ⇒ classify as .reborrow
-      --     (caller-input abstraction owns the lifetime; subsumes
-      --     M9.5w's "place has any Deref" inference).
-      --   * .loopOwned loopId      ⇒ classify as .lazyExpand
-      --     (subsumes M9.5aa's loopDepth check).
-      -- When the hint is .direct (also the back-compat default for
-      -- pre-M9.6 / v1 certs) we still run the pragmatic
-      -- M9.5w / M9.5aa inference: a place with any Deref → reborrow,
-      -- an in-loop borrow → lazyExpand. Commit #23 retires that
-      -- fallback once the OCaml side is fully trusted.
+      -- M9.6 (Option C, plan §7.1 #23) — strict-only path: trust
+      -- the OCaml-supplied [kindHint] verbatim. The M9.5w
+      -- Deref-projection fallback is retired here — the OCaml
+      -- emitter (commit #4) sets MbkInAbsReborrow for any
+      -- &mut (*x).f shape that isn't already an EvReborrow, so a
+      -- .direct hint on a place with a Deref projection is now a
+      -- cert bug rather than something to recover from. (For
+      -- legacy v1 / hint-empty certs this means the .direct case
+      -- treats Deref-bearing places as truly direct, which the
+      -- exit `leakedDirect` check then catches.)
       match kindHint with
       | .inAbsReborrow _ =>
         return st.addLoan loan .bottom .reborrow
@@ -101,17 +98,9 @@ def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
         let st := st.setLocal root (.mutLoan loan)
         return st.addLoan loan inner .lazyExpand
       | .direct =>
-        -- M9.5w fallback (kept while v1 certs without kind_hint
-        -- still exist): place projection has any Deref ⇒ reborrow.
-        -- M9.5aa's loopDepth fallback is gone in commit #21 — the
-        -- OCaml emitter (commit #4) is the source of truth for
-        -- the loop-owned case via MbkLoopOwned.
-        if place.projection.any (· == ProjElem.deref) then
-          return st.addLoan loan .bottom .reborrow
-        else
-          let inner := st.getLocal root
-          let st := st.setLocal root (.mutLoan loan)
-          return st.addLoan loan inner .direct
+        let inner := st.getLocal root
+        let st := st.setLocal root (.mutLoan loan)
+        return st.addLoan loan inner .direct
 
 /-! ## E-SharedBorrow
 
@@ -303,51 +292,34 @@ def stepSymExpandMutBorrow (st : SymState) (svId bid innerSv : Nat)
     Result SymState := do
   if st.loans.contains bid then
     fail s!"E-SymExpandMutBorrow: borrow id {bid} already live"
-  -- M9.6 (Option C, plan §4.1.5) — strict path: when the OCaml
-  -- side declares which env locals and which loan-given slots it
-  -- substituted, drive the rewrite directly off those lists and
-  -- error on any mismatch. When the hint arrays are empty (v1 /
-  -- hint-empty default), fall back to the M9.5r env+loan scan.
-  -- [parentAbs] is recorded by the AbsRegistry consumer in
-  -- commit #19; ignored here.
+  -- M9.6 (Option C, plan §7.1 #23) — strict-only path: the OCaml
+  -- side enumerates the env locals and loan-given slots it
+  -- touched (commit #6 source). The M9.5r scan-env fallback is
+  -- gone — when the hint arrays are empty we do no substitution
+  -- (a legacy v1 cert that needs the rewrite is now a cert bug,
+  -- caught at the next event). The OCaml ctx tracks function-
+  -- parameter and abstraction-bound locals the Lean SymState
+  -- doesn't model, so we tolerate "unbound local" and
+  -- "unknown loan" entries in the hints silently — only env
+  -- slots / loans we already track get rewritten.
+  -- [parentAbs] is recorded by commit #19's AbsRegistry
+  -- consumer; ignored here.
   let mut newEnv := st.env
-  if substLocals.isEmpty then
-    for (l, v) in st.env.toList do
-      match v with
-      | .sym k => if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
-      | _ => pure ()
-  else
-    -- The OCaml-side ctx.env tracks function parameters and
-    -- abstraction-bound locals that the Lean SymState doesn't
-    -- model (the cert never emits an explicit bind for input
-    -- parameters). Treat "unbound local in Lean env" as a silent
-    -- skip — Lean has no work to do for those slots. Only raise
-    -- on a *bound* local whose value disagrees with the hint.
-    for l in substLocals do
-      match newEnv[l]? with
-      | some (.sym k) =>
-        if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
-      | some _ => pure ()
-      | none => pure ()
+  for l in substLocals do
+    match newEnv[l]? with
+    | some (.sym k) =>
+      if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
+    | _ => pure ()
   let mut newLoans := st.loans
-  if substLoans.isEmpty then
-    for (b, li) in st.loans.toList do
+  for b in substLoans do
+    match newLoans[b]? with
+    | some li =>
       match li.given with
       | .sym k =>
         if k = svId then
           newLoans := newLoans.insert b { li with given := .mutLoan bid }
       | _ => pure ()
-  else
-    -- Same tolerance for unknown loans as for unbound locals.
-    for b in substLoans do
-      match newLoans[b]? with
-      | some li =>
-        match li.given with
-        | .sym k =>
-          if k = svId then
-            newLoans := newLoans.insert b { li with given := .mutLoan bid }
-        | _ => pure ()
-      | none => pure ()
+    | none => pure ()
   let st := { st with env := newEnv, loans := newLoans }
   return st.addLoan bid (.sym innerSv) .lazyExpand
 
@@ -392,29 +364,16 @@ def stepEndAbs (st : SymState) (absId : Nat) (released : Array Nat)
   for loan in released do
     if st.loans.contains loan then
       st := { st with loans := st.loans.erase loan }
-  -- M9.6 (Option C, plan §4.1.7) — strict path: when
-  -- [tokenClearLocals] is non-empty, clear exactly those env
-  -- slots. When empty (v1 / hint-empty default), fall back to
-  -- the M9.5s env scan that searches for any [.mutLoan b] with
-  -- [b ∈ released]. Unbound locals in the hint are silently
-  -- skipped — same tolerance as EvSymExpandMutBorrow.subst_locals
-  -- because the OCaml ctx tracks slots Lean's SymState doesn't.
-  if tokenClearLocals.isEmpty then
-    let releasedSet : Std.HashSet Nat := Std.HashSet.ofArray released
-    let mut newEnv := st.env
-    for (l, v) in st.env.toList do
-      match v with
-      | .mutLoan b =>
-        if releasedSet.contains b then newEnv := newEnv.insert l .bottom
-      | _ => pure ()
-    st := { st with env := newEnv }
-  else
-    let mut newEnv := st.env
-    for l in tokenClearLocals do
-      match newEnv[l]? with
-      | some (.mutLoan _) => newEnv := newEnv.insert l .bottom
-      | _ => pure ()
-    st := { st with env := newEnv }
+  -- M9.6 (Option C, plan §7.1 #23) — strict-only path: clear
+  -- exactly the locals named by [tokenClearLocals] (commit #8
+  -- source). The M9.5s env-scan fallback is gone. Unbound
+  -- locals are silently skipped.
+  let mut newEnv := st.env
+  for l in tokenClearLocals do
+    match newEnv[l]? with
+    | some (.mutLoan _) => newEnv := newEnv.insert l .bottom
+    | _ => pure ()
+  st := { st with env := newEnv }
   return st
 
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :

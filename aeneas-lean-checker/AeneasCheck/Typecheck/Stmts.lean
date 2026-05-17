@@ -48,16 +48,15 @@ def checkEvent (ev : Event) : TC Unit := do
   | .mutBorrow loan place _ kindHint => do
     checkPlace place
     addLoan loan
-    -- M9.6 (Option C, plan §4.1.1) — strict path: when the cert
-    -- hints the borrow is owned by a caller abstraction or by a
-    -- loop, classify as reborrow-class. The Direct case keeps
-    -- the M9.5w (Deref-projection) fallback. M9.5aa's loopDepth
-    -- fallback was retired in commit #21 — MbkLoopOwned now
-    -- comes from the OCaml emitter.
+    -- M9.6 (Option C, plan §7.1 #23) — strict-only path: the cert
+    -- hint is the source of truth. .inAbsReborrow / .loopOwned
+    -- mark the loan as reborrow-class; .direct is taken as
+    -- truly direct (M9.5w's Deref-projection fallback retired,
+    -- consistent with Step.stepMutBorrow).
     let leakClass : Bool :=
       match kindHint with
       | .inAbsReborrow _ | .loopOwned _ => true
-      | .direct => place.projection.any (· == ProjElem.deref)
+      | .direct => false
     if leakClass then
       modify fun st => { st with reborrowLoans := st.reborrowLoans.insert loan }
   | .sharedBorrow loan _ place _ => do
@@ -125,31 +124,15 @@ def checkEvent (ev : Event) : TC Unit := do
     -- emitter now sets MbkLoopOwned for in-loop &mut local at
     -- emission time (commit #4), so the typechecker no longer
     -- needs to track loop nesting.
-    -- M9.6 (Option C, plan §4.1.3) — strict path: when
-    -- [loanRegistry] is non-empty, register exactly those
-    -- (borrowId, parentAbsId) pairs. Otherwise fall back to the
-    -- M9.5z scan of liveLoans + symMutBorrowTok tokens.
+    -- M9.6 (Option C, plan §7.1 #23) — strict-only path:
+    -- register exactly the (borrowId, parentAbsId) pairs the
+    -- OCaml side identified. M9.5z env-scan fallback retired.
     modify fun st =>
-      if loanRegistry.isEmpty then
-        let st := invariant.liveLoans.foldl (init := st) fun st b =>
-          if st.liveLoans.contains b || st.endedLoans.contains b then st
-          else { st with
-            liveLoans := st.liveLoans.insert b
-            reborrowLoans := st.reborrowLoans.insert b }
-        invariant.env.foldl (init := st) fun st (_, e) =>
-          match e with
-          | .symMutBorrowTok b =>
-            if st.liveLoans.contains b || st.endedLoans.contains b then st
-            else { st with
-              liveLoans := st.liveLoans.insert b
-              reborrowLoans := st.reborrowLoans.insert b }
-          | _ => st
-      else
-        loanRegistry.foldl (init := st) fun st (b, _) =>
-          if st.liveLoans.contains b || st.endedLoans.contains b then st
-          else { st with
-            liveLoans := st.liveLoans.insert b
-            reborrowLoans := st.reborrowLoans.insert b }
+      loanRegistry.foldl (init := st) fun st (b, _) =>
+        if st.liveLoans.contains b || st.endedLoans.contains b then st
+        else { st with
+          liveLoans := st.liveLoans.insert b
+          reborrowLoans := st.reborrowLoans.insert b }
     -- For M12.1 the replayer treats this event as a semantic no-op,
     -- and the Forward translator uses the position of EvLoopInv as
     -- the "begin loop body" marker (paired with EvLoopEnd).

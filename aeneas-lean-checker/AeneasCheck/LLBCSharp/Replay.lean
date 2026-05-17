@@ -55,32 +55,15 @@ def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := true) :
     -- M12.0/M12.1: structural no-op. The OCaml side emits an
     -- EvLoopInv at the start of each loop's canonical synthesized
     -- body, paired with an EvLoopEnd at the end (see InterpLoops.ml).
-    -- M9.6 (Option C, plan §4.1.3) — strict path: when
-    -- [loanRegistry] is non-empty, register exactly the loans
-    -- the OCaml side identified in the loop's input
-    -- abstractions ((borrowId, parentAbsId) pairs from commit
-    -- #9). When empty (v1 / hint-empty default), fall back to
-    -- the M9.5z scan of [invariant.liveLoans] + [invariant.env]
-    -- for [SymMutBorrowTok n] tokens. The parent_abs id is
-    -- recorded by commit #19's AbsRegistry consumer.
-    -- (M9.5aa loopDepth bump removed in commit #21 — the
-    -- in-loop-borrow classification is now driven entirely by
-    -- the OCaml emitter's MbkLoopOwned kindHint.)
+    -- M9.6 (Option C, plan §7.1 #23) — strict-only path: register
+    -- exactly the loans the OCaml side identified in the loop's
+    -- input abstractions ((borrowId, parentAbsId) pairs from
+    -- commit #9). The M9.5z env-scan fallback is gone. (M9.5aa
+    -- loopDepth bump removed in commit #21.)
     let mut st := st
-    if loanRegistry.isEmpty then
-      for b in invariant.liveLoans do
-        if !st.loans.contains b then
-          st := st.addLoan b .bottom .reborrow
-      for (_, e) in invariant.env do
-        match e with
-        | .symMutBorrowTok b =>
-          if !st.loans.contains b then
-            st := st.addLoan b .bottom .reborrow
-        | _ => pure ()
-    else
-      for (b, _parentAbs) in loanRegistry do
-        if !st.loans.contains b then
-          st := st.addLoan b .bottom .reborrow
+    for (b, _parentAbs) in loanRegistry do
+      if !st.loans.contains b then
+        st := st.addLoan b .bottom .reborrow
     return st
   | .loopEnd _ =>
     -- M9.5aa loopDepth tracking retired in commit #21.
