@@ -64,13 +64,15 @@ def main (args : List String) : IO UInt32 := do
     let strictJoin ← match (← IO.getEnv "AENEAS_STRICT_JOIN") with
       | some "0" | some "false" => pure false
       | _ => pure true
-    -- M9.7m: AENEAS_USE_LLBC_PROGRAM=1 flips translateCrate's
-    -- parallel-path flag (cf. M9.7k/l). Used by the parity test
-    -- to A/B-test flat vs structured Lean output on the sweep.
-    -- Default false until M9.7n.
+    -- M9.7m/n: AENEAS_USE_LLBC_PROGRAM=1 forces the structured
+    -- (LlbcProgram-sourced) translator path; =0 forces the legacy
+    -- flat-source path. Default (M9.7n+) is true — for v2 certs
+    -- (empty llbcProgram), translateCrate falls back to the flat
+    -- path automatically, so v2 certs continue to work until F1's
+    -- regen + E5's cleanup land.
     let useLlbcProgram ← match (← IO.getEnv "AENEAS_USE_LLBC_PROGRAM") with
-      | some "1" | some "true" => pure true
-      | _ => pure false
+      | some "0" | some "false" => pure false
+      | _ => pure true
     match translateCrate cc strictJoin useLlbcProgram with
     | .error e =>
       IO.eprintln s!"  ✗ pipeline error: {e}"
