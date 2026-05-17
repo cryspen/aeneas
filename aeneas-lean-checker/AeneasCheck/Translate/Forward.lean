@@ -567,6 +567,69 @@ def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy :=
     [rawTyToPTyWith]. -/
 def rawTyToPTy : RawTy → PTy := rawTyToPTyWith {}
 
+/-- M9.7k: bare last `::`-segment of a fully-qualified path. Mirrors
+    the OCaml emitter (`CertGen.ml`) which splits on `:` and takes
+    the last non-empty piece — so e.g. `test_crate::Pair` → `Pair`. -/
+def bareNameOfQualified (qualified : String) : String :=
+  match (qualified.splitOn "::").getLast? with
+  | some n => n
+  | none => qualified
+
+/-- M9.7k: structured `LlbcTy → PTy`. Parallel to [rawTyToPTyWithVars]
+    but consumes structured `LlbcTy` from `cc.llbcProgram` instead of
+    parsing opaque type strings.
+
+    `typeParams` resolves `LlbcTy.tVar K` to the K-th param's bare
+    name. `tdm` resolves `LlbcTy.tAdt id args` to `.adt name args`.
+    Stdlib `Box` (`alloc::boxed::Box`) is transparently unwrapped to
+    its first generic argument, mirroring the flat path's [isTBox]
+    handling.
+
+    Unrecognised / unstructured shapes (closures, fn-ptrs, dyn-trait,
+    raw pointers, `LlbcTy.tOpaque`) fall back to `Std.U32`, matching
+    the flat path's catch-all behaviour. -/
+partial def llbcTyToPTyWithVars
+    (tdm : TypeDeclMap) (typeParams : Array String) : LlbcTy → PTy
+  | .litTy k => match k with
+    | .bool => .lit .bool
+    | .int ik => .lit (.int ik)
+    | .float _ => .lit (.int .u32)
+    | .char => .lit (.int .u32)
+  | .tAdt id args =>
+    match tdm[id]? with
+    | some info =>
+      -- M9.5n / M9.7k: stdlib `Box<T>` is transparent — unwrap to the
+      -- single generic argument so a `Box<AVLNode<T>>` flows through
+      -- the pipeline as `AVLNode<T>`.
+      if info.name == "Box" then
+        match args[0]? with
+        | some inner => llbcTyToPTyWithVars tdm typeParams inner
+        | none => .lit (.int .u32)
+      else
+        let pargs := args.map (llbcTyToPTyWithVars tdm typeParams)
+        .adt info.name pargs
+    | none => .lit (.int .u32)
+  | .tTuple args =>
+    match args.toList with
+    | [] => .unit
+    | _ => .tuple (args.map (llbcTyToPTyWithVars tdm typeParams))
+  | .tRef _ inner _ =>
+    -- M9.5o: the borrow shape is recovered separately by the BackSig
+    -- builder; the value-level translation drops `&` / `&mut`.
+    llbcTyToPTyWithVars tdm typeParams inner
+  | .tVar k =>
+    match typeParams[k]? with
+    | some nm => .tyVar nm
+    | none => .lit (.int .u32)
+  | .tNever => .lit (.int .u32)
+  | .tRawPtr inner _ => llbcTyToPTyWithVars tdm typeParams inner
+  | .tArray elem len => .array (llbcTyToPTyWithVars tdm typeParams elem) len
+  | .tSlice elem => .slice (llbcTyToPTyWithVars tdm typeParams elem)
+  | .tStr => .lit (.int .u32)
+  | .tFn _ _ => .lit (.int .u32)
+  | .tDynTrait _ => .lit (.int .u32)
+  | .tOpaque _ => .lit (.int .u32)
+
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
     returning the inner def name `a.b`. The crate prefix becomes the
     surrounding `namespace` block in the emitter. -/

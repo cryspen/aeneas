@@ -91,6 +91,33 @@ def buildTypeDeclMap (cc : CrateCert) : TypeDeclMap := Id.run do
     | .opaque => ()
   return m
 
+/-- M9.7k: structured-source twin of [buildTypeDeclMap]. Builds the
+    same `TypeDeclId → TypeDeclInfo` map but reads from
+    `cc.llbcProgram.typeDecls` instead of the flat `cc.typeDecls`.
+
+    The map's `name` slot is the *bare* last segment of the LLBC
+    item-meta name (e.g. `test_crate::Pair` → `Pair`). Union / alias /
+    opaque LLBC decls don't populate the map (they don't appear as
+    callable struct / enum heads in the translator's downstream
+    consumers). -/
+def buildTypeDeclMapFromLlbc (cc : CrateCert) : TypeDeclMap := Id.run do
+  let mut m : TypeDeclMap := {}
+  for td in cc.llbcProgram.typeDecls do
+    let bareName := bareNameOfQualified td.itemMeta.name
+    match td.kind with
+    | .struct fields =>
+      let names : Array String := fields.map fun f =>
+        match f.name with
+        | some n => n
+        | none => s!"field{f.idx}"
+      m := m.insert td.id { name := bareName, fieldNames := names }
+    | .enum variants =>
+      let counts : Array Nat := variants.map fun v => v.fields.size
+      m := m.insert td.id
+        { name := bareName, fieldNames := #[], variantFieldCounts := counts }
+    | .union _ | .tAlias _ | .opaque => ()
+  return m
+
 /-- M9.5b: lift a cert `TypeDecl` into a Pure `StructDecl`, when the
     decl is a struct. Returns `none` for opaque/unknown kinds (we
     silently skip those — M9.5c+ will surface them). Field types
@@ -164,6 +191,56 @@ def enumDeclOfTypeDecl (tdm : TypeDeclMap) (crateName : String) (td : TypeDecl) 
         sourceSpan := td.sourceSpan }
   | .struct _ => none
   | .opaque => none
+
+/-- M9.7k: structured-source twin of [structDeclOfTypeDecl]. Lifts an
+    `LlbcTypeDecl` (when its kind is `struct`) into a `StructDecl`,
+    sourcing field types from `LlbcTy` via [llbcTyToPTyWithVars]
+    rather than parsing opaque cert-strings. -/
+def structDeclOfLlbcTypeDecl (tdm : TypeDeclMap) (crateName : String)
+    (td : LlbcTypeDecl) : Option StructDecl :=
+  let bareName := bareNameOfQualified td.itemMeta.name
+  let typeParams := td.generics.types
+  if isStdlibTypeDecl td.itemMeta.name then none
+  else match td.kind with
+  | .struct fields =>
+    let pureFields : Array StructField := fields.map fun f =>
+      { name :=
+          match f.name with
+          | some n => n
+          | none => s!"field{f.idx}"
+        ty := llbcTyToPTyWithVars tdm typeParams f.ty }
+    some
+      { name := bareName
+        qualifiedName := s!"{crateName}::{bareName}"
+        fields := pureFields
+        typeParams := typeParams
+        isTupleStruct := td.isTupleStruct
+        sourceSpan := td.itemMeta.span }
+  | .enum _ | .union _ | .tAlias _ | .opaque => none
+
+/-- M9.7k: structured-source twin of [enumDeclOfTypeDecl]. -/
+def enumDeclOfLlbcTypeDecl (tdm : TypeDeclMap) (crateName : String)
+    (td : LlbcTypeDecl) : Option EnumDecl :=
+  let bareName := bareNameOfQualified td.itemMeta.name
+  let typeParams := td.generics.types
+  if isStdlibTypeDecl td.itemMeta.name then none
+  else match td.kind with
+  | .enum variants =>
+    let pureVariants : Array EnumVariant := variants.map fun v =>
+      let pureFields : Array StructField := v.fields.map fun f =>
+        { name :=
+            match f.name with
+            | some n => n
+            | none => s!"field{f.idx}"
+          ty := llbcTyToPTyWithVars tdm typeParams f.ty }
+      { name := v.name, fields := pureFields }
+    some
+      { name := bareName
+        qualifiedName := s!"{crateName}::{bareName}"
+        variants := pureVariants
+        typeParams := typeParams
+        sourceSpan := td.itemMeta.span }
+  | .struct _ | .union _ | .tAlias _ | .opaque => none
 
 /-- M9.5l: heuristic strip of an outer `TRef (…, RShared)` /
     `TRef (…, RMut)` wrapper around a cert type string, returning the
@@ -425,7 +502,8 @@ partial def rewriteTraitClauseRefs (bounds : Array Pure.TraitBoundParam) :
     pair are translated via `translateLoopFun`, which emits three
     decls (body / wrapper / top-level). Non-loop functions go through
     the M10 `translateFun` (one decl). -/
-def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
+def translateCrate (cc : CrateCert) (strictJoin : Bool := false)
+    (useLlbcProgram : Bool := false) :
     Except String TranslatedCrate := do
   let traces ← replayCrate cc strictJoin
   if traces.size ≠ cc.functions.size then
@@ -438,11 +516,25 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
     match cc.functions.toList with
     | f :: _ => (f.fnName.splitOn "::").headD "crate"
     | [] => "crate"
-  let tdm := buildTypeDeclMap cc
+  -- M9.7k: `useLlbcProgram` switches the TypeDeclMap + StructDecl /
+  -- EnumDecl source between the flat cert path (`cc.typeDecls`) and
+  -- the structured `cc.llbcProgram` path. When the flag is set but
+  -- the LLBC program is empty (v2 cert), fall back to the flat path
+  -- so the parity test can flip the flag uniformly on the sweep.
+  let useStructured := useLlbcProgram ∧ !cc.llbcProgram.typeDecls.isEmpty
+  let tdm :=
+    if useStructured then buildTypeDeclMapFromLlbc cc
+    else buildTypeDeclMap cc
   let structs : Array StructDecl :=
-    cc.typeDecls.filterMap (structDeclOfTypeDecl tdm crateName)
+    if useStructured then
+      cc.llbcProgram.typeDecls.filterMap (structDeclOfLlbcTypeDecl tdm crateName)
+    else
+      cc.typeDecls.filterMap (structDeclOfTypeDecl tdm crateName)
   let enums : Array EnumDecl :=
-    cc.typeDecls.filterMap (enumDeclOfTypeDecl tdm crateName)
+    if useStructured then
+      cc.llbcProgram.typeDecls.filterMap (enumDeclOfLlbcTypeDecl tdm crateName)
+    else
+      cc.typeDecls.filterMap (enumDeclOfTypeDecl tdm crateName)
   -- M9.5l: lift cert trait decls + impls into Pure IR. We also build
   -- a `traitNameById` lookup so impls can resolve their target trait
   -- by id.
