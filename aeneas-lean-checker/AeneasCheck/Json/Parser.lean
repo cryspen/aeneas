@@ -147,6 +147,97 @@ def parseRestoreInfo (j : Json) : Result RestoreInfo := do
   let gb ← parseSymExpr (← field j "given_back")
   return { givenBack := gb }
 
+/-! ## M9.6 (Option C) hint parsers
+
+Each parser accepts the Serde-tagged shape the OCaml `CertJson.ml`
+emits in `cert_fmt_version = 2`. Nullary variants come through as
+bare JSON strings (`"Direct"`, `"JoinSame"`, …); payload variants
+come through as `{"VariantName": {...}}` — matching the existing
+SymExpr / Event conventions. Each call site of these parsers in
+`parseEvent` is wrapped in `(payload.getObjVal? "key").toOption` so
+v1 certs (and v2 certs that omit the field) fall back to the
+constructor default. -/
+
+/-- M9.6: parse a `MutBorrowKind` (Option C hint). -/
+def parseMutBorrowKind (j : Json) : Result MutBorrowKind := do
+  match j with
+  | .str "Direct" => return .direct
+  | .str s => fail s!"unknown nullary MutBorrowKind: {s}"
+  | _ =>
+    let (tag, payload) ← asTaggedObj j
+    match tag with
+    | "Direct" => return .direct
+    | "InAbsReborrow" => return .inAbsReborrow (← asNat (← field payload "abs"))
+    | "LoopOwned" => return .loopOwned (← asNat (← field payload "loop"))
+    | _ => fail s!"unknown MutBorrowKind tag: {tag}"
+
+/-- M9.6: parse a `JoinRule` (Option C hint). -/
+def parseJoinRule (j : Json) : Result JoinRule := do
+  match j with
+  | .str "JoinSame" => return .joinSame
+  | .str "JoinVar" => return .joinVar
+  | .str s => fail s!"unknown nullary JoinRule: {s}"
+  | _ =>
+    let (tag, payload) ← asTaggedObj j
+    match tag with
+    | "JoinSame" => return .joinSame
+    | "JoinVar" => return .joinVar
+    | "JoinSymbolic" => return .joinSymbolic (← asNat (← field payload "fresh_sv"))
+    | "JoinMutBorrows" => do
+      let l ← asNat (← field payload "left")
+      let r ← asNat (← field payload "right")
+      let f ← asNat (← field payload "fresh")
+      let a ← asNat (← field payload "abs")
+      return .joinMutBorrows l r f a
+    | "JoinBottomOther" => return .joinBottomOther (← asNat (← field payload "abs"))
+    | "JoinOtherBottom" => return .joinOtherBottom (← asNat (← field payload "abs"))
+    | _ => fail s!"unknown JoinRule tag: {tag}"
+
+/-- M9.6: parse one `JoinEntry`. -/
+def parseJoinEntry (j : Json) : Result JoinEntry := do
+  let localId ← asNat (← field j "local")
+  let rule ← parseJoinRule (← field j "rule")
+  return { localId, rule }
+
+/-- M9.6: parse one `AbsRoleEntry` (Option C abs-shape role). -/
+def parseAbsRoleEntry (j : Json) : Result AbsRoleEntry := do
+  let (tag, payload) ← asTaggedObj j
+  match tag with
+  | "MutBorrow" => do
+    let argIdx ← asNat (← field payload "arg_idx")
+    let loan ← asNat (← field payload "loan")
+    return .mutBorrow argIdx loan
+  | "MutLoan" => return .mutLoan (← asNat (← field payload "loan"))
+  | "SharedBorrow" => do
+    let argIdx ← asNat (← field payload "arg_idx")
+    let sb ← asNat (← field payload "sb_id")
+    return .sharedBorrow argIdx sb
+  | _ => fail s!"unknown AbsRoleEntry tag: {tag}"
+
+/-- M9.6: parse one `AbsShape`. -/
+def parseAbsShape (j : Json) : Result AbsShape := do
+  let absId ← asNat (← field j "abs_id")
+  let parentArr ← asArr (← field j "parent_abs")
+  let parentAbs ← parentArr.mapM asNat
+  let rolesArr ← asArr (← field j "roles")
+  let roles ← rolesArr.mapM parseAbsRoleEntry
+  return { absId, parentAbs, roles }
+
+/-- M9.6: parse an optional hint field. Returns `default` when the
+    key is absent (back-compat); otherwise runs `f` on the value. -/
+@[inline] private def optField {α} (j : Json) (k : String) (default : α)
+    (f : Json → Result α) : Result α :=
+  match (j.getObjVal? k).toOption with
+  | some v => f v
+  | none => pure default
+
+/-- M9.6: parse an optional array-of-T hint, defaulting to `#[]`. -/
+@[inline] private def optArrayField {α} (j : Json) (k : String)
+    (f : Json → Result α) : Result (Array α) :=
+  optField j k #[] (fun v => do
+    let arr ← asArr v
+    arr.mapM f)
+
 def parseStateSummary (j : Json) : Result StateSummary := do
   let envArr ← asArr (← field j "env")
   let env ← envArr.mapM fun ej => do
@@ -169,7 +260,9 @@ def parseEvent (j : Json) : Result Event := do
       let loan ← asNat (← field payload "loan")
       let place ← parsePlace (← field payload "place")
       let symval ← asNat (← field payload "symval")
-      return .mutBorrow loan place symval
+      -- M9.6: optional `kind_hint` (Option C). Absent ⇒ `.direct`.
+      let kindHint ← optField payload "kind_hint" .direct parseMutBorrowKind
+      return .mutBorrow loan place symval (kindHint := kindHint)
     | "EvSharedBorrow" =>
       let loan ← asNat (← field payload "loan")
       let sbId ← asNat (← field payload "shared_borrow_id")
@@ -206,7 +299,12 @@ def parseEvent (j : Json) : Result Event := do
       let child ← asNat (← field payload "child")
       let parent ← asNat (← field payload "parent")
       let place ← parsePlace (← field payload "place")
+      -- M9.6: optional `parent_live` / `parent_abs` (Option C).
+      let parentLive ← optField payload "parent_live" false asBool
+      let parentAbs ← optField payload "parent_abs" none
+        (fun v => do let n ← asNat v; pure (some n))
       return .reborrow child parent place
+                       (parentLive := parentLive) (parentAbs := parentAbs)
     | "EvCall" =>
       let fn ← asNat (← field payload "fn")
       let fnName ← asStr (← field payload "fn_name")
@@ -216,7 +314,9 @@ def parseEvent (j : Json) : Result Event := do
       let dst ← parsePlace (← field payload "dst")
       let raArr ← asArr (← field payload "region_abs")
       let regionAbs ← raArr.mapM asNat
-      return .call fn callId fnName args dst regionAbs
+      -- M9.6: optional `abs_sig` (Option C).
+      let absSig ← optArrayField payload "abs_sig" parseAbsShape
+      return .call fn callId fnName args dst regionAbs (absSig := absSig)
     | "EvEndAbs" =>
       let abs ← asNat (← field payload "abs")
       let fvArr ← asArr (← field payload "final_values")
@@ -230,7 +330,10 @@ def parseEvent (j : Json) : Result Event := do
           let arr ← asArr rj
           arr.mapM asNat
         | none => pure #[]
+      -- M9.6: optional `token_clear_locals` (Option C).
+      let tokenClearLocals ← optArrayField payload "token_clear_locals" asNat
       return .endAbs abs finalValues releasedLoans
+                     (tokenClearLocals := tokenClearLocals)
     | "EvProj" =>
       let abs ← asNat (← field payload "abs")
       let place ← parsePlace (← field payload "place")
@@ -240,16 +343,34 @@ def parseEvent (j : Json) : Result Event := do
       let svId ← asNat (← field payload "sv_id")
       let bid ← asNat (← field payload "bid")
       let innerSv ← asNat (← field payload "inner_sv")
+      -- M9.6: optional `parent_abs` / `subst_locals` / `subst_loans`
+      -- (Option C).
+      let parentAbs ← optField payload "parent_abs" none
+        (fun v => do let n ← asNat v; pure (some n))
+      let substLocals ← optArrayField payload "subst_locals" asNat
+      let substLoans ← optArrayField payload "subst_loans" asNat
       return .symExpandMutBorrow svId bid innerSv
+                                 (parentAbs := parentAbs)
+                                 (substLocals := substLocals)
+                                 (substLoans := substLoans)
     | "EvJoin" =>
       let left ← parseStateSummary (← field payload "left")
       let right ← parseStateSummary (← field payload "right")
       let result ← parseStateSummary (← field payload "result")
-      return .join left right result
+      -- M9.6: optional `witnesses` (Option C).
+      let witnesses ← optArrayField payload "witnesses" parseJoinEntry
+      return .join left right result (witnesses := witnesses)
     | "EvLoopInv" =>
       let loopId ← asNat (← field payload "loop_id")
       let invariant ← parseStateSummary (← field payload "invariant")
-      return .loopInv loopId invariant
+      -- M9.6: optional `loan_registry` (Option C). Each entry is
+      -- `{"borrow": N, "parent_abs": N}` — the fixpoint's
+      -- (borrowId, parentAbsId) pair.
+      let loanRegistry ← optArrayField payload "loan_registry" (fun ej => do
+        let b ← asNat (← field ej "borrow")
+        let p ← asNat (← field ej "parent_abs")
+        pure (b, p))
+      return .loopInv loopId invariant (loanRegistry := loanRegistry)
     | "EvLoopEnd" =>
       let loopId ← asNat (← field payload "loop_id")
       return .loopEnd loopId
@@ -468,8 +589,11 @@ def parseTraitImpl (j : Json) : Result TraitImpl := do
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")
-  if fmtVersion ≠ 1 then
-    fail s!"unsupported cert fmt_version: {fmtVersion} (expected 1)"
+  -- M9.6: accept both v1 (pre-Option-C) and v2 (Option C hint
+  -- schema). All hint fields are optional under v2, so the parser
+  -- behaves identically on a hint-free v2 cert.
+  if fmtVersion ≠ 1 ∧ fmtVersion ≠ 2 then
+    fail s!"unsupported cert fmt_version: {fmtVersion} (expected 1 or 2)"
   else
     let crateHash ← asStr (← field j "crate_hash")
     -- `type_decls` is optional for back-compat with pre-M9.5b certs.
