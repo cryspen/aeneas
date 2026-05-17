@@ -138,76 +138,75 @@ trust base accordingly.
 
 Before describing step 4, a sub-question: when the Lean checker
 accepts a cert, the soundness theorem promises a valid LLBC#
-derivation exists — but for *which* LLBC? The answer is layered:
+derivation exists — but for *which* LLBC? Cert v3 (M9.7) made the
+answer simple: **the cert *contains* the LLBC.**
 
-1. **The cert is self-describing for the function bodies.** Events
-   reference places (local + projection), function names, signatures,
-   ADT structures. None of this is read from the LLBC bytes at
-   replay time; it's embedded in the cert. So the soundness theorem
-   speaks of an LLBC implied by the cert's content, not a separate
-   LLBC file.
+1. **The cert embeds the post-pre-pass LLBC program** under
+   `CrateCert.llbcProgram` (an `LlbcProgram` carrying type decls, fun
+   decls with signatures + locals + body statements, and trait
+   decls/impls). The OCaml side serializes the *post-`PrePasses.ml`*
+   crate state — i.e. the same in-memory `crate` value the symbolic
+   interpreter walked — into the cert at `-emit-cert` time. The Lean
+   checker reads `llbcProgram` directly; there is no separate
+   `<input>.llbc.json` file to consult.
 
-2. **The cert carries a digest of the LLBC.** `CertEvent.crate_cert`
-   has a `cc_crate_hash` field, populated on the OCaml side from
-   `CertJson.sha256_file` (currently an MD5; see
-   `src/cert/CertJson.ml:668-678`). The intent (per
-   `cert-format-and-soundness.md` §2.1) is that the Lean checker
-   refuses an (LLBC, cert) pair whose hashes disagree. The hash is
-   the binding between the cert and the LLBC file the user thinks
-   they're analysing.
+2. **The (LLBC, cert) pair binding is structural, not hash-based.**
+   In cert v1/v2 the binding was a hash digest (`cc_crate_hash`) over
+   a separately-emitted `<input>.llbc.json` file; the Lean side was
+   meant to MD5 the file and compare. That arrangement created two
+   trust hazards: (a) the binding was honor-system because the Lean
+   CLI silently dropped the `_llbcJson` argument (a known gap), and
+   (b) the LLBC the cert was bound to was the post-pre-pass crate,
+   which had to be dumped through a custom Aeneas serializer anyway.
+   Cert v3 collapses both: the cert *is* the post-pre-pass LLBC plus
+   the per-function execution trace. No second file, no hash to
+   enforce.
 
-3. **Today the Lean checker does not actually enforce that binding.**
-   `aeneas-lean-checker/AeneasCheck/Cli.lean:29` reads `_llbcJson`
-   with an underscore prefix and discards it; the LLBC bytes are
-   never opened. So the documented binding is currently honor-system:
-   anyone who feeds the checker a mismatched (LLBC, cert) pair gets
-   no error.
+3. **`cc.crateHash` is retained as an informational digest** of the
+   source crate but no longer participates in the soundness binding.
+   The Lean checker can use it for cache invalidation; the soundness
+   theorem speaks of the LLBC implied by `llbcProgram`.
 
-This is a gap, not by design — it's leftover from when the cert was
-self-contained enough that the LLBC wasn't needed and nobody wired
-the check back up. **The fix is small**: ~15 lines in `Cli.lean` to
-read the `_llbcJson` file's bytes, MD5 them, and compare to
-`cc.crateHash`. A natural preliminary commit for M10 (call it
-M10.0a alongside the campaign's other scaffolding), or a one-off
-engineering fix any time before.
+With the cert self-contained, the trust chain at step 4 reads:
 
-With the hash check wired, the trust chain at step 4 reads:
+* The OCaml pipeline (Charon + `PrePasses.ml` + interpreter + emitter)
+  produces a single cert file whose `llbcProgram` is the post-pre-pass
+  LLBC and whose `functions[i].events` is the execution trace for that
+  LLBC. **Trusted** that the OCaml side faithfully embeds its own
+  in-memory crate state into the JSON; the OCaml-side LLBC→JSON
+  serializer lives in `src/cert/LlbcJson.ml` (689 LOC, mirrors the
+  charon-ml `OfJson` deserializer's shape in reverse).
+* The Lean checker reads `llbcProgram` and `functions` from the same
+  cert file. There is no second file the user can fail to provide.
+* The soundness theorem says: *for the LLBC encoded in
+  `cc.llbcProgram`*, ∃ valid LLBC# derivation for each `FunCert.events`.
 
-* The OCaml pipeline (Charon + PrePasses + interpreter + emitter)
-  produces a (LLBC, cert) pair where the cert's `cc_crate_hash`
-  equals `md5(LLBC bytes)`. **Trusted** — the OCaml side computes
-  the hash itself, so honesty here is engineering hygiene, not a
-  theorem.
-* The Lean checker rejects any pair where the hashes don't match.
-  **Checked.**
-* If the hashes match, the cert that follows is the one OCaml
-  computed for *this exact LLBC*. The soundness theorem then says:
-  *for this exact LLBC*, ∃ valid LLBC# derivation.
-
-Without the hash check, the soundness theorem still holds but
-applies to "whatever cert you fed me," not "whatever Rust function
-you compiled." The hash check is what makes the theorem useful
-end-to-end at the engineering boundary.
-
-A subtlety worth surfacing: the LLBC the cert is bound to is the
-**post-pre-pass** LLBC (PrePasses.ml output), not Charon's LLBC.
-The hash is over `<input>.llbc.json`, which Aeneas writes after
-running the pre-passes. So the binding chain is:
+The binding chain becomes:
 
 ```
-Charon's LLBC  ──[PrePasses.ml]──►  LLBC'  ──[Aeneas dumps as llbc.json]──┐
-   (trusted)                          ▲                                    ▼
-                                      │                          ┌──── md5(LLBC') ──┐
-                                      │                          │                  │
-                                      └────  [trusted that      cert.crate_hash ───┘
-                                              PrePasses is        (Lean checker
-                                              semantics-          enforces)
-                                              preserving]
+Charon's LLBC  ──[PrePasses.ml]──►  LLBC'  ──[Aeneas embeds in cert]──┐
+   (trusted)                          ▲                                ▼
+                                      │                  CrateCert {
+                                      │                    llbcProgram = …LLBC'…,
+                                      │                    functions   = …trace…
+                                      │                  }
+                                      └──── [trusted that PrePasses is
+                                             semantics-preserving]
 ```
 
 The user-facing trust is "PrePasses is semantics-preserving" plus
-"Charon is correct"; the hash check enforces that the cert and the
-LLBC' the user hands to Lean are the same pair Aeneas produced.
+"Charon is correct"; everything from `-emit-cert` onward is a single
+file the Lean checker reads atomically. The pre-v3 hash-check gap is
+moot.
+
+#### Historical note (pre-M9.7)
+
+Before cert v3, `aeneas-check` took two paths: an LLBC file and a cert
+file. The CLI silently ignored the LLBC bytes (`_llbcJson` with
+underscore prefix in `Cli.lean`), so any binding was honor-system. The
+intended fix was to MD5 the LLBC file and compare to a digest stored
+in the cert. M9.7 (commits M9.7a → M9.7q) made the question moot by
+moving the LLBC bytes *into* the cert.
 
 ### Step 4 — Cert checker (`cert → "valid LLBC# trace"`)
 

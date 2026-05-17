@@ -72,7 +72,7 @@ The campaign's done condition is **all `axiom` declarations removed from `Aeneas
 
 | Trusted-base axiom | Why trusted | Mitigations |
 |---|---|---|
-| **`CertGen_faithful`** (Aeneas's OCaml interpreter emits certs that are real traces) | We have no Lean port of `src/cert/CertGen.ml` to typecheck against. The Lean side has no view into the OCaml side. | Mitigated by `--differential` testing in `tests/lean-checker/differential/` and by the existing G1–G4 sweep (89/89). A bug in `CertGen` is an OCaml bug, not a Lean theorem violation. |
+| **`CertGen_faithful`** (Aeneas's OCaml interpreter emits certs that are real traces *of the LLBC the same cert embeds*) | We have no Lean port of `src/cert/CertGen.ml` or `src/cert/LlbcJson.ml` to typecheck against. The Lean side has no view into the OCaml side. | Mitigated by `--differential` testing in `tests/lean-checker/differential/` and by the existing G1–G4 sweep (89/89). A bug in `CertGen` is an OCaml bug, not a Lean theorem violation. |
 | **`paper_thm_3_1_confluence`** (LLBC# reduction is confluent up to ≤) | This is Theorem 3.1 of the paper. We port it in Phase G, but the port is a *re-derivation*, not a re-proof from first principles. We trust the paper's Appendix B. | If a port reveals a paper gap, the user pings the paper authors; outside the campaign's scope. |
 | **`paper_thm_4_1_safe`** (LLBC# borrow-checking implies LLBC safety) | Theorem 4.1; same caveat as above. | Same mitigation. |
 | **`paper_thm_3_3_pl_refines`** (LLBC ↔ PL forward simulation under step-indexing) | Theorem 3.3; ditto. | Same mitigation. |
@@ -80,6 +80,18 @@ The campaign's done condition is **all `axiom` declarations removed from `Aeneas
 What is *not* trusted: the join-algebra correspondence, `concretise`'s well-formedness, every per-event step lemma, the induction over events, the crate-level corollary. All of those are *proved* (replacing axioms in `StepEventSound.lean` with real definitions/theorems).
 
 A `#print axioms cert_implies_pl_safety` in Phase G's final commit must list only the four above plus Lean's core (`propext`, `Classical.choice`, `Quot.sound`).
+
+**Quantifier domain (post-cert-v3).** The M10 top-level theorem now reads, schematically,
+
+```
+∀ cc : CrateCert,
+  replayCrate cc = .ok _ →
+  ∀ f ∈ cc.functions,
+    ∃ d : LStep⋆,  d is a valid LLBC# derivation for f.events
+                   under the LLBC program cc.llbcProgram
+```
+
+Pre-M9.7, the theorem also had to quantify over a separate `llbc : LlbcProgram` argument and carry a `cc.crateHash = md5(llbc)` premise, then *re-thread* the same `llbc` through every per-event lemma. Cert v3 (M9.7) collapses this: `cc.llbcProgram` *is* the LLBC the derivation refers to. The `CertGen_faithful` axiom carries the OCaml-side promise that the embedded program is the post-pre-pass crate state the symbolic interpreter actually walked; the Lean side never compares against a separate file. This removes one quantifier from the top-level statement, one premise from every per-event lemma, and the entire engineering hazard around (LLBC, cert) mismatch.
 
 ---
 

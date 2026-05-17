@@ -60,23 +60,43 @@ The authoritative schema lives in
 `aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean`. This section
 describes the constructs and the LLBC# rule each one witnesses.
 
-### 2.1 Top-level: `CrateCert`
+### 2.1 Top-level: `CrateCert` (cert v3)
 
 ```
 structure CrateCert where
-  fmtVersion : Nat                 -- bumped on incompatible schema changes
-  crateHash  : String              -- digest of the source crate
-  typeDecls  : Array TypeDecl      -- struct / enum / opaque ADTs
-  traitDecls : Array TraitDecl
-  traitImpls : Array TraitImpl
-  functions  : Array FunCert
+  fmtVersion  : Nat                 -- must be 3 (M9.7o-E5a rejects v1/v2)
+  crateHash   : String              -- digest of the source crate
+  functions   : Array FunCert       -- the per-function execution traces
+  llbcProgram : LlbcProgram         -- the post-pre-pass LLBC subtree
 ```
 
-The crate-level lookup tables (`typeDecls`, `traitDecls`, `traitImpls`)
-are *static*: they describe the program, not its execution. They have
-no direct counterpart in the LLBC# operational semantics but are
-necessary for the translator to lift abstract Rust types into Lean
-inductive / structure / class declarations.
+The cert v3 format (introduced in M9.7d, mandated by M9.7o-E5a) embeds
+the *post-pre-pass* LLBC program as a structured subtree under
+`llbcProgram`. This replaces the flat `typeDecls` / `traitDecls` /
+`traitImpls` / signature-string mirrors that v1 and v2 carried.
+
+```
+structure LlbcProgram where
+  typeDecls   : Array LlbcTypeDecl    -- struct / enum / alias / union ADTs
+  funDecls    : Array LlbcFunDecl     -- per-function signatures + locals + body
+  traitDecls  : Array LlbcTraitDecl
+  traitImpls  : Array LlbcTraitImpl
+  globalDecls : Json                  -- opaque until a future milestone
+  charonVersion : String
+```
+
+The crate-level lookup tables (now `llbcProgram.{typeDecls, traitDecls,
+traitImpls}`) are *static*: they describe the program, not its
+execution. They have no direct counterpart in the LLBC# operational
+semantics but are necessary for the translator to lift abstract Rust
+types into Lean inductive / structure / class declarations.
+
+Function signatures, type-parameter names, trait obligations, and
+the per-local LLBC type table all live inside `llbcProgram.funDecls`
+(matched to each `FunCert` by `fnName` / `itemMeta.name`). The pre-v3
+`FunCert.signature : FnSignature` opaque-string mirror was retired in
+M9.7o-E5b; the translator consumes the structured `LlbcSignature` /
+`LlbcTy` directly.
 
 ### 2.2 Per-function: `FunCert`
 
@@ -84,19 +104,22 @@ inductive / structure / class declarations.
 structure FunCert where
   fnId        : Nat
   fnName      : String
-  signature   : FnSignature
   sourceSpan  : Option SourceSpan
   events      : Array Event        -- the LLBC# trace
   finalState  : StateSummary
   prettyName  : Option String
 ```
 
-`signature` records the function's input/output types and trait
-obligations. It corresponds to the `f⟨ρ⟩(x: τ)(y: τ′)(xret: τret){s}`
-binder shape used by **E-Call-Symbolic** (paper Fig. 9). The lifetime
-parameters `ρ` are not materialised explicitly in the cert: they are
-recoverable from the region abstractions emitted by `EvCall` and closed
-by `EvEndAbs`.
+The function's input/output types and trait obligations are *not*
+carried on `FunCert` directly — they live in the matching
+`LlbcProgram.funDecls` entry as a structured `LlbcSignature`. The
+match is by `fnName` (which equals the Charon `itemMeta.name` of the
+corresponding `LlbcFunDecl`). The translator threads each
+`(FunCert, LlbcFunDecl)` pair into `translateFunWith`. This
+corresponds to the `f⟨ρ⟩(x: τ)(y: τ′)(xret: τret){s}` binder shape used
+by **E-Call-Symbolic** (paper Fig. 9). The lifetime parameters `ρ` are
+not materialised explicitly: they are recoverable from the region
+abstractions emitted by `EvCall` and closed by `EvEndAbs`.
 
 `events` is the witness proper: an ordered list of LLBC# reductions
 the interpreter performed while evaluating the function body.
