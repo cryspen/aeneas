@@ -361,17 +361,35 @@ makes the paper.rs `call_choose` pattern check — loan 1 flowed into
 the call's abstraction, is implicitly ended on EvEndAbs, and so
 must no longer count as "live at function exit". -/
 
-def stepEndAbs (st : SymState) (released : Array Nat) : Result SymState := do
+def stepEndAbs (st : SymState) (released : Array Nat)
+    (tokenClearLocals : Array Nat := #[]) : Result SymState := do
   let mut st := st
   for loan in released do
     if st.loans.contains loan then
       st := { st with loans := st.loans.erase loan }
-      let mut newEnv := st.env
-      for (l, v) in st.env.toList do
-        match v with
-        | .mutLoan b => if b = loan then newEnv := newEnv.insert l .bottom
-        | _ => pure ()
-      st := { st with env := newEnv }
+  -- M9.6 (Option C, plan §4.1.7) — strict path: when
+  -- [tokenClearLocals] is non-empty, clear exactly those env
+  -- slots. When empty (v1 / hint-empty default), fall back to
+  -- the M9.5s env scan that searches for any [.mutLoan b] with
+  -- [b ∈ released]. Unbound locals in the hint are silently
+  -- skipped — same tolerance as EvSymExpandMutBorrow.subst_locals
+  -- because the OCaml ctx tracks slots Lean's SymState doesn't.
+  if tokenClearLocals.isEmpty then
+    let releasedSet : Std.HashSet Nat := Std.HashSet.ofArray released
+    let mut newEnv := st.env
+    for (l, v) in st.env.toList do
+      match v with
+      | .mutLoan b =>
+        if releasedSet.contains b then newEnv := newEnv.insert l .bottom
+      | _ => pure ()
+    st := { st with env := newEnv }
+  else
+    let mut newEnv := st.env
+    for l in tokenClearLocals do
+      match newEnv[l]? with
+      | some (.mutLoan _) => newEnv := newEnv.insert l .bottom
+      | _ => pure ()
+    st := { st with env := newEnv }
   return st
 
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :
