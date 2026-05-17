@@ -45,6 +45,33 @@ For the direct-borrow subset, the replayer treats every place as its
 root local (`placeRootLocal p = p.local_`); we mirror that here. The
 paper's full place semantics (deref-chains across multiple borrows)
 is M11+ work.
+
+## Existential post-state values (assign / call / endBorrow_direct)
+
+A few constructors (`assign`, `call`, `endBorrow_direct`, `binop`)
+existentially bind a value (`v : Val`) or a fresh id (`σ : SymValId`)
+in the constructor signature that is *not* present in the `Event`
+payload. The replayer-side `stepXxx` computes the concrete value (via
+`evalSymExpr` for assign/binop, or via env-scan for endBorrow_direct);
+Phase C lemmas use that computed value to instantiate the existential
+when applying the `LStep` constructor. The witness is therefore
+"whichever value the replayer-side `concretise st'` exhibits at the
+target local," and the soundness chain pins the choice via the
+`concretise st' = Ω'` conjunct in the per-event lemma's conclusion.
+
+## endBorrow / mutBorrow constructor dispatch (Phase D contract)
+
+`endBorrow` has three `LStep` constructors (direct / reborrow /
+shared) that share the same `Event` payload; `mutBorrow` similarly
+splits on `MutBorrowKind`. `Valid` collapses each split to `True`
+(or the disjunction's weakest premise) since *some* constructor
+always fires. Phase D's `stepEvent_sound` case-split therefore
+consults the replayer-side `LoanKind` / `MutBorrowKind` (carried in
+`SymState.loans[ℓ]?.kind` and `Event.mutBorrow.kindHint`
+respectively) to commit to the matching constructor. This is the
+"Phase D delegation contract" — `Valid_iff_LStep_exists` is
+informationally weak by design; the constructor choice rides on
+replayer state, not on `Valid`.
 -/
 
 namespace AeneasSoundness.LLBCSharpPaper

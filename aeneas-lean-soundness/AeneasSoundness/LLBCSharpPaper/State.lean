@@ -22,10 +22,11 @@ HashMap-permutation tax. This is the standard mathlib idiom for
 finite-domain functions, and works cleanly with `funext` /
 `Function.update`-style proofs.
 
-`Function.update` lives in core Lean (no Mathlib needed) under the
-name `Function.update`; we re-export the relevant operations as
-`LLBCState.setLocal` / `setAbs` so the paper-side syntax is
-self-contained.
+`Function.update` is provided via the lakefile's Mathlib dep
+(`Mathlib.Logic.Function.Basic`); the soundness package hard-depends
+on Mathlib for `Multiset` anyway, so this is free. We re-export the
+relevant operations as `LLBCState.setLocal` / `setAbs` so the
+paper-side syntax is self-contained.
 
 ## Place resolution
 

@@ -1,4 +1,3 @@
-import Mathlib.Data.Multiset.Basic
 import AeneasSoundness.LLBCSharpPaper.State
 import AeneasSoundness.LLBCSharpPaper.Program
 
