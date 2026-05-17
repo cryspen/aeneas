@@ -1335,6 +1335,8 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
              abs = abs_id;
              final_values = cert_final_values;
              released_loans = cert_released_loans;
+             (* M9.6 (Option C): populated in commit #8. *)
+             token_clear_locals = [];
            });
 
       (* Debugging *)

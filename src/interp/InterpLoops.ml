@@ -466,6 +466,8 @@ let eval_loop_symbolic (config : config) (span : span)
        {
          loop_id;
          invariant = CertEvent.cert_state_summary_of_env fp_ctx.env;
+         (* M9.6 (Option C): populated in commit #9. *)
+         loan_registry = [];
        });
 
   (* Synthesize the loop body *)

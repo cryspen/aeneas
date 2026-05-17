@@ -526,7 +526,11 @@ let expand_symbolic_value_borrow (span : Meta.span)
          loan=bid] can resolve. *)
       ctx_emit_event ctx
         (CertEvent.EvSymExpandMutBorrow
-           { sv_id = original_sv.sv_id; bid; inner_sv = sv.sv_id });
+           {
+             sv_id = original_sv.sv_id; bid; inner_sv = sv.sv_id;
+             (* M9.6 (Option C): populated in commit #6. *)
+             parent_abs = None; subst_locals = []; subst_loans = [];
+           });
       (* Apply the continuation *)
       ( ctx,
         fun e ->

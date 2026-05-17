@@ -1277,10 +1277,18 @@ let eval_rvalue_ref (config : config) (span : Meta.span) (p : place)
           match parent_bid_opt with
           | Some parent ->
               ctx_emit_event ctx
-                (CertEvent.EvReborrow { child = bid; parent; place = cp })
+                (CertEvent.EvReborrow {
+                  child = bid; parent; place = cp;
+                  (* M9.6 (Option C): populated in commit #5. *)
+                  parent_live = false; parent_abs = None;
+                })
           | None ->
               ctx_emit_event ctx
-                (CertEvent.EvMutBorrow { loan = bid; place = cp; symval }));
+                (CertEvent.EvMutBorrow {
+                  loan = bid; place = cp; symval;
+                  (* M9.6 (Option C): populated in commit #4. *)
+                  kind_hint = CertEvent.MbkDirect;
+                }));
       (* Return *)
       (rv, ctx, cc)
 

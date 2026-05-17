@@ -1563,6 +1563,8 @@ and eval_switch_with_join (config : config) (span : Meta.span)
             left = left_summary;
             right = right_summary;
             result = result_summary;
+            (* M9.6 (Option C): populated in commits #10/#11. *)
+            witnesses = [];
           }));
     [%ldebug "Joined ctx:\n" ^ eval_ctx_to_string joined_ctx];
     let ctx0_aids = env_get_abs_ids ctx0.env in
@@ -1898,7 +1900,10 @@ and eval_function_call_symbolic_from_inst_sig (config : config)
               call_id;
               args = args_e;
               dst = dst_e;
-              region_abs = abs_ids })
+              region_abs = abs_ids;
+              (* M9.6 (Option C): populated in commit #7. *)
+              abs_sig = [];
+            })
    | _ -> ());
 
   (* Check the type of the input arguments *)

@@ -129,6 +129,51 @@ type cert_signature = {
 }
 [@@deriving show]
 
+(** [M9.6 — Option C] Rule-choice hint for [EvMutBorrow]. See
+    [CertEvent.mli] for the spec; carried via [EvMutBorrow.kind_hint]. *)
+type cert_mut_borrow_kind =
+  | MbkDirect
+  | MbkInAbsReborrow of abs_id
+  | MbkLoopOwned of loop_id
+[@@deriving show]
+
+(** [M9.6 — Option C] Per-avalue role inside an [EvCall] region
+    abstraction's [A_in(ρ)] content. *)
+type cert_abs_role =
+  | ArMutBorrow of { arg_idx : int; loan : borrow_id }
+  | ArMutLoan of { loan : borrow_id }
+  | ArSharedBorrow of { arg_idx : int; sb_id : shared_borrow_id }
+[@@deriving show]
+
+(** [M9.6 — Option C] Shape of one region abstraction freshened by
+    an [EvCall]. *)
+type cert_abs_shape = {
+  as_abs_id : abs_id;
+  as_parent_abs : abs_id list;
+  as_roles : cert_abs_role list;
+}
+[@@deriving show]
+
+(** [M9.6 — Option C] Witness of which Fig. 11 (paper) rule a single
+    [EvJoin] result-env entry came from. *)
+type cert_join_rule =
+  | JrJoinSame
+  | JrJoinSymbolic of symbolic_value_id
+  | JrJoinMutBorrows of {
+      l_left : borrow_id;
+      l_right : borrow_id;
+      l_fresh : borrow_id;
+      abs : abs_id;
+    }
+  | JrJoinVar
+  | JrJoinBottomOther of abs_id
+  | JrJoinOtherBottom of abs_id
+[@@deriving show]
+
+(** [M9.6 — Option C] One entry of [EvJoin.witnesses]. *)
+type cert_join_entry = { je_local : local_id; je_rule : cert_join_rule }
+[@@deriving show]
+
 (** The LLBC# trace event vocabulary.
 
     Direct-borrow subset (M2-M8) uses constructors marked [DB]; later
@@ -141,6 +186,13 @@ type event =
       loan : borrow_id;
       place : cert_place;
       symval : symbolic_value_id;
+      kind_hint : cert_mut_borrow_kind;
+          (** [M9.6 — Option C] Rule-choice hint subsuming the
+              M9.5w (Deref-projection ⇒ reborrow-class) and M9.5aa
+              (in-loop ⇒ lazyExpand) pragmatic inferences. Defaults
+              to [MbkDirect] under fmt_version 2 until commit #4
+              wires the emitter; the Lean strict path falls back to
+              the M9.5w/aa inference while the hint is the default. *)
     }  (** [DB] Create a fresh mutable borrow of [place]; the loan side keeps
             a symbolic value [symval] to be re-bound when the borrow ends. *)
   | EvSharedBorrow of {
@@ -182,6 +234,14 @@ type event =
       child : borrow_id;
       parent : borrow_id;
       place : cert_place;
+      parent_live : bool;
+      parent_abs : abs_id option;
+          (** [M9.6 — Option C] Default [false] / [None] under
+              fmt_version 2 until commit #5. When [parent_live] is
+              true, the Lean strict path requires
+              [SymState.loans.contains parent]; while it is false
+              the [stepReborrow] fallback pre-adds the parent as a
+              [.reborrow] loan if missing. *)
     }
   (* === Function calls + abstractions (M10) === *)
   | EvCall of {
@@ -195,6 +255,11 @@ type event =
       args : cert_sym_expr list;
       dst : cert_place;
       region_abs : abs_id list;
+      abs_sig : cert_abs_shape list;
+          (** [M9.6 — Option C] One [cert_abs_shape] per freshened
+              region abstraction (parallel to [region_abs]).
+              Encodes the paper's [A_in(ρ)] content. Defaults to
+              [[]] under fmt_version 2 until commit #7. *)
     }
   | EvEndAbs of {
       abs : abs_id;
@@ -211,6 +276,11 @@ type event =
               "function ended with live borrow(s)" post-condition
               passes for the paper.rs [call_choose] pattern (input
               borrows that flowed into the call's abstraction). *)
+      token_clear_locals : local_id list;
+          (** [M9.6 — Option C] Locals whose [mutLoan] token must be
+              cleared when this abstraction ends. Defaults to [[]]
+              under fmt_version 2 until commit #8 — the Lean side
+              falls back to today's scan-env behaviour while empty. *)
     }
   | EvProj of {
       abs : abs_id;
@@ -221,6 +291,15 @@ type event =
       sv_id : symbolic_value_id;
       bid : borrow_id;
       inner_sv : symbolic_value_id;
+      parent_abs : abs_id option;
+      subst_locals : local_id list;
+      subst_loans : borrow_id list;
+          (** [M9.6 — Option C] Eliminate the M9.5r env-scan:
+              [parent_abs] names the abstraction that owns the
+              expanded borrow, [subst_locals] / [subst_loans] list
+              every binding the [replace_symbolic_values] visitor
+              touched. Defaults to [None] / [[]] / [[]] under
+              fmt_version 2 until commit #6. *)
     }
       (** [M9.5r] The OCaml interpreter just expanded a symbolic value
           of [&mut T] type into a concrete mutable borrow. This is the
@@ -242,10 +321,21 @@ type event =
       left : cert_state_summary;
       right : cert_state_summary;
       result : cert_state_summary;
+      witnesses : cert_join_entry list;
+          (** [M9.6 — Option C] Per-result-env-local Fig.-11 rule
+              witness. Defaults to [[]] under fmt_version 2 until
+              commits #10/#11; while empty the Lean checker uses
+              the pragmatic [symExprBeq + isFreshSym] shortcut. *)
     }
   | EvLoopInv of {
       loop_id : loop_id;
       invariant : cert_state_summary;
+      loan_registry : (borrow_id * abs_id) list;
+          (** [M9.6 — Option C] [(borrow_id, parent_abs_id)] pairs
+              from [compute_loop_entry_fixed_point]. Defaults to
+              [[]] under fmt_version 2 until commit #9; while empty
+              the Lean side falls back to the M9.5z scan of
+              [invariant.env] for [SymMutBorrowTok n]. *)
     }
       (** [M12.0/M12.1] Emitted once per syntactic loop, immediately
           before the loop's *synthesized* body events. The
@@ -500,8 +590,15 @@ type crate_cert = {
 [@@deriving show]
 
 (** Current cert format version. Bump whenever the JSON shape changes in a
-    backwards-incompatible way. *)
-let cert_fmt_version : int = 1
+    backwards-incompatible way.
+
+    [M9.6] v1 → v2 (Option C): adds optional hint fields to
+    [EvMutBorrow], [EvReborrow], [EvCall], [EvEndAbs],
+    [EvSymExpandMutBorrow], [EvJoin], [EvLoopInv]. The Lean parser
+    accepts both versions; under v2 the hint fields are emitted
+    (initially empty in commit #3, populated progressively across
+    commits #4-#11). *)
+let cert_fmt_version : int = 2
 
 (** Encode a Charon [binop] as a flat string tag. Arithmetic ops bake
     the overflow mode into the tag suffix ([Panic] / [UB] / [Wrap])

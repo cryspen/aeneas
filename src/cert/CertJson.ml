@@ -191,6 +191,80 @@ let json_cert_source_span (s : cert_source_span) : Yojson.Basic.t =
 let json_trait_clause ((name, idx) : string * int) : Yojson.Basic.t =
   `Assoc [ "trait", `String name; "type_param", `Int idx ]
 
+(* ---------- M9.6 (Option C) hint encoders ----------
+   These mirror the Serde-tagged shapes the Lean parser
+   ([AeneasCheck.Json.Parser]) consumes. Nullary variants serialize
+   as bare JSON strings; payload variants as single-key objects.
+   Until the per-emitter commits (#4-#11) wire actual values, every
+   hint slot defaults to its empty form; the corresponding key is
+   still always emitted under fmt_version 2 so the parser sees a
+   schema-stable shape. *)
+
+let json_cert_mut_borrow_kind (k : cert_mut_borrow_kind) : Yojson.Basic.t =
+  match k with
+  | MbkDirect -> `String "Direct"
+  | MbkInAbsReborrow abs ->
+      `Assoc [ "InAbsReborrow", `Assoc [ "abs", json_abs_id abs ] ]
+  | MbkLoopOwned lid ->
+      `Assoc [ "LoopOwned", `Assoc [ "loop", json_loop_id lid ] ]
+
+let json_cert_abs_role (r : cert_abs_role) : Yojson.Basic.t =
+  match r with
+  | ArMutBorrow { arg_idx; loan } ->
+      `Assoc
+        [
+          ( "MutBorrow",
+            `Assoc [ "arg_idx", `Int arg_idx; "loan", json_borrow_id loan ] );
+        ]
+  | ArMutLoan { loan } ->
+      `Assoc [ "MutLoan", `Assoc [ "loan", json_borrow_id loan ] ]
+  | ArSharedBorrow { arg_idx; sb_id } ->
+      `Assoc
+        [
+          ( "SharedBorrow",
+            `Assoc
+              [ "arg_idx", `Int arg_idx; "sb_id", json_shared_borrow_id sb_id ] );
+        ]
+
+let json_cert_abs_shape (s : cert_abs_shape) : Yojson.Basic.t =
+  `Assoc
+    [
+      "abs_id", json_abs_id s.as_abs_id;
+      "parent_abs", `List (List.map json_abs_id s.as_parent_abs);
+      "roles", `List (List.map json_cert_abs_role s.as_roles);
+    ]
+
+let json_cert_join_rule (r : cert_join_rule) : Yojson.Basic.t =
+  match r with
+  | JrJoinSame -> `String "JoinSame"
+  | JrJoinVar -> `String "JoinVar"
+  | JrJoinSymbolic sv ->
+      `Assoc
+        [ "JoinSymbolic", `Assoc [ "fresh_sv", json_symbolic_value_id sv ] ]
+  | JrJoinMutBorrows { l_left; l_right; l_fresh; abs } ->
+      `Assoc
+        [
+          ( "JoinMutBorrows",
+            `Assoc
+              [
+                "left", json_borrow_id l_left;
+                "right", json_borrow_id l_right;
+                "fresh", json_borrow_id l_fresh;
+                "abs", json_abs_id abs;
+              ] );
+        ]
+  | JrJoinBottomOther abs ->
+      `Assoc [ "JoinBottomOther", `Assoc [ "abs", json_abs_id abs ] ]
+  | JrJoinOtherBottom abs ->
+      `Assoc [ "JoinOtherBottom", `Assoc [ "abs", json_abs_id abs ] ]
+
+let json_cert_join_entry (e : cert_join_entry) : Yojson.Basic.t =
+  `Assoc
+    [
+      "local", json_local_id e.je_local;
+      "rule", json_cert_join_rule e.je_rule;
+    ]
+
 let json_cert_signature (s : cert_signature) : Yojson.Basic.t =
   `Assoc
     [
@@ -212,7 +286,7 @@ let json_cert_signature (s : cert_signature) : Yojson.Basic.t =
 
 let json_event (e : event) : Yojson.Basic.t =
   match e with
-  | EvMutBorrow { loan; place; symval } ->
+  | EvMutBorrow { loan; place; symval; kind_hint } ->
       `Assoc
         [
           ( "EvMutBorrow",
@@ -221,6 +295,8 @@ let json_event (e : event) : Yojson.Basic.t =
                 "loan", json_borrow_id loan;
                 "place", json_cert_place place;
                 "symval", json_symbolic_value_id symval;
+                (* M9.6 (Option C) — populated in commit #4. *)
+                "kind_hint", json_cert_mut_borrow_kind kind_hint;
               ] );
         ]
   | EvSharedBorrow { loan; sb_id; place; symval } ->
@@ -288,18 +364,25 @@ let json_event (e : event) : Yojson.Basic.t =
                 "dst", json_cert_place dst;
               ] );
         ]
-  | EvReborrow { child; parent; place } ->
+  | EvReborrow { child; parent; place; parent_live; parent_abs } ->
+      let pa_kv : (string * Yojson.Basic.t) list =
+        match parent_abs with
+        | None -> []
+        | Some a -> [ "parent_abs", json_abs_id a ]
+      in
       `Assoc
         [
           ( "EvReborrow",
             `Assoc
-              [
+              ([
                 "child", json_borrow_id child;
                 "parent", json_borrow_id parent;
                 "place", json_cert_place place;
-              ] );
+                (* M9.6 (Option C) — populated in commit #5. *)
+                "parent_live", `Bool parent_live;
+              ] @ pa_kv) );
         ]
-  | EvCall { fn; fn_name; call_id; args; dst; region_abs } ->
+  | EvCall { fn; fn_name; call_id; args; dst; region_abs; abs_sig } ->
       `Assoc
         [
           ( "EvCall",
@@ -311,9 +394,11 @@ let json_event (e : event) : Yojson.Basic.t =
                 "args", `List (List.map json_cert_sym_expr args);
                 "dst", json_cert_place dst;
                 "region_abs", `List (List.map json_abs_id region_abs);
+                (* M9.6 (Option C) — populated in commit #7. *)
+                "abs_sig", `List (List.map json_cert_abs_shape abs_sig);
               ] );
         ]
-  | EvEndAbs { abs; final_values; released_loans } ->
+  | EvEndAbs { abs; final_values; released_loans; token_clear_locals } ->
       `Assoc
         [
           ( "EvEndAbs",
@@ -322,6 +407,9 @@ let json_event (e : event) : Yojson.Basic.t =
                 "abs", json_abs_id abs;
                 "final_values", `List (List.map json_cert_sym_expr final_values);
                 "released_loans", `List (List.map json_borrow_id released_loans);
+                (* M9.6 (Option C) — populated in commit #8. *)
+                "token_clear_locals",
+                  `List (List.map json_local_id token_clear_locals);
               ] );
         ]
   | EvProj { abs; place; symval } ->
@@ -335,18 +423,29 @@ let json_event (e : event) : Yojson.Basic.t =
                 "symval", json_symbolic_value_id symval;
               ] );
         ]
-  | EvSymExpandMutBorrow { sv_id; bid; inner_sv } ->
+  | EvSymExpandMutBorrow
+      { sv_id; bid; inner_sv; parent_abs; subst_locals; subst_loans } ->
+      let pa_kv : (string * Yojson.Basic.t) list =
+        match parent_abs with
+        | None -> []
+        | Some a -> [ "parent_abs", json_abs_id a ]
+      in
       `Assoc
         [
           ( "EvSymExpandMutBorrow",
             `Assoc
-              [
+              ([
                 "sv_id", json_symbolic_value_id sv_id;
                 "bid", json_borrow_id bid;
                 "inner_sv", json_symbolic_value_id inner_sv;
-              ] );
+                (* M9.6 (Option C) — populated in commit #6. *)
+                "subst_locals",
+                  `List (List.map json_local_id subst_locals);
+                "subst_loans",
+                  `List (List.map json_borrow_id subst_loans);
+              ] @ pa_kv) );
         ]
-  | EvJoin { left; right; result } ->
+  | EvJoin { left; right; result; witnesses } ->
       `Assoc
         [
           ( "EvJoin",
@@ -355,9 +454,12 @@ let json_event (e : event) : Yojson.Basic.t =
                 "left", json_cert_state_summary left;
                 "right", json_cert_state_summary right;
                 "result", json_cert_state_summary result;
+                (* M9.6 (Option C) — populated in commits #10/#11. *)
+                "witnesses",
+                  `List (List.map json_cert_join_entry witnesses);
               ] );
         ]
-  | EvLoopInv { loop_id; invariant } ->
+  | EvLoopInv { loop_id; invariant; loan_registry } ->
       `Assoc
         [
           ( "EvLoopInv",
@@ -365,6 +467,17 @@ let json_event (e : event) : Yojson.Basic.t =
               [
                 "loop_id", json_loop_id loop_id;
                 "invariant", json_cert_state_summary invariant;
+                (* M9.6 (Option C) — populated in commit #9. *)
+                "loan_registry",
+                  `List
+                    (List.map
+                       (fun (b, a) ->
+                         `Assoc
+                           [
+                             "borrow", json_borrow_id b;
+                             "parent_abs", json_abs_id a;
+                           ])
+                       loan_registry);
               ] );
         ]
   | EvLoopEnd { loop_id } ->
