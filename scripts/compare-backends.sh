@@ -26,14 +26,14 @@ echo "==> charon rustc"
 "$CHARON" rustc --preset=aeneas --dest-file="$LLBC" -- "$SRC" --crate-type=lib
 
 echo "==> aeneas -emit-cert (new pipeline)"
-"$ROOT/bin/aeneas" -emit-cert -emit-llbc-json "$LLBC" >/dev/null
+"$ROOT/bin/aeneas" -emit-cert "$LLBC" >/dev/null
 
 echo "==> aeneas -backend lean (standard pipeline)"
 "$ROOT/bin/aeneas" -backend lean -dest "$STD_OUT" "$LLBC" 2>&1 | grep -E "(Generated|Error)" || true
 
 echo "==> aeneas-check --out (new pipeline)"
 "$ROOT/aeneas-lean-checker/.lake/build/bin/aeneas-check" \
-    /dev/null "$ROOT/tests/llbc/${base}.cert.json" \
+    "$ROOT/tests/llbc/${base}.cert.json" \
     --out "$NEW_OUT" >/dev/null
 
 # Find the file the standard backend produced.

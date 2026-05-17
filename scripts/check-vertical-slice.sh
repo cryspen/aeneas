@@ -17,15 +17,16 @@ echo "[1/6] charon rustc ..."
     --dest-file="$TESTS/llbc/incr_cert.llbc" \
     -- "$TESTS/src/incr_cert.rs" --crate-type=lib
 
-# 2. Aeneas: LLBC → cert.json + llbc.json
+# 2. Aeneas: LLBC → cert.json (cert_fmt_version >= 3 embeds the
+#    post-pre-pass LLBC inside the cert itself, so the separate
+#    -emit-llbc-json stub is no longer needed).
 echo "[2/6] aeneas -emit-cert ..."
-"$AENEAS" -emit-cert -emit-llbc-json "$TESTS/llbc/incr_cert.llbc"
+"$AENEAS" -emit-cert "$TESTS/llbc/incr_cert.llbc"
 
 # 3. Lean checker: parse + typecheck + replay + emit
 echo "[3/6] lake build && aeneas-check ..."
 ( cd "$CHECKER" && lake build aeneas-check )
 "$CHECKER/.lake/build/bin/aeneas-check" \
-    "$TESTS/llbc/incr_cert.llbc.json" \
     "$TESTS/llbc/incr_cert.cert.json" \
     --out "$CHECKER/tests/Generated/Incr.lean" \
     --rust-model "$DIFF/src/model.rs"
