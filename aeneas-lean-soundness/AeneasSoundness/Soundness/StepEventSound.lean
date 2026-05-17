@@ -4,46 +4,60 @@ import AeneasSoundness.LLBCSharpPaper.Valid
 import AeneasSoundness.Soundness.Concretise.Defn
 import AeneasSoundness.Soundness.Concretise.Lemmas
 import AeneasSoundness.Soundness.JoinLemmas
+import AeneasSoundness.Soundness.CertGen
 
 /-!
 # Soundness of `stepEvent`
 
-This file is the M10 Phase-A vertical-slice anchor. After M10.0a–j
-moved the four `axiom` stubs (`LLBCState`, `concretise`, `Valid`,
-`LStep`) into a fully Lean-ported paper-side surface
-(`AeneasSoundness.LLBCSharpPaper.*`), M10.0k now replaces those
-axioms with imports of the real defs and turns every per-event
-`axiom` into a `theorem … := by sorry`. The `sorry`s land *inside*
-`Soundness/`; G6 is *exempted* for Phase A per plan §10.1 (G6 runs
-from Phase C onward; commits #17+).
+The campaign-closure file: every per-event soundness lemma (Phase C)
+and the top-level `stepEvent_sound` (Phase D) live here. After
+M10.3a, `stepEvent_sound` is a `theorem` — no `sorry` — proved by
+case-analysis on `Event`, delegating each constructor (and sub-case
+for hint-bearing events) to its per-event lemma, and discharging
+each lemma's Phase-D-dischargeable hypotheses via the
+`AeneasSoundness.Soundness.CertGen_faithful` family declared in
+`CertGen.lean`.
 
-Concretely:
+## Trusted base after Phase D
 
-* `LLBCState` is now the structure from
-  `LLBCSharpPaper/State.lean`.
-* `LStep` is the inductive relation from `LLBCSharpPaper/Step.lean`
-  (27 constructors).
-* `Valid` is the `match`-on-`Event` predicate from
-  `LLBCSharpPaper/Valid.lean`.
-* `concretise` is *still* a placeholder — a `def` that always
-  returns `LLBCState.empty`. The real concretisation lands at
-  M10.1a/b (Phase B); the placeholder is what makes the M10.0k
-  axiom inventory clean.
+`#print axioms stepEvent_sound` reports:
 
-After M10.0k, the per-event lemmas and the top-level
-`stepEvent_sound` are `theorem`s witnessed by `sorry`; Phase B–D
-discharge them. `#print axioms stepEvent_sound` reports
-`sorryAx` (plus `propext` / `Quot.sound` from core) and nothing
-else.
+* `propext`, `Quot.sound`, `Classical.choice` (Lean core).
+* `CertGen_faithful.{move, copy, sharedBorrow, mutBorrow_direct,
+  mutBorrow_inAbsReborrow, mutBorrow_loopOwned, reborrow, call,
+  endAbs, symExpandMutBorrow, loopInv, endBorrow_takeOk,
+  endBorrow_direct_witness, endBorrow_reborrow_witness,
+  endBorrow_shared_witness, join}` — the OCaml-side honesty axioms,
+  one extractor per Phase-C per-event lemma's Phase-D-dischargeable
+  premise set. Plan §0.3 + `CertGen.lean`'s header note are the
+  audit surface.
 
-The structure deliberately mirrors plan §6.3:
+No `sorryAx`. No domain `axiom` from `LLBCSharpPaper/`. The four
+`paper_thm_*` axioms (Phase G placeholders) are not consumed by
+`stepEvent_sound` and stay deferred to Phase E/F/G.
+
+## Structure of the file
+
+* `concretise` re-export.
+* Per-event soundness lemmas (C1-C24), one section per `Event`
+  constructor or hint subdivision. Each lemma takes `hRep :
+  concretise st = Ω` and a small set of Phase-D-dischargeable
+  hypotheses (place projection emptiness, freshness on loan / abs
+  ids, result-shape hypotheses for events whose replayer body
+  pre-amble doesn't fit a single commute lemma).
+* `stepEvent_sound` — the top-level dispatcher.
+
+The statement of `stepEvent_sound` mirrors plan §6.3:
 ```
 theorem stepEvent_sound :
   ∀ ev st st' Ω, ⟦st⟧ = Ω → stepEvent st ev = .ok st' →
     ∃ Ω', Valid ev Ω ∧ LStep Ω ev Ω' ∧ ⟦st'⟧ = Ω'
 ```
-The hint-bearing events sub-case on the hint constructor; the
-non-hinted events case directly on the constructor.
+The hint-bearing events (`.mutBorrow`, `.endBorrow`) sub-case on
+the hint / LoanKind; non-hinted events delegate directly. `.proj`
+is dispatched by contradiction — the replayer rejects it with
+`.error`, the paper's `Valid .proj` is `False`; cert v4 doesn't
+emit it.
 -/
 
 namespace AeneasSoundness.Soundness
@@ -880,6 +894,51 @@ theorem stepSymExpandMutBorrow_sound
   simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
     LLBCState.bumpSymValId, Concretise.concretise_addLoan, hRep]
 
+/-! ### LoopInv (C24 / M10.3a — empty-loanRegistry subset)
+
+The plan §3.2 row for C17 originally specified `stepLoopInv_sound`;
+the campaign substituted `stepSymExpandMutBorrow` and deferred the
+loop-fixpoint event lemma until Phase D needed it. We close it here
+as part of M10.3a (Phase D's prep work) so the `stepEvent_sound`
+case-split has a delegate for the `.loopInv` arm.
+
+The replayer's `stepLoopInv` registers each entry of `loanRegistry`
+as a fresh `.reborrow` loan if it isn't already in `st.loans`. The
+paper-side `LStep.loopInv` is `Ω → Ω` (state unchanged at this
+layer; the loop's region-abstraction surfaces via the surrounding
+`EvCall` / `EvMutBorrow.loopOwned` events). The two coincide iff the
+cert's `loanRegistry` is empty — i.e., every loan the loop's input
+abstractions name was already registered by a prior event. Cert
+v4-and-below emits non-empty `loanRegistry` only when the OCaml
+side identifies an input borrow not already in scope; the M10
+fixture set is empty-only. The full case awaits an M9.8-style
+schema follow-up (extend `LStep.loopInv` to allow `.reborrow`-only
+loan additions, or split into a `loopRegisterLoan` event). -/
+
+/-- C24 / M10.3a — `EvLoopInv loopId invariant loanRegistry` (paper
+    §5.2 fixpoint snapshot). The `hLoanRegistryEmpty` hypothesis is
+    Phase-D-dischargeable from `CertGen_faithful.loopInv`. With it,
+    the replayer's for-loop body never fires and the post-state is
+    `st`, matching the paper's no-op. -/
+theorem stepLoopInv_sound
+  (hRep : concretise st = Ω)
+  (loopId : Nat) (invariant : StateSummary)
+  (loanRegistry : Array (Nat × Nat))
+  (hLoanRegistryEmpty : loanRegistry = #[]) :
+  stepEvent st (.loopInv loopId invariant loanRegistry) = .ok st' →
+  ∃ Ω', Valid (.loopInv loopId invariant loanRegistry) Ω ∧
+        LStep Ω (.loopInv loopId invariant loanRegistry) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  subst hLoanRegistryEmpty
+  -- The replayer's for-loop over #[] is a no-op; the body reduces
+  -- to `return st`, i.e. `pure st = .ok st'`. `simp [stepEvent]`
+  -- handles both the unfold and the for-loop reduction; the
+  -- residual `pure` is then unwrapped via the `Except` injection.
+  simp [stepEvent, bind, Except.bind, Pure.pure, Except.pure] at hStep
+  subst hStep
+  exact ⟨Ω, trivial, LStep.loopInv, hRep⟩
+
 /-! ### Join (C23, general case — M10.2t)
 
 `stepJoin st left right result witnesses` performs a wholesale
@@ -982,7 +1041,117 @@ theorem stepEvent_sound :
       concretise st = Ω →
       stepEvent st ev = .ok st' →
       ∃ Ω', Valid ev Ω ∧ LStep Ω ev Ω' ∧ concretise st' = Ω' := by
-  sorry
+  intro ev st st' Ω hRep hStep
+  cases ev with
+  | mutBorrow loan place symval kindHint =>
+    cases kindHint with
+    | direct =>
+      obtain ⟨hPlaceProj, hPlaceEnv, hLoanFresh⟩ :=
+        CertGen_faithful.mutBorrow_direct st st' loan place symval hStep
+      exact stepMutBorrow_direct_sound st st' Ω hRep loan place symval
+        hPlaceProj hPlaceEnv hLoanFresh hStep
+    | inAbsReborrow absId =>
+      obtain ⟨hAbsExists, hLoanFresh⟩ :=
+        CertGen_faithful.mutBorrow_inAbsReborrow st st' loan place symval absId hStep
+      exact stepMutBorrow_inAbsReborrow_sound st st' Ω hRep loan place symval absId
+        hAbsExists hLoanFresh hStep
+    | loopOwned loopId =>
+      obtain ⟨hPlaceProj, hPlaceEnv, hLoanFresh⟩ :=
+        CertGen_faithful.mutBorrow_loopOwned st st' loan place symval loopId hStep
+      exact stepMutBorrow_loopOwned_sound st st' Ω hRep loan place symval loopId
+        hPlaceProj hPlaceEnv hLoanFresh hStep
+  | sharedBorrow loan sbId place symval =>
+    obtain ⟨hPlaceProj, hPlaceEnv, hLoanFresh⟩ :=
+      CertGen_faithful.sharedBorrow st st' loan sbId place symval hStep
+    exact stepSharedBorrow_sound st st' Ω hRep loan sbId place symval
+      hPlaceProj hPlaceEnv hLoanFresh hStep
+  | assign dst rhs =>
+    exact stepAssign_sound st st' Ω hRep dst rhs hStep
+  | move src dst =>
+    obtain ⟨hSrcProj, hDstProj, hSrcEnv⟩ :=
+      CertGen_faithful.move st st' src dst hStep
+    exact stepMove_sound st st' Ω hRep src dst hSrcProj hDstProj hSrcEnv hStep
+  | copy src dst =>
+    obtain ⟨hSrcProj, hDstProj, hSrcEnv⟩ :=
+      CertGen_faithful.copy st st' src dst hStep
+    exact stepCopy_sound st st' Ω hRep src dst hSrcProj hDstProj hSrcEnv hStep
+  | endBorrow loan restore =>
+    obtain ⟨li, stTake, hTakeRaw⟩ :=
+      CertGen_faithful.endBorrow_takeOk st st' loan restore hStep
+    -- Dispatch by the replayer's `LoanKind`.
+    cases hKind : li.kind with
+    | direct =>
+      obtain ⟨x, v, hHolder, hShape⟩ :=
+        CertGen_faithful.endBorrow_direct_witness st st' loan restore Ω hRep hStep
+          li stTake hTakeRaw (Or.inl hKind)
+      exact stepEndBorrow_direct_sound st st' Ω hRep loan restore x v stTake
+        ⟨li, hTakeRaw, Or.inl hKind⟩ hHolder hShape hStep
+    | lazyExpand =>
+      obtain ⟨x, v, hHolder, hShape⟩ :=
+        CertGen_faithful.endBorrow_direct_witness st st' loan restore Ω hRep hStep
+          li stTake hTakeRaw (Or.inr hKind)
+      exact stepEndBorrow_direct_sound st st' Ω hRep loan restore x v stTake
+        ⟨li, hTakeRaw, Or.inr hKind⟩ hHolder hShape hStep
+    | reborrow =>
+      have hShape := CertGen_faithful.endBorrow_reborrow_witness st st' loan restore hStep
+        li stTake hTakeRaw hKind
+      exact stepEndBorrow_reborrow_sound st st' Ω hRep loan restore stTake
+        ⟨li, hTakeRaw, hKind⟩ hShape hStep
+    | shared =>
+      have hShape := CertGen_faithful.endBorrow_shared_witness st st' loan restore hStep
+        li stTake hTakeRaw hKind
+      exact stepEndBorrow_shared_sound st st' Ω hRep loan restore stTake
+        ⟨li, hTakeRaw, hKind⟩ hShape hStep
+  | assert cond expected =>
+    exact stepAssert_sound st st' Ω hRep cond expected hStep
+  | panic =>
+    exact stepPanic_sound st st' Ω hRep hStep
+  | retn =>
+    exact stepRetn_sound st st' Ω hRep hStep
+  | binop op lhs rhs dst =>
+    exact stepBinop_sound st st' Ω hRep op lhs rhs dst hStep
+  | reborrow child parent place parentLive parentAbs =>
+    obtain ⟨hChildFresh, hParentInHwm⟩ :=
+      CertGen_faithful.reborrow st st' child parent place parentLive parentAbs hStep
+    exact stepReborrow_sound st st' Ω hRep child parent place parentLive parentAbs
+      hChildFresh hParentInHwm hStep
+  | call fn callId fnName args dst regionAbs absSig =>
+    have hDstInBounds :=
+      CertGen_faithful.call st st' fn callId fnName args dst regionAbs absSig hStep
+    exact stepCall_sound st st' Ω hRep fn callId fnName args dst regionAbs absSig
+      hDstInBounds hStep
+  | endAbs absId finalValues releasedLoans tokenClearLocals =>
+    obtain ⟨shape, stPre, hAbsInRegistry, hConcPre, hShape⟩ :=
+      CertGen_faithful.endAbs st st' absId finalValues releasedLoans tokenClearLocals hStep
+    exact stepEndAbs_sound st st' Ω hRep absId finalValues releasedLoans tokenClearLocals
+      shape hAbsInRegistry stPre hConcPre hShape hStep
+  | proj absId p sv =>
+    -- The replayer rejects `.proj` events with `.error`; `hStep`'s
+    -- `.error _ = .ok st'` is a contradiction. (`Valid (.proj _ _ _)
+    -- = False` on the paper side; this dispatch keeps the two in
+    -- sync — a cert that ever emits `EvProj` is rejected by both.)
+    simp [stepEvent] at hStep
+  | symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans =>
+    obtain ⟨hSubstLocalsEmpty, hSubstLoansEmpty, hBidNotInLoans, hBidFresh⟩ :=
+      CertGen_faithful.symExpandMutBorrow st st' svId bid innerSv parentAbs
+        substLocals substLoans hStep
+    exact stepSymExpandMutBorrow_sound st st' Ω hRep svId bid innerSv parentAbs
+      substLocals substLoans hSubstLocalsEmpty hSubstLoansEmpty hBidNotInLoans
+      hBidFresh hStep
+  | join left right result witnesses =>
+    obtain ⟨Ω', hChain, hConcMatch⟩ :=
+      CertGen_faithful.join st st' left right result witnesses Ω hRep hStep
+    exact stepJoin_witnessed_sound st st' Ω left right result witnesses hRep Ω'
+      hChain hConcMatch hStep
+  | loopInv loopId invariant loanRegistry =>
+    have hLoanRegistryEmpty :=
+      CertGen_faithful.loopInv st st' loopId invariant loanRegistry hStep
+    exact stepLoopInv_sound st st' Ω hRep loopId invariant loanRegistry
+      hLoanRegistryEmpty hStep
+  | loopEnd loopId =>
+    exact stepLoopEnd_sound st st' Ω hRep loopId hStep
+  | matchArm scrutinee adtId variantId variantName =>
+    exact stepMatchArm_sound st st' Ω hRep scrutinee adtId variantId variantName hStep
 
 /-! ## Cross-cutting consequences (sketched in
 `cert-format-and-soundness.md` §4.3 / §4.4)

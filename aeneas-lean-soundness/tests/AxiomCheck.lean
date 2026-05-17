@@ -12,6 +12,9 @@ The expected axiom list shrinks as phases close:
   real types; per-event lemmas become `sorry`'d theorems (`sorryAx`).
 * Phase C end: per-event lemmas are real; `stepEvent_sound` still
   `sorry`'d (Phase D closes it).
+* Phase D end (M10.3a, *now*): `stepEvent_sound` is a theorem; the
+  trusted base is Lean core + the `CertGen_faithful` per-event
+  family.
 * Phase F (M10 done): `replayCrate_implies_borrow_checks` carries
   `CertGen_faithful` + the four `paper_thm_*` placeholders.
 * Phase G (optional, post-M10): the four `paper_thm_*` axioms are
