@@ -817,6 +817,7 @@ let initialize_eval_ctx (span : Meta.span option) (ctx : decls_ctx)
     cert_event_buffer = ref [];
     cert_events_suppressed = ref false;
     cert_loop_id_stack = ref [];
+    cert_ended_loans = ref Values.BorrowId.Set.empty;
   }
 
 (** Instantiate a function signature, introducing **fresh** abstraction ids and

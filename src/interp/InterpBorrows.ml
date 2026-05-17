@@ -1014,18 +1014,36 @@ let rec end_borrow_aux (config : config) (span : Meta.span) ~(snapshots : bool)
          body, with a literal fallback. *)
       (match l with
       | UMut loan_bid ->
-          let given_back : CertEvent.cert_sym_expr =
-            match bc with
-            | Concrete (VMutBorrow (_, bv)) -> (
-                match bv.value with
-                | VSymbolic sv -> CertEvent.SymVal sv.sv_id
-                | VLiteral lit -> CertEvent.SymLit lit
-                | _ -> CertEvent.SymMutBorrowTok loan_bid)
-            | _ -> CertEvent.SymMutBorrowTok loan_bid
-          in
-          ctx_emit_event ctx
-            (CertEvent.EvEndBorrow
-               { loan = loan_bid; restore = { ri_given_back = given_back } })
+          (* M9.6 (Option C, plan §4.1.6): drop the M9.5x
+             redundant post-join EvEndBorrow on the same loan id.
+             The OCaml join machinery linearises each branch's
+             cleanup separately and may re-walk the same loan
+             during reconciliation; the second walk is a no-op
+             at the LLBC# level but used to confuse the Lean
+             replayer (which leaned on the [joinDedupe] fallback,
+             removed in commit #20). The borrow_id allocator is
+             monotonic per fun-decl so a "duplicate" id always
+             means redundant emit, never id reuse. *)
+          if Values.BorrowId.Set.mem loan_bid
+               !(ctx.cert_ended_loans)
+          then ()
+          else begin
+            ctx.cert_ended_loans :=
+              Values.BorrowId.Set.add loan_bid
+                !(ctx.cert_ended_loans);
+            let given_back : CertEvent.cert_sym_expr =
+              match bc with
+              | Concrete (VMutBorrow (_, bv)) -> (
+                  match bv.value with
+                  | VSymbolic sv -> CertEvent.SymVal sv.sv_id
+                  | VLiteral lit -> CertEvent.SymLit lit
+                  | _ -> CertEvent.SymMutBorrowTok loan_bid)
+              | _ -> CertEvent.SymMutBorrowTok loan_bid
+            in
+            ctx_emit_event ctx
+              (CertEvent.EvEndBorrow
+                 { loan = loan_bid; restore = { ri_given_back = given_back } })
+          end
       | UShared _ -> ());
       (* Give back the value *)
       let ctx = give_back_concrete span l bc ctx in

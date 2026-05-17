@@ -178,6 +178,17 @@ type eval_ctx = {
           entry. Held in a [ref] for the same reason as
           [cert_event_buffer]: shared/copied contexts must observe the
           same stack. *)
+  cert_ended_loans : (BorrowId.Set.t ref[@opaque]);
+      (** [M9.6 — Option C] Set of borrow ids for which an
+          [EvEndBorrow] has already been emitted in the current
+          cert trace. Consulted at the [EvEndBorrow] emit site in
+          [InterpBorrows] to drop the M9.5x redundant post-join
+          duplicates (the OCaml join algorithm linearises each
+          branch's cleanup separately and then re-emits a
+          reconciliation end-borrow on the same loan id; the Lean
+          replayer used to no-op them via [joinDedupe], commit
+          #20 deletes that fallback). Borrow ids are fresh per
+          fun_decl so the set never wraps. *)
 }
 [@@deriving show]
 
