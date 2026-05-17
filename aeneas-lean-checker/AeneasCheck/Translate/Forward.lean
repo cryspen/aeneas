@@ -897,9 +897,32 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
             vm := st.vm.insert d.local_ rhsE
             lastWrite := some d.local_ }
     else
-      { st with
-        vm := st.vm.insert d.local_ rhsE
-        lastWrite := some d.local_ }
+      -- M12.2a-3: a trailing `EvAssign local=0 rhs=()` shows up in v3
+      -- certs for unit-returning functions whose body already wrote
+      -- a meaningful return value into vm[0] via a previous deref-
+      -- assign that fired a backward closure (the `use_choose`-style
+      -- pattern). The unit-write is the LLBC convention of clearing
+      -- the return slot before `EvReturn`, but our walker has
+      -- *already* stashed the function's real tail in vm[0]. Skip the
+      -- overwrite when (a) dst is the return slot, (b) rhs is `()`,
+      -- and (c) vm[0] holds a `_back`-headed application. Without
+      -- this guard the trailing `()` would clobber the back-closure
+      -- application and the function tail would degrade to `ok ()` /
+      -- `ok (x, y)` (per the BackSig wrap-up fallback).
+      let isUnitRhs : Bool :=
+        match rhsE with
+        | .tuple #[] => true
+        | _ => false
+      let vm0IsBackApp : Bool :=
+        match st.vm[0]? with
+        | some (PExpr.app head _) => (head.splitOn "_back").length ≥ 2
+        | _ => false
+      if d.local_ == 0 && isUnitRhs && vm0IsBackApp then
+        st
+      else
+        { st with
+          vm := st.vm.insert d.local_ rhsE
+          lastWrite := some d.local_ }
   | .binop op lhs rhs d =>
     let lhsE := lookupSymExpr st.tdm st.localTypes st.vm lhs
     let rhsE := lookupSymExpr st.tdm st.localTypes st.vm rhs
@@ -1714,7 +1737,15 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
           -- use that variable name.
           let joinOpt : Option Event := evs[kIdx]?
           match joinOpt with
-          | some (.join leftSummary rightSummary resultSummary) =>
+          -- M11.2: `EvJoin`'s `witnesses` field defaults to `#[]` but
+          -- v3 certs populate it with one [JoinEntry] per result-env
+          -- local (Option C, M9.6). The pattern *must* bind the fourth
+          -- arg explicitly (`_w`); a 3-arg `.join a b c` would only
+          -- match the empty-witnesses case in Lean 4 (the trailing
+          -- default fills in as `#[]`), causing every v3-emitted join
+          -- to fall through to the per-event walk and silently lose
+          -- the if/else shape.
+          | some (.join leftSummary rightSummary resultSummary _w) =>
             -- Refine the cond. See heuristic above the joinOpt def.
             let cond : PExpr := Id.run do
               let leftBoolLocal : Option Nat :=
