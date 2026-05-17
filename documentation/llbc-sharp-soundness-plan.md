@@ -1,8 +1,10 @@
 # LLBC# Soundness Campaign — Implementation Plan
 
+> **Cert v3 revision (2026-05-17).** This plan was written pre-M9.7 (cert v2). It has been revised to reflect the cert v3 (M9.7) self-contained-cert redesign: cert files now embed the post-pre-pass LLBC under `cc.llbcProgram` and no longer reference an external `<input>.llbc.json` file. The campaign's top-level theorem quantifies over a single `cc : CrateCert`, signatures come from the matched `LlbcFunDecl` via a new `LLBCSharpPaper/Program.lean` helper module, and the broadened `CertGen_faithful` axiom (§0.3) covers both the trace and the embedded LLBC subtree. Key cross-references: §0.3 (quantifier-domain note), §0.4 (cert-v3 boundaries), §1.1 (new `Program.lean`), §5 (Phase E theorem signature), §6 (Phase F theorem + `lookupFunDecl_total` preamble).
+
 ## Executive Summary
 
-This plan stages the soundness proof of the Aeneas Lean checker — closing the four `axiom`s in `aeneas-lean-checker/AeneasCheck/Theorems/StepEventSound.lean` into a fully Lean-mechanized statement that *`replayCrate` accepting a cert implies the existence of a valid LLBC# derivation*, and by composition with the paper's theorems, PL-level safety. It is the natural follow-on to the M9.6 (Option C) cert-format redesign (24 commits, branch `aeneas-lean-certificate`): M9.6 made every replayer-side rule choice deterministic; this campaign supplies the paper-side surface (`LLBCState`, `concretise`, `LStep`, `Valid`) those hints will be matched against.
+This plan stages the soundness proof of the Aeneas Lean checker — closing the four `axiom`s in `aeneas-lean-checker/AeneasCheck/Theorems/StepEventSound.lean` into a fully Lean-mechanized statement that *`replayCrate` accepting a cert implies the existence of a valid LLBC# derivation*, and by composition with the paper's theorems, PL-level safety. It is the natural follow-on to the M9.6 (Option C) cert-format redesign and the M9.7 (cert v3) self-contained-cert redesign (together: 41 commits, branch `aeneas-lean-certificate`): M9.6 made every replayer-side rule choice deterministic; M9.7 made the cert a single self-contained file that carries the post-pre-pass LLBC inside it; this campaign supplies the paper-side surface (`LLBCState`, `concretise`, `LStep`, `Valid`) those hints will be matched against.
 
 The campaign is split into **eight phases (M10.0 — M10.7)**, in dependency order, with one Lean module landing per phase. Each phase has a vertical-slice gate (a representative event becomes fully proved end-to-end) before the campaign advances to the next paper rule. Total estimated effort: **~70–110 working days** single-developer focus (i.e., a multi-month campaign), heavily front-loaded on Phase A (paper-side surface; ~20 d) and Phase C (per-event lemmas; ~25–35 d). The bulk of work parallelises along per-event boundaries (Phase C), with Phases A, D, E, F, G largely serial.
 
@@ -93,6 +95,15 @@ A `#print axioms cert_implies_pl_safety` in Phase G's final commit must list onl
 
 Pre-M9.7, the theorem also had to quantify over a separate `llbc : LlbcProgram` argument and carry a `cc.crateHash = md5(llbc)` premise, then *re-thread* the same `llbc` through every per-event lemma. Cert v3 (M9.7) collapses this: `cc.llbcProgram` *is* the LLBC the derivation refers to. The `CertGen_faithful` axiom carries the OCaml-side promise that the embedded program is the post-pre-pass crate state the symbolic interpreter actually walked; the Lean side never compares against a separate file. This removes one quantifier from the top-level statement, one premise from every per-event lemma, and the entire engineering hazard around (LLBC, cert) mismatch.
 
+### 0.4 Cert v3 boundaries (carried into every phase)
+
+M9.7 reshaped what the campaign's per-event lemmas see and what the trusted base covers. The downstream phases (A–F) inherit these boundaries; flagging them once here:
+
+- **Static program lookup**: function signatures, locals' LLBC types, ADT field shapes, trait method tables — all live in `cc.llbcProgram.{funDecls,typeDecls,traitDecls,traitImpls}`. The pre-v3 flat `cc.typeDecls` / `cc.traitDecls` / `cc.traitImpls` mirrors and the per-function opaque-string `FunCert.signature` are gone (M9.7o-E5a/E5b). Whenever a Phase-C/D/E/F lemma needs a callee signature or a struct's field types, it goes through `cc.llbcProgram` — *not* through `FunCert`.
+- **Function-cert ↔ funDecl pairing**: each `FunCert` is paired to its `LlbcFunDecl` by name (`f.fnName ≡ lfd.itemMeta.name`). A helper `lookupFunDecl (cc : CrateCert) (f : FunCert) : Option LlbcFunDecl` (to be introduced in Phase A) is the canonical glue; every lemma that needs `f`'s signature takes a hypothesis `lookupFunDecl cc f = some lfd` and works from `lfd.signature` / `lfd.localsTypes`.
+- **`CertGen_faithful` coverage**: the axiom (§0.3) is broader post-M9.7 — it now covers *both* "the events are a real interpreter trace" *and* "the embedded `llbcProgram` is the post-pre-pass crate state that trace was produced from." A single OCaml-side honesty assumption underpins both.
+- **No external LLBC argument**: top-level theorems, per-function theorems, per-event lemmas all quantify over `cc : CrateCert` alone. The `(llbc, cert)` pair with hash premise is retired throughout — the per-event lemma signatures in Phase C and the function-level signature in Phase E both lose one `llbc : LlbcProgram` argument and the `crateHash`-equals-MD5 premise. Wherever this plan still reads "the LLBC", it means `cc.llbcProgram` of the ambient `cc`.
+
 ---
 
 ## 1. Phase A — Paper-side surface (LLBC# port)
@@ -107,7 +118,8 @@ Pre-M9.7, the theorem also had to quantify over a separate `llbc : LlbcProgram` 
 |---|---|---|---|
 | `LLBCSharpPaper/Syntax.lean` | `Val#` (value grammar: `borrow^m`, `loan^m`, `borrow^s`, `loan^s`, `⊥`, ADTs, literals); `Place#`; `RegionAbs` (a `Multiset` of role entries). | Fig. 2 + §4.1 | ~600 |
 | `LLBCSharpPaper/State.lean` | `LLBCState` as `{ ctx : Map Local Val#, abs : Map AbsId RegionAbs, freshness : NonceCounters }`; reads/writes; place-resolution `Ω(p) ⇒ v`. | Fig. 2 + §4.1 | ~400 |
-| `LLBCSharpPaper/WellFormed.lean` | `WellFormed Ω#` — borrow-id uniqueness, loan-side ↔ borrow-side pairing, no dangling refs, abs-membership disjointness. | implicit in Fig. 3 side conditions | ~300 |
+| `LLBCSharpPaper/Program.lean` | **(M9.7-introduced.)** Helpers over `cc.llbcProgram`: `lookupFunDecl : CrateCert → FunCert → Option LlbcFunDecl`; `lookupTypeDecl`, `lookupTraitDecl`, `lookupTraitImpl` (by id and by qualified name); `signatureOf : CrateCert → FunCert → Option LlbcSignature` (composes `lookupFunDecl` with `.signature`); `localsTypesOf : CrateCert → FunCert → Option (Array LlbcTy)`. The phase's per-event and per-function lemmas thread `cc` and use these helpers wherever the pre-v3 plan reached into `f.signature`. | — | ~250 |
+| `LLBCSharpPaper/WellFormed.lean` | `WellFormed Ω#` — borrow-id uniqueness, loan-side ↔ borrow-side pairing, no dangling refs, abs-membership disjointness. Plus `WellFormedProgram : LlbcProgram → Prop` (well-formedness of the embedded LLBC subtree: typeDecl ids are dense and unique; trait-impls reference declared traits; funDecls reference declared types). | implicit in Fig. 3 side conditions | ~400 |
 | `LLBCSharpPaper/Step.lean` | `inductive LStep : LLBCState → Event → LLBCState → Prop` with one constructor per paper rule. | Figs. 3, 7, 8, 9, 11 | ~1.5k |
 | `LLBCSharpPaper/Valid.lean` | `Valid : Event → LLBCState → Prop` — per-event side-condition predicate. | Figs. 3, 7, 8, 9, 11 (premises) | ~300 |
 
@@ -154,15 +166,16 @@ Each row produces one `LStep` constructor and one `Valid` clause. Order matches 
 | A1 | `M10.0a Soundness: scaffold aeneas-lean-soundness Lake package + Mathlib pin` | `aeneas-lean-soundness/` skeleton, lakefile, CI lane stub. Move `StepEventSound.lean` from checker to soundness. | G1–G4 + new G7 (soundness build < 30 min cold) |
 | A2 | `M10.0b Soundness: port LLBCSharpPaper.Syntax (Val#, Place#, RegionAbs)` | `Syntax.lean`. No proofs; just type definitions. | G7 |
 | A3 | `M10.0c Soundness: port LLBCSharpPaper.State (LLBCState, ctx, abs maps)` | `State.lean`. | G7 |
-| A4 | `M10.0d Soundness: port LLBCSharpPaper.WellFormed (borrow-graph predicate)` | `WellFormed.lean`. | G7 |
-| A5 | `M10.0e Soundness: port LStep — Fig. 3 rules (mutBorrow, sharedBorrow, endBorrow, move, copy, assign, assert, binop, panic, retn)` | First half of `Step.lean`. Mutable-borrow + ownership rules. | G7 |
-| A6 | `M10.0f Soundness: port LStep — Fig. 7+8 rules (reborrow, call, endAbs, symExpandMutBorrow)` | Second half. Abstraction rules. | G7 |
-| A7 | `M10.0g Soundness: port LStep — Fig. 11 rules (the 6 join constructors)` | Third batch. | G7 |
-| A8 | `M10.0h Soundness: port LStep — §5.2 loop rules (loopInv, loopEnd, matchArm)` | Final batch. | G7 |
-| A9 | `M10.0i Soundness: port Valid predicate (per-event premise extractor)` | `Valid.lean`. Defined by `match` on `Event`. Includes `Valid_iff_LStep_exists` smoke lemma (sorry). | G7 |
-| A10 | `M10.0j Soundness: replace 4 axioms in StepEventSound.lean with real types` | The skeleton stops being all-axiom; its statements still all-sorry. | G7 |
+| A4 | `M10.0d Soundness: define LLBCSharpPaper.Program helpers (lookupFunDecl / signatureOf / localsTypesOf over cc.llbcProgram)` | `Program.lean` (M9.7-introduced). | G7 |
+| A5 | `M10.0e Soundness: port LLBCSharpPaper.WellFormed (borrow-graph predicate + WellFormedProgram)` | `WellFormed.lean`. | G7 |
+| A6 | `M10.0f Soundness: port LStep — Fig. 3 rules (mutBorrow, sharedBorrow, endBorrow, move, copy, assign, assert, binop, panic, retn)` | First half of `Step.lean`. Mutable-borrow + ownership rules. | G7 |
+| A7 | `M10.0g Soundness: port LStep — Fig. 7+8 rules (reborrow, call, endAbs, symExpandMutBorrow)` | Second half. Abstraction rules. | G7 |
+| A8 | `M10.0h Soundness: port LStep — Fig. 11 rules (the 6 join constructors)` | Third batch. | G7 |
+| A9 | `M10.0i Soundness: port LStep — §5.2 loop rules (loopInv, loopEnd, matchArm)` | Final batch. | G7 |
+| A10 | `M10.0j Soundness: port Valid predicate (per-event premise extractor)` | `Valid.lean`. Defined by `match` on `Event`. Includes `Valid_iff_LStep_exists` smoke lemma (sorry). | G7 |
+| A11 | `M10.0k Soundness: replace 4 axioms in StepEventSound.lean with real types` | The skeleton stops being all-axiom; its statements still all-sorry. | G7 |
 
-**Phase-A gate (vertical slice):** at A10, the file `StepEventSound.lean` typechecks against real types. Every theorem in it is `sorry`'d. Run `#print axioms stepEvent_sound` and see only `sorryAx` plus the Lean core (no domain `axiom`s).
+**Phase-A gate (vertical slice):** at A11, the file `StepEventSound.lean` typechecks against real types. Every theorem in it is `sorry`'d. Run `#print axioms stepEvent_sound` and see only `sorryAx` plus the Lean core (no domain `axiom`s).
 
 ### 1.4 Risks (Phase A)
 
@@ -178,6 +191,10 @@ Each row produces one `LStep` constructor and one `Valid` clause. Order matches 
 **Deliverable:** A defined function `concretise : SymState → LLBCState` plus well-formedness lemmas `concretise_wellFormed : ∀ st, Replay-valid st → WellFormed (concretise st)` and `concretise_inversion` (round-trip-like properties tying replayer-side updates to LLBC#-side updates).
 
 **Estimated LOC:** ~700–1000. **Estimated duration:** 6–10 days, 3–5 commits.
+
+### 2.0 Static vs. dynamic split (post-cert-v3)
+
+`concretise` lifts only the *dynamic* state — replayer's `SymState` (env, loans, numLocals, absRegistry) up to paper's `LLBCState` (ctx, abs, freshness). The *static* program (`LlbcProgram`: type/fun/trait decls) does not need a Lean-side lift — it is read directly from `cc.llbcProgram`. The pre-v3 framing folded both into a single (LLBC, cert) pair and required a `concretise_program` companion; cert v3 removes the second half entirely. The Phase-B lemmas in §2.2 below are unchanged in shape from the pre-v3 plan; they no longer have to mention an external `LlbcProgram` argument.
 
 ### 2.1 What `concretise` does
 
@@ -291,7 +308,7 @@ The honest answer is the same as the Option C plan: little real parallelism, sin
 
 - **Join algebra (C20).** Paper Fig. 11's `Collapse-Dup-MutBorrow` introduces a *fresh* region abstraction. The replayer's `stepJoin` does **not** add an entry to `absRegistry` — the cert's `JoinMutBorrows` constructor carries `abs : Nat` but the replayer's join doesn't allocate. **This is a gap.** Either (a) extend M9.6 to emit a follow-up `EvCall`-like event in joins, or (b) prove the soundness with a side condition `∃ shape, st.absRegistry[abs]? = some shape ∨ True` (i.e., abs may be opaque). Recommendation: (b) for the campaign; flag as a follow-up to M9.6 (see Open Questions §11).
 - **`stepEndBorrow_direct` env scan (C11).** `stepEndBorrow` walks `st.env.toList` looking for `mutLoan b`. The corresponding `LStep.endBorrow_direct` premise says "the place that holds `loan^m ℓ` is unique." For uniqueness, we need a `WellFormed` invariant: each `.mutLoan b` appears at most once in `env`. The invariant needs to be established at every replayer-side mutator that might insert a `.mutLoan` — likely 3 places (`stepMutBorrow.loopOwned`, `stepMutBorrow.direct`, `stepSymExpandMutBorrow`). Establish the invariant in Phase B (`LoanTokenInvariant`).
-- **`stepSymExpandMutBorrow` (C16).** The substitution rewrites `env` entries holding `.sym svId`. The `LStep` rule says the rewrite is *global* (the entire `Ω#`); the replayer's hint says it's *exactly* `substLocals ∪ substLoans`. Proving the two coincide requires: cert promise = the OCaml side enumerated every binding. We trust `CertGen_faithful` here; the lemma is *conditional* on a `SubstScope_Complete` premise that becomes part of the trusted base. Recommendation: add `SubstScope_Complete` to `Valid.symExpandMutBorrow`'s premise list; trust the cert.
+- **`stepSymExpandMutBorrow` (C16).** The substitution rewrites `env` entries holding `.sym svId`. The `LStep` rule says the rewrite is *global* (the entire `Ω#`); the replayer's hint says it's *exactly* `substLocals ∪ substLoans`. Proving the two coincide requires: cert promise = the OCaml side enumerated every binding. We trust the broadened `CertGen_faithful` here (§0.3) — the same axiom that promises the embedded `cc.llbcProgram` is the post-pre-pass crate state; the lemma is *conditional* on a `SubstScope_Complete` premise that the axiom discharges. Recommendation: add `SubstScope_Complete` to `Valid.symExpandMutBorrow`'s premise list and discharge it from `CertGen_faithful`; do not add a *new* axiom.
 
 ---
 
@@ -331,16 +348,21 @@ theorem stepEvent_sound : … := by
 
 ```lean
 theorem replayFun_sound :
-  ∀ (f : FunCert) (numLocals : Nat) (trace : CheckedTrace),
+  ∀ (cc : CrateCert) (f : FunCert) (lfd : LlbcFunDecl)
+    (numLocals : Nat) (trace : CheckedTrace),
+    f ∈ cc.functions →
+    lookupFunDecl cc f = some lfd →
     Replay.replayFun numLocals f = .ok trace →
     ∃ Ω_in Ω_out,
-      Initial(Ω_in, f.signature) ∧
+      Initial(Ω_in, lfd.signature, cc.llbcProgram) ∧
       Ω_in ⟶_#* Ω_out ∧
-      Final(Ω_out, f.signature, trace.finalState) ∧
-      borrow_checks# (signatureOf f)
+      Final(Ω_out, lfd.signature, trace.finalState) ∧
+      borrow_checks# (lfd.signature)
 ```
 
 Proved by induction on `f.events`, threading `stepEvent_sound` through. The exit check (no `.direct` loan live) maps to the paper's `borrow_checks#` predicate.
+
+The post-cert-v3 signature differs from the pre-v3 form in two ways: (i) it takes the ambient `cc : CrateCert` so per-event lemmas inside the induction can resolve callee signatures via `cc.llbcProgram.funDecls`; (ii) it carries the matched `LlbcFunDecl` explicitly so `Initial` / `Final` / `borrow_checks#` operate on the *structured* `LlbcSignature`, not on a stringified `FnSignature` (the latter no longer exists). `lookupFunDecl cc f = some lfd` is the campaign-wide glue introduced in Phase A's `Program.lean`.
 
 **Estimated LOC:** ~600 (with helper lemmas). **Estimated duration:** 5–8 days, 3–5 commits.
 
@@ -348,8 +370,8 @@ Proved by induction on `f.events`, threading `stepEvent_sound` through. The exit
 
 | # | Commit (M10.3a–d) | What lands |
 |---|---|---|
-| E1 | `M10.3a Soundness: define Initial, Final, borrow_checks# (paper Fig. 10 port)` | the paper-side function-signature predicates |
-| E2 | `M10.3b Soundness: prove replayFun_event_induct (induction over events array)` | the heavy-lifting lemma; iterates over `f.events`, threading `stepEvent_sound` |
+| E1 | `M10.3a Soundness: define Initial, Final, borrow_checks# (paper Fig. 10 port; consumes LlbcSignature)` | the paper-side function-signature predicates |
+| E2 | `M10.3b Soundness: prove replayFun_event_induct (induction over events array, cc threaded)` | the heavy-lifting lemma; iterates over `f.events`, threading `stepEvent_sound` |
 | E3 | `M10.3c Soundness: prove replayFun_post (exit check = paper post-condition)` | the leak-check correspondence — "no `.direct` loan at exit ⇔ paper's `Final` shape" |
 | E4 | `M10.3d Soundness: assemble replayFun_sound` | compose E1 + E2 + E3 |
 
@@ -357,8 +379,9 @@ Proved by induction on `f.events`, threading `stepEvent_sound` through. The exit
 
 ### 5.2 Risks (Phase E)
 
-- **`Initial`/`Final` mismatch with the M9.6 hint surface.** The paper's `borrow_checks#` (Fig. 10) reads off signature-derived region abstractions; M9.6's `EvCall.absSig` ports those abs shapes per-call, but the *function-entry* abs shapes (for the function's own input borrows) are not in the cert. They have to be reconstructed from `f.signature`. This is one of the few places where the cert is *not* self-sufficient. Mitigation: add a small `signatureToInitialAbs : FnSignature → Array AbsShape` in `aeneas-lean-soundness` and use it in `Initial`.
+- **`Initial`/`Final` over `LlbcSignature` (post-cert-v3).** The paper's `borrow_checks#` (Fig. 10) reads off signature-derived region abstractions; M9.6's `EvCall.absSig` ports those abs shapes per-call, but the *function-entry* abs shapes (for the function's own input borrows) are not in the cert proper. They have to be reconstructed from the structured `LlbcSignature` (via the `lookupFunDecl cc f = some lfd` pairing). Mitigation: add a small `signatureToInitialAbs : LlbcSignature → Array AbsShape` in `LLBCSharpPaper/Program.lean` (Phase A) and use it in `Initial`. Pre-v3 this helper took the opaque-string `FnSignature` and had to parse RawTy substrings; the structured form makes it a clean pattern-match on `LlbcTy`.
 - **The "function-exit loan leak" check (Phase E vs. M9.6).** `Replay.replayFun` at `replayFun:97-101` checks `leakedDirect.isEmpty`. The corresponding paper post-condition is on `Final`. Phase E3's proof has to handle the `.reborrow` / `.lazyExpand` / `.shared` *leaks-allowed* cases. The cert-format doc §4.5 says this requires invoking the loop's / caller's region abstraction. The paper-side `Final` definition has to permit those kinds of leaks; Phase A's `Final` must encode this exception explicitly.
+- **`lookupFunDecl` totality** (post-cert-v3). Every `FunCert` in `cc.functions` has a matching `LlbcFunDecl` in `cc.llbcProgram.funDecls` — this is part of what `CertGen_faithful` promises. Phase E threads `lookupFunDecl cc f = some lfd` as a hypothesis; the *totality* lemma `∀ f ∈ cc.functions, ∃ lfd, lookupFunDecl cc f = some lfd` is a Phase-F preamble (it falls out of `replayCrate cc = .ok` because the checker side already pairs them up — see M9.7h's `checkLlbcVsCert`). Don't re-axiomatise it.
 
 ---
 
@@ -370,17 +393,19 @@ Proved by induction on `f.events`, threading `stepEvent_sound` through. The exit
 theorem replayCrate_implies_borrow_checks :
   ∀ (cc : CrateCert),
     Replay.replayCrate cc = .ok _ →
-    ∀ f, f ∈ cc.functions → borrow_checks# (signatureOf f)
+    ∀ f, f ∈ cc.functions →
+      ∃ lfd, lookupFunDecl cc f = some lfd ∧ borrow_checks# (lfd.signature)
 ```
 
-Direct corollary of `replayFun_sound`, quantified over `cc.functions`. Plus a typecheck-side lemma showing that `Typecheck.checkCrateCert` is a sound under-approximation of the structural well-formedness needed by `replayFun_sound`.
+Direct corollary of `replayFun_sound`, quantified over `cc.functions`. The `lookupFunDecl cc f = some lfd` clause is supplied by the *function-pairing totality* lemma (a Phase-F preamble; cf. §5.2): every replayed function has a matching `LlbcFunDecl` because `Replay.replayCrate` only succeeds when the M9.7h consistency-pair check (`Consistency.checkLlbcVsCert`) is also green, and that check already requires the pairing. Plus a typecheck-side lemma showing that `Typecheck.checkCrateCert` is a sound under-approximation of the structural well-formedness needed by `replayFun_sound`.
 
-**Estimated LOC:** ~300. **Estimated duration:** 2–4 days, 2 commits.
+**Estimated LOC:** ~350 (slightly higher than pre-v3 because of the pairing totality preamble). **Estimated duration:** 2–4 days, 3 commits.
 
-| # | Commit (M10.4a–b) | What lands |
+| # | Commit (M10.4a–c) | What lands |
 |---|---|---|
 | F1 | `M10.4a Soundness: prove typecheck_implies_wellFormedInit` | the typechecker's post-condition implies `WellFormed (concretise (initial SymState))` |
-| F2 | `M10.4b Soundness: assemble replayCrate_implies_borrow_checks` | the crate corollary |
+| F2 | `M10.4b Soundness: prove lookupFunDecl_total_of_replayCrate_ok` | every `f ∈ cc.functions` has a matching `LlbcFunDecl`; falls out of the M9.7h pair check |
+| F3 | `M10.4c Soundness: assemble replayCrate_implies_borrow_checks` | the crate corollary |
 
 **Phase-F gate:** `#print axioms replayCrate_implies_borrow_checks` lists Lean core + `paper_thm_*` + `CertGen_faithful` + the typecheck-side lemma (which is provable, not trusted).
 
@@ -415,15 +440,16 @@ After Phase G (or in parallel, conditioned on the trusted-base axioms):
 
 ```lean
 corollary cert_implies_pl_safety :
-  ∀ (cc : CrateCert) (f : FunCert),
+  ∀ (cc : CrateCert) (f : FunCert) (lfd : LlbcFunDecl),
     Replay.replayCrate cc = .ok _ →
     f ∈ cc.functions →
+    lookupFunDecl cc f = some lfd →
     ∀ (Ω_pl : PLState) (n : ℕ),
-      Initial_pl(Ω_pl, f.signature) →
-      ¬ (Ω_pl ⊢ f.body ⟶_pl^n stuck)
+      Initial_pl(Ω_pl, lfd.signature) →
+      ¬ (Ω_pl ⊢ lfd.body ⟶_pl^n stuck)
 ```
 
-Lands as a final commit (M10.6a). 80 LOC. Composes `replayCrate_implies_borrow_checks` + `paper_thm_4_1_safe` + `paper_thm_3_3_pl_refines`.
+Lands as a final commit (M10.6a). 80 LOC. Composes `replayCrate_implies_borrow_checks` + `paper_thm_4_1_safe` + `paper_thm_3_3_pl_refines`. The function *body* operated on by ⟶_pl is `lfd.body` (the structured LLBC statement tree the cert embeds) — not a separate compiled artifact the caller has to also produce. This is the user-visible payoff of cert v3: one file, one theorem.
 
 ---
 
@@ -542,99 +568,101 @@ NEVER:
 
 ## 9. Per-commit breakdown (aggregate table)
 
-The campaign is **~75 commits across 8 phases**. Phases A–F (M10.0 – M10.4) are the M10 done condition; Phase G (M10.5) is M11+.
+The campaign is **~77 commits across 8 phases** (post-cert-v3: +1 Phase-A commit for `Program.lean`, +1 Phase-F commit for `lookupFunDecl_total`). Phases A–F (M10.0 – M10.4) are the M10 done condition; Phase G (M10.5) is M11+.
 
-### 9.1 Phase A (M10.0a–j) — 10 commits
+### 9.1 Phase A (M10.0a–k) — 11 commits
 
 | # | Commit title | Risk |
 |---|---|---|
 | 1 | M10.0a Soundness: scaffold aeneas-lean-soundness Lake package + Mathlib pin | Medium (CI lane setup) |
 | 2 | M10.0b Soundness: port LLBCSharpPaper.Syntax (Val#, Place#, RegionAbs) | Low |
 | 3 | M10.0c Soundness: port LLBCSharpPaper.State (LLBCState, ctx, abs maps) | Low |
-| 4 | M10.0d Soundness: port LLBCSharpPaper.WellFormed | Medium |
-| 5 | M10.0e Soundness: port LStep — Fig. 3 rules | Medium |
-| 6 | M10.0f Soundness: port LStep — Fig. 7+8 rules | Medium |
-| 7 | M10.0g Soundness: port LStep — Fig. 11 join rules | High |
-| 8 | M10.0h Soundness: port LStep — §5.2 loop rules | Medium |
-| 9 | M10.0i Soundness: port Valid predicate | Low |
-| 10 | M10.0j Soundness: replace 4 axioms in StepEventSound.lean | Low |
+| 4 | M10.0d Soundness: define LLBCSharpPaper.Program (lookupFunDecl etc.) | Low |
+| 5 | M10.0e Soundness: port LLBCSharpPaper.WellFormed (+ WellFormedProgram) | Medium |
+| 6 | M10.0f Soundness: port LStep — Fig. 3 rules | Medium |
+| 7 | M10.0g Soundness: port LStep — Fig. 7+8 rules | Medium |
+| 8 | M10.0h Soundness: port LStep — Fig. 11 join rules | High |
+| 9 | M10.0i Soundness: port LStep — §5.2 loop rules | Medium |
+| 10 | M10.0j Soundness: port Valid predicate | Low |
+| 11 | M10.0k Soundness: replace 4 axioms in StepEventSound.lean | Low |
 
 ### 9.2 Phase B (M10.1a–e) — 5 commits
 
 | # | Commit title | Risk |
 |---|---|---|
-| 11 | M10.1a Soundness: define concretise — env + numLocals | Medium |
-| 12 | M10.1b Soundness: define concretise — loans + absRegistry | Medium |
-| 13 | M10.1c Soundness: smoke lemma concretise_wellFormed_smoke | Low |
-| 14 | M10.1d Soundness: concretise inversion lemmas | Medium |
-| 15 | M10.1e Soundness: concretise commute lemmas (setLocal/addLoan/takeLoan) | Medium-high |
+| 12 | M10.1a Soundness: define concretise — env + numLocals | Medium |
+| 13 | M10.1b Soundness: define concretise — loans + absRegistry | Medium |
+| 14 | M10.1c Soundness: smoke lemma concretise_wellFormed_smoke | Low |
+| 15 | M10.1d Soundness: concretise inversion lemmas | Medium |
+| 16 | M10.1e Soundness: concretise commute lemmas (setLocal/addLoan/takeLoan) | Medium-high |
 
 ### 9.3 Phase C (M10.2a–w) — 23 commits
 
 | # | Commit title | Risk |
 |---|---|---|
-| 16 | M10.2a Soundness: stepPanic / stepRetn soundness | Trivial |
-| 17 | M10.2b Soundness: stepMatchArm / stepLoopEnd soundness | Trivial |
-| 18 | M10.2c Soundness: stepMove / stepCopy soundness | Low |
-| 19 | M10.2d Soundness: stepAssign soundness | Low |
-| 20 | M10.2e Soundness: stepAssert soundness | Low |
-| 21 | M10.2f Soundness: stepBinop soundness | Low |
-| 22 | M10.2g Soundness: stepSharedBorrow soundness | Low |
-| 23 | M10.2h Soundness: stepMutBorrow_direct soundness | Medium |
-| 24 | M10.2i Soundness: stepMutBorrow_inAbsReborrow soundness | Medium-high |
-| 25 | M10.2j Soundness: stepMutBorrow_loopOwned soundness | Medium |
-| 26 | M10.2k Soundness: stepEndBorrow_direct soundness | High |
-| 27 | M10.2l Soundness: stepEndBorrow_reborrow / shared / lazyExpand soundness | Medium |
-| 28 | M10.2m Soundness: stepReborrow soundness | Medium-high |
-| 29 | M10.2n Soundness: stepCall soundness (absSig) | High |
-| 30 | M10.2o Soundness: stepEndAbs soundness | High |
-| 31 | M10.2p Soundness: stepSymExpandMutBorrow soundness | High |
-| 32 | M10.2q Soundness: stepLoopInv soundness | Medium |
-| 33 | M10.2r Soundness: stepJoin — JoinSame entry soundness | Medium |
-| 34 | M10.2s Soundness: stepJoin — JoinSymbolic entry soundness | Medium |
-| 35 | M10.2t Soundness: stepJoin — JoinMutBorrows entry soundness | **Highest** |
-| 36 | M10.2u Soundness: stepJoin — JoinVar entry soundness | Medium-high |
-| 37 | M10.2v Soundness: stepJoin — JoinBottomOther / JoinOtherBottom soundness | Medium |
-| 38 | M10.2w Soundness: stepJoin_witnessed_sound (assemble) | Medium |
+| 17 | M10.2a Soundness: stepPanic / stepRetn soundness | Trivial |
+| 18 | M10.2b Soundness: stepMatchArm / stepLoopEnd soundness | Trivial |
+| 19 | M10.2c Soundness: stepMove / stepCopy soundness | Low |
+| 20 | M10.2d Soundness: stepAssign soundness | Low |
+| 21 | M10.2e Soundness: stepAssert soundness | Low |
+| 22 | M10.2f Soundness: stepBinop soundness | Low |
+| 23 | M10.2g Soundness: stepSharedBorrow soundness | Low |
+| 24 | M10.2h Soundness: stepMutBorrow_direct soundness | Medium |
+| 25 | M10.2i Soundness: stepMutBorrow_inAbsReborrow soundness | Medium-high |
+| 26 | M10.2j Soundness: stepMutBorrow_loopOwned soundness | Medium |
+| 27 | M10.2k Soundness: stepEndBorrow_direct soundness | High |
+| 28 | M10.2l Soundness: stepEndBorrow_reborrow / shared / lazyExpand soundness | Medium |
+| 29 | M10.2m Soundness: stepReborrow soundness | Medium-high |
+| 30 | M10.2n Soundness: stepCall soundness (absSig + lookupFunDecl) | High |
+| 31 | M10.2o Soundness: stepEndAbs soundness | High |
+| 32 | M10.2p Soundness: stepSymExpandMutBorrow soundness | High |
+| 33 | M10.2q Soundness: stepLoopInv soundness | Medium |
+| 34 | M10.2r Soundness: stepJoin — JoinSame entry soundness | Medium |
+| 35 | M10.2s Soundness: stepJoin — JoinSymbolic entry soundness | Medium |
+| 36 | M10.2t Soundness: stepJoin — JoinMutBorrows entry soundness | **Highest** |
+| 37 | M10.2u Soundness: stepJoin — JoinVar entry soundness | Medium-high |
+| 38 | M10.2v Soundness: stepJoin — JoinBottomOther / JoinOtherBottom soundness | Medium |
+| 39 | M10.2w Soundness: stepJoin_witnessed_sound (assemble) | Medium |
 
 ### 9.4 Phase D (M10.3a) — 1 commit
 
 | # | Commit title | Risk |
 |---|---|---|
-| 39 | M10.3a Soundness: prove stepEvent_sound by case-analysis on Event | Low |
+| 40 | M10.3a Soundness: prove stepEvent_sound by case-analysis on Event | Low |
 
 ### 9.5 Phase E (M10.4a–d) — 4 commits
 
 | # | Commit title | Risk |
 |---|---|---|
-| 40 | M10.4a Soundness: define Initial / Final / borrow_checks# | Medium |
-| 41 | M10.4b Soundness: prove replayFun_event_induct | High |
-| 42 | M10.4c Soundness: prove replayFun_post (exit ↔ paper Final) | Medium-high |
-| 43 | M10.4d Soundness: assemble replayFun_sound | Low |
+| 41 | M10.4a Soundness: define Initial / Final / borrow_checks# (over LlbcSignature) | Medium |
+| 42 | M10.4b Soundness: prove replayFun_event_induct (cc threaded) | High |
+| 43 | M10.4c Soundness: prove replayFun_post (exit ↔ paper Final) | Medium-high |
+| 44 | M10.4d Soundness: assemble replayFun_sound | Low |
 
-### 9.6 Phase F (M10.5a–b) — 2 commits
+### 9.6 Phase F (M10.5a–c) — 3 commits
 
 | # | Commit title | Risk |
 |---|---|---|
-| 44 | M10.5a Soundness: prove typecheck_implies_wellFormedInit | Medium |
-| 45 | M10.5b Soundness: prove replayCrate_implies_borrow_checks | Low |
+| 45 | M10.5a Soundness: prove typecheck_implies_wellFormedInit | Medium |
+| 46 | M10.5b Soundness: prove lookupFunDecl_total_of_replayCrate_ok | Low |
+| 47 | M10.5c Soundness: prove replayCrate_implies_borrow_checks | Low |
 
-**M10 done at #45.** Remaining = optional Phase G.
+**M10 done at #47.** Remaining = optional Phase G.
 
 ### 9.7 Phase G (M10.6a–p) — up to 15 commits, optional
 
 | # | Commit title | Risk |
 |---|---|---|
-| 46 | M10.6a Soundness: port LLBC concrete syntax (Fig. 2) | Medium |
-| 47 | M10.6b Soundness: port ⟶_LLBC reduction | Medium |
-| 48 | M10.6c Soundness: port LLBC# → LLBC stripping | Medium |
-| 49 | M10.6d Soundness: port Thm 3.1 Confluence | Very high |
-| 50 | M10.6e Soundness: port Thm 3.3 LLBC ↔ PL forward sim | Very high |
-| 51 | M10.6f Soundness: port Thm 4.1 borrow_checks# ⇒ LLBC-safe | High |
-| 52 | M10.6g Soundness: port Thm 4.2 well-formed initial state | Medium |
-| 53–59 | M10.6h–n: per-lemma cleanup / golfing | Misc |
-| 60 | M10.6o Soundness: assemble cert_implies_pl_safety | Low |
-| 61 | M10.6p Soundness: docs refresh (cert-format-and-soundness.md §4–§5 → "proved") | Trivial |
+| 48 | M10.6a Soundness: port LLBC concrete syntax (Fig. 2) | Medium |
+| 49 | M10.6b Soundness: port ⟶_LLBC reduction | Medium |
+| 50 | M10.6c Soundness: port LLBC# → LLBC stripping | Medium |
+| 51 | M10.6d Soundness: port Thm 3.1 Confluence | Very high |
+| 52 | M10.6e Soundness: port Thm 3.3 LLBC ↔ PL forward sim | Very high |
+| 53 | M10.6f Soundness: port Thm 4.1 borrow_checks# ⇒ LLBC-safe | High |
+| 54 | M10.6g Soundness: port Thm 4.2 well-formed initial state | Medium |
+| 55–61 | M10.6h–n: per-lemma cleanup / golfing | Misc |
+| 62 | M10.6o Soundness: assemble cert_implies_pl_safety | Low |
+| 63 | M10.6p Soundness: docs refresh (cert-format-and-soundness.md §4–§5 → "proved") | Trivial |
 
 ### 9.8 PR-sized bundling
 
@@ -643,14 +671,14 @@ Following the M9.6 plan's §7.4 framing, group commits into PR-sized chunks:
 | PR | Commits | Focus | Reviewer load |
 |---|---|---|---|
 | PR-A1 | #1 (M10.0a) | Lake scaffold | Infra review |
-| PR-A2 | #2–#10 | All of Phase A | Domain review (paper port) |
-| PR-B | #11–#15 | Phase B | Smaller, focused |
-| PR-C1 | #16–#22 | Phase C trivial events (7 lemmas) | Pattern lock-in |
-| PR-C2 | #23–#27 | mutBorrow + endBorrow splits | Focused |
-| PR-C3 | #28–#32 | reborrow / call / endAbs / symExpand / loopInv | The hint-heavy events |
-| PR-C4 | #33–#38 | The join lemmas | The hardest PR |
-| PR-D-E-F | #39–#45 | Phases D + E + F bundled | Crate-level assembly |
-| PR-G* | #46–#61 | Phase G (multiple PRs as time permits) | Out of M10 scope |
+| PR-A2 | #2–#11 | All of Phase A (includes new Program.lean for cert-v3 lookup helpers) | Domain review (paper port) |
+| PR-B | #12–#16 | Phase B | Smaller, focused |
+| PR-C1 | #17–#23 | Phase C trivial events (7 lemmas) | Pattern lock-in |
+| PR-C2 | #24–#28 | mutBorrow + endBorrow splits | Focused |
+| PR-C3 | #29–#33 | reborrow / call / endAbs / symExpand / loopInv | The hint-heavy events |
+| PR-C4 | #34–#39 | The join lemmas | The hardest PR |
+| PR-D-E-F | #40–#47 | Phases D + E + F bundled (includes lookupFunDecl_total) | Crate-level assembly |
+| PR-G* | #48–#63 | Phase G (multiple PRs as time permits) | Out of M10 scope |
 
 **Total: 8 PRs for M10** (Phases A–F). Phase G adds another 2–4 PRs.
 
@@ -666,7 +694,7 @@ The M9.6 campaign's four gates (G1: vertical slice, G2: Direct tests, G3: Genera
 |---|---|---|---|
 | G1–G4 | (M9.6 gates) — checker still green | Every commit | Checker CI |
 | **G5: Axiom hygiene** | `#print axioms <key-theorem>` returns *only* the intended trusted base | After every Phase boundary | Soundness CI + orchestrator script |
-| **G6: No `sorry`** | `grep -rn 'sorry' aeneas-lean-soundness/AeneasSoundness/Soundness/` returns only docstring history | After every Phase-C/D/E/F/G commit (i.e., commits #16 onward) | Soundness CI |
+| **G6: No `sorry`** | `grep -rn 'sorry' aeneas-lean-soundness/AeneasSoundness/Soundness/` returns only docstring history | After every Phase-C/D/E/F/G commit (i.e., commits #17 onward) | Soundness CI |
 | **G7: Cycle-time budget** | Soundness `lake build` ≤ 30 min cold, ≤ 5 min warm | Every soundness-side commit | Soundness CI |
 
 ### 10.2 G5: Axiom hygiene — exact expected output per phase
@@ -675,8 +703,10 @@ The orchestrator script runs `lake env lean --run AxiomCheck.lean` where `AxiomC
 
 ```lean
 import AeneasSoundness.Soundness.StepEventSound
+import AeneasSoundness.Soundness.ReplayFunSound
 import AeneasSoundness.Soundness.ReplayCrateSound
 #print axioms AeneasSoundness.Soundness.stepEvent_sound
+#print axioms AeneasSoundness.Soundness.replayFun_sound        -- post-v3: signature carries `cc`+`lookupFunDecl`
 #print axioms AeneasSoundness.Soundness.replayCrate_implies_borrow_checks
 ```
 
@@ -744,9 +774,10 @@ bash scripts/check-vertical-slice.sh                     # G1
 2. **Mathlib version drift.** The campaign will span months; Mathlib bumps happen weekly. Bumping mid-campaign breaks proofs.
    - **Mitigation:** pin a Mathlib version in `aeneas-lean-soundness/lakefile.lean` at Phase-A commit. Pin file in repo (`.mathlib-pin`). Bumping happens only at phase boundaries, scheduled in a separate PR ("M10.Xa Soundness: bump Mathlib to <commit>; regen proofs"). Between bumps, the pin is frozen.
 
-3. **Soundness theorem reveals an M9.6 hint gap.**
+3. **Soundness theorem reveals an M9.6 or M9.7 hint gap.**
    - Specific anticipated cases: (a) `EvJoin.JoinMutBorrows` does not name the *new* abs's role list (cf. C20 risk above). (b) `EvLoopInv.loanRegistry` gives `(borrowId, parentAbsId)` but not the fixpoint witness needed for paper §5.2 `Ω ≤ Ω'`. (c) `EvCall.absSig` covers `A_in(ρ)` but not `inst_sig`'s region-variable instantiation.
-   - **Mitigation:** budget a `cert_fmt_version=3` follow-up. If a gap surfaces in Phase A, fix it before Phase B starts. If in Phase B, fix before Phase C. If in Phase C, the cost is one revisit of OCaml + cert regen — a 4-day diversion. **Hard rule:** if a gap surfaces in Phase D or later, the gap is *taken to a follow-up M10.X campaign*; the current campaign axiomatises the missing premise and continues. Don't re-open the cert format in mid-Phase D.
+   - **Status post-M9.7**: cert v3 (the M9.7 schema bump) addressed the *(LLBC, cert) binding* gap but did not address (a)/(b)/(c). The open questions §14.1-14.3 (below) still list them; they are now candidates for an `M9.8` micro-bump rather than rolled into M9.7. The schema is already at `fmt_version = 3`; bumping to `4` for any of these is a small, focused commit.
+   - **Mitigation:** if (a)/(b)/(c) surfaces in Phase A, fix it as an `M9.8` micro-bump before Phase B starts. If in Phase B, fix before Phase C. If in Phase C, the cost is one revisit of OCaml + cert regen — a 4-day diversion. **Hard rule:** if a gap surfaces in Phase D or later, the gap is *taken to a follow-up M10.X campaign*; the current campaign axiomatises the missing premise and continues. Don't re-open the cert format in mid-Phase D.
 
 4. **LLBC# state representation: extrinsic vs. intrinsic.**
    - Extrinsic: `LLBCState := { ctx, abs, … } ; WellFormed Ω : Prop`. Every theorem carries `WellFormed Ω` as a hypothesis. Easy to define; clutters every signature.
@@ -786,7 +817,7 @@ bash scripts/check-vertical-slice.sh                     # G1
 
 The M10 campaign is done when **all** of the following hold:
 
-1. **No `axiom` in `aeneas-lean-soundness/AeneasSoundness/Soundness/`** other than `CertGen_faithful` and (until Phase G) the four `paper_thm_*` placeholders. Confirmed by G5 against the golden axiom list.
+1. **No `axiom` in `aeneas-lean-soundness/AeneasSoundness/Soundness/`** other than `CertGen_faithful` (post-M9.7 broadened form — see §0.3) and (until Phase G) the four `paper_thm_*` placeholders. Confirmed by G5 against the golden axiom list.
 2. **No `sorry`** in `aeneas-lean-soundness/AeneasSoundness/Soundness/` (G6).
 3. **`cert_implies_pl_safety`** is declared (Phase F at minimum; Phase G to fully discharge the paper theorems).
 4. **`#print axioms cert_implies_pl_safety`** lists only Lean core + `CertGen_faithful` (post-Phase G) or + `CertGen_faithful` + 4 paper theorems (post-Phase F, pre-Phase G).
@@ -837,29 +868,35 @@ These are gaps or design choices the M9.6 work didn't anticipate and that this p
 
 The M9.6 hint `JoinRule.joinMutBorrows (l_left l_right l_fresh : Nat) (abs : Nat)` names the fresh region abstraction id (`abs`) but **does not give the abs's role list**. The paper's `Collapse-Dup-MutBorrow` rule introduces a *fresh* abs with three roles: `borrow^m l_left`, `borrow^m l_right`, `loan^m l_fresh` (cf. cert-format doc:264). The replayer's `stepJoin` currently doesn't allocate the abs in `absRegistry`.
 
-**Choice for the user:**
-- **(A)** Patch M9.6: add `EvJoin.JoinMutBorrows.absRoles : Array AbsRoleEntry`, bump to `cert_fmt_version=3`. ~6-commit follow-up before Phase C20 lands. **Recommended.**
-- **(B)** Trust the cert: `Valid.join_mutBorrows`'s premise stipulates the abs exists in `LLBCState.abs` (i.e., `Ω#.abs[abs]? = some shape ∧ shape.roles = [borrow^m l_left, borrow^m l_right, loan^m l_fresh]`); the cert is taken at its word that the OCaml side created it. Adds an *implicit* trusted-base extension.
+**Status (post-M9.7):** M9.7 was the cert-v3 self-contained-cert redesign and bumped to `fmt_version = 3`. It did not address this gap. The schema is now stable at `3`; closing the gap is an `M9.8` micro-bump.
 
-Both are defensible. (A) is cleaner and the M9.6 surface gets one more piece of metadata; (B) keeps the schema frozen and shifts the work to a Phase-C trust argument. The plan above assumes (B) (matches "no schema changes mid-campaign"); call out (A) as a recommended pre-campaign micro-bump.
+**Choice for the user:**
+- **(A)** Patch as M9.8: add `EvJoin.JoinMutBorrows.absRoles : Array AbsRoleEntry`, bump to `cert_fmt_version=4`. ~6-commit follow-up before Phase C20 lands. **Recommended.**
+- **(B)** Trust the cert: `Valid.join_mutBorrows`'s premise stipulates the abs exists in `LLBCState.abs` (i.e., `Ω#.abs[abs]? = some shape ∧ shape.roles = [borrow^m l_left, borrow^m l_right, loan^m l_fresh]`); the cert is taken at its word that the OCaml side created it. Adds an *implicit* trusted-base extension via the broadened `CertGen_faithful` (§0.3).
+
+Both are defensible. (A) is cleaner and the M9.6 surface gets one more piece of metadata; (B) keeps the schema frozen at v3 and shifts the work to a Phase-C trust argument. The plan above assumes (B) (matches "no schema changes mid-campaign"); call out (A) as a recommended M9.8 micro-bump.
 
 ### 14.2 `EvLoopInv.fixpointWitness`
 
 Cert-format doc §6.2 already flagged this as a Phase-6 follow-up: `EvLoopInv.loanRegistry` gives loan ids but not the `Ω ≤ Ω'` fixpoint witness from paper §5.2. The campaign assumes the witness can be reconstructed from the rest of the loop body events (loanRegistry + subsequent EvLoopEnd). If reconstruction fails for some cert, Phase C17 (`stepLoopInv_sound`) gets stuck.
 
+**Status (post-M9.7):** Same as 14.1 — not addressed by cert v3; a candidate M9.8 micro-bump.
+
 **Choice for the user:**
-- **(A)** Add `EvLoopInv.fixpointWitness : Array (Nat × Nat)` as part of `cert_fmt_version=3`. Map: invariant-local-id → body-final-local-id. ~3-commit follow-up.
+- **(A)** Add `EvLoopInv.fixpointWitness : Array (Nat × Nat)` as part of M9.8 (would bump to `cert_fmt_version=4`). Map: invariant-local-id → body-final-local-id. ~3-commit follow-up.
 - **(B)** Trust reconstruction and prove it as a Phase-C2 lemma (`reconstruct_fixpoint_witness`); if reconstruction fails for a specific cert, the cert is rejected by the replayer (a new check). This shifts cost from cert format to replayer.
 
-Recommend (A) bundled with 14.1 into a single pre-campaign M9.7 schema bump.
+Recommend (A) bundled with 14.1 into a single M9.8 schema bump.
 
 ### 14.3 `EvCall.inst_sig`
 
 Cert-format doc §6.2 flag: `EvCall.absSig` covers `A_in(ρ)` but not the `inst_sig`'s instantiation of region variables. Phase C14 (`stepCall_sound`) needs to know how callee lifetimes were instantiated.
 
+**Status (post-M9.7):** Cert v3 makes the callee's structured signature available via `cc.llbcProgram.funDecls` + `lookupFunDecl`, which makes option (B) below much cheaper than it was pre-M9.7 — the callee signature is no longer an opaque RawTy string but a structured `LlbcSignature` with explicit `generics.regions`. The Phase-A lemma to compute `inst_sig` lazily is now pure pattern-matching on structured data.
+
 **Choice for the user:**
-- **(A)** Add `EvCall.instSig : Array (Nat × Nat)` (callee region var index → caller abs id). Small schema bump.
-- **(B)** Compute `inst_sig` lazily from `regionAbs` + callee signature lookup. Keeps the schema frozen; pays in a Phase-A lemma. **Recommended.**
+- **(A)** Add `EvCall.instSig : Array (Nat × Nat)` (callee region var index → caller abs id). Small schema bump (M9.8).
+- **(B)** Compute `inst_sig` lazily from `regionAbs` + `lookupFunDecl cc f`'s signature. Keeps the schema frozen; pays in a Phase-A lemma. **Recommended** (cheaper post-cert-v3 than it was pre-v3).
 
 (B) is what the plan above assumes.
 
@@ -907,16 +944,25 @@ The orchestrator and per-phase agents will need exact file:line citations throug
 
 - M9.6 plan: `/Users/karthik/aeneas/documentation/option-c-implementation-plan.md`
 - M9.6 prompt: `/Users/karthik/aeneas/documentation/option-c-execution-prompt.md`
-- Cert format spec: `/Users/karthik/aeneas/documentation/cert-format-and-soundness.md`
-- Skeleton (current state, all axioms): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Theorems/StepEventSound.lean:42-128`
-- Cert event vocabulary: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean:151-277`
-- Hint inventory (per-constructor): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean:62-150`
-- Replayer side: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/Step.lean:1-550`, `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/Replay.lean:23-126`
-- State: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/State.lean:45-89`
-- Values: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/Values.lean:23-44`
-- Typecheck (for Phase F): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Typecheck/Stmts.lean:46-184`
+- M9.7 plan (cert v3): `/Users/karthik/aeneas/documentation/cert-v3-implementation-plan.md`
+- M9.7 progress (post-campaign state): `/Users/karthik/aeneas/.cert-v3-progress.md`
+- Cert format spec: `/Users/karthik/aeneas/documentation/cert-format-and-soundness.md` (§2.1–2.2 rewritten for cert v3)
+- Verified-pipeline architecture (cert-self-contains-LLBC narrative): `/Users/karthik/aeneas/documentation/verified-pipeline-architecture.md` (§2 Step 4)
+- Skeleton (current state, all axioms): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Theorems/StepEventSound.lean`
+- Cert event vocabulary: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean` (post-M9.7o-E5a: only the dynamic event/hint types; no flat TypeDecl/TraitDecl/FnSignature)
+- LLBC program subtree (cert v3 source of static info): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Raw/LLBCProgram.lean` — `LlbcProgram`, `LlbcFunDecl`, `LlbcTypeDecl`, `LlbcTraitDecl`, `LlbcTraitImpl`, `LlbcSignature`, `LlbcTy`; `CrateCert` lives here too.
+- Hint inventory (per-constructor docstrings on `Event`): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean`
+- Replayer side: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/Step.lean`, `.../LLBCSharp/Replay.lean`
+- State: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/State.lean`
+- Values: `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/Values.lean`
+- Consistency (cert v3 pair check, M9.7h–j): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Typecheck/Consistency.lean` — `checkLlbcVsCert` is the Phase-F `lookupFunDecl_total` preamble's source of truth.
+- Typecheck (for Phase F): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Typecheck/Stmts.lean`
+- Translator (informational; not part of the trust base): `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Translate/Forward.lean` (post-M9.7o-E5b: consumes `LlbcSignature` directly; `rawTyToPTy` and helpers retired)
+- OCaml-side LLBC→JSON serializer (the bridge that populates `cc.llbcProgram`; covered by the broadened `CertGen_faithful`): `/Users/karthik/aeneas/src/cert/LlbcJson.ml`
 - Project conventions: `/Users/karthik/aeneas/CLAUDE.md` + the linked skill files under `/Users/karthik/aeneas/documentation/skills/`
 - Lakefile (checker): `/Users/karthik/aeneas/aeneas-lean-checker/lakefile.lean`
+
+Line numbers are deliberately omitted; the post-M9.7 codebase has churned heavily and file:line citations would rot fast. Per-phase agents should rely on `lean_file_outline` / `lean_local_search` (the lean-lsp-mcp skills) to locate symbols.
 
 ---
 
@@ -925,9 +971,9 @@ The orchestrator and per-phase agents will need exact file:line citations throug
 The 5 files most critical for implementing this plan (in dependency order):
 
 - `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Theorems/StepEventSound.lean` — the four axioms to replace; the soundness theorem skeleton.
-- `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean` — the event vocabulary and M9.6 hint types the per-event lemmas case-analyse.
+- `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean` + `Raw/LLBCProgram.lean` — the event vocabulary and the structured LLBC subtree the per-event and per-function lemmas case-analyse / pattern-match on.
 - `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/Step.lean` — the per-event step relation each `stepXxx_sound` lemma is about.
 - `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/State.lean` — `SymState`, `LoanInfo`, `absRegistry`; the source side of `concretise`.
 - `/Users/karthik/aeneas/aeneas-lean-checker/AeneasCheck/LLBCSharp/Replay.lean` — the event-folding loop that Phase E's `replayFun_sound` induction is over.
 
-Secondary (new files this campaign creates): everything under `/Users/karthik/aeneas/aeneas-lean-soundness/AeneasSoundness/{LLBCSharpPaper,Concretise,Soundness}/*.lean`.
+Secondary (new files this campaign creates): everything under `/Users/karthik/aeneas/aeneas-lean-soundness/AeneasSoundness/{LLBCSharpPaper,Concretise,Soundness}/*.lean`. The new `LLBCSharpPaper/Program.lean` (cert-v3 lookup helpers) is the campaign-wide glue introduced in §1.1.
