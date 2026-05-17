@@ -204,6 +204,32 @@ theorem stepCopy_sound
   simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
     Concretise.concretise_setLocal, hRep, hGetD]
 
+/-- C4 / M10.2d — `E-Assign`. The replayer's `stepAssign` evaluates
+    `rhs` via `evalSymExpr` (which is total — every `SymExpr` constructor
+    has a `return` branch) and `setLocal`s the destination. We witness
+    the paper-side existential `v` as `liftVal vR` where `vR` is the
+    evaluated rhs. `Valid (.assign _ _) = True`. -/
+theorem stepAssign_sound
+  (hRep : concretise st = Ω)
+  (dst : Place) (rhs : SymExpr) :
+  stepEvent st (.assign dst rhs) = .ok st' →
+  ∃ Ω', Valid (.assign dst rhs) Ω ∧
+        LStep Ω (.assign dst rhs) Ω' ∧
+        concretise st' = Ω' := by
+  intro h
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepAssign, bind, Except.bind,
+    AeneasCheck.LLBCSharp.placeRootLocal] at h
+  -- Case on the evalSymExpr result; the .error branch contradicts `h`.
+  match heval : AeneasCheck.LLBCSharp.evalSymExpr st rhs with
+  | .error _ => rw [heval] at h; cases h
+  | .ok vR =>
+    rw [heval] at h
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+    subst h
+    refine ⟨Ω.setLocal dst.local_ (Concretise.liftVal vR), trivial, LStep.assign, ?_⟩
+    simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+      Concretise.concretise_setLocal, hRep]
+
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
 theorem stepMutBorrow_direct_sound
