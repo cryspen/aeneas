@@ -73,15 +73,14 @@ abbrev VariantId := Nat
 /-- Field id within a struct/record decl. -/
 abbrev FieldId := Nat
 
-/-! ## Place# (re-exported from `AeneasCheck.Raw.Place`)
+/-! ## Place (re-exported from `AeneasCheck.Raw.Place`)
 
 The paper's `Place#` is structurally identical to the checker's flat
-`Place`. Aliasing avoids the cert-format-vs-paper-grammar duplication
-hazard.
+`Place`; we expose the checker's name directly to avoid the
+French-quote-escaped identifier hazard (`«Place#»` would be needed at
+every use site otherwise). Paper-side modules `open AeneasCheck.Raw
+(Place ProjElem)` and write `Place` / `ProjElem` straight through.
 -/
-
-abbrev «Place#» := Place
-abbrev «ProjElem#» := ProjElem
 
 /-! ## Val# — the LLBC# value grammar (paper Fig. 2 + §4.1) -/
 

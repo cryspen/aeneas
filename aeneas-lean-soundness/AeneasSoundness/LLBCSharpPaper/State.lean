@@ -45,7 +45,7 @@ single point where the coarse abstraction is acknowledged.
 
 namespace AeneasSoundness.LLBCSharpPaper
 
-open AeneasCheck.Raw (ProjElem)
+open AeneasCheck.Raw (Place ProjElem)
 
 /-! ## Freshness counters -/
 
@@ -195,7 +195,7 @@ def resolveProj (v : Val) : List ProjElem → Option Val
       | some v' => resolveProj v' ps
 
 /-- `Ω(p)` — full place resolution. -/
-def resolvePlace (Ω : LLBCState) (p : «Place#») : Option Val :=
+def resolvePlace (Ω : LLBCState) (p : Place) : Option Val :=
   match Ω.getLocal p.local_ with
   | none => none
   | some v => resolveProj v p.projection.toList
