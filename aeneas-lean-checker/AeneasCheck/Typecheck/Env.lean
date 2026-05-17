@@ -1,5 +1,6 @@
 import Std.Data.HashSet
 import AeneasCheck.Raw.CertEvent
+import AeneasCheck.Raw.LLBCProgram
 
 /-!
 Typechecker environment. The direct-borrow subset only needs:

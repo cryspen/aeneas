@@ -1,4 +1,5 @@
 import AeneasCheck.Raw.CertEvent
+import AeneasCheck.Raw.LLBCProgram
 import AeneasCheck.Json.Parser
 import AeneasCheck.Typecheck.Types
 import AeneasCheck.LLBCSharp.Replay

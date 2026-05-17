@@ -1,4 +1,5 @@
 import AeneasCheck.Raw.CertEvent
+import AeneasCheck.Raw.LLBCProgram
 
 /-!
 LLBC# symbolic values and helpers.

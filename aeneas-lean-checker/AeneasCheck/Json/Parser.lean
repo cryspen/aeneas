@@ -1642,11 +1642,12 @@ def parseLlbcProgram (j : Json) : Result LlbcProgram := do
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")
-  -- M9.6: accept both v1 (pre-Option-C) and v2 (Option C hint
-  -- schema). All hint fields are optional under v2, so the parser
-  -- behaves identically on a hint-free v2 cert.
-  if fmtVersion ≠ 1 ∧ fmtVersion ≠ 2 then
-    fail s!"unsupported cert fmt_version: {fmtVersion} (expected 1 or 2)"
+  -- M9.6 / M9.7c: accept v1 (pre-Option-C), v2 (Option C hint
+  -- schema), and v3 (Option C + embedded `llbc_program` subtree).
+  -- All hint fields are optional under v2/v3; `llbc_program` is
+  -- absent under v1/v2 and required under v3.
+  if fmtVersion ≠ 1 ∧ fmtVersion ≠ 2 ∧ fmtVersion ≠ 3 then
+    fail s!"unsupported cert fmt_version: {fmtVersion} (expected 1, 2, or 3)"
   else
     let crateHash ← asStr (← field j "crate_hash")
     -- `type_decls` is optional for back-compat with pre-M9.5b certs.
@@ -1669,7 +1670,15 @@ def parseCrateCert (j : Json) : Result CrateCert := do
       | none => pure #[]
     let fnArr ← asArr (← field j "functions")
     let functions ← fnArr.mapM parseFunCert
-    return { fmtVersion, crateHash, typeDecls, traitDecls, traitImpls, functions }
+    -- M9.7c: `llbc_program` is required under v3 and absent under
+    -- v1 / v2. We tolerate absence universally and default to
+    -- `LlbcProgram.empty`; the v3 parser path then re-asserts
+    -- presence in a future Phase-C / D consistency check, not here.
+    let llbcProgram : LlbcProgram ← match (j.getObjVal? "llbc_program").toOption with
+      | some lj => parseLlbcProgram lj
+      | none => pure LlbcProgram.empty
+    return { fmtVersion, crateHash, typeDecls, traitDecls, traitImpls,
+             functions, llbcProgram }
 
 /-- Top-level entry: parse a cert JSON string. -/
 def parseCrateCertStr (s : String) : Result CrateCert := do

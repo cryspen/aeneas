@@ -517,4 +517,43 @@ namespace LlbcProgram
 def empty : LlbcProgram := {}
 end LlbcProgram
 
+/-! ## Top-level cert (cert v3)
+
+`CrateCert` was moved here from `Raw/CertEvent.lean` in M9.7c so it
+can carry the structured `llbcProgram : LlbcProgram` field without
+inducing an import cycle (LLBCProgram.lean already imports CertEvent
+for `SourceSpan` / `TraitClause`).
+
+The pre-M9.7 fields (`typeDecls`, `traitDecls`, `traitImpls`,
+opaque-string signatures inside `functions[].signature`) are
+preserved during Phases A–D so v2 fixtures stay valid mid-campaign;
+Phase E retires the redundant flat fields once the translator reads
+its structured input from `llbcProgram`. -/
+
+/-- Top-level cert (M9.7c-extended). -/
+structure CrateCert where
+  fmtVersion : Nat
+  crateHash : String
+  /-- M9.5b: ADT type decls. May be empty for crates with no struct/
+      enum types. The OCaml cert generator populates this from
+      `crate.type_decls`; old certs that pre-date M9.5b have an empty
+      array (the JSON parser tolerates a missing `type_decls` key). -/
+  typeDecls : Array TypeDecl
+  /-- M9.5l: trait declarations. Empty for crates with no traits;
+      the parser tolerates a missing `trait_decls` key for
+      back-compat with pre-M9.5l certs. -/
+  traitDecls : Array TraitDecl := #[]
+  /-- M9.5l: trait impls. Empty for crates with no impls; same
+      back-compat treatment as `traitDecls`. -/
+  traitImpls : Array TraitImpl := #[]
+  functions : Array FunCert
+  /-- M9.7c: the embedded structured LLBC program (cert v3). Empty
+      under cert v1 / v2 — the JSON parser defaults to
+      `LlbcProgram.empty` when the `llbc_program` field is absent.
+      Phase C / D's consistency checks short-circuit when this is
+      empty; Phase E flips the translator to read its structured
+      input from here once Phase B populates the field. -/
+  llbcProgram : LlbcProgram := LlbcProgram.empty
+  deriving Repr, Inhabited
+
 end AeneasCheck.Raw

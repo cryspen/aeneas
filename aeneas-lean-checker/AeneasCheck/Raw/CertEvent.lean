@@ -466,23 +466,8 @@ structure TraitImpl where
   sourceSpan : Option SourceSpan := none
   deriving Repr, Inhabited
 
-/-- Top-level cert. -/
-structure CrateCert where
-  fmtVersion : Nat
-  crateHash : String
-  /-- M9.5b: ADT type decls. May be empty for crates with no struct/
-      enum types. The OCaml cert generator populates this from
-      `crate.type_decls`; old certs that pre-date M9.5b have an empty
-      array (the JSON parser tolerates a missing `type_decls` key). -/
-  typeDecls : Array TypeDecl
-  /-- M9.5l: trait declarations. Empty for crates with no traits;
-      the parser tolerates a missing `trait_decls` key for
-      back-compat with pre-M9.5l certs. -/
-  traitDecls : Array TraitDecl := #[]
-  /-- M9.5l: trait impls. Empty for crates with no impls; same
-      back-compat treatment as `traitDecls`. -/
-  traitImpls : Array TraitImpl := #[]
-  functions : Array FunCert
-  deriving Repr, Inhabited
+/- M9.7c: `CrateCert` lives in `Raw/LLBCProgram.lean` — moved there to
+   carry the new structured `llbcProgram : LlbcProgram` field (cert v3)
+   without inducing a cycle (CertEvent ← LLBCProgram). -/
 
 end AeneasCheck.Raw
