@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "801d8da22d41c4a3d4d8b045ec81ec07",
+  "fmt_version": 2,
+  "crate_hash": "cc6ca22ea448d126114ff74f02763996",
   "type_decls": [
     {
       "id": 0,
@@ -23,7 +23,7 @@
       "is_tuple_struct": false,
       "qualified_name": "aggregates_basic::Pair",
       "source_span": {
-        "file": "tests/src/aggregates_basic.rs",
+        "file": "/Users/karthik/aeneas/tests/src/aggregates_basic.rs",
         "beg_line": 9,
         "beg_col": 0,
         "end_line": 12,
@@ -47,7 +47,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/aggregates_basic.rs",
+        "file": "/Users/karthik/aeneas/tests/src/aggregates_basic.rs",
         "beg_line": 14,
         "beg_col": 0,
         "end_line": 16,
@@ -200,7 +200,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/aggregates_basic.rs",
+        "file": "/Users/karthik/aeneas/tests/src/aggregates_basic.rs",
         "beg_line": 18,
         "beg_col": 0,
         "end_line": 20,

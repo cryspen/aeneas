@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "8447601926a20310b468da0f9dcff25a",
+  "fmt_version": 2,
+  "crate_hash": "944b92c2216cbc78a9ed6e6f262060c1",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -17,14 +17,22 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 4,
         "beg_col": 0,
         "end_line": 6,
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 1 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -137,14 +145,22 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 8,
         "beg_col": 0,
         "end_line": 10,
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 1 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -204,14 +220,16 @@
               "projection": [],
               "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
             },
-            "region_abs": [ 1 ]
+            "region_abs": [ 1 ],
+            "abs_sig": []
           }
         },
         {
           "EvEndAbs": {
             "abs": 1,
             "final_values": [ { "SymVal": 3 } ],
-            "released_loans": [ 1 ]
+            "released_loans": [ 1 ],
+            "token_clear_locals": []
           }
         },
         {
@@ -256,15 +274,31 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 12,
         "beg_col": 0,
         "end_line": 14,
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 1, "bid": 0, "inner_sv": 3 } },
-        { "EvSymExpandMutBorrow": { "sv_id": 2, "bid": 1, "inner_sv": 4 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 0,
+            "inner_sv": 3,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 1,
+            "inner_sv": 4,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvCopy": {
             "src": {
@@ -318,7 +352,8 @@
               "local": 2,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -345,7 +380,8 @@
               "local": 7,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -372,7 +408,8 @@
               "local": 5,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -399,7 +436,8 @@
               "local": 4,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -428,7 +466,8 @@
               "local": 3,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -455,7 +494,8 @@
               "local": 5,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -482,7 +522,8 @@
               "local": 4,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -547,15 +588,31 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 16,
         "beg_col": 0,
         "end_line": 19,
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 1, "bid": 0, "inner_sv": 3 } },
-        { "EvSymExpandMutBorrow": { "sv_id": 2, "bid": 1, "inner_sv": 4 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 0,
+            "inner_sv": 3,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 1,
+            "inner_sv": 4,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -703,10 +760,19 @@
               "projection": [],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
             },
-            "region_abs": [ 2 ]
+            "region_abs": [ 2 ],
+            "abs_sig": []
           }
         },
-        { "EvSymExpandMutBorrow": { "sv_id": 5, "bid": 4, "inner_sv": 6 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 5,
+            "bid": 4,
+            "inner_sv": 6,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -759,7 +825,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/calls.rs",
+        "file": "/Users/karthik/aeneas/tests/src/calls.rs",
         "beg_line": 27,
         "beg_col": 0,
         "end_line": 35,
@@ -970,7 +1036,8 @@
                 { "local": 1, "value": { "SymVal": 3 } }
               ],
               "live_loans": []
-            }
+            },
+            "witnesses": []
           }
         },
         {
@@ -1037,7 +1104,8 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "region_abs": []
+            "region_abs": [],
+            "abs_sig": []
           }
         },
         "EvReturn",

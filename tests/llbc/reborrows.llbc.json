@@ -1,1 +1,1 @@
-{ "fmt_version": 1, "crate_name": "reborrows", "fun_decl_ids": [ 0, 1, 2 ] }
+{ "fmt_version": 2, "crate_name": "reborrows", "fun_decl_ids": [ 0, 1, 2 ] }

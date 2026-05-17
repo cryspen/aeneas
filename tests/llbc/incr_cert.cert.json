@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "01c31fa6719f56008442a086283ea16e",
+  "fmt_version": 2,
+  "crate_hash": "a4306b8a29636193ff21e823752fab92",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -24,7 +24,15 @@
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 1 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -152,7 +160,8 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "symval": 0
+            "symval": 0,
+            "kind_hint": "Direct"
           }
         },
         {
@@ -179,7 +188,8 @@
               "local": 3,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {

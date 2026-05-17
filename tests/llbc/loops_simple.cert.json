@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "88a34c2a8d6062db6c5d87b76fb7f3b7",
+  "fmt_version": 2,
+  "crate_hash": "c45b3d984bd77172a8a9de89ca37aed2",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -17,7 +17,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/loops_simple.rs",
+        "file": "/Users/karthik/aeneas/tests/src/loops_simple.rs",
         "beg_line": 13,
         "beg_col": 0,
         "end_line": 19,
@@ -43,7 +43,8 @@
                 { "local": 1, "value": { "SymVal": 0 } }
               ],
               "live_loans": []
-            }
+            },
+            "loan_registry": []
           }
         },
         {

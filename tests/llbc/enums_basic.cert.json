@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "5d31aeff2bd4488aafd8a26e8a625481",
+  "fmt_version": 2,
+  "crate_hash": "dde44fb8f99931d410847e1389ca686e",
   "type_decls": [
     {
       "id": 0,
@@ -16,7 +16,7 @@
       "is_tuple_struct": false,
       "qualified_name": "enums_basic::Sign",
       "source_span": {
-        "file": "tests/src/enums_basic.rs",
+        "file": "/Users/karthik/aeneas/tests/src/enums_basic.rs",
         "beg_line": 9,
         "beg_col": 0,
         "end_line": 13,
@@ -39,7 +39,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/enums_basic.rs",
+        "file": "/Users/karthik/aeneas/tests/src/enums_basic.rs",
         "beg_line": 15,
         "beg_col": 0,
         "end_line": 21,

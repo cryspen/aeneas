@@ -1283,11 +1283,36 @@ let eval_rvalue_ref (config : config) (span : Meta.span) (p : place)
                   parent_live = false; parent_abs = None;
                 })
           | None ->
+              (* M9.6 (Option C) — subsumes M9.5w + M9.5aa.
+                 * Place projection contains a [Deref] but didn't
+                   resolve to the EvReborrow shape above
+                   ⇒ MbkInAbsReborrow (caller-input abs owns the
+                   borrow's lifetime). The Lean strict path
+                   classifies this as reborrow-class. The exact
+                   absId stays a placeholder (0) until commit #19
+                   wires the AbsRegistry.
+                 * No [Deref] but we're inside an open loop body
+                   ⇒ MbkLoopOwned with the topmost loop id from
+                   [cert_loop_id_stack].
+                 * Otherwise ⇒ MbkDirect (in-body, must be
+                   explicitly ended). *)
+              let has_deref =
+                List.exists
+                  (fun (pe : projection_elem) ->
+                    match pe with Deref -> true | _ -> false)
+                  cp.cp_projection
+              in
+              let kind_hint : CertEvent.cert_mut_borrow_kind =
+                if has_deref then
+                  CertEvent.MbkInAbsReborrow (AbsId.of_int 0)
+                else
+                  match !(ctx.cert_loop_id_stack) with
+                  | top :: _ -> CertEvent.MbkLoopOwned top
+                  | [] -> CertEvent.MbkDirect
+              in
               ctx_emit_event ctx
                 (CertEvent.EvMutBorrow {
-                  loan = bid; place = cp; symval;
-                  (* M9.6 (Option C): populated in commit #4. *)
-                  kind_hint = CertEvent.MbkDirect;
+                  loan = bid; place = cp; symval; kind_hint;
                 }));
       (* Return *)
       (rv, ctx, cc)

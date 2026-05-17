@@ -816,6 +816,7 @@ let initialize_eval_ctx (span : Meta.span option) (ctx : decls_ctx)
     fresh_symbolic_expr_id;
     cert_event_buffer = ref [];
     cert_events_suppressed = ref false;
+    cert_loop_id_stack = ref [];
   }
 
 (** Instantiate a function signature, introducing **fresh** abstraction ids and

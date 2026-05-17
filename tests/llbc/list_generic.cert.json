@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "b69a9cbd9f14c36c7c8551ba0efe4957",
+  "fmt_version": 2,
+  "crate_hash": "2c75fa9b5f32073084dfb361287caaf9",
   "type_decls": [
     {
       "id": 0,
@@ -28,7 +28,7 @@
       "is_tuple_struct": false,
       "qualified_name": "list_generic::GList",
       "source_span": {
-        "file": "tests/src/list_generic.rs",
+        "file": "/Users/karthik/aeneas/tests/src/list_generic.rs",
         "beg_line": 6,
         "beg_col": 0,
         "end_line": 9,
@@ -66,7 +66,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/list_generic.rs",
+        "file": "/Users/karthik/aeneas/tests/src/list_generic.rs",
         "beg_line": 11,
         "beg_col": 0,
         "end_line": 16,
@@ -174,7 +174,8 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "region_abs": []
+            "region_abs": [],
+            "abs_sig": []
           }
         },
         {
@@ -211,7 +212,8 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "region_abs": []
+            "region_abs": [],
+            "abs_sig": []
           }
         },
         "EvReturn",

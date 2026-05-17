@@ -168,6 +168,16 @@ type eval_ctx = {
           one). M12.1 wraps the fixpoint and break-context body
           evaluations with this flag so the cert is a linear, replayable
           trace rather than an unrolled multi-iteration log. *)
+  cert_loop_id_stack : (loop_id list ref[@opaque]);
+      (** [M9.6 — Option C] Stack of currently-open loop ids. Pushed
+          right before [EvLoopInv] is emitted at the start of a loop
+          body's canonical synthesis and popped right after [EvLoopEnd];
+          the cert-emission sites that need to know whether they are
+          inside a loop body (notably [InterpExpressions.eval_rvalue_ref]
+          for [EvMutBorrow.kind_hint = MbkLoopOwned]) read the topmost
+          entry. Held in a [ref] for the same reason as
+          [cert_event_buffer]: shared/copied contexts must observe the
+          same stack. *)
 }
 [@@deriving show]
 

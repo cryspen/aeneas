@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "4186dd52969e1b97dbffb2b170e13cf2",
+  "fmt_version": 2,
+  "crate_hash": "e6d99f8160ce89d1e206bc08d1e44851",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -18,15 +18,31 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/multi_region.rs",
+        "file": "/Users/karthik/aeneas/tests/src/multi_region.rs",
         "beg_line": 13,
         "beg_col": 0,
         "end_line": 15,
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 2 } },
-        { "EvSymExpandMutBorrow": { "sv_id": 1, "bid": 1, "inner_sv": 3 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 2,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 1,
+            "inner_sv": 3,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvReborrow": {
             "child": 2,
@@ -35,7 +51,8 @@
               "local": 1,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -62,7 +79,8 @@
               "local": 2,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": false
           }
         },
         {
@@ -167,15 +185,31 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/multi_region.rs",
+        "file": "/Users/karthik/aeneas/tests/src/multi_region.rs",
         "beg_line": 17,
         "beg_col": 0,
         "end_line": 21,
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 2 } },
-        { "EvSymExpandMutBorrow": { "sv_id": 1, "bid": 1, "inner_sv": 3 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 2,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 1,
+            "inner_sv": 3,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -272,11 +306,28 @@
               "projection": [],
               "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (Generated_Types.RErased,\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
             },
-            "region_abs": [ 2, 3 ]
+            "region_abs": [ 2, 3 ],
+            "abs_sig": []
           }
         },
-        { "EvSymExpandMutBorrow": { "sv_id": 5, "bid": 4, "inner_sv": 7 } },
-        { "EvSymExpandMutBorrow": { "sv_id": 6, "bid": 5, "inner_sv": 8 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 5,
+            "bid": 4,
+            "inner_sv": 7,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 6,
+            "bid": 5,
+            "inner_sv": 8,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvMove": {
             "src": {

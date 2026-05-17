@@ -470,6 +470,12 @@ let eval_loop_symbolic (config : config) (span : span)
          loan_registry = [];
        });
 
+  (* M9.6 (Option C): push this loop onto the cert-side loop-id stack
+     before synthesising the body so any [EvMutBorrow] emitted inside
+     can carry [kind_hint = MbkLoopOwned loop_id]. Popped right after
+     [EvLoopEnd] below. *)
+  ctx.cert_loop_id_stack := loop_id :: !(ctx.cert_loop_id_stack);
+
   (* Synthesize the loop body *)
   let break_info', loop_body =
     let fixed_aids = InterpJoinCore.compute_fixed_abs_ids ctx fp_ctx in
@@ -480,6 +486,10 @@ let eval_loop_symbolic (config : config) (span : span)
   in
 
   ctx_emit_event ctx (CertEvent.EvLoopEnd { loop_id });
+  (* M9.6 (Option C): pop the loop we just closed. *)
+  (match !(ctx.cert_loop_id_stack) with
+   | _ :: rest -> ctx.cert_loop_id_stack := rest
+   | [] -> ());
 
   let break_ctx, break_abs, break_input_svalues =
     match break_info with

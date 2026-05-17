@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "7c88e3fa647345404946db1e557174f5",
+  "fmt_version": 2,
+  "crate_hash": "33b0fb2acdff3c334749a10760ea1c28",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -17,7 +17,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/compare_simple.rs",
+        "file": "/Users/karthik/aeneas/tests/src/compare_simple.rs",
         "beg_line": 4,
         "beg_col": 0,
         "end_line": 6,
@@ -84,14 +84,22 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/compare_simple.rs",
+        "file": "/Users/karthik/aeneas/tests/src/compare_simple.rs",
         "beg_line": 10,
         "beg_col": 0,
         "end_line": 12,
         "end_col": 1
       },
       "events": [
-        { "EvSymExpandMutBorrow": { "sv_id": 0, "bid": 0, "inner_sv": 1 } },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [],
+            "subst_loans": []
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -205,7 +213,7 @@
         "trait_clauses": []
       },
       "source_span": {
-        "file": "tests/src/compare_simple.rs",
+        "file": "/Users/karthik/aeneas/tests/src/compare_simple.rs",
         "beg_line": 15,
         "beg_col": 0,
         "end_line": 17,
@@ -326,7 +334,8 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "region_abs": []
+            "region_abs": [],
+            "abs_sig": []
           }
         },
         "EvReturn",
