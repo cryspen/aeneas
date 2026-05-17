@@ -66,6 +66,17 @@ structure SymState where
       `LStep.endBorrow_*` leaves unchanged even though the replayer
       erases the loan id). -/
   loanIdHwm : Nat := 0
+  /-- M10.1i (soundness side): monotone high-water-mark for the
+      abstraction ids ever installed, regardless of whether the
+      entry is still in `absRegistry`. `stepCall`'s `addAbsShape`
+      fold raises this past each `shape.absId`; `stepEndAbs`'s
+      `absRegistry.erase` does *not* touch it. As with `loanIdHwm`,
+      the replayer's checker logic never reads this field — it
+      exists purely so the soundness-side `concretise` can mirror
+      the paper's monotone `freshness.nextAbsId` (which
+      `LStep.endAbs` leaves unchanged even though the replayer
+      erases the registry entry). -/
+  absIdHwm : Nat := 0
   deriving Inhabited
 
 namespace SymState
@@ -94,6 +105,27 @@ def takeLoan (st : SymState) (b : Nat) : Option (LoanInfo × SymState) :=
   match st.loans[b]? with
   | none => none
   | some li => some (li, { st with loans := st.loans.erase b })
+
+/-- M10.1i (soundness side): install one `AbsShape` into
+    `absRegistry`, bumping `absIdHwm` past `shape.absId`. The fold
+    step `stepCall` uses to process its `absSig` array; factored out
+    so the soundness-side commute lemma has a single mutator to
+    target. The replayer's checker logic relies on `absRegistry`
+    only — `absIdHwm` is the soundness-mirror field. -/
+def addAbsShape (st : SymState) (shape : AbsShape) : SymState :=
+  { st with
+      absRegistry := st.absRegistry.insert shape.absId shape
+      absIdHwm := max st.absIdHwm (shape.absId + 1) }
+
+/-- M10.1i (soundness side): remove an `AbsShape` from
+    `absRegistry`. Used by `stepEndAbs` to drop the closing
+    abstraction's registry entry; mirrors the paper's
+    `LLBCState.removeAbs`. Does *not* touch `absIdHwm` — the
+    high-water-mark stays monotone so the soundness-side
+    `concretise.freshness.nextAbsId` matches the paper's
+    `LStep.endAbs`-leaves-freshness-unchanged contract. -/
+def removeAbsShape (st : SymState) (absId : Nat) : SymState :=
+  { st with absRegistry := st.absRegistry.erase absId }
 
 end SymState
 

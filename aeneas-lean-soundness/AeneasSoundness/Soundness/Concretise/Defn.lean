@@ -17,9 +17,9 @@ approximates on the replayer side) project to `Val.opaq`.
 
 * `liftVal` — value-grammar lift `LLBCSharp.Val → LLBCSharpPaper.Val`.
 * `liftEnv` — env `HashMap` → `LocalId → Option Val#`.
-* `liftAbsRoleEntry` / `liftAbsShape` / `liftAbsRegistry` — abs-shape
-  lift from `AbsRoleEntry` → `(Role × LoanId)` and the surrounding
-  registry into `AbsId → Option RegionAbs`.
+* `liftAbsRegistry` — abs-registry `HashMap` → `AbsId → Option
+  RegionAbs`. Uses `LLBCSharpPaper.liftAbsShape` (paper-side; moved
+  out of this file at M10.1i to enable M10.0m).
 * `maxKeyPlusOne` — generic "next-fresh-id" helper over a
   `Std.HashMap Nat _`.
 * `concretise` — the full entry point.
@@ -31,7 +31,9 @@ doesn't track them explicitly; we synthesise:
 
 * `nextLoanId := st.loanIdHwm` (M10.1g; monotone HWM in `SymState`
   bumped by `addLoan` and untouched by `takeLoan`).
-* `nextAbsId  := maxKeyPlusOne st.absRegistry`
+* `nextAbsId  := st.absIdHwm` (M10.1i; monotone HWM bumped by
+  `addAbsShape` (the fold step `stepCall` uses) and untouched by
+  `stepEndAbs`'s `absRegistry.erase`).
 * `nextSymValId := 0` — the replayer doesn't track sym-value ids;
   the cert provides them and `CertGen_faithful` enforces
   monotonicity. Phase C lemmas that need `Ω.symValIdFresh σ` for
@@ -61,7 +63,8 @@ namespace AeneasSoundness.Soundness.Concretise
 open AeneasCheck.LLBCSharp
 open AeneasCheck.Raw (AbsShape AbsRoleEntry)
 open AeneasSoundness.LLBCSharpPaper
-  (LLBCState NonceCounters RegionAbs Role LoanId AbsId)
+  (LLBCState NonceCounters RegionAbs Role LoanId AbsId
+   liftAbsRoleEntry liftAbsShape)
 
 /-! ## Value-grammar lift -/
 
@@ -87,22 +90,12 @@ def liftEnv (env : Std.HashMap Nat AeneasCheck.LLBCSharp.Val) :
       Option AeneasSoundness.LLBCSharpPaper.Val :=
   fun l => (env[l]?).map liftVal
 
-/-! ## Abs lift -/
+/-! ## Abs lift
 
-/-- Lift a single `AbsRoleEntry` into the paper's `(Role × LoanId)`
-    pair. Drops the `argIdx` decoration (the paper's `A_in(ρ)` has
-    role + loan id only). -/
-def liftAbsRoleEntry : AbsRoleEntry → (Role × LoanId)
-  | .mutBorrow _ ℓ          => (.mutBorrow, ℓ)
-  | .mutLoan ℓ              => (.mutLoan, ℓ)
-  | .sharedBorrow _ sbId    => (.sharedBorrow, sbId)
-
-/-- Lift a single `AbsShape` into a paper-side `RegionAbs`. The
-    role multiset is built from the shape's `roles` array, dropping
-    arg-position info; `parents` carries through unchanged. -/
-def liftAbsShape (shape : AbsShape) : RegionAbs :=
-  { roles := (shape.roles.toList.map liftAbsRoleEntry : Multiset (Role × LoanId))
-    parents := shape.parentAbs }
+`liftAbsRoleEntry` and `liftAbsShape` were moved to
+`LLBCSharpPaper/Syntax.lean` at M10.1i (so the paper-side
+`LStep.call` post-state can use `liftAbsShape` directly, the M10.0m
+strengthening). They are re-opened above. -/
 
 /-- Lift the abs registry into the paper's `AbsId → Option
     RegionAbs`. Abs ids not in the registry lift to `none` (per
@@ -281,11 +274,10 @@ theorem maxKeyPlusOne_insert_fresh {α : Type} (m : Std.HashMap Nat α)
     * `nextLoanId := st.loanIdHwm` (M10.1g monotone HWM; survives
       `takeLoan` / `loans.erase` which strictly shrink
       `maxKeyPlusOne st.loans`).
-    * `nextAbsId := maxKeyPlusOne st.absRegistry` (absRegistry has no
-      analogous erase path in the current LStep surface — endAbs
-      removes from the paper's `abs` but the replayer keeps the
-      registry entry; if a future event erases entries, an `absIdHwm`
-      mirror is the same fix).
+    * `nextAbsId := st.absIdHwm` (M10.1i monotone HWM; survives
+      `stepEndAbs`'s `absRegistry.erase` which would otherwise let
+      `maxKeyPlusOne st.absRegistry` shrink and violate the paper's
+      `LStep.endAbs`-leaves-freshness-unchanged contract).
     * `nextSymValId := 0` (cert-provided ids whose monotonicity rides
       on `CertGen_faithful`).
 
@@ -298,7 +290,7 @@ def concretise (st : SymState) : LLBCState :=
     abs := liftAbsRegistry st.absRegistry
     freshness :=
       { nextLoanId   := st.loanIdHwm
-        nextAbsId    := maxKeyPlusOne st.absRegistry
+        nextAbsId    := st.absIdHwm
         nextSymValId := 0 } }
 
 /-! ## Smoke lemma

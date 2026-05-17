@@ -1,6 +1,7 @@
 import Mathlib.Data.Multiset.Basic
 import AeneasCheck.Raw.Places
 import AeneasCheck.Raw.Literal
+import AeneasCheck.Raw.CertEvent
 
 /-!
 # LLBC# paper-side syntax: values, places, and region abstractions
@@ -169,5 +170,29 @@ def RegionAbs.singleton (role : Role) (ℓ : LoanId) : RegionAbs :=
     contents without committing to a list order. -/
 def RegionAbs.holds (a : RegionAbs) (role : Role) (ℓ : LoanId) : Prop :=
   (role, ℓ) ∈ a.roles
+
+/-! ## AbsShape → RegionAbs lift (paper side)
+
+Moved here from `Soundness/Concretise/Defn.lean` at M10.1i so the
+paper-side `LStep.call` can use it directly in its post-state
+(the strengthening required by M10.0m). Semantically identical to
+the pre-M10.1i `Concretise.liftAbsShape`. -/
+
+open AeneasCheck.Raw (AbsShape AbsRoleEntry)
+
+/-- Lift a single `AbsRoleEntry` into the paper's `(Role × LoanId)`
+    pair. Drops the `argIdx` decoration (the paper's `A_in(ρ)` has
+    role + loan id only). -/
+def liftAbsRoleEntry : AbsRoleEntry → (Role × LoanId)
+  | .mutBorrow _ ℓ          => (.mutBorrow, ℓ)
+  | .mutLoan ℓ              => (.mutLoan, ℓ)
+  | .sharedBorrow _ sbId    => (.sharedBorrow, sbId)
+
+/-- Lift a single `AbsShape` into a paper-side `RegionAbs`. The
+    role multiset is built from the shape's `roles` array, dropping
+    arg-position info; `parentAbs` carries through unchanged. -/
+def liftAbsShape (shape : AbsShape) : RegionAbs :=
+  { roles := (shape.roles.toList.map liftAbsRoleEntry : Multiset (Role × LoanId))
+    parents := shape.parentAbs }
 
 end AeneasSoundness.LLBCSharpPaper

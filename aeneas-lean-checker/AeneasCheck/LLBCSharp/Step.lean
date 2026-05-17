@@ -268,9 +268,9 @@ def stepCall (st : SymState) (dst : Place) (absSig : Array AbsShape := #[]) :
     -- shape in [absRegistry] so [stepEndAbs] can later validate
     -- that the abstraction releases exactly the loans (and clears
     -- the locals) it owns. Empty [absSig] (v1 / hint-empty
-    -- default) is a no-op.
-    let st := absSig.foldl (init := st) fun st shape =>
-      { st with absRegistry := st.absRegistry.insert shape.absId shape }
+    -- default) is a no-op. M10.1i: each insert also bumps the
+    -- soundness-mirror `absIdHwm` past `shape.absId`.
+    let st := absSig.foldl (init := st) SymState.addAbsShape
     return (st.setLocal root (.sym 0))
 
 /-! ## E-SymExpandMutBorrow
@@ -374,7 +374,13 @@ def stepEndAbs (st : SymState) (absId : Nat) (released : Array Nat)
     | some (.mutLoan _) => newEnv := newEnv.insert l .bottom
     | _ => pure ()
   st := { st with env := newEnv }
-  return st
+  -- M10.1i (soundness side): drop the closing abs's registry
+  -- entry so [concretise st'.abs absId = none] matches the paper's
+  -- `Ω.removeAbs abs`. `absIdHwm` is left untouched (monotone
+  -- mirror of paper's nextAbsId). No other replayer code reads
+  -- erased entries — grep confirms only stepCall populates /
+  -- stepEndAbs reads.
+  return st.removeAbsShape absId
 
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :
     Result Unit := do

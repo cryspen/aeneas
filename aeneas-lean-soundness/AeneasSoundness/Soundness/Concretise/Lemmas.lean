@@ -26,7 +26,8 @@ them.
 namespace AeneasSoundness.Soundness.Concretise
 
 open AeneasCheck.LLBCSharp
-open AeneasSoundness.LLBCSharpPaper (LLBCState NonceCounters)
+open AeneasCheck.Raw (AbsShape)
+open AeneasSoundness.LLBCSharpPaper (LLBCState NonceCounters liftAbsShape)
 
 /-! ## Inversion lemmas (M10.1d) -/
 
@@ -46,7 +47,7 @@ theorem concretise_abs (st : SymState) :
 theorem concretise_freshness (st : SymState) :
     (concretise st).freshness =
       { nextLoanId := st.loanIdHwm
-        nextAbsId := maxKeyPlusOne st.absRegistry
+        nextAbsId := st.absIdHwm
         nextSymValId := 0 } := rfl
 
 /-- Per-local inversion: reading a local from `concretise st`'s
@@ -139,5 +140,70 @@ theorem concretise_takeLoan (st : SymState) (b : Nat)
     -- ctx, abs, freshness all definitionally equal: loans.erase only
     -- changes st.loans (not env / absRegistry / loanIdHwm).
     rfl
+
+/-! ## M10.1i (absRegistry mutators)
+
+`addAbsShape` is the fold step `stepCall` uses to install each
+`AbsShape` from the cert's `absSig`; `removeAbsShape` is what
+`stepEndAbs` calls to drop the closing abstraction's registry
+entry. Their paper-side mirrors:
+
+* `addAbsShape` ↦ `setAbs shape.absId (liftAbsShape shape)` then
+  `bumpAbsId shape.absId`. Unconditional (no freshness premise) —
+  `absIdHwm` is the source of truth on both sides; the `max`
+  expressions coincide by `rfl`.
+* `removeAbsShape` ↦ `removeAbs absId`. Unconditional —
+  `absIdHwm` is untouched on the replayer side, mirroring the
+  paper's `LStep.endAbs` leaving freshness unchanged.
+
+The pattern matches `concretise_addLoan` (post-M10.1g
+unconditional) / `concretise_takeLoan`. -/
+
+/-- `liftAbsRegistry (registry.insert k v)` is the function-update
+    of `liftAbsRegistry registry` at `k` with `some (liftAbsShape
+    v)`. Mirrors `liftEnv_insert`. -/
+theorem liftAbsRegistry_insert (registry : Std.HashMap Nat AbsShape)
+    (k : Nat) (shape : AbsShape) :
+    liftAbsRegistry (registry.insert k shape) =
+      Function.update (liftAbsRegistry registry) k (some (liftAbsShape shape)) := by
+  funext k'
+  unfold liftAbsRegistry
+  by_cases h : k = k'
+  · subst h; simp [Function.update]
+  · simp [Std.HashMap.getElem?_insert, h, Function.update_of_ne (Ne.symm h)]
+
+/-- `liftAbsRegistry (registry.erase k)` is the function-update of
+    `liftAbsRegistry registry` at `k` with `none`. Mirror of
+    `liftAbsRegistry_insert` for the erase path. -/
+theorem liftAbsRegistry_erase (registry : Std.HashMap Nat AbsShape)
+    (k : Nat) :
+    liftAbsRegistry (registry.erase k) =
+      Function.update (liftAbsRegistry registry) k none := by
+  funext k'
+  unfold liftAbsRegistry
+  by_cases h : k = k'
+  · subst h; simp [Function.update]
+  · simp [Std.HashMap.getElem?_erase, h, Function.update_of_ne (Ne.symm h)]
+
+/-- `addAbsShape` commute: installing one shape on the replayer side
+    is `setAbs` then `bumpAbsId` on the paper side. Unconditional. -/
+theorem concretise_addAbsShape (st : SymState) (shape : AbsShape) :
+    concretise (st.addAbsShape shape) =
+      ((concretise st).setAbs shape.absId (liftAbsShape shape)).bumpAbsId shape.absId := by
+  unfold concretise SymState.addAbsShape LLBCState.setAbs LLBCState.bumpAbsId
+  refine LLBCState.mk.injEq .. |>.mpr ⟨rfl, ?_, ?_⟩
+  · exact liftAbsRegistry_insert st.absRegistry shape.absId shape
+  · refine NonceCounters.mk.injEq .. |>.mpr ⟨rfl, rfl, rfl⟩
+
+/-- `removeAbsShape` commute: erasing a registry entry on the
+    replayer side is `removeAbs` on the paper side. Unconditional;
+    `absIdHwm` is untouched on the replayer side, mirroring the
+    paper's `LStep.endAbs` leaving freshness unchanged. -/
+theorem concretise_removeAbsShape (st : SymState) (absId : Nat) :
+    concretise (st.removeAbsShape absId) =
+      (concretise st).removeAbs absId := by
+  unfold concretise SymState.removeAbsShape LLBCState.removeAbs
+  refine LLBCState.mk.injEq .. |>.mpr ⟨rfl, ?_, rfl⟩
+  exact liftAbsRegistry_erase st.absRegistry absId
 
 end AeneasSoundness.Soundness.Concretise

@@ -445,7 +445,7 @@ theorem stepMutBorrow_inAbsReborrow_sound
     · rw [if_neg hB] at h
       simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
       subst h
-      have hAbsLifted : Ω.abs absId = some (Concretise.liftAbsShape r) := by
+      have hAbsLifted : Ω.abs absId = some (LLBCSharpPaper.liftAbsShape r) := by
         subst hRep
         simp [Concretise.concretise, Concretise.liftAbsRegistry, hr]
       have hLoanIdFresh : Ω.loanIdFresh loan := by
