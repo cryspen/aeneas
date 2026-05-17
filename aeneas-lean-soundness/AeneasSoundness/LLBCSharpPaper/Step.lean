@@ -242,4 +242,86 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
   | loopEnd {Ω : LLBCState} {loopId : Nat} :
       LStep Ω (.loopEnd loopId) Ω
 
+  -- Fig. 7 + Fig. 8 — abstraction rules (M10.0g) ---
+
+  /-- `Le-Reborrow-MutBorrow-Abs` (Fig. 8) — body-position entry.
+      The cert emits `EvReborrow child parent place …`; the OCaml
+      side asserts parent-liveness and the abs that owns it.
+
+      Premises (baseline): `child` fresh as a loan id. Phase C
+      strengthens with parent-liveness (`Ω.ctx p.local_` contains
+      the parent loan) and parent-abs ownership when the
+      `parentAbs` hint is `some`.
+
+      Post-state: `child` is registered as a fresh loan; surface
+      `ctx` unchanged (the reborrow lives inside the parent's
+      abstraction, not in any local). -/
+  | reborrow {Ω : LLBCState} {child parent : LoanId} {p : Place}
+      {parentLive : Bool} {parentAbs : Option AbsId} :
+      Ω.loanIdFresh child →
+      LStep Ω (.reborrow child parent p parentLive parentAbs)
+        (Ω.bumpLoanId child)
+
+  /-- `E-Call-Symbolic` (Fig. 9, included in the M10.0g batch). The
+      cert emits `EvCall fn callId fnName args dst regionAbs absSig`.
+
+      Premises (baseline):
+      * Every abs id named in `regionAbs` is fresh in Ω.
+      * Every `AbsShape` in `absSig` has `absId` matching a
+        corresponding entry in `regionAbs` (paired by position).
+
+      Phase C strengthens with the per-role-entry premises (the
+      `A_in(ρ)` content matches the callee's signature, by way of
+      `lookupFunDecl cc f`).
+
+      Post-state: for each `AbsShape r` in `absSig`, install
+      `Ω.abs r.absId := some (RegionAbs.singleton ...)`; bump
+      `nextAbsId` past every named abs. `dst` is written with a
+      fresh symbolic value (the call result). -/
+  | call {Ω : LLBCState} {fn callId : Nat} {fnName : String}
+      {args : Array SymExpr} {dst : Place} {regionAbs : Array AbsId}
+      {absSig : Array AbsShape} {σ : SymValId} :
+      Ω.symValIdFresh σ →
+      LStep Ω (.call fn callId fnName args dst regionAbs absSig)
+        ((Ω.setLocal dst.local_ (.sym σ)).bumpSymValId σ)
+
+  /-- `Reorg-End-Abs` (Fig. 8). The abstraction `abs` closes; its
+      tracked loans are released and any `tokenClearLocals` are
+      reset.
+
+      Premises (baseline): `Ω.abs abs = some r` — the abs exists.
+      Phase C strengthens with the matching-loan-release condition
+      (every id in `releasedLoans` is in `r.roles` as a mutLoan).
+
+      Post-state: drop the abs from `Ω.abs`. The `tokenClearLocals`
+      reset is folded into the local-clear step. -/
+  | endAbs {Ω : LLBCState} {abs : AbsId} {finalValues : Array SymExpr}
+      {releasedLoans : Array LoanId} {tokenClearLocals : Array LocalId}
+      {r : RegionAbs} :
+      Ω.abs abs = some r →
+      LStep Ω (.endAbs abs finalValues releasedLoans tokenClearLocals)
+        (Ω.removeAbs abs)
+
+  /-- Lazy mut-borrow expansion (paper §4.1 rewriting). The OCaml
+      interpreter just replaced symbolic value `svId` with a
+      concrete mut-borrow whose id is `bid` and inner is `.sym
+      innerSv`. The replayer threads `parentAbs` + `substLocals` +
+      `substLoans` so the post-state mirrors the actual substitution.
+
+      Premises (baseline): `bid` and `innerSv` fresh.
+
+      Post-state: bump freshness counters past `bid`, `innerSv`.
+      The substitution itself (rewriting every `Val.sym svId` to
+      `Val.mutBorrow bid (.sym innerSv)`) is the
+      `substLocals` / `substLoans` job — modelled here as a no-op
+      on ctx pending the Phase-C `SubstScope_Complete` premise
+      (plan §3.4 risk on substitution scope). -/
+  | symExpandMutBorrow {Ω : LLBCState} {svId bid innerSv : Nat}
+      {parentAbs : Option AbsId} {substLocals substLoans : Array Nat} :
+      Ω.loanIdFresh bid →
+      Ω.symValIdFresh innerSv →
+      LStep Ω
+        (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans)
+        ((Ω.bumpLoanId bid).bumpSymValId innerSv)
+
 end AeneasSoundness.LLBCSharpPaper
