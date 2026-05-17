@@ -37,7 +37,8 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .binop op lhs rhs dst => stepBinop st op lhs rhs dst
   | .panic => return st
   | .retn => return st
-  | .reborrow child parent place _ _ => stepReborrow st child parent place
+  | .reborrow child parent place parentLive parentAbs =>
+    stepReborrow st child parent place parentLive parentAbs
   | .call _ _ _ _ dst _ _ => stepCall st dst
   | .endAbs _ _ released _ => stepEndAbs st released
   | .proj _ _ _ => .error "proj: not implemented until M10"

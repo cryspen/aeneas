@@ -135,7 +135,8 @@ evaluated and the place [p] dereferences an existing parent borrow
 (i.e. [p.projection] ends with [Deref] of a [VBorrow] value). The
 parent's loan must still be live; the child's id must be fresh. -/
 
-def stepReborrow (st : SymState) (child parent : Nat) (place : Place) :
+def stepReborrow (st : SymState) (child parent : Nat) (place : Place)
+    (parentLive : Bool := false) (_parentAbs : Option Nat := none) :
     Result SymState := do
   if st.loans.contains child then
     fail s!"E-Reborrow: child borrow id {child} already live"
@@ -144,16 +145,21 @@ def stepReborrow (st : SymState) (child parent : Nat) (place : Place) :
     if root ≥ st.numLocals then
       fail s!"E-Reborrow: local {root} out of bounds (have {st.numLocals})"
     else
-      -- If the parent loan is not yet in state, treat it as an
-      -- implicit input borrow (e.g. a `&mut T` function argument).
-      -- The cert does not emit an explicit EvMutBorrow for input
-      -- borrows; pre-adding it here keeps the parent-live invariant
-      -- without forcing every cert to carry a signature-derived
-      -- entry-event. Implicit parents are tagged `.reborrow` so the
-      -- exit check tolerates their liveness (see `Replay.lean`).
-      let st :=
-        if st.loans.contains parent then st
-        else st.addLoan parent .bottom .reborrow
+      -- M9.6 (Option C, plan §4.1.4) — strict path: when the OCaml
+      -- side declares [parentLive = true], require the parent loan
+      -- to already be in [SymState.loans] (a missing parent is a
+      -- cert bug). When [parentLive = false] (also the back-compat
+      -- default for v1 / hint-empty certs), keep today's
+      -- pre-add-as-`.reborrow` behaviour. The [parentAbs] hint is
+      -- recorded by commit #19's AbsRegistry consumer; ignored
+      -- here.
+      let st ←
+        if parentLive then
+          if st.loans.contains parent then pure st
+          else fail s!"E-Reborrow: parentLive=true but parent {parent} not in state"
+        else
+          if st.loans.contains parent then pure st
+          else pure (st.addLoan parent .bottom .reborrow)
       -- The new child borrow's body is the inner value of the parent
       -- chain. The M9.2 structural check uses `.bottom` as a
       -- sentinel since we don't model nested-borrow values yet; the
