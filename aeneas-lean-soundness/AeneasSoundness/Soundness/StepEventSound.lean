@@ -880,46 +880,81 @@ theorem stepSymExpandMutBorrow_sound
   simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
     LLBCState.bumpSymValId, Concretise.concretise_addLoan, hRep]
 
-/-! ### Join (C23, empty-witnesses subset)
+/-! ### Join (C23, general case — M10.2t)
 
 `stepJoin st left right result witnesses` performs a wholesale
-replacement: `newEnv := result.env.foldl (init := st.env) …` and
-`prunedLoans := …` against `result.liveLoans`. The paper-side
-`LStep.join` instead chains per-entry `JoinEntryStep` rules via
-`JoinChain Ω witnesses.toList Ω'`. The two semantics don't align at
-the wholesale level — the replayer doesn't compute per-entry
-intermediate states.
+replacement: `newEnv := result.env.foldl (init := st.env) …`,
+`prunedLoans := …` against `result.liveLoans`, and (M9.8) installs
+each `joinMutBorrows _ _ _ absShape` witness's `absShape` in
+`absRegistry` via `addAbsShape`. The paper-side `LStep.join` instead
+chains per-entry `JoinEntryStep` rules via
+`JoinChain Ω witnesses.toList Ω'`.
 
-For the empty-witnesses subset the chain is `LLBCSharpPaper.JoinChain.nil` and the
-proof reduces to threading the Phase-D-dischargeable hypothesis
-`hStShape : concretise st' = concretise st`. Phase D supplies
-`hStShape` from `CertGen_faithful`'s promise that the wholesale
-replace at `result.env` / `result.liveLoans` is concretise-preserving
-in the no-witness case (i.e., when the cert's `result.env` is the
-same as the cert's prior state — this happens for joins that the
-OCaml side resolved to identity).
+M9.8 closed the structural "fresh abs" gap: the cert's
+`JrJoinMutBorrows.abs` is now a full `AbsShape`, the replayer's
+`stepJoin` installs it in `absRegistry`, and the paper-side
+`JoinEntryStep.mutBorrows` lifts the same shape via `liftAbsShape`.
+What remains for C23 is the per-entry / wholesale-replace shape
+correspondence: the replayer doesn't compute the chain's
+intermediate states, so building `JoinChain Ω witnesses.toList Ω'`
+and proving `concretise st' = Ω'` requires data the cert names
+indirectly (each entry's freshness premises and the matching of
+`result.env` / `result.liveLoans` against the chain's terminal).
+Both are CertGen_faithful obligations dispatched in Phase D.
 
-The general case (non-empty `witnesses` with state-changing rules
-like `joinSymbolic` / `joinMutBorrows`) is the campaign's hardest
-remaining piece. The substantive open question is the "fresh abs"
-gap (plan §11.1 #1, §3.4): paper's `Collapse-Dup-MutBorrow`
-introduces a fresh region abstraction that the replayer's `stepJoin`
-does not install in `absRegistry`, so the chain's terminal Ω'
-includes an abs entry the cert never names. Resolving this likely
-requires either (a) an M9.8 schema bump making the cert name the
-fresh abs's role list (cf. open question §14.1), (b) a strengthened
-`CertGen_faithful` covering the abs creation, or (c) restricting the
-witness arrays to no-op rules (`joinSame` / `joinVar` / `joinBottom*`).
-Future Phase-C session decision. -/
+The lemma's signature lifts these obligations to explicit
+parameters (`Ω'` the chain terminal, `hChain` the chain proof,
+`hConcMatch` the correspondence) — mirroring the
+`(stPre, hConcPre, hShape)` triple pattern used by C11-C13 and
+C16. Phase D's `stepEvent_sound` constructs the chain by induction
+on `witnesses.toList` and applies the matching
+`JoinLemmas.join<Rule>_step` helper per entry, threading the
+freshness premises from `CertGen_faithful`. The
+`concretise st' = Ω'` discharge then comes from
+`CertGen_faithful`'s structural promise that the cert's
+`result.env` / `result.liveLoans` exactly mirror the chain's
+terminal env / live loans (and the abs-installation in `stepJoin`
+matches the chain's `setAbs` operations by construction).
 
-/-- C23 / M10.2s — `EvJoin { witnesses }` soundness, *empty-witnesses
-    subset*. The cert can emit a join with an empty `witnesses` array
-    when the OCaml interpreter recognised both branches as already
-    equal (a v1-style legacy emission; v2+ certs always emit
-    witnesses). Phase-D dispatch provides `hStShape` from
-    `CertGen_faithful` (the wholesale replace at `result.env` /
-    `result.liveLoans` is concretise-preserving in this case). -/
+The empty-witnesses subset that M10.2s closed is now a trivial
+corollary (`witnesses = #[]` => `chain = JoinChain.nil` =>
+`Ω' = Ω`); kept as `stepJoin_witnessed_sound_empty` below for
+regression-anchoring. -/
+
+/-- C23 / M10.2t — `EvJoin { witnesses }` soundness, general case.
+    The chain terminal `Ω'` and the chain `hChain` are explicit
+    inputs; Phase D builds them by induction over `witnesses.toList`
+    via the per-entry `JoinLemmas.join<Rule>_step` helpers. The
+    correspondence `hConcMatch : concretise st' = Ω'` is also
+    Phase-D-dispatched from `CertGen_faithful`'s promise about
+    `result.env` / `result.liveLoans` shape. -/
 theorem stepJoin_witnessed_sound
+  (left right result : StateSummary) (witnesses : Array JoinEntry)
+  (_hRep : concretise st = Ω)
+  (Ω' : LLBCState)
+  (hChain : LLBCSharpPaper.JoinChain Ω witnesses.toList Ω')
+  (hConcMatch : concretise st' = Ω') :
+  stepEvent st (.join left right result witnesses) = .ok st' →
+  ∃ Ω', Valid (.join left right result witnesses) Ω ∧
+        LStep Ω (.join left right result witnesses) Ω' ∧
+        concretise st' = Ω' := by
+  intro _hStep
+  -- `_hRep` and `_hStep` are unused in the body because the chain
+  -- terminal `Ω'` and the correspondence `hConcMatch` are provided
+  -- directly; they're kept in the signature for parity with the
+  -- other C-lemmas (Phase D's case dispatch threads `hRep` /
+  -- `hStep` to every per-event lemma uniformly).
+  exact ⟨Ω', ⟨Ω', hChain⟩, LStep.join hChain, hConcMatch⟩
+
+/-- C23 corollary — `EvJoin` with empty `witnesses` (the M10.2s
+    case). The chain is `JoinChain.nil`, terminal `Ω' = Ω`, and the
+    correspondence reduces to `concretise st' = concretise st` —
+    Phase-D-dischargeable in the no-witness case from
+    `CertGen_faithful`'s promise that the wholesale replace at
+    `result.env` / `result.liveLoans` is concretise-preserving when
+    every cert-entry resolved to identity. Kept as a regression
+    anchor so the empty case is named separately. -/
+theorem stepJoin_witnessed_sound_empty
   (left right result : StateSummary) (witnesses : Array JoinEntry)
   (hRep : concretise st = Ω)
   (hWitnessesEmpty : witnesses = #[])
