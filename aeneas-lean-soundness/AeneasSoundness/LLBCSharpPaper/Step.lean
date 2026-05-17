@@ -51,14 +51,96 @@ namespace AeneasSoundness.LLBCSharpPaper
 
 open AeneasCheck.Raw
 
-/-- The paper's one-step LLBC# reduction `Ω# ⟶_ev Ω#'`, indexed by
-    the `Event` constructor that witnessed it.
+/-! ### LStep — the main step relation
 
-    Constructors are added incrementally across M10.0f-i; each
-    paper-rule row in plan §1.2 lands as one constructor here.
+The paper's one-step LLBC# reduction `Ω# ⟶_ev Ω#'`, indexed by the
+`Event` constructor that witnessed it. Constructor blocks are
+grouped by paper figure; M10.0f-i commits add groups in order
+(Fig. 3 → Fig. 7+8 → Fig. 11 → §5.2). -/
+
+/-! ### Per-entry join step (M10.0h, paper Fig. 11)
+
+The cert encodes a join as one `EvJoin` event carrying an `Array
+JoinEntry` of per-result-env-local witnesses. Each entry's `rule`
+field names one of the six Fig. 11 rules. The semantics is the
+*sequential composition* of the per-entry rules; we encode each
+rule as a constructor of `JoinEntryStep` and have `LStep.join` fold
+the entries via `List.Chain`.
+
+The 6 constructors mirror the 6 `JoinRule` constructors in
+`AeneasCheck.Raw.JoinRule`. Each takes the result-env local's id
+as its `localId` field (carried by `JoinEntry.localId`).
 -/
--- Constructor blocks below are grouped by paper figure; M10.0f-i
--- commits add groups in order (Fig. 3 → Fig. 7+8 → Fig. 11 → §5.2).
+
+inductive JoinEntryStep : LLBCState → JoinEntry → LLBCState → Prop where
+
+  /-- `Join-Same` (Fig. 11). Both branches agreed on this local's
+      value; result inherits. State unchanged. -/
+  | same {Ω : LLBCState} {localId : LocalId} :
+      JoinEntryStep Ω ⟨localId, .joinSame⟩ Ω
+
+  /-- `Join-Symbolic` (Fig. 11). Branches differed on a borrow-
+      free value; a fresh symbolic value is the result. Premise:
+      `freshSv` fresh in `Ω`. Post-state: `localId ↦ sym freshSv`. -/
+  | symbolic {Ω : LLBCState} {localId : LocalId} {freshSv : SymValId} :
+      Ω.symValIdFresh freshSv →
+      JoinEntryStep Ω ⟨localId, .joinSymbolic freshSv⟩
+        ((Ω.setLocal localId (.sym freshSv)).bumpSymValId freshSv)
+
+  /-- `Collapse-Dup-MutBorrow` + `Join-MutBorrows` (Fig. 11). Both
+      branches held `&mut` with different loan ids; the join
+      introduces `l_fresh` inside a fresh abs. Premises: all three
+      ids (`l_fresh`, `abs`) are fresh.
+
+      Post-state: install `Ω.abs abs := some r` with roles
+      [(mutBorrow, l_left), (mutBorrow, l_right), (mutLoan,
+      l_fresh)]; place `mutBorrow l_fresh ⊥` at `localId`; bump
+      freshness counters for `l_fresh` and `abs`.
+
+      This is the highest-risk constructor of the campaign (plan
+      §11.1 #1 + §3.4 risk on join algebra); the Phase-C C20 lemma
+      is where the abs-shape correspondence is proved. -/
+  | mutBorrows {Ω : LLBCState} {localId : LocalId}
+      {l_left l_right l_fresh : LoanId} {abs : AbsId} :
+      Ω.loanIdFresh l_fresh →
+      Ω.absIdFresh abs →
+      JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs⟩
+        (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs
+          |>.setAbs abs
+            { roles :=
+                {(Role.mutBorrow, l_left), (Role.mutBorrow, l_right),
+                 (Role.mutLoan, l_fresh)}
+              parents := #[] })
+
+  /-- `Join-Var` (Fig. 11). A whole region abstraction is folded
+      into the result; this rule is a marker — the surrounding
+      `EvEndAbs` carries the absorbed abs's contents. State
+      unchanged at this entry. -/
+  | var {Ω : LLBCState} {localId : LocalId} :
+      JoinEntryStep Ω ⟨localId, .joinVar⟩ Ω
+
+  /-- `Join-Bottom-Other` (Fig. 11). Left side was `⊥`; right side
+      gets wrapped into the abstraction `abs`. Premise: `abs`
+      exists in `Ω`. State unchanged at this entry. -/
+  | bottomOther {Ω : LLBCState} {localId : LocalId} {abs : AbsId}
+      {r : RegionAbs} :
+      Ω.abs abs = some r →
+      JoinEntryStep Ω ⟨localId, .joinBottomOther abs⟩ Ω
+
+  /-- Mirror of `bottomOther`. -/
+  | otherBottom {Ω : LLBCState} {localId : LocalId} {abs : AbsId}
+      {r : RegionAbs} :
+      Ω.abs abs = some r →
+      JoinEntryStep Ω ⟨localId, .joinOtherBottom abs⟩ Ω
+
+/-- Sequential composition of per-entry join steps: a list of
+    `JoinEntryStep`s chains `Ω₀ → Ω₁ → ⋯ → Ω_n` for each entry in
+    `witnesses`. -/
+inductive JoinChain : LLBCState → List JoinEntry → LLBCState → Prop where
+  | nil {Ω : LLBCState} : JoinChain Ω [] Ω
+  | cons {Ω Ω' Ω'' : LLBCState} {e : JoinEntry} {es : List JoinEntry} :
+      JoinEntryStep Ω e Ω' → JoinChain Ω' es Ω'' →
+      JoinChain Ω (e :: es) Ω''
 
 inductive LStep : LLBCState → Event → LLBCState → Prop where
 
@@ -323,5 +405,20 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       LStep Ω
         (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans)
         ((Ω.bumpLoanId bid).bumpSymValId innerSv)
+
+  -- Fig. 11 — join rules (M10.0h) ---
+
+  /-- `EvJoin` (paper Fig. 11). The cert carries an array of
+      per-result-env-local witnesses; the resulting state is the
+      sequential composition of the per-entry `JoinEntryStep`s
+      across the witnesses array.
+
+      Phase-C C18-C22 prove the per-entry constructors individually;
+      C23 (`stepJoin_witnessed_sound`) does the induction over
+      `witnesses` that this constructor delegates to. -/
+  | join {Ω Ω' : LLBCState} {left right result : StateSummary}
+      {witnesses : Array JoinEntry} :
+      JoinChain Ω witnesses.toList Ω' →
+      LStep Ω (.join left right result witnesses) Ω'
 
 end AeneasSoundness.LLBCSharpPaper
