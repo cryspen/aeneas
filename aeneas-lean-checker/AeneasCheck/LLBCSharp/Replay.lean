@@ -20,8 +20,12 @@ structure CheckedTrace where
   finalState : SymState
   deriving Inhabited
 
-/-- Apply one event to the running symbolic state. -/
-def stepEvent (st : SymState) (ev : Event) : Result SymState := do
+/-- Apply one event to the running symbolic state. The
+    [strictJoin] flag (M9.6 / Option C, plan §4.1.2) enables the
+    per-witness strict EvJoin check; it is propagated from
+    [replayCrate]'s config and is off by default. -/
+def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := false) :
+    Result SymState := do
   match ev with
   | .mutBorrow loan place symval kindHint =>
     stepMutBorrow st loan place symval kindHint
@@ -45,7 +49,8 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   | .proj _ _ _ => .error "proj: not implemented until M10"
   | .symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans =>
     stepSymExpandMutBorrow st svId bid innerSv parentAbs substLocals substLoans
-  | .join l r res _ => stepJoin st l r res
+  | .join l r res witnesses =>
+    stepJoin st l r res (witnesses := witnesses) (strict := strictJoin)
   | .loopInv _ invariant loanRegistry =>
     -- M12.0/M12.1: structural no-op. The OCaml side emits an
     -- EvLoopInv at the start of each loop's canonical synthesized
@@ -90,15 +95,17 @@ def stepEvent (st : SymState) (ev : Event) : Result SymState := do
     -- materialises the `PExpr.match`. No abstract state update.
     return st
 
-/-- Replay a function's cert. -/
-def replayFun (numLocals : Nat) (f : FunCert) : Except String CheckedTrace := do
+/-- Replay a function's cert. The [strictJoin] flag (M9.6) is
+    threaded through to [stepEvent.stepJoin]. -/
+def replayFun (numLocals : Nat) (f : FunCert) (strictJoin : Bool := false) :
+    Except String CheckedTrace := do
   let mut st := SymState.empty numLocals
   -- Initialize input locals with fresh symbolic values. For the M6
   -- subset we don't yet know which locals are inputs; we approximate
   -- by leaving everything at bottom and letting the trace populate.
   let mut idx := 0
   for ev in f.events do
-    match stepEvent st ev with
+    match stepEvent st ev strictJoin with
     | .ok st' => st := st'
     | .error e =>
       throw s!"[fn {f.fnId} '{f.fnName}', event {idx}]: {e}"
@@ -115,8 +122,12 @@ def replayFun (numLocals : Nat) (f : FunCert) : Except String CheckedTrace := do
   return { fnId := f.fnId, fnName := f.fnName, events := f.events, finalState := st }
 
 /-- Replay a whole crate cert. Typechecks first to surface structural
-    errors before running the replayer. -/
-def replayCrate (cc : CrateCert) :
+    errors before running the replayer. [strictJoin] (M9.6) toggles
+    the per-witness EvJoin validation; off by default so callers
+    that don't care (tests/Direct) keep working unchanged. The
+    CLI reads the [AENEAS_STRICT_JOIN] env var and threads the
+    flag in. -/
+def replayCrate (cc : CrateCert) (strictJoin : Bool := false) :
     Except String (Array CheckedTrace) := do
   -- Reuse the typechecker as a syntactic guard.
   match Typecheck.checkCrateCert cc with
@@ -129,7 +140,7 @@ def replayCrate (cc : CrateCert) :
     -- numLocals approximation: infer from events (same as the
     -- typechecker). M6.5 / M9 will replace with the LLBC signature.
     let numLocals := Typecheck.inferNumLocals f.events
-    out := out.push (← replayFun numLocals f)
+    out := out.push (← replayFun numLocals f strictJoin)
   return out
 
 end AeneasCheck.LLBCSharp

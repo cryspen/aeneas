@@ -29,7 +29,14 @@ def main (args : List String) : IO UInt32 := do
   | _llbcJson :: certJson :: rest => do
     let cc ← readCrateCert certJson
     IO.println s!"parsed cert: fmt={cc.fmtVersion}, hash={cc.crateHash}, fns={cc.functions.size}"
-    match translateCrate cc with
+    -- M9.6 (Option C, plan §4.1.2): env-var-gated strict EvJoin
+    -- per-witness check. AENEAS_STRICT_JOIN=1 turns on per-entry
+    -- rule-driven validation against the cert's witnesses; off
+    -- by default falls back to the M11 pragmatic ≤ check.
+    let strictJoin ← match (← IO.getEnv "AENEAS_STRICT_JOIN") with
+      | some "1" | some "true" => pure true
+      | _ => pure false
+    match translateCrate cc strictJoin with
     | .error e =>
       IO.eprintln s!"  ✗ pipeline error: {e}"
       return 1

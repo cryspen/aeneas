@@ -425,8 +425,9 @@ partial def rewriteTraitClauseRefs (bounds : Array Pure.TraitBoundParam) :
     pair are translated via `translateLoopFun`, which emits three
     decls (body / wrapper / top-level). Non-loop functions go through
     the M10 `translateFun` (one decl). -/
-def translateCrate (cc : CrateCert) : Except String TranslatedCrate := do
-  let traces ← replayCrate cc
+def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
+    Except String TranslatedCrate := do
+  let traces ← replayCrate cc strictJoin
   if traces.size ≠ cc.functions.size then
     throw s!"translate: replay produced {traces.size} traces, cert has {cc.functions.size} functions"
   -- M9.5b: derive the crate name from the first function's qualified

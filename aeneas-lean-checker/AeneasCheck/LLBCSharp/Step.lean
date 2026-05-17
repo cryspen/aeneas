@@ -514,18 +514,72 @@ def joinEntryOk (leftMap rightMap : Std.HashMap Nat SymExpr)
     -- this can happen for join-introduced fresh locals; accept.
     none
 
-def stepJoin (st : SymState) (left right result : StateSummary) :
+/-- M9.6 (Option C, plan §4.1.2): strict per-entry validation
+    driven by [EvJoin.witnesses]. Each [JoinEntry] names a
+    Fig. 11 rule the OCaml interpreter applied; we re-check the
+    side conditions:
+      * JoinSame: left[l] == right[l] == result[l].
+      * JoinSymbolic n: result[l] = SymVal n.
+      * JoinMutBorrows l_l l_r l_f _: left = tok l_l, right =
+        tok l_r, result = tok l_f.
+      * JoinVar / JoinBottom* : marker only — accept (the
+        soundness proof relies on the cert promise that these
+        cases were derived from the paper rules).
+    Returns the first failing entry's diagnostic, or [none] on
+    success. -/
+def joinEntryStrictOk (leftMap rightMap resultMap : Std.HashMap Nat SymExpr)
+    (entry : JoinEntry) : Option String :=
+  let l := entry.localId
+  let r := resultMap[l]?
+  match entry.rule, leftMap[l]?, rightMap[l]?, r with
+  | .joinSame, some le, some re, some rE =>
+    if symExprBeq le re && symExprBeq le rE then none
+    else some s!"E-Join strict: JoinSame local {l} disagrees: left {repr le} right {repr re} result {repr rE}"
+  | .joinSymbolic n, _, _, some rE =>
+    (match rE with
+     | .symVal m =>
+       if n == m then none
+       else some s!"E-Join strict: JoinSymbolic local {l} expected SymVal {n}, got SymVal {m}"
+     | _ => some s!"E-Join strict: JoinSymbolic local {l} expected SymVal {n}, got {repr rE}")
+  | .joinMutBorrows lL lR lF _, some le, some re, some rE =>
+    let tokOk (e : SymExpr) (b : Nat) : Bool :=
+      match e with
+      | .symMutBorrowTok x => x == b
+      | _ => false
+    if tokOk le lL && tokOk re lR && tokOk rE lF then none
+    else some s!"E-Join strict: JoinMutBorrows local {l} mismatch"
+  | .joinVar, _, _, _ => none
+  | .joinBottomOther _, _, _, _ => none
+  | .joinOtherBottom _, _, _, _ => none
+  | _, _, _, _ =>
+    some s!"E-Join strict: rule {repr entry.rule} for local {l} missing required side"
+
+def stepJoin (st : SymState) (left right result : StateSummary)
+    (witnesses : Array JoinEntry := #[])
+    (strict : Bool := false) :
     Result SymState := do
   -- Build per-side hash maps from the env arrays for O(1) lookup.
   let leftMap : Std.HashMap Nat SymExpr :=
     left.env.foldl (init := {}) fun m (l, v) => m.insert l v
   let rightMap : Std.HashMap Nat SymExpr :=
     right.env.foldl (init := {}) fun m (l, v) => m.insert l v
-  -- Per-entry join validation.
-  for (localId, resultE) in result.env do
-    match joinEntryOk leftMap rightMap localId resultE with
-    | none => pure ()
-    | some msg => fail msg
+  let resultMap : Std.HashMap Nat SymExpr :=
+    result.env.foldl (init := {}) fun m (l, v) => m.insert l v
+  -- M9.6 (Option C): when strict mode is on AND witnesses are
+  -- present, use per-entry rule-driven validation. Otherwise the
+  -- M11.0 pragmatic ≤ check still runs. Once #22 flips strict
+  -- default-on and #23 retires the pragmatic fallback, the gate
+  -- and the helper [joinEntryOk] go away.
+  if strict && !witnesses.isEmpty then
+    for entry in witnesses do
+      match joinEntryStrictOk leftMap rightMap resultMap entry with
+      | none => pure ()
+      | some msg => fail msg
+  else
+    for (localId, resultE) in result.env do
+      match joinEntryOk leftMap rightMap localId resultE with
+      | none => pure ()
+      | some msg => fail msg
   -- Update the symbolic state to match the result.
   let newEnv : Std.HashMap Nat Val :=
     result.env.foldl (init := st.env) fun m (l, v) =>
