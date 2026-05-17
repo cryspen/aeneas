@@ -660,6 +660,11 @@ let json_crate_cert (cc : crate_cert) : Yojson.Basic.t =
       "trait_decls", `List (List.map json_cert_trait_decl cc.cc_trait_decls);
       "trait_impls", `List (List.map json_cert_trait_impl cc.cc_trait_impls);
       "functions", `List (List.map json_fun_cert cc.cc_functions);
+      (* M9.7d: cert-v3 embeds the structured LLBC subtree under
+         the [llbc_program] key, populated by {!LlbcJson.crate_to_json}
+         in {!CertGen.generate_crate_cert}. Shipped verbatim — the
+         value is already a {!Yojson.Basic.t}. *)
+      "llbc_program", cc.cc_llbc_program;
     ]
 
 (** Compute the SHA-256 hash of a file's contents as a lowercase hex string.

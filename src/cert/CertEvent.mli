@@ -295,9 +295,17 @@ type crate_cert = {
   cc_trait_decls : cert_trait_decl list;
   cc_trait_impls : cert_trait_impl list;
   cc_functions : fun_cert list;
+  (** [M9.7d] The structured LLBC subtree, serialised by
+      {!LlbcJson.crate_to_json} and embedded under the top-level
+      [llbc_program] key of cert v3. Defaults to [`Null] for an
+      empty crate (the Lean parser falls back to
+      [LlbcProgram.empty]). *)
+  cc_llbc_program : Yojson.Basic.t;
 }
 
 val cert_fmt_version : int
+(** [M9.7d] Bumped to 3: cert v3 embeds the structured LLBC subtree
+    under the new top-level [llbc_program] key. *)
 
 val cert_binop_string : Expressions.binop -> string
 (** Flat string tag for an LLBC binop. See implementation for the

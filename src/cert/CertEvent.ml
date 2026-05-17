@@ -586,6 +586,14 @@ type crate_cert = {
       (** [M9.5l] The crate's trait implementations. Empty for crates
           with no impls. *)
   cc_functions : fun_cert list;
+  cc_llbc_program : Yojson.Basic.t;
+      (** [M9.7d] The structured LLBC subtree embedded under the
+          top-level [llbc_program] key of cert v3. Populated by
+          {!LlbcJson.crate_to_json} on the OCaml side and consumed
+          by [AeneasCheck.Json.Parser.parseLlbcProgram] on the Lean
+          side. The value is opaque to the OCaml-side cert pipeline:
+          it is built once in [CertGen.generate_crate_cert] and
+          shipped through [CertJson.json_crate_cert] verbatim. *)
 }
 [@@deriving show]
 
@@ -597,8 +605,16 @@ type crate_cert = {
     [EvSymExpandMutBorrow], [EvJoin], [EvLoopInv]. The Lean parser
     accepts both versions; under v2 the hint fields are emitted
     (initially empty in commit #3, populated progressively across
-    commits #4-#11). *)
-let cert_fmt_version : int = 2
+    commits #4-#11).
+
+    [M9.7d] v2 → v3: embeds the structured Charon LLBC subtree under
+    the new top-level [llbc_program] key. Populated by
+    {!LlbcJson.crate_to_json} and consumed by
+    [AeneasCheck.Json.Parser.parseLlbcProgram]. Cert-v3 files keep
+    all v2 fields verbatim; the Lean parser also tolerates v3 certs
+    where [llbc_program] is missing (it falls back to
+    [LlbcProgram.empty]). *)
+let cert_fmt_version : int = 3
 
 (** Encode a Charon [binop] as a flat string tag. Arithmetic ops bake
     the overflow mode into the tag suffix ([Panic] / [UB] / [Wrap])

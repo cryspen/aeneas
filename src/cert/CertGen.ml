@@ -506,6 +506,13 @@ let generate_crate_cert (crate : crate) (marked_ids : marked_ids)
       (FunDeclId.Map.values crate.fun_decls)
   in
   let type_decls = collect_type_decls crate in
+  (* M9.7d: populate the new cert-v3 [llbc_program] subtree from a
+     minimal Aeneas-side LLBC -> JSON serializer. See
+     [src/cert/LlbcJson.ml] for the why (Charon-ml ships only
+     deserializers; no upstream [crate_to_json] binding exists) and
+     for the per-type field set the Lean parser
+     ([AeneasCheck.Json.Parser.parseLlbcProgram]) actually reads. *)
+  let llbc_program = LlbcJson.crate_to_json crate in
   {
     cc_fmt_version = CertEvent.cert_fmt_version;
     cc_crate_hash = crate_hash;
@@ -513,6 +520,7 @@ let generate_crate_cert (crate : crate) (marked_ids : marked_ids)
     cc_trait_decls = trait_decls;
     cc_trait_impls = trait_impls;
     cc_functions = fun_certs;
+    cc_llbc_program = llbc_program;
   }
 
 (** Write [crate.cert.json] alongside [crate.llbc]. *)
