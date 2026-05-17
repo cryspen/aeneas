@@ -165,4 +165,16 @@ theorem empty_concretise (n : Nat) :
   · funext a; unfold liftAbsRegistry; simp
   · simp
 
+/-- Plan §2.2 B3 (M10.1c). The concretisation of the empty
+    replayer state is a well-formed LLBC# state. Phase B's
+    vertical-slice smoke lemma: it confirms the type contract
+    `concretise ; WellFormed` closes for the trivial case. The
+    full `concretise_wellFormed` (over arbitrary `SymState`) is
+    Phase C territory (one field at a time, in the strengthenings
+    each per-event lemma demands). -/
+theorem concretise_wellFormed_smoke :
+    LLBCState.WellFormed (concretise (SymState.empty 0)) := by
+  rw [empty_concretise]
+  exact LLBCState.empty_WellFormed
+
 end AeneasSoundness.Soundness.Concretise
