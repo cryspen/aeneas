@@ -1,5 +1,6 @@
 import AeneasCheck.LLBCSharp.Step
 import AeneasCheck.Typecheck.Types
+import AeneasCheck.Typecheck.Consistency
 
 /-!
 Drive the per-event step relation over a function's cert trace,
@@ -109,6 +110,13 @@ def replayFun (numLocals : Nat) (f : FunCert) (strictJoin : Bool := true) :
     flag in. -/
 def replayCrate (cc : CrateCert) (strictJoin : Bool := true) :
     Except String (Array CheckedTrace) := do
+  -- M9.7h: Level-S structural consistency between the flat cert
+  -- metadata and the embedded LLBC. No-op for cert v1 / v2.
+  match Typecheck.Consistency.checkLlbcVsCert cc with
+  | .error errs =>
+    let msgs := errs.map (·.toString)
+    throw <| "[cert v3 consistency] " ++ String.intercalate "\n[cert v3 consistency] " msgs
+  | .ok _ => pure ()
   -- Reuse the typechecker as a syntactic guard.
   match Typecheck.checkCrateCert cc with
   | .error errs =>
