@@ -1634,10 +1634,33 @@ and eval_switch_with_join (config : config) (span : Meta.span)
                 let l_r =
                   Option.get (is_sym_mut_borrow_tok re)
                 in
-                let abs =
+                let abs_id =
                   match abs_of_borrow l_fresh with
                   | Some a -> a
                   | None -> Values.AbsId.of_int 0
+                in
+                (* [M9.8] Cert v4: name the fresh region
+                   abstraction's structure (id + parents + roles)
+                   in the cert so the Lean replayer can install it
+                   in [absRegistry] directly. Paper Fig. 11's
+                   Collapse-Dup-MutBorrow installs
+                   [Ω.abs abs := { roles = {(mutBorrow, l_left),
+                   (mutBorrow, l_right), (mutLoan, l_fresh)},
+                   parents = #[] }] — we encode that role list
+                   here. The [arg_idx] decoration on
+                   [ArMutBorrow] has no caller-arg meaning for
+                   this join-introduced abs (it gets dropped on
+                   the paper-side [liftAbsRoleEntry]); we pass 0
+                   for it. *)
+                let abs : CertEvent.cert_abs_shape =
+                  CertEvent.{
+                    as_abs_id = abs_id;
+                    as_parent_abs = [];
+                    as_roles =
+                      [ ArMutBorrow { arg_idx = 0; loan = l_l };
+                        ArMutBorrow { arg_idx = 0; loan = l_r };
+                        ArMutLoan { loan = l_fresh } ];
+                  }
                 in
                 Some
                   CertEvent.{

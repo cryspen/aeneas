@@ -144,7 +144,18 @@ type cert_join_rule =
       l_left : borrow_id;
       l_right : borrow_id;
       l_fresh : borrow_id;
-      abs : abs_id;
+      abs : cert_abs_shape;
+          (** [M9.8] Cert v4 bump: the fresh region abstraction
+              created by Collapse-Dup-MutBorrow is named
+              structurally (id + parents + roles) rather than only
+              by id. The Lean replayer installs the shape into
+              [absRegistry] using the same code path as
+              [EvCall.abs_sig], so the soundness-side
+              [stepJoin_witnessed_sound] no longer has to assume
+              the abs creation. By construction [as_parent_abs =
+              []] and [as_roles] is the three-role list
+              [mutBorrow l_left; mutBorrow l_right; mutLoan l_fresh]
+              (paper Fig. 11). *)
     }
   | JrJoinVar
   | JrJoinBottomOther of abs_id
@@ -430,8 +441,16 @@ type crate_cert = {
     [AeneasCheck.Json.Parser.parseLlbcProgram]. Cert-v3 files keep
     all v2 fields verbatim; the Lean parser also tolerates v3 certs
     where [llbc_program] is missing (it falls back to
-    [LlbcProgram.empty]). *)
-let cert_fmt_version : int = 3
+    [LlbcProgram.empty]).
+
+    [M9.8] v3 → v4: [JrJoinMutBorrows] carries a full
+    [cert_abs_shape] (id + parents + roles) for the fresh region
+    abstraction created by Collapse-Dup-MutBorrow, replacing the
+    bare [abs_id] of v3. Lets the Lean replayer install the abs
+    in [absRegistry] from the cert and removes the "fresh abs"
+    gap that blocked the C23 [stepJoin_witnessed_sound] general
+    case (M10 soundness campaign, plan §11.1 #1 / §3.4 / §14.1). *)
+let cert_fmt_version : int = 4
 
 (** Encode a Charon [binop] as a flat string tag. Arithmetic ops bake
     the overflow mode into the tag suffix ([Panic] / [UB] / [Wrap])

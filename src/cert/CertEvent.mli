@@ -86,7 +86,16 @@ type cert_join_rule =
       l_left : borrow_id;
       l_right : borrow_id;
       l_fresh : borrow_id;
-      abs : abs_id;
+      (** [M9.8] Cert v4 bump: the fresh region abstraction
+          freshened by Collapse-Dup-MutBorrow is now named
+          structurally — id + parent ids + roles — so the Lean
+          replayer can install it in [absRegistry] (mirroring
+          [EvCall.abs_sig]) and the soundness side no longer has
+          to assume the abs creation by axiom. By construction
+          [abs.as_parent_abs = []] and [abs.as_roles] is the
+          three-role list
+          [(mutBorrow, l_left); (mutBorrow, l_right); (mutLoan, l_fresh)]. *)
+      abs : cert_abs_shape;
     }
   | JrJoinVar
   | JrJoinBottomOther of abs_id

@@ -242,6 +242,13 @@ let json_cert_join_rule (r : cert_join_rule) : Yojson.Basic.t =
       `Assoc
         [ "JoinSymbolic", `Assoc [ "fresh_sv", json_symbolic_value_id sv ] ]
   | JrJoinMutBorrows { l_left; l_right; l_fresh; abs } ->
+      (* [M9.8] Cert v4: the [abs] payload is now a full
+         [cert_abs_shape] (id + parents + roles), encoded with the
+         same [json_cert_abs_shape] helper as [EvCall.abs_sig].
+         Lets the Lean replayer install the fresh region
+         abstraction in [absRegistry] from cert data alone, so the
+         soundness bridge no longer has to axiomatise the abs
+         creation. *)
       `Assoc
         [
           ( "JoinMutBorrows",
@@ -250,7 +257,7 @@ let json_cert_join_rule (r : cert_join_rule) : Yojson.Basic.t =
                 "left", json_borrow_id l_left;
                 "right", json_borrow_id l_right;
                 "fresh", json_borrow_id l_fresh;
-                "abs", json_abs_id abs;
+                "abs", json_cert_abs_shape abs;
               ] );
         ]
   | JrJoinBottomOther abs ->
