@@ -421,4 +421,20 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       JoinChain Ω witnesses.toList Ω' →
       LStep Ω (.join left right result witnesses) Ω'
 
+  -- §5.2 — loop fixpoint rule (M10.0i) ---
+
+  /-- Loop-fixpoint snapshot (paper §5.2, no named rule). The cert
+      emits `EvLoopInv loopId invariant loanRegistry`; the OCaml
+      side has computed the loop-region-abstraction's content from
+      its loanRegistry and is asserting the snapshot `invariant`.
+
+      Premises (baseline): trivial (the loanRegistry-to-abs
+      consistency is Phase-C C17 territory). State unchanged at
+      this layer; the actual region-abstraction installation
+      surfaces via the subsequent `EvMutBorrow … MbkLoopOwned`
+      / `EvEndAbs` pair. -/
+  | loopInv {Ω : LLBCState} {loopId : Nat} {invariant : StateSummary}
+      {loanRegistry : Array (Nat × Nat)} :
+      LStep Ω (.loopInv loopId invariant loanRegistry) Ω
+
 end AeneasSoundness.LLBCSharpPaper
