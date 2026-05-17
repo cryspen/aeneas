@@ -25,42 +25,10 @@ let capitalize_first_letter (s : string) : string =
     let c = Char.uppercase_ascii s.[0] in
     String.make 1 c ^ String.sub s 1 (String.length s - 1)
 
-(* M9.5o: extract [(trait_qualified_name, type_param_index)] entries
-   from a Charon [generic_params].trait_clauses list. The clause's
-   trait is a region-binder around a trait_decl_ref; the binder is
-   trivial for our M9.5o fixtures (no late-bound regions), so we just
-   take the inner value. The type-param index is the de-Bruijn
-   `Free K` index of the trait's `Self` type-argument (first entry of
-   the trait's generics.types). When the Self isn't a [TVar (Free K)]
-   (e.g. for a clause on a concrete type), we drop the clause —
-   the M9.5o Lean side only handles type-variable-Self obligations. *)
-let trait_clauses_of_generics (env : Print.fmt_env)
-    (crate : crate) (generics : Types.generic_params)
-    : (string * int) list =
-  let trait_qualified_name (id : Types.trait_decl_id) : string =
-    match LlbcAst.TraitDeclId.Map.find_opt id crate.trait_decls with
-    | Some td -> Print.name_to_string env td.item_meta.name
-    | None -> "__UnknownTrait"
-  in
-  List.filter_map
-    (fun (clause : Types.trait_param) ->
-      let tdr = clause.trait.binder_value in
-      (* The trait's first type-argument is the bound type. For a
-         clause `T: Trait1`, it's `TVar (Free K)`. *)
-      match tdr.generics.types with
-      | Types.TVar dbv :: _ ->
-          let idx_opt : int option =
-            match dbv with
-            | Types.Free i -> Some (Types.TypeVarId.to_int i)
-            | Types.Bound (_, i) -> Some (Types.TypeVarId.to_int i)
-          in
-          (match idx_opt with
-           | Some k ->
-               let name = trait_qualified_name tdr.id in
-               Some (name, k)
-           | None -> None)
-      | _ -> None)
-    generics.trait_clauses
+(* [M9.7o-E5b] The [trait_clauses_of_generics] helper was deleted
+   alongside the flat [cert_signature] record; trait-clause info now
+   flows from the structured [LlbcProgram.fun_decls[k].signature
+   .generics] which [LlbcJson] serializes directly. *)
 
 (* M9.5l: extract a [cert_source_span] from a Charon [item_meta]. *)
 let source_span_of_item_meta (im : Types.item_meta) : CertEvent.cert_source_span option =
@@ -128,27 +96,11 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
         in
         let events = List.rev !buffer in
         let env = Print.Contexts.decls_ctx_to_fmt_env trans_ctx in
-        let crate = trans_ctx.crate in
         let fn_name = Print.name_to_string env fdef.item_meta.name in
-        let signature : CertEvent.cert_signature =
-          {
-            csig_inputs = fdef.signature.inputs;
-            csig_output = fdef.signature.output;
-            (* M9.5i: the function's type-parameter names live on
-               [fun_decl.generics], not [fun_sig] (Charon keeps the
-               value-level signature separate from the generics
-               binder; only [fun_decl] sees both). *)
-            csig_type_params =
-              List.map
-                (fun (tp : Types.type_param) -> tp.name)
-                fdef.generics.types;
-            (* M9.5o: per-clause trait obligations on the function's
-               type parameters. Empty when the function has no
-               `where T: Trait` clauses. *)
-            csig_trait_clauses =
-              trait_clauses_of_generics env crate fdef.generics;
-          }
-        in
+        (* [M9.7o-E5b] Cert v3 no longer carries a flat per-function
+           [cert_signature] copy. The Lean checker reads the structured
+           signature from [cc_llbc_program.fun_decls[k].signature]
+           after matching by [fc_fn_id]. *)
         let source_span : CertEvent.cert_source_span option =
           let span_data = fdef.item_meta.span.data in
           let file =
@@ -168,7 +120,6 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
           {
             CertEvent.fc_fn_id = fdef.def_id;
             fc_fn_name = fn_name;
-            fc_signature = signature;
             fc_source_span = source_span;
             fc_events = events;
             fc_final_state =

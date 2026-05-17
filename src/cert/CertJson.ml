@@ -265,22 +265,9 @@ let json_cert_join_entry (e : cert_join_entry) : Yojson.Basic.t =
       "rule", json_cert_join_rule e.je_rule;
     ]
 
-let json_cert_signature (s : cert_signature) : Yojson.Basic.t =
-  `Assoc
-    [
-      "inputs", `List (List.map json_ty s.csig_inputs);
-      "output", json_ty s.csig_output;
-      (* M9.5i: the function's type-parameter names, in declaration
-         order. Empty for monomorphic functions. *)
-      "type_params",
-        `List (List.map (fun n -> `String n) s.csig_type_params);
-      (* M9.5o: per-clause trait obligation list. Each entry is a
-         `{trait, type_param}` record, where `trait` is the trait's
-         qualified name and `type_param` is the index into
-         `type_params`. *)
-      "trait_clauses",
-        `List (List.map json_trait_clause s.csig_trait_clauses);
-    ]
+(* [M9.7o-E5b] The [json_cert_signature] emitter was deleted alongside
+   the [cert_signature] type; the per-function trace no longer carries
+   its own signature copy. *)
 
 (* ---------- Events ---------- *)
 
@@ -521,7 +508,6 @@ let json_fun_cert (fc : fun_cert) : Yojson.Basic.t =
     ([
        "fn_id", json_fun_decl_id fc.fc_fn_id;
        "fn_name", `String fc.fc_fn_name;
-       "signature", json_cert_signature fc.fc_signature;
      ]
     @ optional_span
     @ optional_pretty

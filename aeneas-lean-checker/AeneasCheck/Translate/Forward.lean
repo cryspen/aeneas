@@ -45,44 +45,30 @@ def paramName (i : Nat) : String := s!"x{i}"
     real LLBC types for the operands. -/
 def placeholderTy : PTy := .lit (.int .u32)
 
-/-- M12.2a-2: detect whether a signature input/output is a `&mut T`.
-    Mirrors the substring-tagged shape that the OCaml `show_ty` emits
-    (`TRef ... Generated_Types.RMut`). -/
-def isMutRef : RawTy → Bool
-  | .opaque s =>
-    (s.splitOn "TRef").length ≥ 2 && (s.splitOn "RMut").length ≥ 2
+/-- M9.7o-E5b: detect a `&mut T` on a structured `LlbcTy`. -/
+def isMutRefLlbc : LlbcTy → Bool
+  | .tRef _ _ .mut => true
   | _ => false
 
-/-- M12.2a-2: detect whether a signature input/output is a unit/`()`
-    tuple. Used to elide the forward result when the original Rust
-    function returned `()`. -/
-def isUnitTy : RawTy → Bool
-  | .opaque s =>
-    (s.splitOn "TTuple").length ≥ 2 &&
-    -- Heuristic: a unit tuple has `types = []` in the printed form.
-    (s.splitOn "types = []").length ≥ 2
+/-- M9.7o-E5b: detect a unit/`()` shape on a structured `LlbcTy`. The
+    cert / LLBC representation for `()` is a zero-arity `tTuple`. -/
+def isUnitTyLlbc : LlbcTy → Bool
+  | .tTuple #[] => true
   | _ => false
 
-/-- M12.2b: when an output type is a TAdt-TTuple containing N TRef-RMut
-    components (each in a distinct region), return `some N`. Used to
-    detect helpers like `swap_pair<'a,'b>(...) -> (&'a mut u32, &'b mut u32)`
-    whose pure translation produces N backward closures (one per region)
-    instead of a single closure. Returns `none` if the output is not a
-    tuple OR contains zero/one mut-ref fields.
-
-    Heuristic: the type-printer renders the inner types list as
-    `types = [TRef …; TRef …; ...]`. We count `TRef` substrings within
-    the `types = [...]` block AND require at least one `RMut` per such
-    TRef. -/
-def isOutputTupleOfMutRefs : RawTy → Option Nat
-  | .opaque s =>
-    if (s.splitOn "TTuple").length < 2 then none
-    else
-      -- Count TRef + RMut paired occurrences. The substring count of
-      -- "TRef" minus 1 is the number of TRef sites. Same for RMut.
-      let nRef := (s.splitOn "TRef").length - 1
-      let nMut := (s.splitOn "RMut").length - 1
-      if nRef ≥ 2 && nMut ≥ nRef then some nRef else none
+/-- M9.7o-E5b: when an output `LlbcTy` is a tuple containing N ≥ 2
+    `&mut T` components (each in its own region), return `some N`. Used
+    to detect helpers like `swap_pair<'a,'b>(...) -> (&'a mut u32,
+    &'b mut u32)` whose pure translation produces N backward closures
+    (one per region) instead of a single closure. Returns `none` if
+    the output is not a tuple or contains fewer than 2 mut-ref fields. -/
+def isOutputTupleOfMutRefsLlbc : LlbcTy → Option Nat
+  | .tTuple args =>
+    let nMut := args.foldl (init := 0) fun acc t =>
+      match t with
+      | .tRef _ _ .mut => acc + 1
+      | _ => acc
+    if nMut ≥ 2 && nMut = args.size then some nMut else none
   | _ => none
 
 /-- M9.5b / M9.5e: information the translator needs about one ADT
@@ -105,467 +91,9 @@ structure TypeDeclInfo where
   deriving Repr, Inhabited
 
 /-- M9.5b: a TypeDeclId → TypeDeclInfo lookup, keyed by the integer
-    that appears inside `TAdt { id = TAdtId N; ... }` strings. The
-    Driver builds this from `cc.typeDecls`. -/
+    ADT id used by `LlbcTy.tAdt`. The Driver builds this from
+    `cc.llbcProgram.typeDecls`. -/
 abbrev TypeDeclMap := Std.HashMap Nat TypeDeclInfo
-
-/-- M9.5b: extract the `N` from a substring `TAdtId N`. Returns `none`
-    when the string contains no `TAdtId` reference (e.g., a tuple
-    type or a literal). When multiple `TAdtId` references appear
-    (parametric ADTs, nested types), this returns the *first* one —
-    enough for M9.5b's monomorphic-struct fixtures. -/
-def parseTAdtId (s : String) : Option Nat :=
-  let parts := s.splitOn "TAdtId"
-  match parts with
-  | _ :: rest :: _ =>
-    -- After `TAdtId` there's optional whitespace, then digits, then
-    -- closing punctuation. Skip leading whitespace, scan digits.
-    -- Lean 4 deprecated `trimLeft`; use a manual ASCII-space skip
-    -- that returns a `String` (not a `String.Slice`).
-    let trimmed := rest.dropWhile Char.isWhitespace
-    let digits := trimmed.takeWhile Char.isDigit
-    if digits.isEmpty then none else digits.toNat?
-  | _ => none
-
-/-- M9.5b: detect a `TAdt {... TTuple ...}` string. We use a substring
-    check; `TTuple` appears in the same nested form regardless of
-    generic args. -/
-def isTupleAdt (s : String) : Bool :=
-  (s.splitOn "TTuple").length ≥ 2
-
-/-- M9.5c: parse the length of a `TArray (...elem..., { ... CLiteral
-    (VScalar (UnsignedScalar (Usize, N))); ...})` opaque string. The
-    `N` is the const-generic length. We do a substring scan for
-    `UnsignedScalar (` and then look for `Usize, ` followed by digits.
-    Returns `none` if the pattern isn't found. -/
-def parseArrayLen (s : String) : Option Nat :=
-  -- The const-generic length is always rendered as
-  -- `UnsignedScalar (Generated_Values.Usize, N)` for our fixtures
-  -- (signed-indexed arrays are unusual in Rust). We anchor on
-  -- `Usize, ` since that's the unique-enough prefix in the array
-  -- branch. (Outside `TArray`, the same string never appears.)
-  let parts := s.splitOn "Usize, "
-  match parts with
-  | _ :: rest :: _ =>
-    let digits := (rest.dropWhile Char.isWhitespace).takeWhile Char.isDigit
-    if digits.isEmpty then none else digits.toNat?
-  | _ => none
-
-/-- M9.5c: detect a `TArray` opaque type. Used to gate the
-    array-aware branch of [rawTyToPTyWith]; without this guard, the
-    catch-all `Usize` substring check downstream incorrectly classifies
-    `[u32; 4]` as a bare `Std.Usize` (because the const-generic length
-    carries a `Usize` tag). -/
-def isArrayTy (s : String) : Bool :=
-  (s.splitOn "TArray").length ≥ 2
-
-/-- M9.5g: detect a `TSlice` opaque type. Slices have no const-generic
-    length, so the dispatch is structurally simpler than [isArrayTy] —
-    we only need to know the element type. The same gating concern
-    applies: without an explicit slice branch, an `&[u32]` would fall
-    through to the catch-all and emit a bare `Std.U32`. -/
-def isSliceTy (s : String) : Bool :=
-  (s.splitOn "TSlice").length ≥ 2
-
-/-- M9.5i: detect a bare `TVar` opaque type — i.e., a top-level type
-    variable reference like `(Generated_Types.TVar
-    (Generated_Types.Free 0))`. We require the type to start with the
-    `TVar` head (rather than just contain the substring) to avoid
-    misclassifying a `TAdt` whose generic-args list contains a TVar.
-
-    The check tolerates an optional leading `(` plus whitespace from
-    the OCaml pretty-printer's `show_ty` output. -/
-def isBareTVar (s : String) : Bool :=
-  let isLeadJunk : Char → Bool := fun c => c = '(' || c.isWhitespace
-  let trimmed := s.dropWhile isLeadJunk
-  -- Charon's `show_ty` qualifies the constructor as
-  -- `Generated_Types.TVar`; we also accept the bare `TVar` head for
-  -- hand-written fixtures.
-  trimmed.startsWith "Generated_Types.TVar" || trimmed.startsWith "TVar"
-
-/-- M9.5i: extract the de-Bruijn index from the *first* `TVar (Free K)`
-    occurrence in a type string. Used both for the bare-TVar case
-    ([isBareTVar]) and for the TAdt-generic-args case. Returns `none`
-    if no `Free` integer follows. -/
-def parseTVarIndex (s : String) : Option Nat :=
-  let parts := s.splitOn "Free"
-  match parts with
-  | _ :: rest :: _ =>
-    let notDigit : Char → Bool := fun c => !c.isDigit
-    let trimmed := rest.dropWhile notDigit
-    let digits := trimmed.takeWhile Char.isDigit
-    if digits.isEmpty then none else digits.toNat?
-  | _ => none
-
-/-- M9.5i: drop ASCII whitespace from both ends, returning a real
-    `String`. Lean v4.30's built-in `String.trim` (renamed to
-    `trimAscii`) returns a `String.Slice` that's awkward to feed
-    back into other string ops, so we materialise here via a
-    char-list round trip. -/
-private def trimBothEnds (s : String) : String :=
-  -- Drop leading + trailing whitespace by reversing the list, dropping
-  -- leading whitespace, reversing again, then trimming the new front.
-  let chars := s.toList
-  let dropped := (chars.reverse.dropWhile Char.isWhitespace).reverse.dropWhile
-    Char.isWhitespace
-  String.ofList dropped
-
-/-- Recursive helper for [extractTypesBlock]: scan a `List Char`
-    tracking only `[`/`]` depth, collecting characters until we
-    reach the matching close bracket (depth → 0). The initial call
-    passes [depth = 1] (we've already consumed the opening `[`). -/
-private partial def extractTypesBlockGo
-    (cs : List Char) (depth : Nat) (acc : List Char) : Option String :=
-  match cs with
-  | [] => none
-  | c :: rest =>
-    if c = '[' then
-      extractTypesBlockGo rest (depth + 1) (c :: acc)
-    else if c = ']' then
-      if depth = 1 then some (String.ofList acc.reverse)
-      else extractTypesBlockGo rest (depth - 1) (c :: acc)
-    else
-      extractTypesBlockGo rest depth (c :: acc)
-
-/-- M9.5n: depth-aware extractor for the outermost `types = [...]`
-    block. Returns the substring strictly between the matching
-    brackets (so a nested `regions = []` inside doesn't truncate
-    the result, as the M9.5i `takeWhile (≠ ']')` heuristic did).
-
-    Returns `none` when no `types = [` is present in `s`. The Lean
-    side passes opaque cert strings here, never untrusted input. -/
-private def extractTypesBlock (s : String) : Option String :=
-  -- Locate the first `types` key. We split on the bare `types` token
-  -- rather than `types = [` because OCaml's pretty-printer wraps long
-  -- lines, often inserting a newline between `types`, `=`, and `[`.
-  -- `splitOn` produces one piece per gap, so we rejoin pieces[1..]
-  -- with the separator to recover everything-from-first-`types`-on
-  -- (otherwise the depth-aware scan would only see the slice between
-  -- the first and second `types` token and miss the closing `]`).
-  let parts := s.splitOn "types"
-  match parts with
-  | _ :: rest :: tail =>
-    let afterFirst : String :=
-      if tail.isEmpty then rest
-      else rest ++ "types" ++ String.intercalate "types" tail
-    -- Skip `=` and any whitespace, then expect `[`.
-    let after : String :=
-      (afterFirst.dropWhile (fun c => c = '=' ∨ c.isWhitespace)).toString
-    let chars := after.toList
-    -- Verify we landed on `[`; otherwise this `types` occurrence is
-    -- not the start of a `types = [...]` block (shouldn't happen for
-    -- well-formed `show_ty` output, but stay defensive).
-    match chars with
-    | '[' :: rest_after_brack => extractTypesBlockGo rest_after_brack 1 []
-    | _ => none
-  | _ => none
-
-/-- Recursive helper for [splitTypeItems]: walks `cs` and splits on
-    top-level `;` separators. `dp/db/dk` are paren/brace/bracket
-    depths; `cur` is the in-progress item (reversed for O(1)
-    push). On a top-level `;` we flush `cur` into `acc` (also kept
-    reversed). On EOF we flush the final item and reverse `acc`. -/
-private partial def splitTypeItemsGo
-    (cs : List Char)
-    (dp db dk : Nat)
-    (cur : List Char)
-    (acc : List (List Char)) : List String :=
-  match cs with
-  | [] =>
-    let finalItems := (cur :: acc).reverse.map (fun l => String.ofList l.reverse)
-    let trimmed := finalItems.map trimBothEnds
-    trimmed.filter (fun p => ¬ p.isEmpty)
-  | c :: rest =>
-    if c = '(' then splitTypeItemsGo rest (dp+1) db dk (c :: cur) acc
-    else if c = ')' then
-      splitTypeItemsGo rest (if dp > 0 then dp - 1 else 0) db dk (c :: cur) acc
-    else if c = '{' then splitTypeItemsGo rest dp (db+1) dk (c :: cur) acc
-    else if c = '}' then
-      splitTypeItemsGo rest dp (if db > 0 then db - 1 else 0) dk (c :: cur) acc
-    else if c = '[' then splitTypeItemsGo rest dp db (dk+1) (c :: cur) acc
-    else if c = ']' then
-      splitTypeItemsGo rest dp db (if dk > 0 then dk - 1 else 0) (c :: cur) acc
-    else if c = ';' && dp = 0 && db = 0 && dk = 0 then
-      splitTypeItemsGo rest dp db dk [] (cur :: acc)
-    else
-      splitTypeItemsGo rest dp db dk (c :: cur) acc
-
-/-- M9.5n: depth-aware split of a `types = [...]` block's contents
-    into one substring per top-level item. Items are `;`-separated
-    at the depth where the `types = [...]` block lives, but `;` also
-    appears inside record bodies (`{ ... ; ... }`) and could in
-    principle appear inside other nested `[...]` blocks; both nest
-    INSIDE a top-level item rather than separating items. We track
-    brace-depth, paren-depth, and bracket-depth and only split when
-    all three are zero. -/
-private def splitTypeItems (inner : String) : List String :=
-  splitTypeItemsGo inner.toList 0 0 0 [] []
-
-/-- M9.5i / M9.5n: parser for a `TAdt`'s generic-type-args list.
-    Given the full opaque type string for a `TAdt { id = TAdtId N;
-    generics = { … types = [t1; t2; …]; … } }`, return the list of
-    inner type strings (one per argument).
-
-    M9.5n note: pre-M9.5n the implementation used a `splitOn "]"`
-    heuristic that truncated at the first close bracket. For a
-    nested generic like `Option<Box<AVLNode<T>>>` (cert string carries
-    an inner `regions = []`), that truncation stripped everything
-    after `regions = ` and produced a single-bullet split-on-`;`
-    that drove the surface checker to render bare `Option` for the
-    field type. The depth-aware [extractTypesBlock] + [splitTypeItems]
-    handle arbitrary nesting.
-
-    Returns the empty list if no `types = ` substring is found or
-    the bracketed block is empty (`types = []`). -/
-def parseTAdtGenericTypes (s : String) : List String :=
-  match extractTypesBlock s with
-  | none => []
-  | some inner => splitTypeItems (trimBothEnds inner)
-
-/-- M9.5j / M9.5n: detect a `TBuiltin TBox` ADT shape at the OUTER
-    head of `s`. Charon treats `Box<T>` as transparent at the LLBC
-    layer (pure functional code does not distinguish), so the Lean
-    translator erases the `Box` wrapper to its single type argument.
-
-    The check anchors on the first `id = ` of the outermost `TAdt`:
-    if that occurrence is immediately followed (modulo whitespace and
-    a leading `(`) by `Generated_Types.TBuiltin Generated_Types.TBox`
-    (or the hand-written `TBuiltin TBox`), the outer type is a Box.
-    A nested Box (e.g. `Option<Box<T>>`) is NOT caught here — the
-    outer Option's head is `TAdtId`, not `TBuiltin`. -/
-def isTBox (s : String) : Bool :=
-  -- Split on the bare `id` token; the OCaml `show_ty` output often
-  -- wraps lines around the `=`, so we tolerate whitespace there.
-  let parts := s.splitOn "id"
-  match parts with
-  | _ :: rest :: _ =>
-    -- Skip the `=`, whitespace, a leading `(`, more whitespace, then
-    -- check for the `TBuiltin` token immediately after.
-    let dropLead : Char → Bool :=
-      fun c => c = '=' ∨ c = '(' ∨ c.isWhitespace
-    let trimmed := rest.dropWhile dropLead
-    -- The standard `show_ty` output qualifies as `Generated_Types.TBuiltin`;
-    -- accept either form.
-    let isBuiltin :=
-      trimmed.startsWith "Generated_Types.TBuiltin" ∨
-      trimmed.startsWith "TBuiltin"
-    if ¬ isBuiltin then false
-    else
-      -- Within this segment, the builtin variant name must be `TBox`
-      -- before the next closing brace.
-      let upToBrace : String := (trimmed.takeWhile (fun c => c ≠ '}')).toString
-      (upToBrace.splitOn "TBox").length ≥ 2
-  | _ => false
-
-/-- M9.5o: depth-aware extractor for the inner type substring of an
-    outer `TRef (<region>, <inner>, <kind>)` cert string. Returns
-    `none` when the outer head is not `TRef`. Used by
-    `rawTyToPTyWithVars` to recurse on the inner of `&T` and `&mut T`
-    so type-variable references (`&T` with T a generic) resolve to
-    `.tyVar "T"` instead of the legacy u32 fallback. -/
-private def stripOuterTRefInner (s : String) : Option String := Id.run do
-  let parts := s.splitOn "TRef"
-  if parts.length < 2 then return none
-  let after := parts.tail!.head!
-  let chars := after.toList
-  let mut depth : Nat := 0
-  let mut innerStart : Option Nat := none
-  let mut innerEnd : Option Nat := none
-  let mut commaCount : Nat := 0
-  let mut idx : Nat := 0
-  for c in chars do
-    if c = '(' then depth := depth + 1
-    else if c = ')' then
-      if depth = 0 then break
-      else depth := depth - 1
-    else if c = ',' ∧ depth = 1 then
-      commaCount := commaCount + 1
-      if commaCount = 1 then innerStart := some (idx + 1)
-      else if commaCount = 2 then innerEnd := some idx
-    idx := idx + 1
-  match innerStart, innerEnd with
-  | some a, some b =>
-    if a ≥ b then return none
-    let n := b - a
-    let chrs := (after.toList.drop a).take n
-    let trimmed := (chrs.dropWhile Char.isWhitespace).reverse.dropWhile
-      Char.isWhitespace
-    return some (String.ofList trimmed.reverse)
-  | _, _ => return none
-
-/-- M9.5o: detect a top-level `TRef (...)` head. Returns true for
-    cert type strings whose outermost constructor is `TRef`. Used to
-    gate the recurse-on-inner path. -/
-private def isTopLevelTRef (s : String) : Bool :=
-  let trimmed := s.dropWhile fun c => c = '(' ∨ c.isWhitespace
-  trimmed.startsWith "Generated_Types.TRef" ∨ trimmed.startsWith "TRef"
-
-/-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping. Resolves
-    `TAdtId N` references via [tdm]; falls back to the legacy
-    substring-keyed heuristic when the type is a literal or contains
-    no ADT reference.
-
-    Reference shapes (`TRef ... RMut` / `TRef ... RShared`) unwrap to
-    their inner type — at the pure layer, a `&mut Pair` and a `Pair`
-    have the same value type (the post-state of a `&mut T` IS the
-    `T`). The signature surface, separately, decides whether the
-    function takes a borrow (input position) or returns a forward
-    value (output position).
-
-    Order matters: we test for `TTuple` *before* `TAdtId` because the
-    output type of a unit-returning function (`()`) is rendered as
-    `TAdt {id = TTuple; ...}` with no `TAdtId` payload — but a
-    `TAdtId 0` substring can still appear inside *generic* args.
-
-    M9.5i: this is a thin wrapper around [rawTyToPTyWithVars] with an
-    empty `typeParams` list. Callers that have a surrounding generic
-    declaration in scope (Forward's [translateFunWith], Driver's
-    [enumDeclOfTypeDecl] / [structDeclOfTypeDecl]) should call
-    [rawTyToPTyWithVars] directly so `TVar (Free K)` resolves to a
-    `PTy.tyVar` carrying the K-th param name. -/
-partial def rawTyToPTyWithVars
-    (tdm : TypeDeclMap) (typeParams : Array String) : RawTy → PTy
-  | .opaque s =>
-    -- M9.5o: top-level `TRef (<region>, <inner>, <kind>)` — strip
-    -- the borrow shape and recurse on the inner type. Without this,
-    -- `&T` (T a generic) fell into the catch-all and rendered as
-    -- u32. The borrow shape is recovered separately by [isMutRef]
-    -- when building the BackSig.
-    if isTopLevelTRef s then
-      match stripOuterTRefInner s with
-      | some inner => rawTyToPTyWithVars tdm typeParams (.opaque inner)
-      | none => .lit (.int .u32)
-    else
-    -- M9.5i: bare top-level `TVar (Free K)` — resolve via
-    -- `typeParams[K]?`. We must test this BEFORE the literal /
-    -- TAdt branches because a TVar string contains none of those
-    -- markers, but the catch-all at the bottom would silently
-    -- coerce it to `Std.U32`.
-    if isBareTVar s then
-      match parseTVarIndex s with
-      | some k =>
-        match typeParams[k]? with
-        | some nm => .tyVar nm
-        | none => .lit (.int .u32)
-      | none => .lit (.int .u32)
-    -- M9.5c: TArray must come first. The const-generic length section
-    -- includes a `Usize` tag, which would otherwise be misclassified
-    -- as a bare `Usize` literal by the catch-all below.
-    else if isArrayTy s then
-      -- For now we only carry element-kind information at the
-      -- token-level (U32 / U64 / U8 / U16 / Usize / I32 / Bool); a
-      -- full TArray opaque string for `[u32; 4]` starts with the
-      -- element type before the const-generic block, so a substring
-      -- scan picks the right one. Order tokens so the longer/less-
-      -- ambiguous ones win: `U64` before `U8`, etc. (`Usize` appears
-      -- in the length section too, so we deliberately skip it here —
-      -- a `[usize; N]` array would need a separate fixture to test.)
-      --
-      -- For unrecognised element types, fall back to `u32`; this
-      -- mirrors the catch-all in the non-array branch and keeps the
-      -- pipeline running for shapes the test fixtures don't exercise.
-      let elem : PTy :=
-        if (s.splitOn "TBool").length ≥ 2 then .lit .bool
-        else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
-        else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)
-        else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
-        else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
-        else if (s.splitOn "U32").length ≥ 2 then .lit (.int .u32)
-        else .lit (.int .u32)
-      .array elem ((parseArrayLen s).getD 0)
-    else if isSliceTy s then
-      -- M9.5g: a `TSlice` carries only the element type — no length.
-      -- The element-kind scan mirrors the `isArrayTy` branch; we
-      -- intentionally skip `Usize` since `[usize]` would conflict
-      -- with the catch-all `Usize` substring check below in the same
-      -- way the array branch's length tag does. A separate fixture
-      -- can extend this if needed.
-      let elem : PTy :=
-        if (s.splitOn "TBool").length ≥ 2 then .lit .bool
-        else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
-        else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)
-        else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
-        else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
-        else if (s.splitOn "U32").length ≥ 2 then .lit (.int .u32)
-        else .lit (.int .u32)
-      .slice elem
-    else if (s.splitOn "TBool").length ≥ 2 then .lit .bool
-    else if (s.splitOn "U64").length ≥ 2 then .lit (.int .u64)
-    else if (s.splitOn "I32").length ≥ 2 then .lit (.int .i32)
-    else if (s.splitOn "U16").length ≥ 2 then .lit (.int .u16)
-    else if (s.splitOn "U8").length ≥ 2 then .lit (.int .u8)
-    else if (s.splitOn "Usize").length ≥ 2 then .lit (.int .usize)
-    -- M9.5n: a `TAdt` whose head is `TBuiltin TBox` is transparent in
-    -- pure functional code — Charon's LLBC layer already treats
-    -- `Box<T>` as `T` (the inner heap allocation is invisible to the
-    -- type system). Erase the wrapper by recursing on the first
-    -- generic-args entry. We test this BEFORE [parseTAdtId] because
-    -- a `TBox<T>` cert string typically nests an inner `TAdtId N`
-    -- that [parseTAdtId] would otherwise pick up (silently bypassing
-    -- the Box, which used to be the M9.5j behaviour). The depth-aware
-    -- [parseTAdtGenericTypes] introduced in M9.5n means we can now
-    -- robustly extract Box's single type arg even when it nests
-    -- further `[...]` blocks (e.g. `Box<AVLNode<T>>`).
-    else if isTBox s then
-      match parseTAdtGenericTypes s with
-      | inner :: _ => rawTyToPTyWithVars tdm typeParams (.opaque inner)
-      | [] => .lit (.int .u32)
-    else
-      -- Try to resolve an ADT reference (struct). For a `TRef …
-      -- TAdt …` we unwrap to the inner T (PTy is value-level; the
-      -- borrow shape is recovered separately by [isMutRef] when
-      -- building the BackSig).
-      match parseTAdtId s with
-      | some id =>
-        match tdm[id]? with
-        | some info =>
-          -- M9.5i: a generic ADT reference like `MyOption<T>` arrives
-          -- as `TAdt { id = TAdtId N; generics = { types = [TVar
-          -- (Free 0)]; ... } }`. Parse the generic-args list and
-          -- recursively resolve each; for our fixture the recursion
-          -- terminates at the bare `TVar` case above.
-          let argStrs := parseTAdtGenericTypes s
-          let args : Array PTy := (argStrs.map fun a =>
-            rawTyToPTyWithVars tdm typeParams (.opaque a)).toArray
-          .adt info.name args
-        | none =>
-          -- Unknown ADT id (shouldn't happen for in-crate decls;
-          -- fall back to u32 to avoid crashing).
-          if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
-          else .lit (.int .u32)
-      | none =>
-        -- M9.5p: a TTuple type — `()` (unit) when empty, `(t1, t2, …)`
-        -- otherwise. Pre-M9.5p this branch always returned `.unit`,
-        -- which clobbered the return type of fns like
-        -- `mk_pair0 : (u32, u32) -> (u32, u32)` to `Result Unit`
-        -- whenever the cert's body emitted a SymTuple. The depth-aware
-        -- [parseTAdtGenericTypes] extracts each inner type string; we
-        -- recurse on them via `rawTyToPTyWithVars`.
-        if isTupleAdt s then
-          let inners := parseTAdtGenericTypes s
-          match inners with
-          | [] => .unit
-          | _ => .tuple ((inners.map fun a =>
-              rawTyToPTyWithVars tdm typeParams (.opaque a)).toArray)
-        else if (s.splitOn "TRef").length ≥ 2 then .lit (.int .u32)
-        else .lit (.int .u32)
-  | _ => .lit (.int .u32)
-
-/-- M9.5b: type-decl-aware `RawTy` → `PTy` mapping with an empty
-    `typeParams` list (so any `TVar` reference falls back to `u32`).
-    Kept as the M9.5b-vintage entry point for callers without a
-    surrounding generic decl. M9.5i added [rawTyToPTyWithVars] for
-    the generic-aware case. -/
-def rawTyToPTyWith (tdm : TypeDeclMap) : RawTy → PTy :=
-  rawTyToPTyWithVars tdm #[]
-
-/-- Crude `RawTy` → `PTy` mapping based on substring lookup in the
-    opaque-tagged signature string, with no type-decl context. Kept
-    as the M11-era default for call sites (e.g. struct-field decls
-    in [Translate.Driver]) that don't have a [TypeDeclMap] in scope.
-    M9.5b's translator passes a real [TypeDeclMap] via
-    [rawTyToPTyWith]. -/
-def rawTyToPTy : RawTy → PTy := rawTyToPTyWith {}
 
 /-- M9.7k: bare last `::`-segment of a fully-qualified path. Mirrors
     the OCaml emitter (`CertGen.ml`) which splits on `:` and takes
@@ -575,19 +103,16 @@ def bareNameOfQualified (qualified : String) : String :=
   | some n => n
   | none => qualified
 
-/-- M9.7k: structured `LlbcTy → PTy`. Parallel to [rawTyToPTyWithVars]
-    but consumes structured `LlbcTy` from `cc.llbcProgram` instead of
-    parsing opaque type strings.
+/-- M9.7k: structured `LlbcTy → PTy`. The sole type translator after
+    M9.7o-E5b retired the opaque-string `rawTyToPTy*` family.
 
     `typeParams` resolves `LlbcTy.tVar K` to the K-th param's bare
     name. `tdm` resolves `LlbcTy.tAdt id args` to `.adt name args`.
     Stdlib `Box` (`alloc::boxed::Box`) is transparently unwrapped to
-    its first generic argument, mirroring the flat path's [isTBox]
-    handling.
+    its first generic argument.
 
     Unrecognised / unstructured shapes (closures, fn-ptrs, dyn-trait,
-    raw pointers, `LlbcTy.tOpaque`) fall back to `Std.U32`, matching
-    the flat path's catch-all behaviour. -/
+    raw pointers, `LlbcTy.tOpaque`) fall back to `Std.U32`. -/
 partial def llbcTyToPTyWithVars
     (tdm : TypeDeclMap) (typeParams : Array String) : LlbcTy → PTy
   | .litTy k => match k with
@@ -630,6 +155,16 @@ partial def llbcTyToPTyWithVars
   | .tDynTrait _ => .lit (.int .u32)
   | .tOpaque _ => .lit (.int .u32)
 
+/-- M9.7o-E5b: structured ADT-id extractor on `LlbcTy`. Peels one
+    layer of `tRef` so a `&mut Pair`-typed local is identified as
+    `Pair`. Used by `applyFieldProj` / the structUpdate hook in
+    `walkEvent` to resolve a `Field K` projection through the
+    field-name map. -/
+def adtIdOfLlbcTy : LlbcTy → Option Nat
+  | .tAdt id _ => some id
+  | .tRef _ inner _ => adtIdOfLlbcTy inner
+  | _ => none
+
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
     returning the inner def name `a.b`. The crate prefix becomes the
     surrounding `namespace` block in the emitter. -/
@@ -643,13 +178,13 @@ def innerName (qualified : String) : String :=
     inputs and updated as the event walk progresses. -/
 abbrev VarMap := Std.HashMap Nat PExpr
 
-/-- M9.5n: apply a trailing `[Field K]` projection to a root pure
-    expression `e`. Resolves the field name through `localTypes[L]`
-    (the local's root cert type) → `parseTAdtId` → `tdm` → the
-    struct's field-name list. If any step fails (no type tracked,
-    not a struct, missing field name), returns `e` unchanged so
-    pre-M9.5n callers (which never tracked types) still see the
-    M10-vintage behaviour.
+/-- M9.5n / M9.7o-E5b: apply a trailing `[Field K]` projection to a
+    root pure expression `e`. Resolves the field name through
+    `localTypes[L]` (the local's structured `LlbcTy`) →
+    [adtIdOfLlbcTy] → `tdm` → the struct's field-name list. If any
+    step fails (no type tracked, not a struct, missing field name),
+    returns `e` unchanged so pre-M9.5n callers (which never tracked
+    types) still see the M10-vintage behaviour.
 
     Only the LAST projection element matters here — the M9.5b
     structUpdate path handles `[Deref, Field K]` writes; here we
@@ -657,13 +192,13 @@ abbrev VarMap := Std.HashMap Nat PExpr
     list ends with `Field K`. Non-`Field` last projections (`Deref`,
     `ProjIndex`, …) fall through unmodified. -/
 private def applyFieldProj
-    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     (localId : Nat) (proj : List Raw.ProjElem) (e : PExpr) : PExpr :=
   match proj.getLast? with
   | some (Raw.ProjElem.field k) =>
     match localTypes[localId]? with
-    | some (Raw.RawTy.opaque s) =>
-      match parseTAdtId s with
+    | some t =>
+      match adtIdOfLlbcTy t with
       | some adtId =>
         match tdm[adtId]? with
         | some info =>
@@ -694,7 +229,7 @@ private def applyFieldProj
     borrowed-input functions like `incr(x: &mut u32) { *x += 1 }`
     every Deref read of an intermediate temp ultimately resolves to
     the input, so `x1` is the right pure-value substitute. -/
-def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     (vm : VarMap) (p : Place) : PExpr :=
   let root : PExpr :=
     match vm[p.local_]? with
@@ -710,7 +245,7 @@ def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
     so an `EvAssign { rhs = SymCopy(scrut.[Field K]) }` resolves to
     the binder introduced by the pattern. -/
 def lookupPlaceWithBinders
-    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     (vm : VarMap) (payloadBinders : Std.HashMap (Nat × Nat) String)
     (p : Place) : PExpr :=
   match p.projection.toList.getLast? with
@@ -751,7 +286,7 @@ private partial def variantPExpr
     match-arm `qualify` pass becomes a no-op for already-qualified
     names. -/
 partial def lookupSymExpr
-    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     (vm : VarMap) : SymExpr → PExpr
   | .symVal n => .var s!"s{n}"
   | .symLit l => .lit l
@@ -780,7 +315,7 @@ partial def lookupSymExpr
     via [lookupPlaceWithBinders]. The match-arm sub-walk calls this in
     place of [lookupSymExpr]. -/
 partial def lookupSymExprWithBinders
-    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.RawTy)
+    (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     (vm : VarMap) (payloadBinders : Std.HashMap (Nat × Nat) String) :
     SymExpr → PExpr
   | .symVal n => .var s!"s{n}"
@@ -1005,17 +540,15 @@ structure WalkState where
       branch can pick the right head name (`Array.update` vs
       `Slice.update`) without re-scanning the dst type. -/
   sliceIndexMut : Std.HashMap Nat (PExpr × PExpr × Option Nat) := {}
-  /-- M9.5n: per-local cert type, used to resolve a `[Field K]`
-      projection on a `local L` to a `<vm[L]>.<fieldName>` field
-      access. Populated from the function's signature inputs at
-      WalkState init (local 1 ↦ input 0's type, etc.). Empty for
-      temp locals (no entry); a missing entry causes the field-
-      projection lookup to fall back to the projection-erasing
-      legacy behaviour (`lookupPlace` returns the root pure value
-      without projecting). The map covers only what's needed to
-      project struct-field reads in tail position; once tracking
-      is enabled, more sophisticated value-flow can lean on it. -/
-  localTypes : Std.HashMap Nat Raw.RawTy := {}
+  /-- M9.5n / M9.7o-E5b: per-local structured `LlbcTy`, used to
+      resolve a `[Field K]` projection on a `local L` to a
+      `<vm[L]>.<fieldName>` field access. Seeded from the matching
+      `LlbcFunDecl.localsTypes` at WalkState init (Charon's convention:
+      local 0 is the return slot, locals 1..N are the inputs, the rest
+      are temps); a missing entry causes the field-projection lookup
+      to fall back to the projection-erasing legacy behaviour
+      (`lookupPlace` returns the root pure value without projecting). -/
+  localTypes : Std.HashMap Nat Raw.LlbcTy := {}
   deriving Inhabited
 
 namespace WalkState
@@ -1223,15 +756,15 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       else
         match proj[n - 2]?, proj[n - 1]? with
         | some ProjElem.deref, some (ProjElem.field k) =>
-          match d.ty with
-          | RawTy.opaque s =>
-            (parseTAdtId s).bind fun adtId =>
+          -- M9.7o-E5b: source the dst-root local's structured ADT id
+          -- via `localTypes` (peeling an outer `&mut` if present).
+          (st.localTypes[d.local_]?).bind fun t =>
+            (adtIdOfLlbcTy t).bind fun adtId =>
               st.tdm[adtId]?.bind fun info =>
                 info.fieldNames[k]?.map fun fname =>
                   let base : PExpr :=
                     st.vm.getD d.local_ (.var (paramName d.local_))
                   (fname, .structUpdate base fname rhsE)
-          | _ => none
         | _, _ => none
     -- M12.2b: detect a field-destructure of a multi-region call
     -- result, i.e. `EvAssign dst=L rhs=SymMove(L'.[Field K])`
@@ -1520,8 +1053,19 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- inferred from the `dst` place's type. For a non-unit, non-&mut
     -- return type (rare in practice) we fall back to the M10.2b
     -- shape (single-name binding, no destructure).
-    let dstIsMutRef : Bool := isMutRef dst.ty
-    let dstIsUnit : Bool := isUnitTy dst.ty
+    -- M9.7o-E5b: source the dst's structured type from `localTypes`
+    -- (seeded from `LlbcFunDecl.localsTypes` at WalkState init). The
+    -- call's `dst` place is an unprojected local in every fixture
+    -- under test, so the local's recorded type IS the place's type.
+    let dstLlbcTy : Option LlbcTy := st.localTypes[dst.local_]?
+    let dstIsMutRef : Bool :=
+      match dstLlbcTy with
+      | some t => isMutRefLlbc t
+      | none => false
+    let dstIsUnit : Bool :=
+      match dstLlbcTy with
+      | some t => isUnitTyLlbc t
+      | none => false
     -- M12.2b: detect a multi-region call returning a tuple of
     -- N ≥ 2 mut refs. The standard backend emits N+1 result
     -- components: a forward (often `_` ignored) plus N backward
@@ -1529,18 +1073,29 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     -- of them via a `tuple` Bind and stash per-field closure
     -- names in callBackByField so subsequent field-destructure
     -- EvAssigns can thread them.
-    let dstTupleOfMuts : Option Nat := isOutputTupleOfMutRefs dst.ty
+    let dstTupleOfMuts : Option Nat :=
+      match dstLlbcTy with
+      | some t => isOutputTupleOfMutRefsLlbc t
+      | none => none
     -- M9.5l: a callee with only `&T` (shared) arguments still has
     -- a non-empty `regionAbs` from the OCaml interpreter (a shared
     -- borrow still registers an abstraction), but nothing flows
     -- back through a shared borrow — the call returns just the
     -- forward value, not a `(forward, backward)` pair. Detect this
     -- shape by walking the args and checking that none has type
-    -- `&mut T`. We use the cert place type from `symCopy` / `symMove`
-    -- args; literal / tok / variant args contribute no mut refs.
+    -- `&mut T`. M9.7o-E5b: we look up each arg's root-local
+    -- structured type from `localTypes`; for an arg whose place
+    -- carries a `[Deref]` projection (`*x`) the place's projected
+    -- type strips one ref layer, but we still want to recognise the
+    -- underlying `&mut T` shape, so we test the root local's type
+    -- directly. Non-place args (literals, tokens, variants)
+    -- contribute no mut refs.
     let symExprIsMutRef : SymExpr → Bool := fun e =>
       match e with
-      | .symCopy p | .symMove p => isMutRef p.ty
+      | .symCopy p | .symMove p =>
+        match st.localTypes[p.local_]? with
+        | some t => isMutRefLlbc t
+        | none => false
       | _ => false
     let anyArgIsMutRef : Bool := args.any symExprIsMutRef
     if regionAbs.isEmpty || !anyArgIsMutRef then
@@ -1688,7 +1243,7 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     because the sub-walk has already lifted symbolic ids into named
     `t<N>` / `x<N>` bindings through the events. -/
 def renderJoinSide (tdm : TypeDeclMap)
-    (localTypes : Std.HashMap Nat Raw.RawTy) (vm : VarMap)
+    (localTypes : Std.HashMap Nat Raw.LlbcTy) (vm : VarMap)
     (cs_env : Array (Nat × SymExpr))
     (target : Nat) : Option PExpr :=
   match vm[target]? with
@@ -2236,44 +1791,28 @@ structure BackSig where
   outputTupleOfMuts : Option Nat
   deriving Repr, Inhabited
 
-/-- M9.5b: build the [BackSig] from a function signature, with a
-    type-decl map for resolving `&mut Pair`-style inputs into a
-    concrete `.adt "Pair" #[]` PTy (rather than the M11 placeholder
-    `u32`). Falls back to [rawTyToPTy] when `tdm` is empty.
-
-    M9.5i: takes the surrounding function's `typeParams` so a
-    `&mut T` input or a `T` output resolves to `.tyVar "T"` rather
-    than the placeholder. Use [backSigOfWith] for the no-generics
-    back-compat path. -/
-def backSigOfWithVars
+/-- M9.5b / M9.7o-E5b: build the [BackSig] from a structured
+    `LlbcSignature` (sourced from `cc.llbcProgram.funDecls`). Uses
+    [llbcTyToPTyWithVars] to convert input/output types to `PTy` and
+    the structured borrow detectors ([isMutRefLlbc] etc.) to compute
+    the back-closure shape. -/
+def backSigOfLlbcWithVars
     (tdm : TypeDeclMap) (typeParams : Array String)
-    (sig : FnSignature) : BackSig := Id.run do
+    (sig : LlbcSignature) : BackSig := Id.run do
   let mut mutInputs : Array Nat := #[]
   let mut mutInputTys : Array PTy := #[]
   for i in [0:sig.inputs.size] do
     let t := sig.inputs[i]!
-    if isMutRef t then
+    if isMutRefLlbc t then
       mutInputs := mutInputs.push (i + 1)
-      mutInputTys := mutInputTys.push (rawTyToPTyWithVars tdm typeParams t)
+      mutInputTys := mutInputTys.push (llbcTyToPTyWithVars tdm typeParams t)
   let bs : BackSig :=
     { mutInputs, mutInputTys
-      outputIsMutRef := isMutRef sig.output
-      outputInnerTy := rawTyToPTyWithVars tdm typeParams sig.output
-      outputIsUnit := isUnitTy sig.output
-      outputTupleOfMuts := isOutputTupleOfMutRefs sig.output }
+      outputIsMutRef := isMutRefLlbc sig.output
+      outputInnerTy := llbcTyToPTyWithVars tdm typeParams sig.output
+      outputIsUnit := isUnitTyLlbc sig.output
+      outputTupleOfMuts := isOutputTupleOfMutRefsLlbc sig.output }
   return bs
-
-/-- M9.5b: build the [BackSig] from a function signature, with a
-    type-decl map for resolving `&mut Pair`-style inputs into a
-    concrete `.adt "Pair" #[]` PTy. M9.5i thin wrapper around
-    [backSigOfWithVars] with an empty `typeParams` list. -/
-def backSigOfWith (tdm : TypeDeclMap) (sig : FnSignature) : BackSig :=
-  backSigOfWithVars tdm #[] sig
-
-/-- Build the [BackSig] from a function signature. Kept for back-compat
-    with callers that have no type-decl map; defers to
-    [backSigOfWith] with an empty map. -/
-def backSigOf (sig : FnSignature) : BackSig := backSigOfWith {} sig
 
 /-- M12.2a-2: backward closure type for a [BackSig]. Returns `none`
     when the function has no `&mut` inputs (no backward function
@@ -2458,18 +1997,25 @@ def buildBackwardTail (bs : BackSig) (vm : VarMap) : PExpr :=
     returns and the borrowed input's root for `&mut`-returning
     signatures. We approximate "did this function take a `&mut`?" by
     checking if any borrow event fired in the trace; if so, we pick
-    the input's root local rather than local 0. -/
-def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) : Decl :=
-  let numParams := f.signature.inputs.size
+    the input's root local rather than local 0.
+
+    M9.7o-E5b: the structured `LlbcFunDecl` is now the sole source of
+    typed-signature and per-local-type information. The Driver
+    matches each `Raw.FunCert` to its `LlbcFunDecl` (by `fnId`) and
+    threads it through. -/
+def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
+    (lf : Raw.LlbcFunDecl) (_t : CheckedTrace) : Decl :=
+  let lsig := lf.signature
+  let numParams := lsig.inputs.size
   -- M9.5i: the function's type-parameter names flow into both the
   -- emitted `Decl.typeParams` (for the `{T : Type}` binder line) and
-  -- into the type-translator so any `TVar (Free K)` inside an input /
+  -- into the type-translator so any `LlbcTy.tVar K` inside an input /
   -- output type resolves to `.tyVar (typeParams[K])`.
-  let typeParams := f.signature.typeParams
+  let typeParams := lsig.generics.types
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
-      let ty := match f.signature.inputs[i]? with
-        | some t => rawTyToPTyWithVars tdm typeParams t
+      let ty := match lsig.inputs[i]? with
+        | some t => llbcTyToPTyWithVars tdm typeParams t
         | none => placeholderTy
       { name := paramName (i + 1), ty }
   -- M12.1: loop-bearing functions are handled separately by
@@ -2485,28 +2031,35 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
     for i in [0:numParams] do
       m := m.insert (i + 1) (.var (paramName (i + 1)))
     return m
-  -- M9.5n: seed `localTypes` from the function's input signature.
-  -- Each input parameter `i` (1-indexed) is `local (i+1)` in the
-  -- LLBC frame; we record its `RawTy` so the EvAssign/EvCopy walk
-  -- can lower a `local L.[Field K]` read to `<root>.<fieldName>`
-  -- via `applyFieldProj`. Output-local 0 and pure temps are not
-  -- seeded; they're typed by the events themselves (and don't
-  -- participate in field reads in M9.5n's fixture).
-  let initLocalTypes : Std.HashMap Nat Raw.RawTy := Id.run do
-    let mut m : Std.HashMap Nat Raw.RawTy := {}
-    for i in [0:numParams] do
-      match f.signature.inputs[i]? with
-      | some t => m := m.insert (i + 1) t
-      | none => ()
+  -- M9.5n / M9.7o-E5b: seed `localTypes` from the structured
+  -- `LlbcFunDecl.localsTypes`. Charon's convention: index 0 is the
+  -- return slot, indices 1..N are the inputs, the rest are temps.
+  -- We record every local with a known type so the EvAssign/EvCopy
+  -- walk can lower a `local L.[Field K]` read to `<root>.<fieldName>`
+  -- via `applyFieldProj`, and the EvCall hooks can detect a `&mut`
+  -- destination via `isMutRefLlbc`. When `localsTypes` is empty
+  -- (`body = none` opaque function), we fall back to seeding inputs
+  -- alone from `lsig.inputs` so the linear walk still has the
+  -- parameter types in scope.
+  let initLocalTypes : Std.HashMap Nat Raw.LlbcTy := Id.run do
+    let mut m : Std.HashMap Nat Raw.LlbcTy := {}
+    if lf.localsTypes.isEmpty then
+      for i in [0:numParams] do
+        match lsig.inputs[i]? with
+        | some t => m := m.insert (i + 1) t
+        | none => ()
+    else
+      for i in [0:lf.localsTypes.size] do
+        m := m.insert i lf.localsTypes[i]!
     return m
   let finalSt : WalkState :=
     walkEvents f.events
       { vm := initVm, numParams, tdm, localTypes := initLocalTypes }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
-  -- M9.5i: thread the function's `typeParams` through so a `T`
-  -- output / `&mut T` input resolves to `.tyVar "T"`.
-  let bs := backSigOfWithVars tdm typeParams f.signature
+  -- M9.5i / M9.7o-E5b: thread the structured `LlbcSignature` so a
+  -- `T` output / `&mut T` input resolves to `.tyVar "T"`.
+  let bs := backSigOfLlbcWithVars tdm typeParams lsig
   let retTy : PTy := emitRetTy bs
   -- M12.2a-2: branch-tailed bodies (the `choose` pattern) compute
   -- their per-branch tail value through [buildBackwardTail] on each
@@ -2611,10 +2164,13 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert) (_t : CheckedTrace) :
     -- M9.5j: `partial_fixpoint` only when we observed a self-call.
     trailer }
 
-/-- M9.5b: kept-for-back-compat wrapper around [translateFunWith]
-    with an empty type-decl map. Real translation goes through
-    [translateFunWith] from the Driver. -/
+/-- M9.5b / M9.7o-E5b: back-compat wrapper around [translateFunWith]
+    with an empty type-decl map and a synthetic empty `LlbcFunDecl`.
+    Used only by tests that construct a `Raw.FunCert` by hand without
+    a surrounding crate program; real translation goes through
+    [translateFunWith] called from the Driver, which always has the
+    matching `LlbcFunDecl` in scope. -/
 def translateFun (f : Raw.FunCert) (t : CheckedTrace) : Decl :=
-  translateFunWith {} f t
+  translateFunWith {} f { id := f.fnId, itemMeta := { name := f.fnName } } t
 
 end AeneasCheck.Translate

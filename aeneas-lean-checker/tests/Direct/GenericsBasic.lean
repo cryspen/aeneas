@@ -82,17 +82,22 @@ def main : IO Unit := do
         throw <| IO.userError s!"expected 2 variants, saw {vs.size}"
     | _ => throw <| IO.userError "expected MyOption to be an enum"
   | _ => throw <| IO.userError "expected exactly 1 typeDecl named 'MyOption'"
-  -- Signature-level sanity: the cert's `signature.type_params`
+  -- Signature-level sanity: the LlbcProgram's matching `funDecl`
   -- carries the function's type-parameter names. For `get<T>` we
-  -- expect exactly `["T"]`.
-  match cc.functions.toList with
-  | [f] =>
-    if f.signature.typeParams = #["T"] then
-      IO.println s!"  ✓ get.signature.typeParams = #[\"T\"]"
-    else
-      throw <| IO.userError
-        s!"expected get.signature.typeParams = #[\"T\"], saw {f.signature.typeParams}"
-  | _ => throw <| IO.userError "expected exactly 1 function"
+  -- expect exactly `["T"]`. (M9.7o-E5b: sourced from
+  -- `cc.llbcProgram.funDecls[k].signature.generics.types` after the
+  -- flat `FunCert.signature` field was retired.)
+  match cc.functions.toList, cc.llbcProgram.funDecls.toList with
+  | [f], _ =>
+    match cc.llbcProgram.funDecls.find? (·.id == f.fnId) with
+    | some lf =>
+      if lf.signature.generics.types = #["T"] then
+        IO.println s!"  ✓ get.signature.generics.types = #[\"T\"]"
+      else
+        throw <| IO.userError
+          s!"expected get.signature.generics.types = #[\"T\"], saw {lf.signature.generics.types}"
+    | none => throw <| IO.userError "expected a matching LlbcFunDecl for `get`"
+  | _, _ => throw <| IO.userError "expected exactly 1 function"
   -- End-to-end: translate + emit, then assert on the rendered
   -- source. We check that the emitted Lean matches the standard
   -- Aeneas backend's shape (up to the cosmetic differences

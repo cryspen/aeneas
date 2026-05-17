@@ -1,51 +1,10 @@
 {
   "fmt_version": 3,
-  "crate_hash": "f782d74a9cb760a1e8e673395f9aadea",
-  "type_decls": [
-    {
-      "id": 0,
-      "name": "Pair",
-      "kind": {
-        "Struct": [
-          {
-            "idx": 0,
-            "name": "x",
-            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-          },
-          {
-            "idx": 1,
-            "name": "y",
-            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-          }
-        ]
-      },
-      "type_params": [],
-      "is_tuple_struct": false,
-      "qualified_name": "aggregates_basic::Pair",
-      "source_span": {
-        "file": "tests/src/aggregates_basic.rs",
-        "beg_line": 9,
-        "beg_col": 0,
-        "end_line": 12,
-        "end_col": 1
-      }
-    }
-  ],
-  "trait_decls": [],
-  "trait_impls": [],
+  "crate_hash": "375c0cc3589b412d92a9121544978c23",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "aggregates_basic::mk_tuple",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.U32));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U32))\n         ];\n       const_generics = []; trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/aggregates_basic.rs",
         "beg_line": 14,
@@ -190,15 +149,6 @@
     {
       "fn_id": 1,
       "fn_name": "aggregates_basic::mk_pair",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/aggregates_basic.rs",
         "beg_line": 18,

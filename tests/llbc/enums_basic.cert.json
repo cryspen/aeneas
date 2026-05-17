@@ -1,43 +1,10 @@
 {
   "fmt_version": 3,
-  "crate_hash": "c2947f86f6ee8849b09b669d02850563",
-  "type_decls": [
-    {
-      "id": 0,
-      "name": "Sign",
-      "kind": {
-        "Enum": [
-          { "id": 0, "name": "Pos", "fields": [] },
-          { "id": 1, "name": "Neg", "fields": [] },
-          { "id": 2, "name": "Zero", "fields": [] }
-        ]
-      },
-      "type_params": [],
-      "is_tuple_struct": false,
-      "qualified_name": "enums_basic::Sign",
-      "source_span": {
-        "file": "tests/src/enums_basic.rs",
-        "beg_line": 9,
-        "beg_col": 0,
-        "end_line": 13,
-        "end_col": 1
-      }
-    }
-  ],
-  "trait_decls": [],
-  "trait_impls": [],
+  "crate_hash": "bfd81b9e94bfcc2259bc93086003968d",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "enums_basic::flip",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/enums_basic.rs",
         "beg_line": 15,

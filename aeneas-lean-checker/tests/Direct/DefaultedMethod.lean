@@ -66,23 +66,27 @@ def main : IO Unit := do
         throw <| IO.userError "expected required_method.hasDefault = false"
     else
       throw <| IO.userError s!"expected 2 methods on Trait, saw {td.methods.size}"
-  -- The standalone default-body function carries trait_clauses that
-  -- reflect Charon's implicit Self: Trait obligation.
+  -- M9.7o-E5b: the standalone default-body function carries
+  -- trait_clauses (Charon's implicit Self: Trait obligation) sourced
+  -- from the LlbcProgram's matching `funDecl.signature.generics`.
   let providedDefault :=
     cc.functions.find? fun f => f.fnName = "defaulted_method::Trait::provided_method"
   match providedDefault with
   | some f =>
-    if f.signature.typeParams = #["Self"] then
-      IO.println s!"  ✓ default body typeParams = ['Self']"
-    else
-      throw <| IO.userError s!"expected default typeParams = ['Self']"
-    match f.signature.traitClauses.toList with
-    | [c] =>
-      if c.traitQualifiedName = "defaulted_method::Trait" ∧ c.typeParamIdx = 0 then
-        IO.println s!"  ✓ default body carries Self: Trait clause"
+    match cc.llbcProgram.funDecls.find? (·.id == f.fnId) with
+    | some lf =>
+      if lf.signature.generics.types = #["Self"] then
+        IO.println s!"  ✓ default body typeParams = ['Self']"
       else
-        throw <| IO.userError "expected Self: Trait clause"
-    | _ => throw <| IO.userError "expected exactly 1 trait clause on default body"
+        throw <| IO.userError s!"expected default typeParams = ['Self']"
+      match lf.signature.generics.traitClauses.toList with
+      | [c] =>
+        if c.traitQualifiedName = "defaulted_method::Trait" ∧ c.typeParamIdx = 0 then
+          IO.println s!"  ✓ default body carries Self: Trait clause"
+        else
+          throw <| IO.userError "expected Self: Trait clause"
+      | _ => throw <| IO.userError "expected exactly 1 trait clause on default body"
+    | none => throw <| IO.userError "expected a matching LlbcFunDecl for default body"
   | none =>
     throw <| IO.userError "expected a Trait::provided_method default body fn"
   -- End-to-end: translate + emit, then assert on the rendered source.

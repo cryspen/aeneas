@@ -403,34 +403,6 @@ def parseTraitClause (j : Json) : Result TraitClause := do
   let typeParamIdx ← asNat (← field j "type_param")
   return { traitQualifiedName, typeParamIdx }
 
-/-- Parse a signature record. Types are kept as opaque-tagged strings:
-    M9.0b carries them verbatim from the OCaml `show_ty` output.
-
-    M9.5i: `type_params` is optional for back-compat with pre-M9.5i
-    certs (which carry no type-param info); the field defaults to
-    empty when absent.
-
-    M9.5o: `trait_clauses` is optional for back-compat with pre-M9.5o
-    certs. -/
-def parseSignature (j : Json) : Result FnSignature := do
-  let inputsArr ← asArr (← field j "inputs")
-  let inputs ← inputsArr.mapM fun ej => do
-    let s ← asStr ej
-    return RawTy.opaque s
-  let outputStr ← asStr (← field j "output")
-  let typeParams : Array String ← match (j.getObjVal? "type_params").toOption with
-    | some tj => do
-      let arr ← asArr tj
-      arr.mapM asStr
-    | none => pure #[]
-  let traitClauses : Array TraitClause ←
-    match (j.getObjVal? "trait_clauses").toOption with
-    | some cj => do
-      let arr ← asArr cj
-      arr.mapM parseTraitClause
-    | none => pure #[]
-  return { inputs, output := .opaque outputStr, typeParams, traitClauses }
-
 /-- Parse an optional source-span record. -/
 def parseSourceSpan (j : Json) : Result SourceSpan := do
   let file ← asStr (← field j "file")
@@ -443,12 +415,11 @@ def parseSourceSpan (j : Json) : Result SourceSpan := do
 def parseFunCert (j : Json) : Result FunCert := do
   let fnId ← asNat (← field j "fn_id")
   let fnName ← asStr (← field j "fn_name")
-  -- `signature` is required by the v1 schema (added in M9.0b). We
-  -- still tolerate certs that omit it for forward-compat with hand-
-  -- written negative fixtures.
-  let signature ← match (j.getObjVal? "signature").toOption with
-    | some sj => parseSignature sj
-    | none => pure { inputs := #[], output := .opaque "" }
+  -- M9.7o-E5b: the flat `signature` field was retired alongside
+  -- `Raw.FnSignature` — the structured `cc.llbcProgram.funDecls[k]
+  -- .signature` is the sole source of input/output types and
+  -- generics. We accept (and silently ignore) the legacy `signature`
+  -- key for any cert json file still carrying it.
   let sourceSpan ← match (j.getObjVal? "source_span").toOption with
     | some sj => do let s ← parseSourceSpan sj; pure (some s)
     | none => pure none
@@ -459,7 +430,7 @@ def parseFunCert (j : Json) : Result FunCert := do
   let prettyName : Option String ← match (j.getObjVal? "pretty_name").toOption with
     | some pj => do let s ← asStr pj; pure (some s)
     | none => pure none
-  return { fnId, fnName, signature, sourceSpan, events, finalState, prettyName }
+  return { fnId, fnName, sourceSpan, events, finalState, prettyName }
 
 /-! ## M9.7b: LLBC program parser
 

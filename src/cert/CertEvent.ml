@@ -104,30 +104,11 @@ type cert_source_span = {
 }
 [@@deriving show]
 
-(** The Rust signature of a cert function as seen by Aeneas, encoded as
-    opaque-tagged type strings. The Lean checker uses [inputs] for the
-    emitted parameter count; [output] is currently informational
-    (downstream emitter still uses a placeholder return type until cert
-    events carry per-place LLBC types in M9+). *)
-type cert_signature = {
-  csig_inputs : ty list;
-  csig_output : ty;
-  (** [M9.5i] The function's type-parameter names, in declaration order.
-      For a generic Rust signature `fn get<T>(x: MyOption<T>, default: T) -> T`,
-      this carries `["T"]`; for a monomorphic function it is empty. The
-      Lean side renders these as implicit `{T : Type}` binders before the
-      value parameters. *)
-  csig_type_params : string list;
-  (** [M9.5o] Trait obligations on this signature's type parameters.
-      Each entry is a [(trait_qualified_name, type_param_index)] pair:
-      e.g. for `fn f<T: Trait1>(...)`, an entry [("crate::Trait1", 0)]
-      means the 0-th type parameter ([T]) carries a [Trait1] bound.
-      Empty for signatures with no trait obligations. The Lean side
-      uses these to emit `(Trait1Inst : Trait1 T)` binders between
-      type-param binders and value params. *)
-  csig_trait_clauses : (string * int) list;
-}
-[@@deriving show]
+(* [M9.7o-E5b] The flat [cert_signature] record was deleted alongside
+   the Lean-side [Raw.FnSignature] once the structured
+   [LlbcProgram.fun_decls[k].signature] became the sole source of
+   typed-signature info. The cert's per-function trace no longer
+   carries its own signature copy. *)
 
 (** [M9.6 — Option C] Rule-choice hint for [EvMutBorrow]. See
     [CertEvent.mli] for the spec; carried via [EvMutBorrow.kind_hint]. *)
@@ -383,15 +364,16 @@ type event =
           all-arms-return shape, like our [flip] fixture). *)
 [@@deriving show]
 
-(** A per-function trace. *)
+(** A per-function trace.
+
+    [M9.7o-E5b] The flat [fc_signature : cert_signature] field was
+    deleted once the structured [LlbcProgram.fun_decls[k].signature]
+    became the sole source of typed-signature info. The Lean checker
+    pairs each [fun_cert] with its matching [LlbcFunDecl] by [fc_fn_id]
+    and reads the structured signature from there. *)
 type fun_cert = {
   fc_fn_id : fun_decl_id;
   fc_fn_name : string;  (** Pretty name; not load-bearing for the checker. *)
-  fc_signature : cert_signature;
-      (** Function signature copied from [fun_decl.signature]. The
-          checker uses [csig_inputs] to drive the emitted-Decl
-          parameter count, replacing the M7 heuristic of inferring
-          from max-local-seen-in-events. *)
   fc_source_span : cert_source_span option;
       (** Source-code span for the per-function docstring in the
           emitted Lean. [None] for synthetic/built-in items. *)

@@ -63,14 +63,12 @@ private def buildFunDeclMap (ps : Array LlbcFunDecl) :
 For each `cc.functions[i]`, the cert exposes `fnId` (a `FunDeclId`)
 and `fnName` (the qualified callee name). The matching
 `llbcProgram.fun_decls[j]` shares the id and carries the same name
-in `itemMeta.name`. We additionally check input arity. -/
+in `itemMeta.name`.
 
-private def checkFunSigArity (ctx : String) (c : FnSignature)
-    (l : LlbcSignature) : List ConsErr := Id.run do
-  let mut errs : List ConsErr := []
-  if c.inputs.size ≠ l.inputs.size then
-    errs := errs ++ [err ctx s!"signature input arity disagrees: cc={c.inputs.size} lp={l.inputs.size}"]
-  return errs
+M9.7o-E5b: with the flat `FunCert.signature` field deleted, the
+structured `LlbcSignature` is the sole source of input-arity info.
+We retain the name-agreement check between the cert and the LLBC
+program; arity disagreement no longer has two sides to compare. -/
 
 private def checkFunPair (idx : Nat) (c : FunCert) (l : LlbcFunDecl) :
     List ConsErr := Id.run do
@@ -78,7 +76,6 @@ private def checkFunPair (idx : Nat) (c : FunCert) (l : LlbcFunDecl) :
   let mut errs : List ConsErr := []
   if c.fnName ≠ l.itemMeta.name then
     errs := errs ++ [err ctx s!"fnName disagrees: cc={repr c.fnName} lp={repr l.itemMeta.name}"]
-  errs := errs ++ checkFunSigArity ctx c.signature l.signature
   return errs
 
 def checkFunctions (ccFns : Array FunCert)

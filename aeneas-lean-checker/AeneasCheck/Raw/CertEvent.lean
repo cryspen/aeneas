@@ -296,31 +296,17 @@ structure TraitClause where
   typeParamIdx : Nat
   deriving Repr, Inhabited
 
-/-- Lean-side view of the Rust signature: input + output types as
-    pretty-printed LLBC type strings (kept opaque until M9 carries
-    proper Charon types in the cert). -/
-structure FnSignature where
-  inputs : Array RawTy
-  output : RawTy
-  /-- M9.5i: the function's type-parameter names, in declaration
-      order. Empty for monomorphic functions. The Forward translator
-      renders these as implicit `{T : Type}` binders before the value
-      parameters, and uses the index of each name as the de-Bruijn
-      identifier that resolves `TVar (Free K)` references inside
-      `inputs` / `output`. -/
-  typeParams : Array String := #[]
-  /-- M9.5o: per-clause trait obligations on the function's type
-      parameters. Each entry binds a `TraitX` bound to the K-th
-      `typeParams` entry. Empty for signatures without trait
-      obligations. Optional in the JSON cert for back-compat. -/
-  traitClauses : Array TraitClause := #[]
-  deriving Repr, Inhabited
+/-- Per-function cert trace.
 
-/-- Per-function cert trace. -/
+    M9.7o-E5b: the flat `signature : FnSignature` field was deleted
+    once the structured `LlbcSignature` (sourced from
+    `cc.llbcProgram.funDecls[k].signature`) became the sole carrier
+    of typed signature info. The Driver pairs each `FunCert` with
+    its matching `LlbcFunDecl` by `fnId` and threads the structured
+    signature through to the translator. -/
 structure FunCert where
   fnId : Nat
   fnName : String
-  signature : FnSignature
   /-- `none` when the OCaml side could not attach a span (synthetic
       items, builtins). -/
   sourceSpan : Option SourceSpan

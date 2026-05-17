@@ -1,21 +1,10 @@
 {
   "fmt_version": 3,
-  "crate_hash": "3b2f9d4afa8da99c202e99915e6cb47e",
-  "type_decls": [],
-  "trait_decls": [],
-  "trait_impls": [],
+  "crate_hash": "ab254281f30c8d6e970ede54f2fe681b",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "bitwise::shift_u32",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/bitwise.rs",
         "beg_line": 4,
@@ -281,14 +270,6 @@
     {
       "fn_id": 1,
       "fn_name": "bitwise::shift_i32",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/bitwise.rs",
         "beg_line": 11,
@@ -554,15 +535,6 @@
     {
       "fn_id": 2,
       "fn_name": "bitwise::xor_u32",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/bitwise.rs",
         "beg_line": 18,
@@ -704,15 +676,6 @@
     {
       "fn_id": 3,
       "fn_name": "bitwise::or_u32",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/bitwise.rs",
         "beg_line": 22,
@@ -854,15 +817,6 @@
     {
       "fn_id": 4,
       "fn_name": "bitwise::and_u32",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/bitwise.rs",
         "beg_line": 26,

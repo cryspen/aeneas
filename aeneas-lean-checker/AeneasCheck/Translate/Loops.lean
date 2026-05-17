@@ -98,24 +98,18 @@ def stateName (idx : Nat) : String :=
   else if idx = 2 then "k"
   else s!"s{idx}"
 
-/-- M12.1: pick a Pure type for a state local. The cert events carry
-    a `RawTy` on every `Place`, so we search the body's events for the
-    first place mentioning `local`, and convert its type via the
-    existing `rawTyToPTy` heuristic. Falls back to `U32` when no event
-    references the local (shouldn't happen for a valid invariant). -/
-def stateLocalTy (evs : Array Event) (local_ : Nat) : PTy := Id.run do
-  for ev in evs do
-    match ev with
-    | .assign d _ => if d.local_ = local_ then return rawTyToPTy d.ty
-    | .copy s d =>
-      if s.local_ = local_ then return rawTyToPTy s.ty
-      if d.local_ = local_ then return rawTyToPTy d.ty
-    | .move s d =>
-      if s.local_ = local_ then return rawTyToPTy s.ty
-      if d.local_ = local_ then return rawTyToPTy d.ty
-    | .binop _ _ _ d => if d.local_ = local_ then return rawTyToPTy d.ty
-    | _ => pure ()
-  return placeholderTy
+/-- M12.1 / M9.7o-E5b: pick a Pure type for a state local. The
+    matching `LlbcFunDecl.localsTypes` carries the per-local
+    structured `LlbcTy` (indexed by local id, 0 = return slot, 1..N =
+    inputs, rest = temps); we look up the state local directly and
+    translate to `PTy` via [llbcTyToPTyWithVars]. Falls back to `U32`
+    when the local has no entry (shouldn't happen for a valid loop
+    invariant on a function with a known body). -/
+def stateLocalTy (tdm : TypeDeclMap) (typeParams : Array String)
+    (lf : Raw.LlbcFunDecl) (local_ : Nat) : PTy :=
+  match lf.localsTypes[local_]? with
+  | some t => llbcTyToPTyWithVars tdm typeParams t
+  | none => placeholderTy
 
 /-- M12.1: locate the body's branch markers. The body events between
     `EvLoopInv` and `EvLoopEnd` have shape:
@@ -339,23 +333,28 @@ def buildTopLevelLoopFn (fnName : String)
     sourceSpan
     attributes := #["reducible"] }
 
-/-- M12.1: translate a function whose cert contains a loop. Emits
-    three decls: the body, the wrapper, and the top-level function. -/
-def translateLoopFun (f : Raw.FunCert) :
+/-- M12.1 / M9.7o-E5b: translate a function whose cert contains a
+    loop. Sources signature + per-local types from the matching
+    structured `LlbcFunDecl` (threaded by the Driver). Emits three
+    decls: the body, the wrapper, and the top-level function. -/
+def translateLoopFun (f : Raw.FunCert) (lf : Raw.LlbcFunDecl) :
     Option (Array Decl) := do
   let (invIdx, endIdx, _loopId, inv) ← findLoopBracket f.events
-  let numParams := f.signature.inputs.size
+  let lsig := lf.signature
+  let typeParams := lsig.generics.types
+  let tdm : TypeDeclMap := {}
+  let numParams := lsig.inputs.size
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
-      let ty := match f.signature.inputs[i]? with
-        | some t => rawTyToPTy t
+      let ty := match lsig.inputs[i]? with
+        | some t => llbcTyToPTyWithVars tdm typeParams t
         | none => placeholderTy
       { name := paramName (i + 1), ty }
-  let retTy : PTy := rawTyToPTy f.signature.output
+  let retTy : PTy := llbcTyToPTyWithVars tdm typeParams lsig.output
   let stateLocals := inferStateLocals numParams inv
   let bodyEvs := f.events.extract (invIdx + 1) endIdx
   let stateTys : Array PTy :=
-    stateLocals.map fun l => stateLocalTy bodyEvs l
+    stateLocals.map fun l => stateLocalTy tdm typeParams lf l
   let preLoopEvs := f.events.extract 0 invIdx
   let bodyDecl :=
     buildLoopBody f.fnName numParams params stateLocals stateTys retTy

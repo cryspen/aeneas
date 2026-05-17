@@ -452,12 +452,24 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
           let pretty := s!"{bare}.{m.name}.default"
           acc.insert fnQual pretty
         else acc
+  -- M9.7o-E5b: per-function `LlbcFunDecl` lookup table, keyed by
+  -- `fnId`. Used both by [translateFunWith] (so the walker has
+  -- structured signature + per-local typing) and by the trait-bound
+  -- enrichment pass below. A synthetic empty `LlbcFunDecl` is used
+  -- as fallback for any cert function with no matching LLBC entry —
+  -- shouldn't happen for a consistent crate.
+  let lfById : Std.HashMap Nat Raw.LlbcFunDecl :=
+    cc.llbcProgram.funDecls.foldl (init := {}) fun acc lf =>
+      acc.insert lf.id lf
+  let lookupLf (f : Raw.FunCert) : Raw.LlbcFunDecl :=
+    lfById.getD f.fnId { id := f.fnId, itemMeta := { name := f.fnName } }
   let mut decls : Array Decl := #[]
   for i in [0:cc.functions.size] do
     let f := cc.functions[i]!
-    match translateLoopFun f with
+    let lf := lookupLf f
+    match translateLoopFun f lf with
     | some loopDecls => decls := decls ++ loopDecls
-    | none => decls := decls.push (translateFunWith tdm f traces[i]!)
+    | none => decls := decls.push (translateFunWith tdm f lf traces[i]!)
   -- M9.5l: rewrite each Decl's body to use pretty names for any
   -- callee whose `fn_name` is in `fnPrettyByName`. Also rewrite the
   -- Decl's own `name` when its qualifiedName carries a pretty-name

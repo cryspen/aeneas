@@ -43,19 +43,10 @@ type cert_source_span = {
   ss_end_col : int;
 }
 
-type cert_signature = {
-  csig_inputs : ty list;
-  csig_output : ty;
-  csig_type_params : string list;
-  (** [M9.5o] Trait obligations on this signature's type parameters.
-      Each entry is a [(trait_qualified_name, type_param_index)] pair:
-      e.g. for `fn f<T: Trait1>(...)`, an entry [("crate::Trait1", 0)]
-      means the 0-th type parameter ([T]) carries a [Trait1] bound.
-      Empty for signatures with no trait obligations. The Lean side
-      uses these to emit `(Trait1Inst : Trait1 T)` binders between
-      type-param binders and value params. *)
-  csig_trait_clauses : (string * int) list;
-}
+(* [M9.7o-E5b] The flat [cert_signature] record was deleted alongside
+   the Lean-side [Raw.FnSignature] once the structured
+   [LlbcProgram.fun_decls[k].signature] became the sole source of
+   typed-signature info. *)
 
 (** [M9.6 — Option C] Rule-choice hint for [EvMutBorrow]: tells the
     Lean checker whether the borrow's lifetime is owned by an in-body
@@ -209,7 +200,6 @@ type event =
 type fun_cert = {
   fc_fn_id : fun_decl_id;
   fc_fn_name : string;
-  fc_signature : cert_signature;
   fc_source_span : cert_source_span option;
   fc_events : event list;
   fc_final_state : cert_state_summary;

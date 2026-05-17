@@ -1,21 +1,10 @@
 {
   "fmt_version": 3,
-  "crate_hash": "fa89cc9f7b92f55b111608bceb0e60e2",
-  "type_decls": [],
-  "trait_decls": [],
-  "trait_impls": [],
+  "crate_hash": "444488236507c470b124605271729d7c",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "slices_basic::get_first",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))),\n   Generated_Types.RShared))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/slices_basic.rs",
         "beg_line": 8,
@@ -151,16 +140,6 @@
     {
       "fn_id": 1,
       "fn_name": "slices_basic::set_idx_slice",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))),\n   Generated_Types.RMut))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/slices_basic.rs",
         "beg_line": 12,
