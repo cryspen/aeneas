@@ -29,7 +29,8 @@ approximates on the replayer side) project to `Val.opaq`.
 The paper's `NonceCounters` are monotone upper bounds. The replayer
 doesn't track them explicitly; we synthesise:
 
-* `nextLoanId := maxKeyPlusOne st.loans`
+* `nextLoanId := st.loanIdHwm` (M10.1g; monotone HWM in `SymState`
+  bumped by `addLoan` and untouched by `takeLoan`).
 * `nextAbsId  := maxKeyPlusOne st.absRegistry`
 * `nextSymValId := 0` — the replayer doesn't track sym-value ids;
   the cert provides them and `CertGen_faithful` enforces
@@ -277,9 +278,16 @@ theorem maxKeyPlusOne_insert_fresh {α : Type} (m : Std.HashMap Nat α)
 
     * `env` → `ctx` via `liftEnv`.
     * `absRegistry` → `abs` via `liftAbsRegistry`.
-    * Freshness counters from `maxKeyPlusOne` over `loans` /
-      `absRegistry`; `nextSymValId := 0` (cert-provided ids whose
-      monotonicity rides on `CertGen_faithful`).
+    * `nextLoanId := st.loanIdHwm` (M10.1g monotone HWM; survives
+      `takeLoan` / `loans.erase` which strictly shrink
+      `maxKeyPlusOne st.loans`).
+    * `nextAbsId := maxKeyPlusOne st.absRegistry` (absRegistry has no
+      analogous erase path in the current LStep surface — endAbs
+      removes from the paper's `abs` but the replayer keeps the
+      registry entry; if a future event erases entries, an `absIdHwm`
+      mirror is the same fix).
+    * `nextSymValId := 0` (cert-provided ids whose monotonicity rides
+      on `CertGen_faithful`).
 
     `loans` does *not* contribute its own `LLBCState` field — its
     `.direct` entries already live in `ctx` as `mutLoan` tokens
@@ -289,7 +297,7 @@ def concretise (st : SymState) : LLBCState :=
   { ctx := liftEnv st.env
     abs := liftAbsRegistry st.absRegistry
     freshness :=
-      { nextLoanId   := maxKeyPlusOne st.loans
+      { nextLoanId   := st.loanIdHwm
         nextAbsId    := maxKeyPlusOne st.absRegistry
         nextSymValId := 0 } }
 

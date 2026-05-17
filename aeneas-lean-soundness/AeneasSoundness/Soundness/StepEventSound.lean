@@ -301,14 +301,14 @@ theorem stepBinop_sound
 /-! ### Shared borrow
 
 `stepSharedBorrow` is the first per-event lemma to consume
-`concretise_addLoan` (M10.1f). Like the move / copy lemmas it
-takes three Phase-D-dischargeable hypotheses: the place's
-projection is empty, the local is declared, and the loan id is
-strictly fresh w.r.t. the replayer's loan map (`maxKeyPlusOne
-st.loans ≤ loan`). The freshness premise is stronger than the
-replayer's `not (loans.contains loan)` guard but matches
-`LStep`'s `loanIdFresh` premise via the `concretise` lift; cert
-emission discipline (monotone id allocation) discharges it. -/
+`concretise_addLoan` (M10.1f; M10.1h made it unconditional).
+Like the move / copy lemmas it takes three Phase-D-dischargeable
+hypotheses: the place's projection is empty, the local is
+declared, and the loan id is strictly fresh w.r.t. the
+replayer's monotone loan-id HWM (`st.loanIdHwm ≤ loan`). The
+freshness premise matches `LStep`'s `loanIdFresh` premise via
+the `concretise` lift; cert emission discipline (monotone id
+allocation) discharges it. -/
 
 /-- C7 / M10.2g — `E-SharedBorrow` (paper Fig. 3). The replayer
     fails if the loan id is already live or the place's root is
@@ -320,7 +320,7 @@ theorem stepSharedBorrow_sound
   (loan sbId : Nat) (place : Place) (symval : Nat)
   (hPlaceProj : place.projection = #[])
   (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
-  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
+  (hLoanFresh : st.loanIdHwm ≤ loan) :
   stepEvent st (.sharedBorrow loan sbId place symval) = .ok st' →
   ∃ Ω', Valid (.sharedBorrow loan sbId place symval) Ω ∧
         LStep Ω (.sharedBorrow loan sbId place symval) Ω' ∧
@@ -361,7 +361,7 @@ theorem stepSharedBorrow_sound
         rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
       simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
         hGetD, LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan _ _ _ _ hLoanFresh, hRep]
+        Concretise.concretise_addLoan, hRep]
 
 /-- C8 / M10.2h — `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). The replayer additionally replaces
@@ -374,7 +374,7 @@ theorem stepMutBorrow_direct_sound
   (loan : Nat) (place : Place) (symval : Nat)
   (hPlaceProj : place.projection = #[])
   (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
-  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
+  (hLoanFresh : st.loanIdHwm ≤ loan) :
   stepEvent st (.mutBorrow loan place symval .direct) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval .direct) Ω ∧
         LStep Ω (.mutBorrow loan place symval .direct) Ω' ∧
@@ -412,15 +412,9 @@ theorem stepMutBorrow_direct_sound
       have hGetD :
         (st.env.getD place.local_ (.bottom : Val)) = vR := by
         rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
-      -- setLocal preserves `.loans` (only touches env); the freshness
-      -- premise transports definitionally.
-      have hFreshSet :
-          Concretise.maxKeyPlusOne
-            (st.setLocal place.local_ (.mutLoan loan)).loans ≤ loan :=
-        hLoanFresh
       simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
         hGetD, LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan _ _ _ _ hFreshSet,
+        Concretise.concretise_addLoan,
         Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
 /-- C9 / M10.2i — `EvMutBorrow { kind_hint = MbkInAbsReborrow abs }`
@@ -433,7 +427,7 @@ theorem stepMutBorrow_inAbsReborrow_sound
   (hRep : concretise st = Ω)
   (loan : Nat) (place : Place) (symval : Nat) (absId : Nat)
   (hAbsExists : ∃ r, st.absRegistry[absId]? = some r)
-  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
+  (hLoanFresh : st.loanIdHwm ≤ loan) :
   stepEvent st
     (.mutBorrow loan place symval (.inAbsReborrow absId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.inAbsReborrow absId)) Ω ∧
@@ -465,7 +459,7 @@ theorem stepMutBorrow_inAbsReborrow_sound
               LStep.mutBorrow_inAbsReborrow hAbsLifted hLoanIdFresh hSymValIdFresh, ?_⟩
       simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
         LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan _ _ _ _ hLoanFresh, hRep]
+        Concretise.concretise_addLoan, hRep]
 
 /-- C10 / M10.2j — `EvMutBorrow { kind_hint = MbkLoopOwned loop }`
     triggers the loop-fixpoint borrow rule (paper §5.2). Same shape
@@ -478,7 +472,7 @@ theorem stepMutBorrow_loopOwned_sound
   (loan : Nat) (place : Place) (symval : Nat) (loopId : Nat)
   (hPlaceProj : place.projection = #[])
   (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
-  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
+  (hLoanFresh : st.loanIdHwm ≤ loan) :
   stepEvent st
     (.mutBorrow loan place symval (.loopOwned loopId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.loopOwned loopId)) Ω ∧
@@ -513,13 +507,9 @@ theorem stepMutBorrow_loopOwned_sound
       have hGetD :
         (st.env.getD place.local_ (.bottom : Val)) = vR := by
         rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
-      have hFreshSet :
-          Concretise.maxKeyPlusOne
-            (st.setLocal place.local_ (.mutLoan loan)).loans ≤ loan :=
-        hLoanFresh
       simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
         hGetD, LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan _ _ _ _ hFreshSet,
+        Concretise.concretise_addLoan,
         Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11

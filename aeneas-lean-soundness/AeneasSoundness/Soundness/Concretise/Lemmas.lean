@@ -45,7 +45,7 @@ theorem concretise_abs (st : SymState) :
 @[simp]
 theorem concretise_freshness (st : SymState) :
     (concretise st).freshness =
-      { nextLoanId := maxKeyPlusOne st.loans
+      { nextLoanId := st.loanIdHwm
         nextAbsId := maxKeyPlusOne st.absRegistry
         nextSymValId := 0 } := rfl
 
@@ -98,46 +98,46 @@ theorem concretise_setLocal (st : SymState) (l : Nat)
   congr 1
   exact liftEnv_insert st.env l v
 
-/-- `addLoan` commute (conditional on freshness): if the new loan
-    id `b` is at least the current `nextLoanId`, then
-    `concretise (st.addLoan b inner kind) = (concretise st).bumpLoanId b`.
-    The freshness premise mirrors `LStep`'s `loanIdFresh` premise;
-    Phase C lemmas discharge it from the cert's id allocation
-    monotonicity.
+/-- `addLoan` commute (unconditional after M10.1g): `concretise`
+    pushes through `addLoan` to the paper-side `bumpLoanId`.
 
-    The hashmap-fold equality
-    `maxKeyPlusOne (loans.insert b _) = max (maxKeyPlusOne loans) (b+1)`
-    is the load-bearing step. Sorry'd at M10.1e (last Phase B
-    commit; G6 still exempt); Phase C closes when the first lemma
-    that needs the equality fires (likely M10.2h
-    `stepMutBorrow_direct_sound`). -/
+    Why unconditional: `SymState.addLoan b _ _` updates `loanIdHwm`
+    to `max st.loanIdHwm (b+1)`, and `concretise.freshness.nextLoanId
+    := st.loanIdHwm`. The paper's `bumpLoanId b` does
+    `nextLoanId := max nextLoanId (b+1)`. The two `max` expressions
+    are syntactically identical; no freshness premise needed.
+    Pre-M10.1g this lemma required `maxKeyPlusOne st.loans ≤ b`
+    because `nextLoanId` derived from `maxKeyPlusOne loans`; with
+    the HWM redesign that detour is gone. -/
 theorem concretise_addLoan (st : SymState) (b : Nat)
-    (inner : AeneasCheck.LLBCSharp.Val) (kind : LoanKind)
-    (hFresh : maxKeyPlusOne st.loans ≤ b) :
+    (inner : AeneasCheck.LLBCSharp.Val) (kind : LoanKind) :
     concretise (st.addLoan b inner kind) =
       (concretise st).bumpLoanId b := by
   unfold concretise SymState.addLoan LLBCState.bumpLoanId
-  -- Both sides share `ctx`, `abs`, `freshness.nextAbsId`, `freshness.nextSymValId`.
-  -- The only nontrivial obligation is on `freshness.nextLoanId`:
-  --   maxKeyPlusOne (st.loans.insert b _) = max (maxKeyPlusOne st.loans) (b+1)
-  -- which equals `b + 1` under `hFresh` (Nat.max_eq_right).
+  -- ctx, abs, freshness.nextAbsId, freshness.nextSymValId are all
+  -- equal definitionally; only nextLoanId carries the `max` shape.
   refine LLBCState.mk.injEq .. |>.mpr ⟨rfl, rfl, ?_⟩
-  -- Remaining goal: equality of `freshness` (NonceCounters) records.
-  -- The `nextAbsId` and `nextSymValId` fields are equal definitionally;
-  -- only `nextLoanId` needs work.
-  refine NonceCounters.mk.injEq .. |>.mpr ⟨?_, rfl, rfl⟩
-  -- Goal: maxKeyPlusOne (st.loans.insert b _) = max (maxKeyPlusOne st.loans) (b + 1)
-  rw [maxKeyPlusOne_insert_fresh _ _ _ hFresh]
-  exact (Nat.max_eq_right (Nat.le_succ_of_le hFresh)).symm
+  refine NonceCounters.mk.injEq .. |>.mpr ⟨rfl, rfl, rfl⟩
 
-/-- `takeLoan` commute: removing a loan from the replayer's loan
-    store is a no-op on the paper side (loans live inside `ctx` /
-    `abs`, not in a separate map). So if `takeLoan` returns `some
-    (_, st')`, then `concretise st' = concretise st`. -/
+/-- `takeLoan` commute: removing a loan id from the replayer's
+    loan store is a no-op on the paper side (loans live inside
+    `ctx` / `abs`, not in a separate map; the monotone HWM
+    `loanIdHwm` is untouched by `takeLoan`). So if `takeLoan b`
+    returns `some (_, st')`, then `concretise st' = concretise st`. -/
 theorem concretise_takeLoan (st : SymState) (b : Nat)
     {li : LoanInfo} {st' : SymState}
-    (_hTake : st.takeLoan b = some (li, st')) :
+    (hTake : st.takeLoan b = some (li, st')) :
     concretise st' = concretise st := by
-  sorry
+  unfold SymState.takeLoan at hTake
+  split at hTake
+  · cases hTake
+  · rename_i li' hLook
+    simp only [Option.some.injEq, Prod.mk.injEq] at hTake
+    obtain ⟨_, hSt⟩ := hTake
+    subst hSt
+    unfold concretise
+    -- ctx, abs, freshness all definitionally equal: loans.erase only
+    -- changes st.loans (not env / absRegistry / loanIdHwm).
+    rfl
 
 end AeneasSoundness.Soundness.Concretise
