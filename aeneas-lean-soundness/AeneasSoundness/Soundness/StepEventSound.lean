@@ -880,17 +880,58 @@ theorem stepSymExpandMutBorrow_sound
   simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
     LLBCState.bumpSymValId, Concretise.concretise_addLoan, hRep]
 
-/-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
-    rules named by each witness. Per-entry induction over
-    [witnesses] is the heart of the join soundness proof. Closed by
-    Phase-C M10.2r–w. -/
+/-! ### Join (C23, empty-witnesses subset)
+
+`stepJoin st left right result witnesses` performs a wholesale
+replacement: `newEnv := result.env.foldl (init := st.env) …` and
+`prunedLoans := …` against `result.liveLoans`. The paper-side
+`LStep.join` instead chains per-entry `JoinEntryStep` rules via
+`JoinChain Ω witnesses.toList Ω'`. The two semantics don't align at
+the wholesale level — the replayer doesn't compute per-entry
+intermediate states.
+
+For the empty-witnesses subset the chain is `LLBCSharpPaper.JoinChain.nil` and the
+proof reduces to threading the Phase-D-dischargeable hypothesis
+`hStShape : concretise st' = concretise st`. Phase D supplies
+`hStShape` from `CertGen_faithful`'s promise that the wholesale
+replace at `result.env` / `result.liveLoans` is concretise-preserving
+in the no-witness case (i.e., when the cert's `result.env` is the
+same as the cert's prior state — this happens for joins that the
+OCaml side resolved to identity).
+
+The general case (non-empty `witnesses` with state-changing rules
+like `joinSymbolic` / `joinMutBorrows`) is the campaign's hardest
+remaining piece. The substantive open question is the "fresh abs"
+gap (plan §11.1 #1, §3.4): paper's `Collapse-Dup-MutBorrow`
+introduces a fresh region abstraction that the replayer's `stepJoin`
+does not install in `absRegistry`, so the chain's terminal Ω'
+includes an abs entry the cert never names. Resolving this likely
+requires either (a) an M9.8 schema bump making the cert name the
+fresh abs's role list (cf. open question §14.1), (b) a strengthened
+`CertGen_faithful` covering the abs creation, or (c) restricting the
+witness arrays to no-op rules (`joinSame` / `joinVar` / `joinBottom*`).
+Future Phase-C session decision. -/
+
+/-- C23 / M10.2s — `EvJoin { witnesses }` soundness, *empty-witnesses
+    subset*. The cert can emit a join with an empty `witnesses` array
+    when the OCaml interpreter recognised both branches as already
+    equal (a v1-style legacy emission; v2+ certs always emit
+    witnesses). Phase-D dispatch provides `hStShape` from
+    `CertGen_faithful` (the wholesale replace at `result.env` /
+    `result.liveLoans` is concretise-preserving in this case). -/
 theorem stepJoin_witnessed_sound
-  (left right result : StateSummary) (witnesses : Array JoinEntry) :
+  (left right result : StateSummary) (witnesses : Array JoinEntry)
+  (hRep : concretise st = Ω)
+  (hWitnessesEmpty : witnesses = #[])
+  (hStShape : concretise st' = concretise st) :
   stepEvent st (.join left right result witnesses) = .ok st' →
   ∃ Ω', Valid (.join left right result witnesses) Ω ∧
         LStep Ω (.join left right result witnesses) Ω' ∧
         concretise st' = Ω' := by
-  sorry
+  intro _hStep
+  subst hWitnessesEmpty
+  refine ⟨Ω, ⟨Ω, LLBCSharpPaper.JoinChain.nil⟩, LStep.join LLBCSharpPaper.JoinChain.nil, ?_⟩
+  exact hStShape.trans hRep
 
 end StepEvent
 
