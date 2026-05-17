@@ -57,6 +57,15 @@ structure SymState where
       paper-`A_in(ρ)`-content [AbsShape]. Empty until the first
       EvCall with non-empty `absSig` is processed. -/
   absRegistry : Std.HashMap Nat AbsShape := {}
+  /-- M10.1g (soundness side): monotone high-water-mark for the loan
+      ids ever allocated, regardless of whether they're still live.
+      `addLoan b ...` raises this past `b`; `takeLoan` / `loans.erase`
+      do *not* touch it. The replayer's checker logic never reads this
+      field — it exists purely so the soundness-side `concretise`
+      can mirror the paper's monotone `freshness.nextLoanId` (which
+      `LStep.endBorrow_*` leaves unchanged even though the replayer
+      erases the loan id). -/
+  loanIdHwm : Nat := 0
   deriving Inhabited
 
 namespace SymState
@@ -77,7 +86,9 @@ def hasLoan (st : SymState) (b : Nat) : Bool :=
 
 def addLoan (st : SymState) (b : Nat) (inner : Val)
     (kind : LoanKind := .direct) : SymState :=
-  { st with loans := st.loans.insert b { given := inner, kind } }
+  { st with
+      loans := st.loans.insert b { given := inner, kind }
+      loanIdHwm := max st.loanIdHwm (b + 1) }
 
 def takeLoan (st : SymState) (b : Nat) : Option (LoanInfo × SymState) :=
   match st.loans[b]? with
