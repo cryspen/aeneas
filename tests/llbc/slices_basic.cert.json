@@ -168,8 +168,9 @@
             "sv_id": 0,
             "bid": 0,
             "inner_sv": 3,
-            "subst_locals": [],
-            "subst_loans": []
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
           }
         },
         {
@@ -334,8 +335,9 @@
             "sv_id": 4,
             "bid": 2,
             "inner_sv": 5,
-            "subst_locals": [],
-            "subst_loans": []
+            "subst_locals": [ 7 ],
+            "subst_loans": [],
+            "parent_abs": 1
           }
         },
         {

@@ -509,6 +509,72 @@ let expand_symbolic_value_borrow (span : Meta.span)
       let nv =
         symbolic_expansion_non_shared_borrow_to_value span original_sv see
       in
+      (* M9.6 (Option C): collect the env-binding / abstraction-loan
+         sites that contain [VSymbolic original_sv] BEFORE the
+         substitution runs, so the cert hints accurately enumerate
+         what the Lean strict path will rewrite. We also locate the
+         abstraction that owns the symbolic value's loan projection
+         (for [parent_abs]). *)
+      let sv_match (sv : symbolic_value) : bool =
+        same_symbolic_id sv original_sv
+      in
+      let subst_locals : Expressions.LocalId.id list =
+        let acc = ref [] in
+        let visitor = object
+          inherit [_] iter_eval_ctx as super
+          val mutable cur_local : Expressions.LocalId.id option = None
+          method! visit_EBinding env be v =
+            (match be with
+             | BVar bv -> cur_local <- Some bv.index
+             | BDummy _ -> cur_local <- None);
+            super#visit_EBinding env be v
+          method! visit_EAbs _env _abs =
+            (* Don't recurse into abstractions: those count toward
+               subst_loans instead. *)
+            ()
+          method! visit_VSymbolic _env spc =
+            if sv_match spc then
+              match cur_local with
+              | Some l ->
+                if not (List.mem l !acc) then acc := l :: !acc
+              | None -> ()
+        end in
+        visitor#visit_eval_ctx () ctx;
+        List.rev !acc
+      in
+      let subst_loans, parent_abs_opt =
+        let loans_acc = ref [] in
+        let parent = ref None in
+        let visitor = object
+          inherit [_] iter_eval_ctx as super
+          val mutable cur_abs : AbsId.id option = None
+          val mutable cur_loan : BorrowId.id option = None
+          method! visit_EAbs env abs =
+            let prev = cur_abs in
+            cur_abs <- Some abs.abs_id;
+            super#visit_EAbs env abs;
+            cur_abs <- prev
+          method! visit_AMutLoan env pm lid child =
+            let prev = cur_loan in
+            cur_loan <- Some lid;
+            super#visit_AMutLoan env pm lid child;
+            cur_loan <- prev
+          method! visit_aproj_loans env apl =
+            if apl.proj.sv_id = original_sv.sv_id then begin
+              (match cur_loan with
+               | Some lid ->
+                 if not (List.mem lid !loans_acc) then
+                   loans_acc := lid :: !loans_acc
+               | None -> ());
+              (match cur_abs with
+               | Some aid when Option.is_none !parent -> parent := Some aid
+               | _ -> ())
+            end;
+            super#visit_aproj_loans env apl
+        end in
+        visitor#visit_eval_ctx () ctx;
+        (List.rev !loans_acc, !parent)
+      in
       let at_most_once = true in
       let ctx =
         replace_symbolic_values span at_most_once original_sv nv.value ctx
@@ -528,8 +594,8 @@ let expand_symbolic_value_borrow (span : Meta.span)
         (CertEvent.EvSymExpandMutBorrow
            {
              sv_id = original_sv.sv_id; bid; inner_sv = sv.sv_id;
-             (* M9.6 (Option C): populated in commit #6. *)
-             parent_abs = None; subst_locals = []; subst_loans = [];
+             parent_abs = parent_abs_opt;
+             subst_locals; subst_loans;
            });
       (* Apply the continuation *)
       ( ctx,
