@@ -1,0 +1,5 @@
+.lake/
+build/
+
+# Whitelist the G5 golden axiom file (top-level .gitignore excludes *.txt).
+!tests/axioms.golden.txt
