@@ -1,27 +1,37 @@
 import AeneasCheck.LLBCSharp.Replay
+import AeneasSoundness.LLBCSharpPaper.Step
+import AeneasSoundness.LLBCSharpPaper.Valid
 
 /-!
-# Soundness of `stepEvent` (skeleton)
+# Soundness of `stepEvent`
 
-This file is the M10 Phase-A starting point. It descends from the
-M9.6 (Option C) Phase-6 deliverable that originally lived at
-`aeneas-lean-checker/AeneasCheck/Theorems/StepEventSound.lean`. The
-M10.0a commit moved it into the soundness package (this file) and
-re-homed the namespace to `AeneasSoundness.Soundness` so the
-campaign's gates (G5/G6/G7) can address it without ambiguity.
+This file is the M10 Phase-A vertical-slice anchor. After M10.0a–j
+moved the four `axiom` stubs (`LLBCState`, `concretise`, `Valid`,
+`LStep`) into a fully Lean-ported paper-side surface
+(`AeneasSoundness.LLBCSharpPaper.*`), M10.0k now replaces those
+axioms with imports of the real defs and turns every per-event
+`axiom` into a `theorem … := by sorry`. The `sorry`s land *inside*
+`Soundness/`; G6 is *exempted* for Phase A per plan §10.1 (G6 runs
+from Phase C onward; commits #17+).
 
-It lays out the per-event case-analysis structure the soundness
-proof will use — every event constructor maps to one (or, with a
-hint, one-of-N) paper rule, and the M9.6 hint fields drive the
-case discrimination.
+Concretely:
 
-**No proofs are filled in.** The theorem statement is parameterised
-over yet-to-be-defined sorts (`LLBCState`, `⟦·⟧`, `LStep`, `Valid`)
-so the skeleton compiles against the existing replayer. The real
-proof lands across M10 Phases A–F; see
-`documentation/llbc-sharp-soundness-plan.md` for the schedule and
-`documentation/cert-format-and-soundness.md` §5 for the planned
-ordering.
+* `LLBCState` is now the structure from
+  `LLBCSharpPaper/State.lean`.
+* `LStep` is the inductive relation from `LLBCSharpPaper/Step.lean`
+  (27 constructors).
+* `Valid` is the `match`-on-`Event` predicate from
+  `LLBCSharpPaper/Valid.lean`.
+* `concretise` is *still* a placeholder — a `def` that always
+  returns `LLBCState.empty`. The real concretisation lands at
+  M10.1a/b (Phase B); the placeholder is what makes the M10.0k
+  axiom inventory clean.
+
+After M10.0k, the per-event lemmas and the top-level
+`stepEvent_sound` are `theorem`s witnessed by `sorry`; Phase B–D
+discharge them. `#print axioms stepEvent_sound` reports
+`sorryAx` (plus `propext` / `Quot.sound` from core) and nothing
+else.
 
 The structure deliberately mirrors plan §6.3:
 ```
@@ -36,45 +46,26 @@ non-hinted events case directly on the constructor.
 namespace AeneasSoundness.Soundness
 
 open AeneasCheck.Raw AeneasCheck.LLBCSharp
+open AeneasSoundness.LLBCSharpPaper (LLBCState LStep Valid)
 
-/-! ## Abstract paper-side surface
+/-! ## Concretisation (placeholder)
 
-These four sorts are the load-bearing pieces of the LLBC# semantics
-(per paper §4.1 + §5 figures). M9.6 left them as `axiom` so the
-skeleton typechecks; the real Lean port lives in
-`AeneasSoundness.LLBCSharpPaper.*` (M10 Phase A, commits M10.0b–j).
-M10.0k will replace these four axioms with their real definitions.
--/
+M10.0k keeps `concretise` as a `def` returning the empty
+`LLBCState` so the file typechecks against real types. The real
+definition lands in `Concretise/Defn.lean` at M10.1a-b (Phase B);
+M10.1d-e prove its commute lemmas, which Phase C consumes to
+discharge each per-event sorry. -/
 
-/-- The paper's `Ω#` LLBC# state — a value-grammar context plus a
-    region-abstraction grammar `A_in(ρ) { borrow^m ℓ _, loan^m ℓ' }`.
-    M9.6 stubs it as an axiom type; M10 Phase A replaces with a
-    real structure (see `LLBCSharpPaper/State.lean`). -/
-axiom LLBCState : Type
+/-- Placeholder concretisation. Returns the empty `LLBCState` for
+    every `SymState`. The Phase-B replacement
+    (`Concretise/Defn.lean`) is faithful: it lifts the SymState's
+    env / loans / absRegistry into the paper-side `LLBCState` per
+    plan §2.1. The placeholder is sound-by-vacuous-premise: every
+    per-event lemma below is `sorry`'d, so no proof presently
+    depends on `concretise`'s shape. -/
+def concretise (_ : SymState) : LLBCState := LLBCState.empty
 
-/-- Concretisation function: lift the replayer's restricted
-    [SymState] into a full LLBC# state by materialising trivial
-    region abstractions for each `.reborrow` / `.lazyExpand` loan
-    and consulting [SymState.absRegistry] for the real `A_in(ρ)`
-    content of caller abstractions. -/
-axiom concretise : SymState → LLBCState
-
-/-- Per-event LLBC# side-conditions (paper Fig. 3 / 9 / 11). Each
-    constructor's `Valid` payload is the conjunction of the rule's
-    premises. -/
-axiom Valid : Event → LLBCState → Prop
-
-/-- One-step LLBC# reduction `Ω ⟶_# Ω'` witnessed by the event.
-    For hinted events (EvMutBorrow, EvJoin, …) the reduction's
-    rule choice is determined by the hint. -/
-axiom LStep : LLBCState → Event → LLBCState → Prop
-
-/-! ## Per-event sub-soundness lemmas (all stubbed)
-
-Each lemma corresponds to one paper rule. The hint-bearing events
-split into N lemmas (one per hint constructor); the non-hinted
-events have a single lemma.
--/
+/-! ## Per-event sub-soundness lemmas (all `sorry`'d) -/
 
 section StepEvent
 
@@ -82,58 +73,66 @@ variable (st st' : SymState) (Ω : LLBCState)
 variable (hRep : concretise st = Ω)
 
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
-    `E-MutBorrow` (paper Fig. 3). -/
-axiom stepMutBorrow_direct_sound
+    `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
+theorem stepMutBorrow_direct_sound
   (loan : Nat) (place : Place) (symval : Nat) :
   stepEvent st (.mutBorrow loan place symval .direct) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval .direct) Ω ∧
         LStep Ω (.mutBorrow loan place symval .direct) Ω' ∧
-        concretise st' = Ω'
+        concretise st' = Ω' := by
+  sorry
 
 /-- M9.6 hint case: `kind_hint = MbkInAbsReborrow abs` triggers
-    `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8) on the named abs. -/
-axiom stepMutBorrow_inAbsReborrow_sound
+    `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8) on the named abs.
+    Closed by Phase-C M10.2i. -/
+theorem stepMutBorrow_inAbsReborrow_sound
   (loan : Nat) (place : Place) (symval : Nat) (absId : Nat) :
   stepEvent st
     (.mutBorrow loan place symval (.inAbsReborrow absId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.inAbsReborrow absId)) Ω ∧
         LStep Ω (.mutBorrow loan place symval (.inAbsReborrow absId)) Ω' ∧
-        concretise st' = Ω'
+        concretise st' = Ω' := by
+  sorry
 
 /-- M9.6 hint case: `kind_hint = MbkLoopOwned loop` triggers the
-    loop-fixpoint borrow rule (paper §5.2). -/
-axiom stepMutBorrow_loopOwned_sound
+    loop-fixpoint borrow rule (paper §5.2). Closed by Phase-C
+    M10.2j. -/
+theorem stepMutBorrow_loopOwned_sound
   (loan : Nat) (place : Place) (symval : Nat) (loopId : Nat) :
   stepEvent st
     (.mutBorrow loan place symval (.loopOwned loopId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.loopOwned loopId)) Ω ∧
         LStep Ω (.mutBorrow loan place symval (.loopOwned loopId)) Ω' ∧
-        concretise st' = Ω'
+        concretise st' = Ω' := by
+  sorry
 
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
     rules named by each witness. Per-entry induction over
-    [witnesses] is the heart of the join soundness proof. -/
-axiom stepJoin_witnessed_sound
+    [witnesses] is the heart of the join soundness proof. Closed by
+    Phase-C M10.2r–w. -/
+theorem stepJoin_witnessed_sound
   (left right result : StateSummary) (witnesses : Array JoinEntry) :
   stepEvent st (.join left right result witnesses) = .ok st' →
   ∃ Ω', Valid (.join left right result witnesses) Ω ∧
         LStep Ω (.join left right result witnesses) Ω' ∧
-        concretise st' = Ω'
+        concretise st' = Ω' := by
+  sorry
 
 end StepEvent
 
-/-! ## Top-level: stepEvent_sound
+/-! ## Top-level: `stepEvent_sound`
 
 Case-analysis on `ev`. Hint-bearing events sub-case on the hint and
 delegate to the per-rule lemma above; non-hinted events apply their
-single-rule lemma directly.
--/
+single-rule lemma directly. Closed by Phase-D M10.3a (which assembles
+the per-event lemmas added across Phase C). -/
 
-axiom stepEvent_sound :
+theorem stepEvent_sound :
     ∀ (ev : Event) (st st' : SymState) (Ω : LLBCState),
       concretise st = Ω →
       stepEvent st ev = .ok st' →
-      ∃ Ω', Valid ev Ω ∧ LStep Ω ev Ω' ∧ concretise st' = Ω'
+      ∃ Ω', Valid ev Ω ∧ LStep Ω ev Ω' ∧ concretise st' = Ω' := by
+  sorry
 
 /-! ## Cross-cutting consequences (sketched in
 `cert-format-and-soundness.md` §4.3 / §4.4)
@@ -144,13 +143,6 @@ axiom stepEvent_sound :
 * `replayCrate_implies_borrow_checks` — quantify `replayFun_sound`
   over `cc.functions`. Lands in
   `AeneasSoundness/Soundness/ReplayCrateSound.lean` (Phase F).
-
-Both will move into this namespace once the LLBCState port lands.
-Until then, this file is a documentation artifact: the `axiom`
-placeholders make it clear that the M9.6 hint schema is *sufficient*
-for the proof structure (every event either has a unique rule or
-carries a hint that names the rule) without yet committing to a
-specific Lean realisation of the LLBC# semantics.
 -/
 
 end AeneasSoundness.Soundness
