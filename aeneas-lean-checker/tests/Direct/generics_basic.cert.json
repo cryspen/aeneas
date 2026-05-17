@@ -1,52 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "598fd878aafe5b6531ee2fdbf87fcd9c",
-  "type_decls": [
-    {
-      "id": 0,
-      "name": "MyOption",
-      "kind": {
-        "Enum": [
-          {
-            "id": 0,
-            "name": "MySome",
-            "fields": [
-              {
-                "idx": 0,
-                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
-              }
-            ]
-          },
-          { "id": 1, "name": "MyNone", "fields": [] }
-        ]
-      },
-      "type_params": [ "T" ],
-      "is_tuple_struct": false,
-      "qualified_name": "generics_basic::MyOption",
-      "source_span": {
-        "file": "tests/src/generics_basic.rs",
-        "beg_line": 11,
-        "beg_col": 0,
-        "end_line": 14,
-        "end_col": 1
-      }
-    }
-  ],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "3876a9bf6235371e00a8c76fb918a967",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "generics_basic::get",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })",
-          "(Generated_Types.TVar (Generated_Types.Free 0))"
-        ],
-        "output": "(Generated_Types.TVar (Generated_Types.Free 0))",
-        "type_params": [ "T" ],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/generics_basic.rs",
         "beg_line": 16,

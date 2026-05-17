@@ -1,51 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "9b8592a26914d4682f868f49827d9fd5",
-  "type_decls": [
-    {
-      "id": 0,
-      "name": "NumOrZero",
-      "kind": {
-        "Enum": [
-          {
-            "id": 0,
-            "name": "Num",
-            "fields": [
-              {
-                "idx": 0,
-                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-              }
-            ]
-          },
-          { "id": 1, "name": "Zero", "fields": [] }
-        ]
-      },
-      "type_params": [],
-      "is_tuple_struct": false,
-      "qualified_name": "enums_payload::NumOrZero",
-      "source_span": {
-        "file": "tests/src/enums_payload.rs",
-        "beg_line": 7,
-        "beg_col": 0,
-        "end_line": 10,
-        "end_col": 1
-      }
-    }
-  ],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "b877c470ba4542032c5315f93b69b59d",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "enums_payload::value",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/enums_payload.rs",
         "beg_line": 12,
@@ -176,14 +135,6 @@
     {
       "fn_id": 1,
       "fn_name": "enums_payload::wrap",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/enums_payload.rs",
         "beg_line": 19,
@@ -282,12 +233,6 @@
     {
       "fn_id": 2,
       "fn_name": "enums_payload::zero",
-      "signature": {
-        "inputs": [],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/enums_payload.rs",
         "beg_line": 23,

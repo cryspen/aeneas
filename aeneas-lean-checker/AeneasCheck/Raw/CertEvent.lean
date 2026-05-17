@@ -90,39 +90,6 @@ inductive MutBorrowKind
   | loopOwned (loopId : Nat)
   deriving Repr, Inhabited
 
-/-- M9.6: per-local witness of which Fig. 11 (paper) rule the OCaml
-    interpreter applied to derive a `EvJoin` result entry. Carried
-    inside `JoinEntry`; one entry per result-env local in declaration
-    order. -/
-inductive JoinRule
-  /-- Both branches agreed on this local's value. -/
-  | joinSame
-  /-- Branches differed on a value containing no borrows/loans; the
-      OCaml side introduced a fresh symbolic value `freshSv` and the
-      result is `SymVal freshSv`. -/
-  | joinSymbolic (freshSv : Nat)
-  /-- Both branches held a `&mut` with different loan ids; the join
-      introduced a fresh borrow id `l_fresh` inside a fresh region
-      abstraction `abs` (Collapse-Dup-MutBorrow). -/
-  | joinMutBorrows (l_left l_right l_fresh : Nat) (abs : Nat)
-  /-- `Join-Var` rule (paper Fig. 11): a whole region abstraction is
-      folded into the result. (Marker only in this milestone; the
-      surrounding `EvEndAbs` carries the absorbed abstraction's
-      contents.) -/
-  | joinVar
-  /-- Left side is `⊥`; right side is wrapped into the abstraction
-      `abs`. -/
-  | joinBottomOther (abs : Nat)
-  /-- Mirror of `joinBottomOther`. -/
-  | joinOtherBottom (abs : Nat)
-  deriving Repr, Inhabited
-
-/-- M9.6: one entry of `EvJoin.witnesses`. -/
-structure JoinEntry where
-  localId : Nat
-  rule : JoinRule
-  deriving Repr, Inhabited
-
 /-- M9.6: per-`avalue` role of a `tavalue` inside a function-call's
     input region abstraction (paper §4.1 `A_in(ρ)` content). Carried
     inside `AbsShape.roles`. -/
@@ -142,11 +109,60 @@ inductive AbsRoleEntry
 /-- M9.6: the shape of one region abstraction freshened by `EvCall`.
     Mirrors the paper's `A_in(ρ) { borrow^m ℓ _, loan^m ℓ' }` shape:
     an abstraction id, its ancestor ids (for nested-borrow contracts),
-    and one `AbsRoleEntry` per `tavalue` held. -/
+    and one `AbsRoleEntry` per `tavalue` held.
+
+    M9.8 (cert v4): also carried by `JoinRule.joinMutBorrows` for the
+    fresh region abstraction created by Collapse-Dup-MutBorrow, so
+    `stepJoin` can install it in `absRegistry` symmetric to how
+    `stepCall` already installs `EvCall.abs_sig` shapes. -/
 structure AbsShape where
   absId : Nat
   parentAbs : Array Nat
   roles : Array AbsRoleEntry
+  deriving Repr, Inhabited
+
+/-- M9.6: per-local witness of which Fig. 11 (paper) rule the OCaml
+    interpreter applied to derive a `EvJoin` result entry. Carried
+    inside `JoinEntry`; one entry per result-env local in declaration
+    order. -/
+inductive JoinRule
+  /-- Both branches agreed on this local's value. -/
+  | joinSame
+  /-- Branches differed on a value containing no borrows/loans; the
+      OCaml side introduced a fresh symbolic value `freshSv` and the
+      result is `SymVal freshSv`. -/
+  | joinSymbolic (freshSv : Nat)
+  /-- Both branches held a `&mut` with different loan ids; the join
+      introduced a fresh borrow id `l_fresh` inside a fresh region
+      abstraction `abs` (Collapse-Dup-MutBorrow).
+
+      M9.8 (cert v4): `abs` is the full `AbsShape` (id + parents +
+      roles), not just an `AbsId`. The Lean replayer's `stepJoin`
+      installs the abs in `SymState.absRegistry` using this shape,
+      mirroring how `stepCall` already installs `EvCall.abs_sig`'s
+      shapes. The soundness side then has the fresh abs's content
+      by construction, closing the C23
+      `stepJoin_witnessed_sound` general case (M10 plan §11.1 #1
+      / §3.4 / §14.1). By construction `abs.parentAbs = #[]` and
+      `abs.roles` is the three-entry list
+      `[mutBorrow _ l_left, mutBorrow _ l_right, mutLoan l_fresh]`. -/
+  | joinMutBorrows (l_left l_right l_fresh : Nat) (abs : AbsShape)
+  /-- `Join-Var` rule (paper Fig. 11): a whole region abstraction is
+      folded into the result. (Marker only in this milestone; the
+      surrounding `EvEndAbs` carries the absorbed abstraction's
+      contents.) -/
+  | joinVar
+  /-- Left side is `⊥`; right side is wrapped into the abstraction
+      `abs`. -/
+  | joinBottomOther (abs : Nat)
+  /-- Mirror of `joinBottomOther`. -/
+  | joinOtherBottom (abs : Nat)
+  deriving Repr, Inhabited
+
+/-- M9.6: one entry of `EvJoin.witnesses`. -/
+structure JoinEntry where
+  localId : Nat
+  rule : JoinRule
   deriving Repr, Inhabited
 
 /-- LLBC# trace events. Constructor names match `CertEvent.event`

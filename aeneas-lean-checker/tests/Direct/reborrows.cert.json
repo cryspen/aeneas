@@ -1,51 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "5ac6acc203967c0adc07f436ea806bcc",
-  "type_decls": [
-    {
-      "id": 0,
-      "name": "Pair",
-      "kind": {
-        "Struct": [
-          {
-            "idx": 0,
-            "name": "fst",
-            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-          },
-          {
-            "idx": 1,
-            "name": "snd",
-            "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-          }
-        ]
-      },
-      "type_params": [],
-      "is_tuple_struct": false,
-      "qualified_name": "reborrows::Pair",
-      "source_span": {
-        "file": "tests/src/reborrows.rs",
-        "beg_line": 9,
-        "beg_col": 0,
-        "end_line": 12,
-        "end_col": 1
-      }
-    }
-  ],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "b8ced50d04e16f9164c4c7ab643623e4",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "reborrows::set_fst",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/reborrows.rs",
         "beg_line": 14,
@@ -165,16 +124,6 @@
     {
       "fn_id": 1,
       "fn_name": "reborrows::set_idx",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/reborrows.rs",
         "beg_line": 18,
@@ -427,14 +376,6 @@
     {
       "fn_id": 2,
       "fn_name": "reborrows::reborrow_chain",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/reborrows.rs",
         "beg_line": 22,

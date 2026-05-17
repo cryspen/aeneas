@@ -186,34 +186,6 @@ def parseMutBorrowKind (j : Json) : Result MutBorrowKind := do
     | "LoopOwned" => return .loopOwned (← asNat (← field payload "loop"))
     | _ => fail s!"unknown MutBorrowKind tag: {tag}"
 
-/-- M9.6: parse a `JoinRule` (Option C hint). -/
-def parseJoinRule (j : Json) : Result JoinRule := do
-  match j with
-  | .str "JoinSame" => return .joinSame
-  | .str "JoinVar" => return .joinVar
-  | .str s => fail s!"unknown nullary JoinRule: {s}"
-  | _ =>
-    let (tag, payload) ← asTaggedObj j
-    match tag with
-    | "JoinSame" => return .joinSame
-    | "JoinVar" => return .joinVar
-    | "JoinSymbolic" => return .joinSymbolic (← asNat (← field payload "fresh_sv"))
-    | "JoinMutBorrows" => do
-      let l ← asNat (← field payload "left")
-      let r ← asNat (← field payload "right")
-      let f ← asNat (← field payload "fresh")
-      let a ← asNat (← field payload "abs")
-      return .joinMutBorrows l r f a
-    | "JoinBottomOther" => return .joinBottomOther (← asNat (← field payload "abs"))
-    | "JoinOtherBottom" => return .joinOtherBottom (← asNat (← field payload "abs"))
-    | _ => fail s!"unknown JoinRule tag: {tag}"
-
-/-- M9.6: parse one `JoinEntry`. -/
-def parseJoinEntry (j : Json) : Result JoinEntry := do
-  let localId ← asNat (← field j "local")
-  let rule ← parseJoinRule (← field j "rule")
-  return { localId, rule }
-
 /-- M9.6: parse one `AbsRoleEntry` (Option C abs-shape role). -/
 def parseAbsRoleEntry (j : Json) : Result AbsRoleEntry := do
   let (tag, payload) ← asTaggedObj j
@@ -237,6 +209,39 @@ def parseAbsShape (j : Json) : Result AbsShape := do
   let rolesArr ← asArr (← field j "roles")
   let roles ← rolesArr.mapM parseAbsRoleEntry
   return { absId, parentAbs, roles }
+
+/-- M9.6: parse a `JoinRule` (Option C hint). -/
+def parseJoinRule (j : Json) : Result JoinRule := do
+  match j with
+  | .str "JoinSame" => return .joinSame
+  | .str "JoinVar" => return .joinVar
+  | .str s => fail s!"unknown nullary JoinRule: {s}"
+  | _ =>
+    let (tag, payload) ← asTaggedObj j
+    match tag with
+    | "JoinSame" => return .joinSame
+    | "JoinVar" => return .joinVar
+    | "JoinSymbolic" => return .joinSymbolic (← asNat (← field payload "fresh_sv"))
+    | "JoinMutBorrows" => do
+      let l ← asNat (← field payload "left")
+      let r ← asNat (← field payload "right")
+      let f ← asNat (← field payload "fresh")
+      -- M9.8: cert v4 promotes `abs` from a bare id to the full
+      -- `AbsShape` (id + parents + roles) so the replayer can
+      -- install the Collapse-Dup-MutBorrow fresh region
+      -- abstraction in `absRegistry` directly, mirroring how
+      -- `EvCall.abs_sig` already names every freshened abs.
+      let a ← parseAbsShape (← field payload "abs")
+      return .joinMutBorrows l r f a
+    | "JoinBottomOther" => return .joinBottomOther (← asNat (← field payload "abs"))
+    | "JoinOtherBottom" => return .joinOtherBottom (← asNat (← field payload "abs"))
+    | _ => fail s!"unknown JoinRule tag: {tag}"
+
+/-- M9.6: parse one `JoinEntry`. -/
+def parseJoinEntry (j : Json) : Result JoinEntry := do
+  let localId ← asNat (← field j "local")
+  let rule ← parseJoinRule (← field j "rule")
+  return { localId, rule }
 
 /-- M9.6: parse an optional hint field. Returns `default` when the
     key is absent (back-compat); otherwise runs `f` on the value. -/
@@ -1494,21 +1499,24 @@ def parseLlbcProgram (j : Json) : Result LlbcProgram := do
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")
-  -- M9.7o-E5a: cert v3 is the only supported format. v2 was the
-  -- Option-C hint schema (flat type/trait decls + opaque-string
-  -- signatures, no embedded LLBC program); v1 predated Option C.
-  -- Both are no longer parseable now that the flat decl mirrors are
-  -- gone — the embedded `llbc_program` subtree is the sole source.
-  if fmtVersion ≠ 3 then
-    fail s!"cert v{fmtVersion} is no longer supported (M9.7o-E5a); regenerate with current aeneas -emit-cert"
+  -- M9.8: cert v4 is the only supported format. v4 promotes
+  -- `JrJoinMutBorrows.abs` from a bare `abs_id` to a full
+  -- `cert_abs_shape` (id + parents + roles) so the replayer can
+  -- install the Collapse-Dup-MutBorrow fresh abs in `absRegistry`
+  -- from the cert directly. v3 (M9.7d) was the prior schema —
+  -- structurally identical but with the bare-id JoinMutBorrows.abs;
+  -- regenerate v3 certs with the current `aeneas -emit-cert`.
+  -- M9.7o-E5a: v2 / v1 were retired at the cert v3 cutover.
+  if fmtVersion ≠ 4 then
+    fail s!"cert v{fmtVersion} is no longer supported (M9.8); regenerate with current aeneas -emit-cert"
   else
     let crateHash ← asStr (← field j "crate_hash")
     let fnArr ← asArr (← field j "functions")
     let functions ← fnArr.mapM parseFunCert
-    -- M9.7c: `llbc_program` is required under v3.
+    -- M9.7c: `llbc_program` is required (kept under v4).
     let llbcProgram : LlbcProgram ← match (j.getObjVal? "llbc_program").toOption with
       | some lj => parseLlbcProgram lj
-      | none => fail "cert v3 missing required field 'llbc_program'"
+      | none => fail "cert v4 missing required field 'llbc_program'"
     return { fmtVersion, crateHash, functions, llbcProgram }
 
 /-- Top-level entry: parse a cert JSON string. -/

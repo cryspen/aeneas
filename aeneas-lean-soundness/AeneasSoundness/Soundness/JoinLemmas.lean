@@ -68,29 +68,26 @@ theorem joinSymbolic_step (Ω : LLBCState) (localId : LocalId)
 /-- C20 / M10.2r — `Collapse-Dup-MutBorrow` + `Join-MutBorrows`
     (Fig. 11). Both branches held `&mut` with different loan ids; the
     join introduces `l_fresh` inside a fresh region abstraction
-    `abs`. Premises: `l_fresh` fresh and `abs` fresh in `Ω`.
+    `abs`. Premises: `l_fresh` fresh and `abs.absId` fresh in `Ω`.
 
-    The post-state mirrors the constructor in
-    `LLBCSharpPaper/Step.lean:130-140`: setLocal-to-mutBorrow,
-    bumpLoanId, bumpAbsId, then setAbs with the three-role region
-    abstraction (`mutBorrow l_left`, `mutBorrow l_right`,
-    `mutLoan l_fresh`).
-
-    This entry is the campaign's known-hard one — its hardness lands
-    in C23, not here. The per-entry lemma is a constructor
-    application. The "fresh abs" gap (the replayer's `stepJoin` does
-    not install `abs` in `absRegistry`) surfaces when C23 tries to
-    show `concretise st' = chain-terminal`. -/
+    M9.8 (cert v4): `abs` is now the full `AbsShape` carried by the
+    cert, not just an `AbsId`. The post-state lifts the cert's
+    shape via `liftAbsShape` (mirroring `LStep.call`'s use of the
+    cert's `absSig`) rather than installing a hardcoded canonical
+    role multiset. For well-formed certs the OCaml emitter writes
+    `abs.roles = [mutBorrow l_left, mutBorrow l_right, mutLoan l_fresh]`
+    and `abs.parentAbs = #[]`, so `liftAbsShape abs` reduces to
+    the paper's canonical Fig. 11 region abstraction. The bridge
+    to the replayer comes for free: `stepJoin` installs `abs` via
+    `addAbsShape`, and `concretise st'.abs abs.absId = liftAbsShape abs`
+    matches the paper-side post-state by construction. -/
 theorem joinMutBorrows_step (Ω : LLBCState) (localId : LocalId)
-    (l_left l_right l_fresh : LoanId) (abs : AbsId)
+    (l_left l_right l_fresh : LoanId) (abs : AbsShape)
     (hLoanFresh : Ω.loanIdFresh l_fresh)
-    (hAbsFresh : Ω.absIdFresh abs) :
+    (hAbsFresh : Ω.absIdFresh abs.absId) :
     JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs⟩
-      (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs
-        |>.setAbs abs
-          { roles := {(Role.mutBorrow, l_left), (Role.mutBorrow, l_right),
-                      (Role.mutLoan, l_fresh)}
-            parents := #[] }) :=
+      (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs.absId
+        |>.setAbs abs.absId (liftAbsShape abs)) :=
   JoinEntryStep.mutBorrows hLoanFresh hAbsFresh
 
 /-- C21 / M10.2r — `Join-Var` (Fig. 11). A whole region abstraction

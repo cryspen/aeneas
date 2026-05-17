@@ -1,22 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "af48f1e7aaf676259c29874836ef6951",
-  "type_decls": [],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "ed5d31f9d0325b504ba97d61803275e4",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "multi_region::swap_pair",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 1)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (\n           (Generated_Types.RVar (Generated_Types.Free 0)),\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (\n            (Generated_Types.RVar (Generated_Types.Free 1)),\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/multi_region.rs",
         "beg_line": 13,
@@ -179,15 +167,6 @@
     {
       "fn_id": 1,
       "fn_name": "multi_region::use_swap_pair",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 1)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/multi_region.rs",
         "beg_line": 17,

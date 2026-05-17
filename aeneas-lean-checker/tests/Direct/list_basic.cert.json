@@ -1,70 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "b8ad62beb39725674fe9ac9a84750fdf",
-  "type_decls": [
-    {
-      "id": 0,
-      "name": "List",
-      "kind": {
-        "Enum": [
-          {
-            "id": 0,
-            "name": "Cons",
-            "fields": [
-              {
-                "idx": 0,
-                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-              },
-              {
-                "idx": 1,
-                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
-              }
-            ]
-          },
-          { "id": 1, "name": "Nil", "fields": [] }
-        ]
-      },
-      "type_params": [],
-      "is_tuple_struct": false,
-      "qualified_name": "list_basic::List",
-      "source_span": {
-        "file": "tests/src/list_basic.rs",
-        "beg_line": 11,
-        "beg_col": 0,
-        "end_line": 14,
-        "end_col": 1
-      }
-    },
-    {
-      "id": 1,
-      "name": "Global",
-      "kind": { "Struct": [] },
-      "type_params": [],
-      "is_tuple_struct": true,
-      "qualified_name": "alloc::alloc::Global",
-      "source_span": {
-        "file": "/rustc/library/alloc/src/alloc.rs",
-        "beg_line": 52,
-        "beg_col": 0,
-        "end_line": 52,
-        "end_col": 17
-      }
-    }
-  ],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "3483b95f18f7e42cd1136623b4ce0ae2",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "list_basic::list_len",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/list_basic.rs",
         "beg_line": 16,

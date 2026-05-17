@@ -116,28 +116,37 @@ inductive JoinEntryStep : LLBCState → JoinEntry → LLBCState → Prop where
 
   /-- `Collapse-Dup-MutBorrow` + `Join-MutBorrows` (Fig. 11). Both
       branches held `&mut` with different loan ids; the join
-      introduces `l_fresh` inside a fresh abs. Premises: all three
-      ids (`l_fresh`, `abs`) are fresh.
+      introduces `l_fresh` inside a fresh abs.
 
-      Post-state: install `Ω.abs abs := some r` with roles
-      [(mutBorrow, l_left), (mutBorrow, l_right), (mutLoan,
-      l_fresh)]; place `mutBorrow l_fresh ⊥` at `localId`; bump
-      freshness counters for `l_fresh` and `abs`.
+      M9.8 (cert v4): `abs` is now the full `AbsShape` carried by
+      the cert, not just an `AbsId`. The premise quantifies
+      freshness over `abs.absId`; the post-state lifts `abs` via
+      `liftAbsShape` rather than installing a hardcoded canonical
+      role multiset. The cert-side `JrJoinMutBorrows`-emitter
+      promises the canonical content
+      `roles = {(mutBorrow, l_left), (mutBorrow, l_right),
+      (mutLoan, l_fresh)}, parents = #[]` (paper Fig. 11), so
+      `liftAbsShape abs` reduces to the canonical multiset for
+      well-formed certs. The structural shape mirrors `LStep.call`
+      (which also uses `liftAbsShape` over the cert's `absSig`),
+      so the replayer-paper correspondence comes out symmetric.
 
-      This is the highest-risk constructor of the campaign (plan
-      §11.1 #1 + §3.4 risk on join algebra); the Phase-C C20 lemma
-      is where the abs-shape correspondence is proved. -/
+      Premises: `l_fresh` and `abs.absId` fresh.
+
+      Post-state: install `Ω.abs abs.absId := some (liftAbsShape abs)`;
+      place `mutBorrow l_fresh ⊥` at `localId`; bump freshness
+      counters for `l_fresh` and `abs.absId`.
+
+      This was the highest-risk constructor of the campaign (plan
+      §11.1 #1 + §3.4); M9.8 collapses the risk by routing the
+      cert's `abs` shape end-to-end. -/
   | mutBorrows {Ω : LLBCState} {localId : LocalId}
-      {l_left l_right l_fresh : LoanId} {abs : AbsId} :
+      {l_left l_right l_fresh : LoanId} {abs : AbsShape} :
       Ω.loanIdFresh l_fresh →
-      Ω.absIdFresh abs →
+      Ω.absIdFresh abs.absId →
       JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs⟩
-        (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs
-          |>.setAbs abs
-            { roles :=
-                {(Role.mutBorrow, l_left), (Role.mutBorrow, l_right),
-                 (Role.mutLoan, l_fresh)}
-              parents := #[] })
+        (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs.absId
+          |>.setAbs abs.absId (liftAbsShape abs))
 
   /-- `Join-Var` (Fig. 11). A whole region abstraction is folded
       into the result; this rule is a marker — the surrounding

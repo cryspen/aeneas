@@ -1,21 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "172bcea1b68a76b10d1f945d742276fe",
-  "type_decls": [],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "d72d2bd65ac5b6690f179356317eec3f",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "compare_simple::id_u32",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/compare_simple.rs",
         "beg_line": 4,
@@ -75,14 +64,6 @@
     {
       "fn_id": 1,
       "fn_name": "compare_simple::incr_val",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/compare_simple.rs",
         "beg_line": 10,
@@ -204,15 +185,6 @@
     {
       "fn_id": 2,
       "fn_name": "compare_simple::add_u32",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/compare_simple.rs",
         "beg_line": 15,

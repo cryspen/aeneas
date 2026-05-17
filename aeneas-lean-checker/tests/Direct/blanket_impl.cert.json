@@ -1,77 +1,10 @@
 {
-  "fmt_version": 3,
+  "fmt_version": 4,
   "crate_hash": "ee7e891cb0503c9047cd2a478157b334",
-  "type_decls": [],
-  "trait_decls": [
-    {
-      "id": 0,
-      "name": "Trait1",
-      "qualified_name": "blanket_impl::Trait1",
-      "methods": [],
-      "source_span": {
-        "file": "tests/src/blanket_impl.rs",
-        "beg_line": 3,
-        "beg_col": 0,
-        "end_line": 3,
-        "end_col": 15
-      }
-    },
-    {
-      "id": 1,
-      "name": "Trait2",
-      "qualified_name": "blanket_impl::Trait2",
-      "methods": [
-        {
-          "name": "foo",
-          "signature": {
-            "inputs": [],
-            "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-            "type_params": [],
-            "trait_clauses": []
-          },
-          "has_default": true
-        }
-      ],
-      "source_span": {
-        "file": "tests/src/blanket_impl.rs",
-        "beg_line": 4,
-        "beg_col": 0,
-        "end_line": 6,
-        "end_col": 1
-      }
-    }
-  ],
-  "trait_impls": [
-    {
-      "id": 0,
-      "pretty_name": "Trait2.Blanket",
-      "qualified_name": "blanket_impl::{blanket_impl::Trait2 for T}",
-      "trait_decl_id": 1,
-      "self_type_var": "T",
-      "type_params": [ "T" ],
-      "trait_clauses": [
-        { "trait": "blanket_impl::Trait1", "type_param": 0 }
-      ],
-      "methods": [ { "name": "foo", "fn_id": 1 } ],
-      "source_span": {
-        "file": "tests/src/blanket_impl.rs",
-        "beg_line": 9,
-        "beg_col": 0,
-        "end_line": 9,
-        "end_col": 31
-      }
-    }
-  ],
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "blanket_impl::Trait2::foo",
-      "signature": {
-        "inputs": [],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [ "Self" ],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/blanket_impl.rs",
         "beg_line": 5,
@@ -121,14 +54,6 @@
     {
       "fn_id": 1,
       "fn_name": "blanket_impl::{blanket_impl::Trait2 for T}::foo",
-      "signature": {
-        "inputs": [],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [ "T" ],
-        "trait_clauses": [
-          { "trait": "blanket_impl::Trait1", "type_param": 0 }
-        ]
-      },
       "source_span": {
         "file": "tests/src/blanket_impl.rs",
         "beg_line": 9,

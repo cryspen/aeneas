@@ -1,21 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "05d5a3ecc864ab3f76a3043ce608ddfe",
-  "type_decls": [],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "8f440363a770f0f46953b64a41f1b7cb",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "loops_simple::count_to",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/loops_simple.rs",
         "beg_line": 13,

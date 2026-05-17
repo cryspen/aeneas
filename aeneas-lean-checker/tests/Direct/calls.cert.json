@@ -1,21 +1,10 @@
 {
-  "fmt_version": 3,
-  "crate_hash": "2d6735724b3d509709a086ffa4e2db00",
-  "type_decls": [],
-  "trait_decls": [],
-  "trait_impls": [],
+  "fmt_version": 4,
+  "crate_hash": "5e24cc5984d6b10877c5fd7e1248a69c",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "calls::incr_inner",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/calls.rs",
         "beg_line": 4,
@@ -137,14 +126,6 @@
     {
       "fn_id": 1,
       "fn_name": "calls::incr_via_helper",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/calls.rs",
         "beg_line": 8,
@@ -271,16 +252,6 @@
     {
       "fn_id": 2,
       "fn_name": "calls::choose",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral Generated_Values.TBool)",
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/calls.rs",
         "beg_line": 12,
@@ -589,16 +560,6 @@
     {
       "fn_id": 3,
       "fn_name": "calls::use_choose",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral Generated_Values.TBool)",
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
-          "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 1)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/calls.rs",
         "beg_line": 16,
@@ -838,16 +799,6 @@
     {
       "fn_id": 4,
       "fn_name": "calls::pick",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TLiteral Generated_Values.TBool)",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-          "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
-        ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": [],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/calls.rs",
         "beg_line": 27,

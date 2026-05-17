@@ -1,99 +1,10 @@
 {
-  "fmt_version": 3,
+  "fmt_version": 4,
   "crate_hash": "f7f036b378b7f3ffe773ad2c719781f4",
-  "type_decls": [
-    {
-      "id": 0,
-      "name": "AVLNode",
-      "kind": {
-        "Struct": [
-          {
-            "idx": 0,
-            "name": "value",
-            "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
-          },
-          {
-            "idx": 1,
-            "name": "left",
-            "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 2);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id =\n             (Generated_Types.TBuiltin Generated_Types.TBox);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TAdt\n                   { Generated_Types.id = (Generated_Types.TAdtId 0);\n                     generics =\n                     { Generated_Types.regions = [];\n                       types =\n                       [(Generated_Types.TVar (Generated_Types.Free 0))];\n                       const_generics = []; trait_refs = [] }\n                     })\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
-          },
-          {
-            "idx": 2,
-            "name": "right",
-            "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 2);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id =\n             (Generated_Types.TBuiltin Generated_Types.TBox);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TAdt\n                   { Generated_Types.id = (Generated_Types.TAdtId 0);\n                     generics =\n                     { Generated_Types.regions = [];\n                       types =\n                       [(Generated_Types.TVar (Generated_Types.Free 0))];\n                       const_generics = []; trait_refs = [] }\n                     })\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
-          }
-        ]
-      },
-      "type_params": [ "T" ],
-      "is_tuple_struct": false,
-      "qualified_name": "issue_194_recursive_struct_projector::AVLNode",
-      "source_span": {
-        "file": "tests/src/issue-194-recursive-struct-projector.rs",
-        "beg_line": 2,
-        "beg_col": 0,
-        "end_line": 6,
-        "end_col": 1
-      }
-    },
-    {
-      "id": 2,
-      "name": "Option",
-      "kind": {
-        "Enum": [
-          { "id": 0, "name": "None", "fields": [] },
-          {
-            "id": 1,
-            "name": "Some",
-            "fields": [
-              {
-                "idx": 0,
-                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
-              }
-            ]
-          }
-        ]
-      },
-      "type_params": [ "T" ],
-      "is_tuple_struct": false,
-      "qualified_name": "core::option::Option",
-      "source_span": {
-        "file": "/rustc/library/core/src/option.rs",
-        "beg_line": 600,
-        "beg_col": 0,
-        "end_line": 600,
-        "end_col": 18
-      }
-    },
-    {
-      "id": 3,
-      "name": "Global",
-      "kind": { "Struct": [] },
-      "type_params": [],
-      "is_tuple_struct": true,
-      "qualified_name": "alloc::alloc::Global",
-      "source_span": {
-        "file": "/rustc/library/alloc/src/alloc.rs",
-        "beg_line": 52,
-        "beg_col": 0,
-        "end_line": 52,
-        "end_col": 17
-      }
-    }
-  ],
-  "trait_decls": [],
-  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "issue_194_recursive_struct_projector::get_val",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
-        ],
-        "output": "(Generated_Types.TVar (Generated_Types.Free 0))",
-        "type_params": [ "T" ],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/issue-194-recursive-struct-projector.rs",
         "beg_line": 10,
@@ -153,14 +64,6 @@
     {
       "fn_id": 1,
       "fn_name": "issue_194_recursive_struct_projector::get_left",
-      "signature": {
-        "inputs": [
-          "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
-        ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 2);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id =\n             (Generated_Types.TBuiltin Generated_Types.TBox);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TAdt\n                   { Generated_Types.id = (Generated_Types.TAdtId 0);\n                     generics =\n                     { Generated_Types.regions = [];\n                       types =\n                       [(Generated_Types.TVar (Generated_Types.Free 0))];\n                       const_generics = []; trait_refs = [] }\n                     })\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })",
-        "type_params": [ "T" ],
-        "trait_clauses": []
-      },
       "source_span": {
         "file": "tests/src/issue-194-recursive-struct-projector.rs",
         "beg_line": 14,
