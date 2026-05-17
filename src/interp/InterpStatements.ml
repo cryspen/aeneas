@@ -1886,25 +1886,12 @@ and eval_function_call_symbolic_from_inst_sig (config : config)
   let abs_ids = List.map (fun rg -> rg.id) inst_sg.abs_regions_hierarchy in
   let args_with_rtypes = List.combine args inst_sg.inputs in
 
-  (* Cert: emit EvCall now that we know [abs_ids] (the region
-     abstractions). We elide the event if any operand or the dest
-     place couldn't be flattened — the trace stays internally
-     consistent because the Lean replayer never observes the missing
-     call and the M10.0 placeholder body covers the remaining gap. *)
-  (match cert_args, cert_dst with
-   | Some args_e, Some dst_e ->
-       ctx_emit_event ctx
-         (CertEvent.EvCall
-            { fn = cert_fn_decl_id;
-              fn_name = cert_fn_name;
-              call_id;
-              args = args_e;
-              dst = dst_e;
-              region_abs = abs_ids;
-              (* M9.6 (Option C): populated in commit #7. *)
-              abs_sig = [];
-            })
-   | _ -> ());
+  (* Note: the EvCall cert event is emitted AFTER
+     [create_push_abstractions_from_abs_region_groups] below, so
+     [abs_sig] can read the just-pushed abstractions' avalues.
+     The intervening type / sanity checks don't emit cert events,
+     so the EvCall → EvEndAbs ordering invariant the Lean replayer
+     relies on is preserved. *)
 
   (* Check the type of the input arguments *)
   List.iteri
@@ -1976,6 +1963,97 @@ and eval_function_call_symbolic_from_inst_sig (config : config)
       (fun rg_id -> FunCall (call_id, rg_id))
       inst_sg.abs_regions_hierarchy region_can_end compute_abs_avalues ctx
   in
+  (* M9.6 (Option C): build the per-abstraction [abs_sig] shape
+     from the just-pushed abstractions. For each abs id in
+     [abs_ids], walk its [avalues] and classify each [aborrow_content]
+     / [aloan_content] into an [ArMutBorrow] / [ArMutLoan] /
+     [ArSharedBorrow] entry. [as_parent_abs] comes straight from
+     the abstraction's ancestor set. Once landed in commit #19,
+     the Lean side's AbsRegistry validates released loans against
+     this shape on every [EvEndAbs]. *)
+  let abs_sig : CertEvent.cert_abs_shape list =
+    let arg_idx_of_loan : (BorrowId.id, int) Hashtbl.t =
+      Hashtbl.create 8
+    in
+    List.iteri
+      (fun i (arg, _rty) ->
+        let v = object
+          inherit [_] iter_tvalue as super
+          method! visit_VMutBorrow env bid mv =
+            if not (Hashtbl.mem arg_idx_of_loan bid) then
+              Hashtbl.add arg_idx_of_loan bid i;
+            super#visit_VMutBorrow env bid mv
+          method! visit_VSharedBorrow env bid sid =
+            if not (Hashtbl.mem arg_idx_of_loan bid) then
+              Hashtbl.add arg_idx_of_loan bid i;
+            super#visit_VSharedBorrow env bid sid
+          method! visit_VReservedMutBorrow env bid sid =
+            if not (Hashtbl.mem arg_idx_of_loan bid) then
+              Hashtbl.add arg_idx_of_loan bid i;
+            super#visit_VReservedMutBorrow env bid sid
+        end in
+        v#visit_tvalue () arg)
+      args_with_rtypes;
+    List.filter_map
+      (fun aid ->
+        match
+          List.find_opt
+            (fun e ->
+              match e with
+              | EAbs a when a.abs_id = aid -> true
+              | _ -> false)
+            ctx.env
+        with
+        | Some (EAbs abs) ->
+          let roles : CertEvent.cert_abs_role list ref = ref [] in
+          let v = object
+            inherit [_] iter_tavalue as super
+            method! visit_AMutBorrow env pm bid child =
+              let arg_idx =
+                try Hashtbl.find arg_idx_of_loan bid
+                with Not_found -> -1
+              in
+              roles := CertEvent.ArMutBorrow { arg_idx; loan = bid } :: !roles;
+              super#visit_AMutBorrow env pm bid child
+            method! visit_AMutLoan env pm lid child =
+              roles := CertEvent.ArMutLoan { loan = lid } :: !roles;
+              super#visit_AMutLoan env pm lid child
+            method! visit_ASharedBorrow env pm bid sid =
+              let arg_idx =
+                try Hashtbl.find arg_idx_of_loan bid
+                with Not_found -> -1
+              in
+              roles :=
+                CertEvent.ArSharedBorrow { arg_idx; sb_id = sid } :: !roles;
+              super#visit_ASharedBorrow env pm bid sid
+          end in
+          List.iter (fun av -> v#visit_tavalue () av) abs.avalues;
+          Some {
+            CertEvent.as_abs_id = aid;
+            as_parent_abs = AbsId.Set.elements abs.parents;
+            as_roles = List.rev !roles;
+          }
+        | _ -> None)
+      abs_ids
+  in
+  (* Cert: emit EvCall now that we know [abs_ids] and have the
+     per-abstraction shape. We elide the event if any operand or
+     the dest place couldn't be flattened — the trace stays
+     internally consistent because the Lean replayer never observes
+     the missing call. *)
+  (match cert_args, cert_dst with
+   | Some args_e, Some dst_e ->
+       ctx_emit_event ctx
+         (CertEvent.EvCall
+            { fn = cert_fn_decl_id;
+              fn_name = cert_fn_name;
+              call_id;
+              args = args_e;
+              dst = dst_e;
+              region_abs = abs_ids;
+              abs_sig;
+            })
+   | _ -> ());
   (* Synthesize the symbolic AST *)
   let cc =
     cc_comp cc

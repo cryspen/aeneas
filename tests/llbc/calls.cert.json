@@ -223,7 +223,13 @@
               "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
             },
             "region_abs": [ 1 ],
-            "abs_sig": []
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
           }
         },
         {
@@ -769,7 +775,16 @@
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
             },
             "region_abs": [ 2 ],
-            "abs_sig": []
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [
+                  { "MutBorrow": { "arg_idx": 1, "loan": 2 } },
+                  { "MutBorrow": { "arg_idx": 2, "loan": 3 } }
+                ]
+              }
+            ]
           }
         },
         {
