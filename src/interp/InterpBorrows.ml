@@ -1305,6 +1305,37 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
             (List.rev !fvs, List.rev !rls)
       in
 
+      (* M9.6 (Option C): collect the locals holding [VMutLoan bid]
+         for each [bid] in [cert_released_loans]. Scan against
+         [ctx0] (the original env captured at the top of
+         [end_abs_aux]) because [end_abs_borrows] above has
+         already substituted those tokens away in the current
+         [ctx]. The Lean strict path (commit #16) clears these
+         tokens directly; the fallback scans env. -*)
+      let cert_token_clear_locals : Expressions.LocalId.id list =
+        if cert_released_loans = [] then []
+        else begin
+          let released = BorrowId.Set.of_list cert_released_loans in
+          let acc = ref [] in
+          List.iter
+            (fun (e : env_elem) ->
+              match e with
+              | EBinding (BVar bv, v) ->
+                let visitor = object
+                  inherit [_] iter_tvalue as super
+                  method! visit_VMutLoan env bid =
+                    if BorrowId.Set.mem bid released then
+                      if not (List.mem bv.index !acc) then
+                        acc := bv.index :: !acc;
+                    super#visit_VMutLoan env bid
+                end in
+                visitor#visit_tvalue () v
+              | _ -> ())
+            ctx0.env;
+          List.rev !acc
+        end
+      in
+
       (* End the regions owned by the abstraction - note that we don't need to
          relookup the abstraction: the set of regions in an abstraction never
          changes... *)
@@ -1335,8 +1366,7 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
              abs = abs_id;
              final_values = cert_final_values;
              released_loans = cert_released_loans;
-             (* M9.6 (Option C): populated in commit #8. *)
-             token_clear_locals = [];
+             token_clear_locals = cert_token_clear_locals;
            });
 
       (* Debugging *)

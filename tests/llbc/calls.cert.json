@@ -237,7 +237,7 @@
             "abs": 1,
             "final_values": [ { "SymVal": 3 } ],
             "released_loans": [ 1 ],
-            "token_clear_locals": []
+            "token_clear_locals": [ 1 ]
           }
         },
         {
