@@ -47,21 +47,20 @@ def main : IO Unit := do
   IO.println "M9.5i generics tests:"
   expectAccept "tests/Direct/generics_basic.cert.json"
   let cc ← readCrateCert "tests/Direct/generics_basic.cert.json"
-  -- Cert-level sanity: M9.5i-1's OCaml change makes `type_decls`
-  -- carry a `type_params` list. For `MyOption<T>` we expect
-  -- exactly one entry, `"T"`.
-  match cc.typeDecls.toList with
+  -- Cert-level sanity (M9.7o-E5a: reads from `cc.llbcProgram.typeDecls`).
+  let lp := cc.llbcProgram
+  let bareNameOfQualified (q : String) : String :=
+    match (q.splitOn "::").getLast? with
+    | some n => n
+    | none => q
+  match lp.typeDecls.toList.filter (fun td => bareNameOfQualified td.itemMeta.name = "MyOption") with
   | [td] =>
-    if td.name = "MyOption" then
-      IO.println s!"  ✓ typeDecl name 'MyOption'"
+    IO.println s!"  ✓ typeDecl name 'MyOption'"
+    if td.generics.types = #["T"] then
+      IO.println s!"  ✓ MyOption.generics.types = #[\"T\"]"
     else
       throw <| IO.userError
-        s!"expected typeDecl 'MyOption', saw '{td.name}'"
-    if td.typeParams = #["T"] then
-      IO.println s!"  ✓ MyOption.typeParams = #[\"T\"]"
-    else
-      throw <| IO.userError
-        s!"expected MyOption.typeParams = #[\"T\"], saw {td.typeParams}"
+        s!"expected MyOption.generics.types = #[\"T\"], saw {td.generics.types}"
     match td.kind with
     | .enum vs =>
       if vs.size = 2 then
@@ -82,7 +81,7 @@ def main : IO Unit := do
       else
         throw <| IO.userError s!"expected 2 variants, saw {vs.size}"
     | _ => throw <| IO.userError "expected MyOption to be an enum"
-  | _ => throw <| IO.userError "expected exactly 1 typeDecl"
+  | _ => throw <| IO.userError "expected exactly 1 typeDecl named 'MyOption'"
   -- Signature-level sanity: the cert's `signature.type_params`
   -- carries the function's type-parameter names. For `get<T>` we
   -- expect exactly `["T"]`.

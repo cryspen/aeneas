@@ -49,20 +49,22 @@ def main : IO Unit := do
     IO.println s!"  ✓ saw {nArms} EvMatchArm events"
   else
     throw <| IO.userError s!"expected 3 EvMatchArm events, saw {nArms}"
-  -- Shape sanity: cert must declare a 3-variant enum named `Sign`.
-  match cc.typeDecls.toList with
+  -- Shape sanity (M9.7o-E5a: reads from `cc.llbcProgram.typeDecls`).
+  let lp := cc.llbcProgram
+  let bareNameOfQualified (q : String) : String :=
+    match (q.splitOn "::").getLast? with
+    | some n => n
+    | none => q
+  match lp.typeDecls.toList.filter (fun td => bareNameOfQualified td.itemMeta.name = "Sign") with
   | [td] =>
-    if td.name = "Sign" then
-      match td.kind with
-      | .enum vs =>
-        if vs.size = 3 then
-          IO.println s!"  ✓ Sign has {vs.size} variants"
-        else
-          throw <| IO.userError s!"expected 3 variants, saw {vs.size}"
-      | _ => throw <| IO.userError "expected Sign to be an enum"
-    else
-      throw <| IO.userError s!"expected typeDecl name 'Sign', saw '{td.name}'"
-  | _ => throw <| IO.userError "expected exactly 1 typeDecl"
+    match td.kind with
+    | .enum vs =>
+      if vs.size = 3 then
+        IO.println s!"  ✓ Sign has {vs.size} variants"
+      else
+        throw <| IO.userError s!"expected 3 variants, saw {vs.size}"
+    | _ => throw <| IO.userError "expected Sign to be an enum"
+  | _ => throw <| IO.userError "expected exactly 1 typeDecl named 'Sign'"
   -- End-to-end: translate + emit, then assert on the rendered source.
   -- We check the enum decl, the function signature, and each match
   -- arm. The standard Aeneas backend's exact param name `s` vs. the

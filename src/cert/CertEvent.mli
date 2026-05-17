@@ -216,91 +216,18 @@ type fun_cert = {
   fc_pretty_name : string option;
 }
 
-type cert_field = {
-  cf_idx : int;
-  cf_name : string option;
-  cf_ty : ty;
-}
-
-type cert_variant = {
-  cv_id : int;
-  cv_name : string;
-  cv_fields : cert_field list;
-}
-
-type cert_type_decl_kind =
-  | CTDStruct of cert_field list
-  | CTDEnum of cert_variant list
-  | CTDOpaque
-
-type cert_type_decl = {
-  ctd_id : int;
-  ctd_name : string;
-  ctd_kind : cert_type_decl_kind;
-  ctd_type_params : string list;
-  ctd_is_tuple_struct : bool;
-  ctd_source_span : cert_source_span option;
-  ctd_qualified_name : string;
-}
-
-type cert_trait_method = {
-  ctm_name : string;
-  ctm_signature : cert_signature;
-  (** [M9.5o] True iff this method has a default implementation in
-      the trait declaration. The Lean side emits these as
-      `Trait.<method>.default` decls (taking the trait itself as a
-      bound) alongside the trait. *)
-  ctm_has_default : bool;
-}
-
-type cert_trait_decl = {
-  ctrd_id : int;
-  ctrd_name : string;
-  ctrd_qualified_name : string;
-  ctrd_methods : cert_trait_method list;
-  ctrd_source_span : cert_source_span option;
-}
-
-type cert_trait_impl_method = {
-  ctim_name : string;
-  ctim_fn_id : int;
-}
-
-type cert_trait_impl = {
-  ctri_id : int;
-  ctri_pretty_name : string;
-  ctri_qualified_name : string;
-  ctri_trait_decl_id : int;
-  ctri_self_type_decl_id : int option;
-  (** [M9.5o] When the impl's [Self] is a type parameter rather than a
-      concrete ADT, this carries its name (e.g. ["T"] for
-      `impl<T: Trait1> Trait2 for T`). [None] when [Self] is a
-      concrete ADT (the [ctri_self_type_decl_id] case). *)
-  ctri_self_type_var : string option;
-  (** [M9.5o] Type-parameter names declared on the impl itself
-      (i.e. the [T] in `impl<T: ...> ...`). Empty for monomorphic
-      (concrete-Self) impls. *)
-  ctri_type_params : string list;
-  (** [M9.5o] Trait obligations on the impl's type parameters; same
-      shape as [csig_trait_clauses]. *)
-  ctri_trait_clauses : (string * int) list;
-  ctri_methods : cert_trait_impl_method list;
-  ctri_source_span : cert_source_span option;
-}
-
+(** [M9.7o-E5a] Top-level certificate. The flat ADT / trait decl
+    mirrors (`cert_type_decl`, `cert_trait_decl`, `cert_trait_impl`)
+    were deleted alongside cert v2; the embedded {!cc_llbc_program}
+    subtree is the sole source for those decls on the Lean side. *)
 type crate_cert = {
   cc_fmt_version : int;
   cc_crate_hash : string;
-  cc_type_decls : cert_type_decl list;
-  cc_trait_decls : cert_trait_decl list;
-  cc_trait_impls : cert_trait_impl list;
   cc_functions : fun_cert list;
-  (** [M9.7d] The structured LLBC subtree, serialised by
-      {!LlbcJson.crate_to_json} and embedded under the top-level
-      [llbc_program] key of cert v3. Defaults to [`Null] for an
-      empty crate (the Lean parser falls back to
-      [LlbcProgram.empty]). *)
   cc_llbc_program : Yojson.Basic.t;
+      (** [M9.7d] The structured LLBC subtree, serialised by
+          {!LlbcJson.crate_to_json} and embedded under the top-level
+          [llbc_program] key of cert v3. *)
 }
 
 val cert_fmt_version : int

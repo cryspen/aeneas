@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "3a1c5235a92c93b9803a74c77e42f59b",
+  "fmt_version": 3,
+  "crate_hash": "ee7e891cb0503c9047cd2a478157b334",
   "type_decls": [],
   "trait_decls": [
     {
@@ -48,21 +48,11 @@
       "qualified_name": "blanket_impl::{blanket_impl::Trait2 for T}",
       "trait_decl_id": 1,
       "self_type_var": "T",
-      "type_params": [
-        "T"
-      ],
+      "type_params": [ "T" ],
       "trait_clauses": [
-        {
-          "trait": "blanket_impl::Trait1",
-          "type_param": 0
-        }
+        { "trait": "blanket_impl::Trait1", "type_param": 0 }
       ],
-      "methods": [
-        {
-          "name": "foo",
-          "fn_id": 1
-        }
-      ],
+      "methods": [ { "name": "foo", "fn_id": 1 } ],
       "source_span": {
         "file": "tests/src/blanket_impl.rs",
         "beg_line": 9,
@@ -79,9 +69,7 @@
       "signature": {
         "inputs": [],
         "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [
-          "Self"
-        ],
+        "type_params": [ "Self" ],
         "trait_clauses": []
       },
       "source_span": {
@@ -92,12 +80,43 @@
         "end_col": 15
       },
       "events": [
-        "EvReturn"
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
-      "final_state": {
-        "env": [],
-        "live_loans": []
-      }
+      "final_state": { "env": [], "live_loans": [] }
     },
     {
       "fn_id": 1,
@@ -105,14 +124,9 @@
       "signature": {
         "inputs": [],
         "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
-        "type_params": [
-          "T"
-        ],
+        "type_params": [ "T" ],
         "trait_clauses": [
-          {
-            "trait": "blanket_impl::Trait1",
-            "type_param": 0
-          }
+          { "trait": "blanket_impl::Trait1", "type_param": 0 }
         ]
       },
       "source_span": {
@@ -124,12 +138,399 @@
       },
       "pretty_name": "Trait2.Blanket.foo",
       "events": [
-        "EvReturn"
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
-      "final_state": {
-        "env": [],
-        "live_loans": []
-      }
+      "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "blanket_impl::Trait2::foo",
+          "attr_info": null,
+          "source_text": "fn foo() {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/blanket_impl.rs",
+            "beg_line": 5,
+            "beg_col": 4,
+            "end_line": 5,
+            "end_col": 15
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/blanket_impl.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 15
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/blanket_impl.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/blanket_impl.rs",
+                "beg_line": 5,
+                "beg_col": 13,
+                "end_line": 5,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/blanket_impl.rs",
+                "beg_line": 5,
+                "beg_col": 15,
+                "end_line": 5,
+                "end_col": 15
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "blanket_impl::{blanket_impl::Trait2 for T}::foo",
+          "attr_info": null,
+          "source_text": "fn foo() {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/blanket_impl.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 31
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "blanket_impl::Trait1", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/blanket_impl.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 15
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/blanket_impl.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/blanket_impl.rs",
+                "beg_line": 5,
+                "beg_col": 13,
+                "end_line": 5,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/blanket_impl.rs",
+                "beg_line": 5,
+                "beg_col": 15,
+                "end_line": 5,
+                "end_col": 15
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "blanket_impl::Trait1",
+          "attr_info": null,
+          "source_text": "trait Trait1 {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/blanket_impl.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 3,
+            "end_col": 15
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "blanket_impl::Trait2",
+          "attr_info": null,
+          "source_text": "trait Trait2 {\n    fn foo() {}\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/blanket_impl.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "foo",
+            "signature": {
+              "inputs": [],
+              "output": {
+                "Adt": { "id": "Tuple", "generics": { "types": [] } }
+              },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": []
+              }
+            },
+            "has_default": true,
+            "default_fn_id": 0
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "blanket_impl::{blanket_impl::Trait2 for T}",
+          "attr_info": null,
+          "source_text": "impl<T: Trait1> Trait2 for T {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/blanket_impl.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 31
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "TypeVar": { "Free": 0 } },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": [
+            { "trait": "blanket_impl::Trait1", "type_param": 0 }
+          ]
+        },
+        "methods": [ { "name": "foo", "fn_id": 1 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

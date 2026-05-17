@@ -1,7 +1,9 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "8447601926a20310b468da0f9dcff25a",
+  "fmt_version": 3,
+  "crate_hash": "2d6735724b3d509709a086ffa4e2db00",
   "type_decls": [],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -10,7 +12,9 @@
         "inputs": [
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/calls.rs",
@@ -20,6 +24,26 @@
         "end_col": 1
       },
       "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
         {
           "EvCopy": {
             "src": {
@@ -82,7 +106,31 @@
             }
           }
         },
-        "EvReturn"
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     },
@@ -93,7 +141,9 @@
         "inputs": [
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/calls.rs",
@@ -103,6 +153,26 @@
         "end_col": 1
       },
       "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -152,11 +222,49 @@
               "projection": [],
               "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
             },
-            "region_abs": [ 1 ]
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
           }
         },
-        { "EvEndAbs": { "abs": 1, "final_values": [ { "SymVal": 3 } ] } },
-        "EvReturn"
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [ { "SymVal": 3 } ],
+            "released_loans": [ 1 ],
+            "token_clear_locals": [ 1 ]
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     },
@@ -169,7 +277,9 @@
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
         ],
-        "output": "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+        "output": "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/calls.rs",
@@ -179,6 +289,26 @@
         "end_col": 1
       },
       "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 0,
+            "inner_sv": 3,
+            "subst_locals": [ 2 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 1,
+            "inner_sv": 4,
+            "subst_locals": [ 3 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
         {
           "EvCopy": {
             "src": {
@@ -232,7 +362,9 @@
               "local": 2,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true,
+            "parent_abs": 0
           }
         },
         {
@@ -259,7 +391,8 @@
               "local": 7,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true
           }
         },
         {
@@ -286,7 +419,8 @@
               "local": 5,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true
           }
         },
         {
@@ -313,7 +447,8 @@
               "local": 4,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true
           }
         },
         {
@@ -342,7 +477,9 @@
               "local": 3,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true,
+            "parent_abs": 0
           }
         },
         {
@@ -369,7 +506,8 @@
               "local": 5,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true
           }
         },
         {
@@ -396,7 +534,8 @@
               "local": 4,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true
           }
         },
         {
@@ -415,7 +554,35 @@
             }
           }
         },
-        "EvReturn"
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     },
@@ -428,7 +595,9 @@
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 1)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/calls.rs",
@@ -438,6 +607,36 @@
         "end_col": 1
       },
       "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 0,
+            "inner_sv": 3,
+            "subst_locals": [ 2 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 1,
+            "inner_sv": 4,
+            "subst_locals": [ 3 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
         {
           "EvCopy": {
             "src": {
@@ -575,7 +774,27 @@
               "projection": [],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
             },
-            "region_abs": [ 2 ]
+            "region_abs": [ 2 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [
+                  { "MutBorrow": { "arg_idx": 1, "loan": 2 } },
+                  { "MutBorrow": { "arg_idx": 2, "loan": 3 } }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 5,
+            "bid": 4,
+            "inner_sv": 6,
+            "subst_locals": [ 4 ],
+            "subst_loans": [],
+            "parent_abs": 2
           }
         },
         {
@@ -588,7 +807,31 @@
             "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "7" ] } } }
           }
         },
-        "EvReturn"
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     },
@@ -601,7 +844,9 @@
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
           "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
         ],
-        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+        "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/calls.rs",
@@ -815,7 +1060,13 @@
                 { "local": 1, "value": { "SymVal": 3 } }
               ],
               "live_loans": []
-            }
+            },
+            "witnesses": [
+              { "local": 4, "rule": { "JoinSymbolic": { "fresh_sv": 4 } } },
+              { "local": 3, "rule": "JoinSame" },
+              { "local": 2, "rule": "JoinSame" },
+              { "local": 1, "rule": { "JoinSymbolic": { "fresh_sv": 3 } } }
+            ]
           }
         },
         {
@@ -882,12 +1133,1731 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "region_abs": []
+            "region_abs": [],
+            "abs_sig": []
           }
         },
-        "EvReturn"
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "calls::incr_inner",
+          "attr_info": null,
+          "source_text": "pub fn incr_inner(y: &mut u32) {\n    *y += 1;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 5,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 1,
+                          "projection": [ "Deref" ],
+                          "ty": {
+                            "Ref": [
+                              0, { "Literal": { "UInt": "U32" } }, "Mut"
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 5,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 4,
+                "beg_col": 31,
+                "end_line": 6,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 6,
+                "beg_col": 1,
+                "end_line": 6,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "calls::incr_via_helper",
+          "attr_info": null,
+          "source_text": "pub fn incr_via_helper(x: &mut u32) {\n    incr_inner(x);\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 8,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 9,
+                "beg_col": 15,
+                "end_line": 9,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 17
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 0 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 9,
+                "beg_col": 16,
+                "end_line": 9,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 9,
+                "beg_col": 17,
+                "end_line": 9,
+                "end_col": 18
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 8,
+                "beg_col": 36,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 10,
+                "beg_col": 1,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "calls::choose",
+          "attr_info": null,
+          "source_text": "pub fn choose<'a>(b: bool, x: &'a mut u32, y: &'a mut u32) -> &'a mut u32 {\n    if b { x } else { y }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 12,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": "Bool" },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          "generics": {
+            "regions": [ { "name": "'a" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 13,
+            "beg_col": 4,
+            "end_line": 14,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 13,
+                "beg_col": 7,
+                "end_line": 13,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 13,
+                "beg_col": 4,
+                "end_line": 13,
+                "end_col": 25
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/calls.rs",
+                        "beg_line": 13,
+                        "beg_col": 4,
+                        "end_line": 13,
+                        "end_col": 25
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 11,
+                            "end_line": 13,
+                            "end_col": 12
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 7,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 2,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 11,
+                            "end_line": 13,
+                            "end_col": 12
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 5,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 7,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 13,
+                            "end_line": 13,
+                            "end_col": 14
+                          },
+                          "kind": { "StorageDead": 7 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 4,
+                            "end_line": 13,
+                            "end_col": 25
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 5,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 24,
+                            "end_line": 13,
+                            "end_col": 25
+                          },
+                          "kind": { "StorageDead": 6 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 4,
+                            "end_line": 13,
+                            "end_col": 25
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 4,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 14,
+                            "beg_col": 0,
+                            "end_line": 14,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 5 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 14,
+                            "beg_col": 0,
+                            "end_line": 14,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 4 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 14,
+                            "beg_col": 1,
+                            "end_line": 14,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/calls.rs",
+                        "beg_line": 13,
+                        "beg_col": 4,
+                        "end_line": 13,
+                        "end_col": 25
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 22,
+                            "end_line": 13,
+                            "end_col": 23
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 5,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 3,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 4,
+                            "end_line": 13,
+                            "end_col": 25
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 5,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 24,
+                            "end_line": 13,
+                            "end_col": 25
+                          },
+                          "kind": { "StorageDead": 6 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 13,
+                            "beg_col": 4,
+                            "end_line": 13,
+                            "end_col": 25
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 4,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 14,
+                            "beg_col": 0,
+                            "end_line": 14,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 5 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 14,
+                            "beg_col": 0,
+                            "end_line": 14,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 4 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 14,
+                            "beg_col": 1,
+                            "end_line": 14,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "calls::use_choose",
+          "attr_info": null,
+          "source_text": "pub fn use_choose(b: bool, x: &mut u32, y: &mut u32) {\n    let r = choose(b, x, y);\n    *r = 7;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 16,
+            "beg_col": 0,
+            "end_line": 19,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": "Bool" },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 19,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 17,
+                "beg_col": 19,
+                "end_line": 17,
+                "end_col": 20
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 17,
+                "beg_col": 22,
+                "end_line": 17,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 17,
+                "beg_col": 25,
+                "end_line": 17,
+                "end_col": 26
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 3,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 17,
+                "beg_col": 12,
+                "end_line": 17,
+                "end_col": 27
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 2 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 17,
+                "beg_col": 26,
+                "end_line": 17,
+                "end_col": 27
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 17,
+                "beg_col": 26,
+                "end_line": 17,
+                "end_col": 27
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 17,
+                "beg_col": 26,
+                "end_line": 17,
+                "end_col": 27
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 18,
+                "beg_col": 4,
+                "end_line": 18,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "7" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 16,
+                "beg_col": 53,
+                "end_line": 19,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 19,
+                "beg_col": 0,
+                "end_line": 19,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 19,
+                "beg_col": 1,
+                "end_line": 19,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "calls::pick",
+          "attr_info": null,
+          "source_text": "pub fn pick(b: bool, x: u32, y: u32) -> u32 {\n    let mut r = 0u32;\n    if b {\n        r = x;\n    } else {\n        r = y;\n    }\n    r.wrapping_add(1)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 27,
+            "beg_col": 0,
+            "end_line": 35,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": "Bool" },
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/calls.rs",
+            "beg_line": 28,
+            "beg_col": 8,
+            "end_line": 35,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 28,
+                "beg_col": 16,
+                "end_line": 28,
+                "end_col": 20
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 29,
+                "beg_col": 7,
+                "end_line": 29,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 29,
+                "beg_col": 4,
+                "end_line": 33,
+                "end_col": 5
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/calls.rs",
+                        "beg_line": 29,
+                        "beg_col": 4,
+                        "end_line": 33,
+                        "end_col": 5
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 30,
+                            "beg_col": 12,
+                            "end_line": 30,
+                            "end_col": 13
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 6,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Copy": {
+                                    "local": 2,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 30,
+                            "beg_col": 8,
+                            "end_line": 30,
+                            "end_col": 13
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Move": {
+                                    "local": 6,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 30,
+                            "beg_col": 12,
+                            "end_line": 30,
+                            "end_col": 13
+                          },
+                          "kind": { "StorageDead": 6 }
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/calls.rs",
+                        "beg_line": 29,
+                        "beg_col": 4,
+                        "end_line": 33,
+                        "end_col": 5
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 32,
+                            "beg_col": 12,
+                            "end_line": 32,
+                            "end_col": 13
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 7,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Copy": {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 32,
+                            "beg_col": 8,
+                            "end_line": 32,
+                            "end_col": 13
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Move": {
+                                    "local": 7,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/calls.rs",
+                            "beg_line": 32,
+                            "beg_col": 12,
+                            "end_line": 32,
+                            "end_col": 13
+                          },
+                          "kind": { "StorageDead": 7 }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 33,
+                "beg_col": 4,
+                "end_line": 33,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 34,
+                "beg_col": 4,
+                "end_line": 34,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 8,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 34,
+                "beg_col": 4,
+                "end_line": 34,
+                "end_col": 21
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 8,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    },
+                    {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "1" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 34,
+                "beg_col": 20,
+                "end_line": 34,
+                "end_col": 21
+              },
+              "kind": { "StorageDead": 8 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 35,
+                "beg_col": 0,
+                "end_line": 35,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/calls.rs",
+                "beg_line": 35,
+                "beg_col": 1,
+                "end_line": 35,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::num::{u32}::wrapping_add",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/uint_macros.rs",
+            "beg_line": 2397,
+            "beg_col": 8,
+            "end_line": 2397,
+            "end_col": 58
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

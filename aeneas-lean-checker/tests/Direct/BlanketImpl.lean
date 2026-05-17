@@ -42,13 +42,22 @@ def main : IO Unit := do
   IO.println "M9.5o blanket impl tests:"
   expectAccept "tests/Direct/blanket_impl.cert.json"
   let cc ← readCrateCert "tests/Direct/blanket_impl.cert.json"
-  -- Cert-level sanity: trait_decls has two entries with the right names.
-  match cc.traitDecls.toList with
+  -- Cert-level sanity (M9.7o-E5a: now reads from the structured
+  -- LlbcProgram subtree, since the flat `cc.traitDecls` / `cc.traitImpls`
+  -- arrays were retired):
+  let lp := cc.llbcProgram
+  let bareNameOfQualified (q : String) : String :=
+    match (q.splitOn "::").getLast? with
+    | some n => n
+    | none => q
+  match lp.traitDecls.toList with
   | [td1, td2] =>
-    if td1.name = "Trait1" ∧ td2.name = "Trait2" then
+    let b1 := bareNameOfQualified td1.itemMeta.name
+    let b2 := bareNameOfQualified td2.itemMeta.name
+    if b1 = "Trait1" ∧ b2 = "Trait2" then
       IO.println s!"  ✓ traitDecls names = [Trait1, Trait2]"
     else
-      throw <| IO.userError s!"expected [Trait1, Trait2], saw [{td1.name}, {td2.name}]"
+      throw <| IO.userError s!"expected [Trait1, Trait2], saw [{b1}, {b2}]"
     -- Trait2.foo has hasDefault = true.
     match td2.methods.toList with
     | [m] =>
@@ -59,21 +68,17 @@ def main : IO Unit := do
     | _ => throw <| IO.userError "expected Trait2 to have 1 method"
   | _ => throw <| IO.userError "expected exactly 2 trait decls"
   -- Cert-level sanity: trait_impls has the blanket entry.
-  match cc.traitImpls.toList with
+  match lp.traitImpls.toList with
   | [ti] =>
-    if ti.prettyName = "Trait2.Blanket" then
-      IO.println s!"  ✓ blanket impl prettyName = 'Trait2.Blanket'"
+    -- Blanket impls: `selfType` is a type variable, not a concrete ADT.
+    match ti.selfType with
+    | .tVar _ => IO.println s!"  ✓ blanket impl selfType is a type variable"
+    | _ => throw <| IO.userError "expected blanket impl (selfType = TVar)"
+    if ti.generics.types = #["T"] then
+      IO.println s!"  ✓ blanket impl generics.types = ['T']"
     else
-      throw <| IO.userError s!"expected 'Trait2.Blanket', saw '{ti.prettyName}'"
-    if ti.selfTypeVar = some "T" then
-      IO.println s!"  ✓ blanket impl selfTypeVar = some 'T'"
-    else
-      throw <| IO.userError s!"expected selfTypeVar = some 'T', saw {ti.selfTypeVar}"
-    if ti.typeParams = #["T"] then
-      IO.println s!"  ✓ blanket impl typeParams = ['T']"
-    else
-      throw <| IO.userError s!"expected typeParams = ['T']"
-    match ti.traitClauses.toList with
+      throw <| IO.userError s!"expected generics.types = ['T']"
+    match ti.generics.traitClauses.toList with
     | [c] =>
       if c.traitQualifiedName = "blanket_impl::Trait1" ∧ c.typeParamIdx = 0 then
         IO.println s!"  ✓ blanket impl trait clause = [Trait1 on T]"

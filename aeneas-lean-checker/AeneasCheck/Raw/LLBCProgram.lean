@@ -524,35 +524,20 @@ can carry the structured `llbcProgram : LlbcProgram` field without
 inducing an import cycle (LLBCProgram.lean already imports CertEvent
 for `SourceSpan` / `TraitClause`).
 
-The pre-M9.7 fields (`typeDecls`, `traitDecls`, `traitImpls`,
-opaque-string signatures inside `functions[].signature`) are
-preserved during Phases A–D so v2 fixtures stay valid mid-campaign;
-Phase E retires the redundant flat fields once the translator reads
-its structured input from `llbcProgram`. -/
+M9.7o-E5a: the flat fields (`typeDecls`, `traitDecls`, `traitImpls`)
+were deleted once cert v2 was retired — the structured `llbcProgram`
+subtree below is now the sole source of type / trait decls.
+Function signatures are still flat-sourced via `functions[].signature`
+opaque strings; that boundary moves in M9.7o-E5b. -/
 
-/-- Top-level cert (M9.7c-extended). -/
+/-- Top-level cert (cert v3 only after M9.7o-E5a). -/
 structure CrateCert where
   fmtVersion : Nat
   crateHash : String
-  /-- M9.5b: ADT type decls. May be empty for crates with no struct/
-      enum types. The OCaml cert generator populates this from
-      `crate.type_decls`; old certs that pre-date M9.5b have an empty
-      array (the JSON parser tolerates a missing `type_decls` key). -/
-  typeDecls : Array TypeDecl
-  /-- M9.5l: trait declarations. Empty for crates with no traits;
-      the parser tolerates a missing `trait_decls` key for
-      back-compat with pre-M9.5l certs. -/
-  traitDecls : Array TraitDecl := #[]
-  /-- M9.5l: trait impls. Empty for crates with no impls; same
-      back-compat treatment as `traitDecls`. -/
-  traitImpls : Array TraitImpl := #[]
   functions : Array FunCert
-  /-- M9.7c: the embedded structured LLBC program (cert v3). Empty
-      under cert v1 / v2 — the JSON parser defaults to
-      `LlbcProgram.empty` when the `llbc_program` field is absent.
-      Phase C / D's consistency checks short-circuit when this is
-      empty; Phase E flips the translator to read its structured
-      input from here once Phase B populates the field. -/
+  /-- M9.7c: the embedded structured LLBC program (cert v3). Sole
+      source of type / trait decls after the M9.7o-E5a deletion of
+      the flat `typeDecls` / `traitDecls` / `traitImpls` fields. -/
   llbcProgram : LlbcProgram := LlbcProgram.empty
   deriving Repr, Inhabited
 

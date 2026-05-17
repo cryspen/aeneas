@@ -499,133 +499,12 @@ let json_event (e : event) : Yojson.Basic.t =
               ] );
         ]
 
-(* ---------- Type declarations (M9.5b) ---------- *)
-
-let json_cert_field (f : cert_field) : Yojson.Basic.t =
-  let name_field : (string * Yojson.Basic.t) list =
-    match f.cf_name with
-    | Some n -> [ "name", `String n ]
-    | None -> []
-  in
-  `Assoc
-    ([ "idx", `Int f.cf_idx ]
-     @ name_field
-     @ [ "ty", json_ty f.cf_ty ])
-
-let json_cert_variant (v : cert_variant) : Yojson.Basic.t =
-  `Assoc
-    [
-      "id", `Int v.cv_id;
-      "name", `String v.cv_name;
-      "fields", `List (List.map json_cert_field v.cv_fields);
-    ]
-
-let json_cert_type_decl_kind (k : cert_type_decl_kind) : Yojson.Basic.t =
-  match k with
-  | CTDStruct fields ->
-      `Assoc [ "Struct", `List (List.map json_cert_field fields) ]
-  | CTDEnum variants ->
-      `Assoc [ "Enum", `List (List.map json_cert_variant variants) ]
-  | CTDOpaque -> `String "Opaque"
-
-let json_cert_type_decl (d : cert_type_decl) : Yojson.Basic.t =
-  let optional_span : (string * Yojson.Basic.t) list =
-    match d.ctd_source_span with
-    | None -> []
-    | Some sp -> [ "source_span", json_cert_source_span sp ]
-  in
-  `Assoc
-    ([
-       "id", `Int d.ctd_id;
-       "name", `String d.ctd_name;
-       "kind", json_cert_type_decl_kind d.ctd_kind;
-       (* M9.5i: the ADT's type-parameter names, in declaration order.
-          Empty for monomorphic ADTs. *)
-       "type_params",
-         `List (List.map (fun n -> `String n) d.ctd_type_params);
-       (* M9.5l: tuple-style positional fields (including unit structs).
-          Defaults to false on the Lean side when the key is absent
-          (older certs). *)
-       "is_tuple_struct", `Bool d.ctd_is_tuple_struct;
-       (* M9.5n: crate-prefixed qualified name. The Lean side uses
-          this to suppress stdlib ADTs (`core::option::Option`,
-          `alloc::alloc::Global`, …) so they don't shadow / duplicate
-          Lean's built-ins in the emitted output. *)
-       "qualified_name", `String d.ctd_qualified_name;
-     ]
-    @ optional_span)
-
-(* ---------- Trait declarations (M9.5l) ---------- *)
-
-let json_cert_trait_method (m : cert_trait_method) : Yojson.Basic.t =
-  `Assoc
-    [
-      "name", `String m.ctm_name;
-      "signature", json_cert_signature m.ctm_signature;
-      (* M9.5o: has_default flag — true iff this method carries a
-         default implementation in the trait declaration. *)
-      "has_default", `Bool m.ctm_has_default;
-    ]
-
-let json_cert_trait_decl (d : cert_trait_decl) : Yojson.Basic.t =
-  let optional_span : (string * Yojson.Basic.t) list =
-    match d.ctrd_source_span with
-    | None -> []
-    | Some sp -> [ "source_span", json_cert_source_span sp ]
-  in
-  `Assoc
-    ([
-       "id", `Int d.ctrd_id;
-       "name", `String d.ctrd_name;
-       "qualified_name", `String d.ctrd_qualified_name;
-       "methods", `List (List.map json_cert_trait_method d.ctrd_methods);
-     ]
-    @ optional_span)
-
-let json_cert_trait_impl_method (m : cert_trait_impl_method) : Yojson.Basic.t =
-  `Assoc
-    [
-      "name", `String m.ctim_name;
-      "fn_id", `Int m.ctim_fn_id;
-    ]
-
-let json_cert_trait_impl (i : cert_trait_impl) : Yojson.Basic.t =
-  let optional_self : (string * Yojson.Basic.t) list =
-    match i.ctri_self_type_decl_id with
-    | None -> []
-    | Some id -> [ "self_type_decl_id", `Int id ]
-  in
-  let optional_self_var : (string * Yojson.Basic.t) list =
-    match i.ctri_self_type_var with
-    | None -> []
-    | Some n -> [ "self_type_var", `String n ]
-  in
-  let optional_span : (string * Yojson.Basic.t) list =
-    match i.ctri_source_span with
-    | None -> []
-    | Some sp -> [ "source_span", json_cert_source_span sp ]
-  in
-  `Assoc
-    ([
-       "id", `Int i.ctri_id;
-       "pretty_name", `String i.ctri_pretty_name;
-       "qualified_name", `String i.ctri_qualified_name;
-       "trait_decl_id", `Int i.ctri_trait_decl_id;
-     ]
-    @ optional_self
-    @ optional_self_var
-    @ [
-        (* M9.5o: type-parameter names on the impl itself + trait clauses. *)
-        "type_params",
-          `List (List.map (fun n -> `String n) i.ctri_type_params);
-        "trait_clauses",
-          `List (List.map json_trait_clause i.ctri_trait_clauses);
-        "methods",
-          `List (List.map json_cert_trait_impl_method i.ctri_methods);
-      ]
-    @ optional_span)
-
 (* ---------- Top-level ---------- *)
+(* M9.7o-E5a: the flat type/trait decl JSON emitters (json_cert_field,
+   json_cert_variant, json_cert_type_decl, json_cert_trait_decl,
+   json_cert_trait_impl, ...) were deleted alongside their types. The
+   structured LLBC subtree under [llbc_program] is now the sole
+   source of those decls on the Lean side. *)
 
 let json_fun_cert (fc : fun_cert) : Yojson.Basic.t =
   let optional_span : (string * Yojson.Basic.t) list =
@@ -656,9 +535,6 @@ let json_crate_cert (cc : crate_cert) : Yojson.Basic.t =
     [
       "fmt_version", `Int cc.cc_fmt_version;
       "crate_hash", `String cc.cc_crate_hash;
-      "type_decls", `List (List.map json_cert_type_decl cc.cc_type_decls);
-      "trait_decls", `List (List.map json_cert_trait_decl cc.cc_trait_decls);
-      "trait_impls", `List (List.map json_cert_trait_impl cc.cc_trait_impls);
       "functions", `List (List.map json_fun_cert cc.cc_functions);
       (* M9.7d: cert-v3 embeds the structured LLBC subtree under
          the [llbc_program] key, populated by {!LlbcJson.crate_to_json}

@@ -41,15 +41,16 @@ def main : IO Unit := do
   IO.println "M9.5o defaulted method tests:"
   expectAccept "tests/Direct/defaulted_method.cert.json"
   let cc ← readCrateCert "tests/Direct/defaulted_method.cert.json"
-  -- Cert-level sanity: locate the in-crate `Trait` decl (the cert
-  -- also includes core trait decls pulled in by `main`'s use of
-  -- `min`/`assert!`: Ord, Eq, PartialOrd, PartialEq).
-  let cratesTrait := cc.traitDecls.find?
-    (fun t => t.qualifiedName = "defaulted_method::Trait")
+  -- Cert-level sanity (M9.7o-E5a: reads from `cc.llbcProgram`).
+  let lp := cc.llbcProgram
+  let cratesTrait := lp.traitDecls.find?
+    (fun t => t.itemMeta.name = "defaulted_method::Trait")
   match cratesTrait with
   | none => throw <| IO.userError "expected a defaulted_method::Trait decl"
   | some td =>
-    IO.println s!"  ✓ traitDecl name = '{td.name}'"
+    let bare := match (td.itemMeta.name.splitOn "::").getLast? with
+      | some n => n | none => td.itemMeta.name
+    IO.println s!"  ✓ traitDecl bare name = '{bare}'"
     if td.methods.size = 2 then
       let providedHasDefault :=
         td.methods.any (fun m => m.name = "provided_method" ∧ m.hasDefault)

@@ -48,39 +48,39 @@ def main : IO Unit := do
   IO.println "M9.5l minimal-traits tests:"
   expectAccept "tests/Direct/traits_basic.cert.json"
   let cc ← readCrateCert "tests/Direct/traits_basic.cert.json"
-  -- Cert-level sanity: type_decls carries Tag with isTupleStruct=true.
-  match cc.typeDecls.toList with
+  -- Cert-level sanity (M9.7o-E5a: reads from `cc.llbcProgram` since
+  -- the flat decl mirrors were retired).
+  let lp := cc.llbcProgram
+  let bareNameOfQualified (q : String) : String :=
+    match (q.splitOn "::").getLast? with
+    | some n => n
+    | none => q
+  -- LlbcProgram.typeDecls always includes the synthesised `Global`
+  -- placeholder alongside user-declared ADTs. Find Tag by bare name.
+  match lp.typeDecls.toList.filter (fun td => bareNameOfQualified td.itemMeta.name = "Tag") with
   | [td] =>
-    if td.name = "Tag" then
-      IO.println s!"  ✓ typeDecl name 'Tag'"
-    else
-      throw <| IO.userError s!"expected 'Tag', saw '{td.name}'"
+    IO.println s!"  ✓ typeDecl name 'Tag'"
     if td.isTupleStruct then
       IO.println s!"  ✓ Tag isTupleStruct = true (unit struct)"
     else
       throw <| IO.userError "expected Tag.isTupleStruct = true"
-  | _ => throw <| IO.userError "expected exactly 1 typeDecl"
-  -- Cert-level sanity: traitDecls carries Numeric with one method.
-  match cc.traitDecls.toList with
+  | _ => throw <| IO.userError "expected exactly 1 typeDecl named 'Tag'"
+  -- traitDecls carries Numeric with one method.
+  match lp.traitDecls.toList with
   | [td] =>
-    if td.name = "Numeric" then
+    let b := bareNameOfQualified td.itemMeta.name
+    if b = "Numeric" then
       IO.println s!"  ✓ traitDecl name 'Numeric'"
     else
-      throw <| IO.userError s!"expected 'Numeric', saw '{td.name}'"
+      throw <| IO.userError s!"expected 'Numeric', saw '{b}'"
     if td.methods.size = 1 ∧ td.methods[0]!.name = "value" then
       IO.println s!"  ✓ Numeric has method 'value'"
     else
       throw <| IO.userError "expected Numeric.methods = [value]"
   | _ => throw <| IO.userError "expected exactly 1 traitDecl"
-  -- Cert-level sanity: traitImpls carries the Tag instance with the
-  -- pre-computed pretty name.
-  match cc.traitImpls.toList with
+  -- traitImpls carries the Tag instance.
+  match lp.traitImpls.toList with
   | [ti] =>
-    if ti.prettyName = "Tag.Insts.Traits_basicNumeric" then
-      IO.println s!"  ✓ trait impl prettyName = 'Tag.Insts.Traits_basicNumeric'"
-    else
-      throw <| IO.userError
-        s!"expected prettyName = 'Tag.Insts.Traits_basicNumeric', saw '{ti.prettyName}'"
     if ti.traitDeclId = 0 ∧ ti.selfTypeDeclId = some 0 then
       IO.println s!"  ✓ trait impl resolves Numeric → Tag"
     else

@@ -39,7 +39,7 @@ def main : IO Unit := do
   -- The EvCall in use_swap_pair must carry TWO region_abs entries.
   let nMultiCalls := cc.functions.foldl (init := 0) fun acc f =>
     acc + (f.events.foldl (init := 0) fun a e => match e with
-      | .call _ _ _ _ _ regs => if regs.size ≥ 2 then a + 1 else a
+      | .call _ _ _ _ _ regs _ => if regs.size ≥ 2 then a + 1 else a
       | _ => a)
   if nMultiCalls ≥ 1 then
     IO.println s!"  ✓ saw {nMultiCalls} EvCall with ≥ 2 region_abs"

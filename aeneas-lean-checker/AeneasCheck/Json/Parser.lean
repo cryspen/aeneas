@@ -461,147 +461,6 @@ def parseFunCert (j : Json) : Result FunCert := do
     | none => pure none
   return { fnId, fnName, signature, sourceSpan, events, finalState, prettyName }
 
-/-- M9.5b: parse one `cert_field` JSON object into a `CertField`. -/
-def parseCertField (j : Json) : Result CertField := do
-  let idx ← asNat (← field j "idx")
-  let name : Option String ← match (j.getObjVal? "name").toOption with
-    | some nj => do let s ← asStr nj; pure (some s)
-    | none => pure none
-  let tyStr ← asStr (← field j "ty")
-  return { idx, name, ty := RawTy.opaque tyStr }
-
-/-- M9.5d: parse one `cert_variant` JSON object into a `CertVariant`. -/
-def parseCertVariant (j : Json) : Result CertVariant := do
-  let id ← asNat (← field j "id")
-  let name ← asStr (← field j "name")
-  let fieldsArr ← asArr (← field j "fields")
-  let fields ← fieldsArr.mapM parseCertField
-  return { id, name, fields }
-
-/-- M9.5b: parse a `TypeDeclKind`. Nullary `"Opaque"`, `{"Struct": [<fields>]}`,
-    or M9.5d `{"Enum": [<variants>]}`. -/
-def parseTypeDeclKind (j : Json) : Result TypeDeclKind := do
-  match j with
-  | .str "Opaque" => return .opaque
-  | _ =>
-    let (tag, payload) ← asTaggedObj j
-    match tag with
-    | "Struct" =>
-      let arr ← asArr payload
-      let fields ← arr.mapM parseCertField
-      return .struct fields
-    | "Enum" =>
-      let arr ← asArr payload
-      let variants ← arr.mapM parseCertVariant
-      return .enum variants
-    | _ =>
-      -- Forward-compat: unknown kinds (Union, Alias, …) downgrade to
-      -- opaque so an early checker can still load a future cert.
-      return .opaque
-
-/-- M9.5b: parse one top-level `TypeDecl`.
-
-    M9.5i: `type_params` is optional for back-compat with pre-M9.5i
-    certs (and with monomorphic-only crates whose OCaml emitter ran
-    before this milestone); the field defaults to empty when absent.
-
-    M9.5l: `is_tuple_struct` is optional for the same reason and
-    defaults to false. -/
-def parseTypeDecl (j : Json) : Result TypeDecl := do
-  let id ← asNat (← field j "id")
-  let name ← asStr (← field j "name")
-  let kind ← parseTypeDeclKind (← field j "kind")
-  let typeParams : Array String ← match (j.getObjVal? "type_params").toOption with
-    | some tj => do
-      let arr ← asArr tj
-      arr.mapM asStr
-    | none => pure #[]
-  let isTupleStruct : Bool ← match (j.getObjVal? "is_tuple_struct").toOption with
-    | some bj => match bj with
-      | .bool b => pure b
-      | _ => pure false
-    | none => pure false
-  let sourceSpan ← match (j.getObjVal? "source_span").toOption with
-    | some sj => do let s ← parseSourceSpan sj; pure (some s)
-    | none => pure none
-  -- M9.5n: `qualified_name` is optional for back-compat with pre-M9.5n
-  -- certs; falls back to the bare `name` so the standard `bare_name`
-  -- vs `qualified_name` distinction still works when the field is
-  -- absent (the suppression check below just won't match anything).
-  let qualifiedName : String ← match (j.getObjVal? "qualified_name").toOption with
-    | some qj => asStr qj
-    | none => pure ""
-  return { id, name, kind, typeParams, isTupleStruct, sourceSpan, qualifiedName }
-
-/-- M9.5l: parse one `TraitMethodDecl`. M9.5o adds optional
-    `has_default` flag (defaults to false for back-compat). -/
-def parseTraitMethodDecl (j : Json) : Result TraitMethodDecl := do
-  let name ← asStr (← field j "name")
-  let signature ← parseSignature (← field j "signature")
-  let hasDefault : Bool ← match (j.getObjVal? "has_default").toOption with
-    | some bj => match bj with
-      | .bool b => pure b
-      | _ => pure false
-    | none => pure false
-  return { name, signature, hasDefault }
-
-/-- M9.5l: parse one top-level `TraitDecl`. -/
-def parseTraitDecl (j : Json) : Result TraitDecl := do
-  let id ← asNat (← field j "id")
-  let name ← asStr (← field j "name")
-  let qualifiedName ← match (j.getObjVal? "qualified_name").toOption with
-    | some qj => asStr qj
-    | none => pure name
-  let methodArr ← asArr (← field j "methods")
-  let methods ← methodArr.mapM parseTraitMethodDecl
-  let sourceSpan ← match (j.getObjVal? "source_span").toOption with
-    | some sj => do let s ← parseSourceSpan sj; pure (some s)
-    | none => pure none
-  return { id, name, qualifiedName, methods, sourceSpan }
-
-/-- M9.5l: parse one `TraitImplMethod`. -/
-def parseTraitImplMethod (j : Json) : Result TraitImplMethod := do
-  let name ← asStr (← field j "name")
-  let fnId ← asNat (← field j "fn_id")
-  return { name, fnId }
-
-/-- M9.5l: parse one top-level `TraitImpl`. `self_type_decl_id` is
-    optional (the OCaml side emits it as `Some` only for the
-    minimal-case ADT-Self impls).
-
-    M9.5o: `self_type_var` is optional (set for blanket impls);
-    `type_params` and `trait_clauses` are optional with empty
-    defaults for back-compat. -/
-def parseTraitImpl (j : Json) : Result TraitImpl := do
-  let id ← asNat (← field j "id")
-  let prettyName ← asStr (← field j "pretty_name")
-  let qualifiedName ← match (j.getObjVal? "qualified_name").toOption with
-    | some qj => asStr qj
-    | none => pure prettyName
-  let traitDeclId ← asNat (← field j "trait_decl_id")
-  let selfTypeDeclId : Option Nat ← match (j.getObjVal? "self_type_decl_id").toOption with
-    | some sj => do let n ← asNat sj; pure (some n)
-    | none => pure none
-  let selfTypeVar : Option String ←
-    match (j.getObjVal? "self_type_var").toOption with
-    | some sj => do let s ← asStr sj; pure (some s)
-    | none => pure none
-  let typeParams : Array String ←
-    match (j.getObjVal? "type_params").toOption with
-    | some tj => do let arr ← asArr tj; arr.mapM asStr
-    | none => pure #[]
-  let traitClauses : Array TraitClause ←
-    match (j.getObjVal? "trait_clauses").toOption with
-    | some cj => do let arr ← asArr cj; arr.mapM parseTraitClause
-    | none => pure #[]
-  let methodArr ← asArr (← field j "methods")
-  let methods ← methodArr.mapM parseTraitImplMethod
-  let sourceSpan ← match (j.getObjVal? "source_span").toOption with
-    | some sj => do let s ← parseSourceSpan sj; pure (some s)
-    | none => pure none
-  return { id, prettyName, qualifiedName, traitDeclId, selfTypeDeclId,
-           selfTypeVar, typeParams, traitClauses, methods, sourceSpan }
-
 /-! ## M9.7b: LLBC program parser
 
 The block below parses the structured Charon LLBC subtree introduced
@@ -1664,43 +1523,22 @@ def parseLlbcProgram (j : Json) : Result LlbcProgram := do
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")
-  -- M9.6 / M9.7c: accept v1 (pre-Option-C), v2 (Option C hint
-  -- schema), and v3 (Option C + embedded `llbc_program` subtree).
-  -- All hint fields are optional under v2/v3; `llbc_program` is
-  -- absent under v1/v2 and required under v3.
-  if fmtVersion ≠ 1 ∧ fmtVersion ≠ 2 ∧ fmtVersion ≠ 3 then
-    fail s!"unsupported cert fmt_version: {fmtVersion} (expected 1, 2, or 3)"
+  -- M9.7o-E5a: cert v3 is the only supported format. v2 was the
+  -- Option-C hint schema (flat type/trait decls + opaque-string
+  -- signatures, no embedded LLBC program); v1 predated Option C.
+  -- Both are no longer parseable now that the flat decl mirrors are
+  -- gone — the embedded `llbc_program` subtree is the sole source.
+  if fmtVersion ≠ 3 then
+    fail s!"cert v{fmtVersion} is no longer supported (M9.7o-E5a); regenerate with current aeneas -emit-cert"
   else
     let crateHash ← asStr (← field j "crate_hash")
-    -- `type_decls` is optional for back-compat with pre-M9.5b certs.
-    let typeDecls : Array TypeDecl ← match (j.getObjVal? "type_decls").toOption with
-      | some tj => do
-        let arr ← asArr tj
-        arr.mapM parseTypeDecl
-      | none => pure #[]
-    -- M9.5l: `trait_decls` / `trait_impls` are optional for
-    -- back-compat with pre-M9.5l certs.
-    let traitDecls : Array TraitDecl ← match (j.getObjVal? "trait_decls").toOption with
-      | some tj => do
-        let arr ← asArr tj
-        arr.mapM parseTraitDecl
-      | none => pure #[]
-    let traitImpls : Array TraitImpl ← match (j.getObjVal? "trait_impls").toOption with
-      | some tj => do
-        let arr ← asArr tj
-        arr.mapM parseTraitImpl
-      | none => pure #[]
     let fnArr ← asArr (← field j "functions")
     let functions ← fnArr.mapM parseFunCert
-    -- M9.7c: `llbc_program` is required under v3 and absent under
-    -- v1 / v2. We tolerate absence universally and default to
-    -- `LlbcProgram.empty`; the v3 parser path then re-asserts
-    -- presence in a future Phase-C / D consistency check, not here.
+    -- M9.7c: `llbc_program` is required under v3.
     let llbcProgram : LlbcProgram ← match (j.getObjVal? "llbc_program").toOption with
       | some lj => parseLlbcProgram lj
-      | none => pure LlbcProgram.empty
-    return { fmtVersion, crateHash, typeDecls, traitDecls, traitImpls,
-             functions, llbcProgram }
+      | none => fail "cert v3 missing required field 'llbc_program'"
+    return { fmtVersion, crateHash, functions, llbcProgram }
 
 /-- Top-level entry: parse a cert JSON string. -/
 def parseCrateCertStr (s : String) : Result CrateCert := do

@@ -63,10 +63,10 @@ def main : IO Unit := do
   -- emitted source would silently regress.
   let cc ← readCrateCert "tests/Direct/slices_basic.cert.json"
   let nShared := countEvents cc fun
-    | .call _ _ name _ _ _ => name == "@SliceIndexShared"
+    | .call _ _ name _ _ _ _ => name == "@SliceIndexShared"
     | _ => false
   let nMut := countEvents cc fun
-    | .call _ _ name _ _ _ => name == "@SliceIndexMut"
+    | .call _ _ name _ _ _ _ => name == "@SliceIndexMut"
     | _ => false
   if nShared = 1 then
     IO.println s!"  ✓ saw {nShared} @SliceIndexShared event"

@@ -1,7 +1,9 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "4186dd52969e1b97dbffb2b170e13cf2",
+  "fmt_version": 3,
+  "crate_hash": "af48f1e7aaf676259c29874836ef6951",
   "type_decls": [],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -11,7 +13,9 @@
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 1)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (\n           (Generated_Types.RVar (Generated_Types.Free 0)),\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (\n            (Generated_Types.RVar (Generated_Types.Free 1)),\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (\n           (Generated_Types.RVar (Generated_Types.Free 0)),\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (\n            (Generated_Types.RVar (Generated_Types.Free 1)),\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/multi_region.rs",
@@ -22,6 +26,26 @@
       },
       "events": [
         {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 2,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 1,
+            "inner_sv": 3,
+            "subst_locals": [ 2 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
           "EvReborrow": {
             "child": 2,
             "parent": 0,
@@ -29,7 +53,9 @@
               "local": 1,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true,
+            "parent_abs": 0
           }
         },
         {
@@ -56,7 +82,9 @@
               "local": 2,
               "projection": [ "Deref" ],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
-            }
+            },
+            "parent_live": true,
+            "parent_abs": 1
           }
         },
         {
@@ -103,7 +131,48 @@
             }
           }
         },
-        "EvReturn"
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (Generated_Types.RErased,\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymTuple": [
+                {
+                  "SymMove": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+                  }
+                },
+                {
+                  "SymMove": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (Generated_Types.RErased,\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (Generated_Types.RErased,\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     },
@@ -115,7 +184,9 @@
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 0)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))",
           "(Generated_Types.TRef ((Generated_Types.RVar (Generated_Types.Free 1)),\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
         ],
-        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+        "output": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })",
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/multi_region.rs",
@@ -125,6 +196,36 @@
         "end_col": 1
       },
       "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 2,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 1,
+            "inner_sv": 3,
+            "subst_locals": [ 2 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
         {
           "EvAssign": {
             "dst": {
@@ -211,7 +312,39 @@
               "projection": [],
               "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U32)),\n           Generated_Types.RMut));\n         (Generated_Types.TRef (Generated_Types.RErased,\n            (Generated_Types.TLiteral\n               (Generated_Values.TUInt Generated_Values.U32)),\n            Generated_Types.RMut))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
             },
-            "region_abs": [ 2, 3 ]
+            "region_abs": [ 2, 3 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 2 } } ]
+              },
+              {
+                "abs_id": 3,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 1, "loan": 3 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 5,
+            "bid": 4,
+            "inner_sv": 7,
+            "subst_locals": [ 5 ],
+            "subst_loans": [],
+            "parent_abs": 2
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 6,
+            "bid": 5,
+            "inner_sv": 8,
+            "subst_locals": [ 5 ],
+            "subst_loans": [],
+            "parent_abs": 3
           }
         },
         {
@@ -294,9 +427,773 @@
             "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "9" ] } } }
           }
         },
-        "EvReturn"
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "multi_region::swap_pair",
+          "attr_info": null,
+          "source_text": "pub fn swap_pair<'a, 'b>(x: &'a mut u32, y: &'b mut u32) -> (&'a mut u32, &'b mut u32) {\n    (x, y)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/multi_region.rs",
+            "beg_line": 13,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+                  { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "'a" }, { "name": "'b" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/multi_region.rs",
+            "beg_line": 14,
+            "beg_col": 4,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 14,
+                "beg_col": 5,
+                "end_line": 14,
+                "end_col": 6
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 14,
+                "beg_col": 8,
+                "end_line": 14,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 14,
+                "beg_col": 4,
+                "end_line": 14,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": "Tuple",
+                        "generics": {
+                          "types": [
+                            {
+                              "Ref": [
+                                0, { "Literal": { "UInt": "U32" } }, "Mut"
+                              ]
+                            },
+                            {
+                              "Ref": [
+                                0, { "Literal": { "UInt": "U32" } }, "Mut"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 3,
+                            "projection": [],
+                            "ty": {
+                              "Ref": [
+                                0, { "Literal": { "UInt": "U32" } }, "Mut"
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "Move": {
+                            "local": 4,
+                            "projection": [],
+                            "ty": {
+                              "Ref": [
+                                0, { "Literal": { "UInt": "U32" } }, "Mut"
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 14,
+                "beg_col": 9,
+                "end_line": 14,
+                "end_col": 10
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 14,
+                "beg_col": 9,
+                "end_line": 14,
+                "end_col": 10
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 15,
+                "beg_col": 1,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+                  { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+                ]
+              }
+            }
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "multi_region::use_swap_pair",
+          "attr_info": null,
+          "source_text": "pub fn use_swap_pair(x: &mut u32, y: &mut u32) {\n    let (rx, ry) = swap_pair(x, y);\n    *rx = 7;\n    *ry = 9;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/multi_region.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/multi_region.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 29,
+                "end_line": 18,
+                "end_col": 30
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 32,
+                "end_line": 18,
+                "end_col": 33
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 19,
+                "end_line": 18,
+                "end_col": 34
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 0 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": "Tuple",
+                        "generics": {
+                          "types": [
+                            {
+                              "Ref": [
+                                0, { "Literal": { "UInt": "U32" } }, "Mut"
+                              ]
+                            },
+                            {
+                              "Ref": [
+                                0, { "Literal": { "UInt": "U32" } }, "Mut"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 33,
+                "end_line": 18,
+                "end_col": 34
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 33,
+                "end_line": 18,
+                "end_col": 34
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 9,
+                "end_line": 18,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 5,
+                        "projection": [ { "Field": [ { "Tuple": 2 }, 0 ] } ],
+                        "ty": {
+                          "Adt": {
+                            "id": "Tuple",
+                            "generics": {
+                              "types": [
+                                {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                },
+                                {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 13,
+                "end_line": 18,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 5,
+                        "projection": [ { "Field": [ { "Tuple": 2 }, 1 ] } ],
+                        "ty": {
+                          "Adt": {
+                            "id": "Tuple",
+                            "generics": {
+                              "types": [
+                                {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                },
+                                {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 18,
+                "beg_col": 34,
+                "end_line": 18,
+                "end_col": 35
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "7" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 20,
+                "beg_col": 4,
+                "end_line": 20,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "9" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 17,
+                "beg_col": 47,
+                "end_line": 21,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 21,
+                "beg_col": 0,
+                "end_line": 21,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 21,
+                "beg_col": 0,
+                "end_line": 21,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/multi_region.rs",
+                "beg_line": 21,
+                "beg_col": 1,
+                "end_line": 21,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+                  { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+                ]
+              }
+            }
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

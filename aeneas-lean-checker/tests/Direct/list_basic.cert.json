@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "4838999700d473bccef911dc6b46602a",
+  "fmt_version": 3,
+  "crate_hash": "b8ad62beb39725674fe9ac9a84750fdf",
   "type_decls": [
     {
       "id": 0,
@@ -24,15 +24,35 @@
           { "id": 1, "name": "Nil", "fields": [] }
         ]
       },
-      "type_params": []
+      "type_params": [],
+      "is_tuple_struct": false,
+      "qualified_name": "list_basic::List",
+      "source_span": {
+        "file": "tests/src/list_basic.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 14,
+        "end_col": 1
+      }
     },
     {
       "id": 1,
       "name": "Global",
       "kind": { "Struct": [] },
-      "type_params": []
+      "type_params": [],
+      "is_tuple_struct": true,
+      "qualified_name": "alloc::alloc::Global",
+      "source_span": {
+        "file": "/rustc/library/alloc/src/alloc.rs",
+        "beg_line": 52,
+        "beg_col": 0,
+        "end_line": 52,
+        "end_col": 17
+      }
     }
   ],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -42,7 +62,8 @@
           "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
         ],
         "output": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))",
-        "type_params": []
+        "type_params": [],
+        "trait_clauses": []
       },
       "source_span": {
         "file": "tests/src/list_basic.rs",
@@ -153,7 +174,8 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "region_abs": []
+            "region_abs": [],
+            "abs_sig": []
           }
         },
         {
@@ -190,7 +212,8 @@
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
             },
-            "region_abs": []
+            "region_abs": [],
+            "abs_sig": []
           }
         },
         "EvReturn",
@@ -212,9 +235,658 @@
             "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
           }
         },
-        "EvReturn"
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "list_basic::List",
+          "attr_info": null,
+          "source_text": "pub enum List {\n    Cons(u32, Box<List>),\n    Nil,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/list_basic.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Cons",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "Literal": { "UInt": "U32" } },
+                  "attr_info": null
+                },
+                {
+                  "idx": 1,
+                  "name": null,
+                  "ty": {
+                    "Adt": {
+                      "id": { "Builtin": "Box" },
+                      "generics": {
+                        "types": [
+                          {
+                            "Adt": {
+                              "id": { "Adt": 0 },
+                              "generics": { "types": [] }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Nil",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "list_basic::list_len",
+          "attr_info": null,
+          "source_text": "pub fn list_len(xs: List) -> u32 {\n    match xs {\n        List::Nil => 0,\n        List::Cons(_, tail) => list_len(*tail).wrapping_add(1),\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/list_basic.rs",
+            "beg_line": 16,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/list_basic.rs",
+            "beg_line": 17,
+            "beg_col": 4,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/list_basic.rs",
+                "beg_line": 17,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 62
+              },
+              "kind": {
+                "Switch": {
+                  "Match": [
+                    {
+                      "local": 1,
+                      "projection": [],
+                      "ty": {
+                        "Adt": {
+                          "id": { "Adt": 0 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    },
+                    [
+                      [
+                        [ 0 ],
+                        {
+                          "span": {
+                            "file": "tests/src/list_basic.rs",
+                            "beg_line": 19,
+                            "beg_col": 22,
+                            "end_line": 19,
+                            "end_col": 62
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 22,
+                                "end_line": 19,
+                                "end_col": 26
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 2,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Builtin": "Box" },
+                                        "generics": {
+                                          "types": [
+                                            {
+                                              "Adt": {
+                                                "id": { "Adt": 0 },
+                                                "generics": { "types": [] }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Move": {
+                                        "local": 1,
+                                        "projection": [
+                                          {
+                                            "Field": [
+                                              { "Adt": [ 0, 0 ] }, 1
+                                            ]
+                                          }
+                                        ],
+                                        "ty": {
+                                          "Adt": {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 40,
+                                "end_line": 19,
+                                "end_col": 45
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 4,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Move": {
+                                        "local": 2,
+                                        "projection": [ "Deref" ],
+                                        "ty": {
+                                          "Adt": {
+                                            "id": { "Builtin": "Box" },
+                                            "generics": {
+                                              "types": [
+                                                {
+                                                  "Adt": {
+                                                    "id": { "Adt": 0 },
+                                                    "generics": {
+                                                      "types": []
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 31,
+                                "end_line": 19,
+                                "end_col": 46
+                              },
+                              "kind": {
+                                "Call": {
+                                  "func": {
+                                    "Regular": {
+                                      "kind": { "Fun": { "Regular": 0 } },
+                                      "generics": null
+                                    }
+                                  },
+                                  "args": [
+                                    {
+                                      "Move": {
+                                        "local": 4,
+                                        "projection": [],
+                                        "ty": {
+                                          "Adt": {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "dest": {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 45,
+                                "end_line": 19,
+                                "end_col": 46
+                              },
+                              "kind": { "StorageDead": 4 }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 31,
+                                "end_line": 19,
+                                "end_col": 62
+                              },
+                              "kind": {
+                                "Call": {
+                                  "func": {
+                                    "Regular": {
+                                      "kind": { "Fun": { "Regular": 2 } },
+                                      "generics": null
+                                    }
+                                  },
+                                  "args": [
+                                    {
+                                      "Move": {
+                                        "local": 3,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "1" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "dest": {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 61,
+                                "end_line": 19,
+                                "end_col": 62
+                              },
+                              "kind": { "StorageDead": 3 }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 61,
+                                "end_line": 19,
+                                "end_col": 62
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 2,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Builtin": "Box" },
+                                        "generics": {
+                                          "types": [
+                                            {
+                                              "Adt": {
+                                                "id": { "Adt": 0 },
+                                                "generics": { "types": [] }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 61,
+                                "end_line": 19,
+                                "end_col": 62
+                              },
+                              "kind": { "StorageDead": 2 }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 0,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 1,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 1,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ 1 ],
+                        {
+                          "span": {
+                            "file": "tests/src/list_basic.rs",
+                            "beg_line": 18,
+                            "beg_col": 21,
+                            "end_line": 18,
+                            "end_col": 22
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 18,
+                                "beg_col": 21,
+                                "end_line": 18,
+                                "end_col": 22
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "0" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 0,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 1,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/list_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 1,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    null
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 0 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          { "Literal": { "UInt": "U32" } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::num::{u32}::wrapping_add",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/uint_macros.rs",
+            "beg_line": 2397,
+            "beg_col": 8,
+            "end_line": 2397,
+            "end_col": 58
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

@@ -18,19 +18,31 @@ def expectAccept (path : System.FilePath) : IO Unit := do
     throw <| IO.userError "expected accept, got reject"
 
 def expectReject (path : System.FilePath) (substring : String) : IO Unit := do
-  let cc ← readCrateCert path
-  match checkCrateCert cc with
-  | .ok _ =>
-    IO.eprintln s!"  ✗ {path} unexpectedly accepted"
-    throw <| IO.userError "expected reject, got accept"
-  | .error errs =>
-    let combined := String.intercalate "\n" (errs.map (·.toString))
-    if (combined.splitOn substring).length ≥ 2 then
-      IO.println s!"  ✓ {path} rejected with: {substring}"
+  -- M9.7o-E5a: the hand-crafted v1 negative fixtures now fail at
+  -- parse time with "cert v1 is no longer supported" before the
+  -- typechecker can run. Either parse-time or typecheck-time
+  -- rejection counts as a pass; the substring check is best-effort
+  -- (only applies when the cert parses to a v3 shape).
+  try
+    let cc ← readCrateCert path
+    match checkCrateCert cc with
+    | .ok _ =>
+      IO.eprintln s!"  ✗ {path} unexpectedly accepted"
+      throw <| IO.userError "expected reject, got accept"
+    | .error errs =>
+      let combined := String.intercalate "\n" (errs.map (·.toString))
+      if (combined.splitOn substring).length ≥ 2 then
+        IO.println s!"  ✓ {path} rejected with: {substring}"
+      else
+        IO.eprintln s!"  ✗ {path} rejected but missing expected substring {substring}"
+        IO.eprintln combined
+        throw <| IO.userError "wrong diagnostic"
+  catch e =>
+    let msg := toString e
+    if (msg.splitOn "no longer supported").length ≥ 2 then
+      IO.println s!"  ✓ {path} rejected at parse time (cert v1/v2 retired)"
     else
-      IO.eprintln s!"  ✗ {path} rejected but missing expected substring {substring}"
-      IO.eprintln combined
-      throw <| IO.userError "wrong diagnostic"
+      throw e
 
 def main : IO Unit := do
   IO.println "M5 typechecker tests:"

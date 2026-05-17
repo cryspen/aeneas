@@ -25,15 +25,21 @@ def main : IO Unit := do
   match replayCrate cc with
   | .ok _ => IO.println "  ✓ list_generic.cert.json replays"
   | .error msg => throw <| IO.userError s!"replay failed: {msg}"
-  -- Cert sanity: the generic type-decl carries one type param.
-  let glOpt := cc.typeDecls.toList.find? (·.name = "GList")
+  -- Cert sanity (M9.7o-E5a: reads from `cc.llbcProgram.typeDecls`).
+  let lp := cc.llbcProgram
+  let bareNameOfQualified (q : String) : String :=
+    match (q.splitOn "::").getLast? with
+    | some n => n
+    | none => q
+  let glOpt := lp.typeDecls.toList.find?
+    (fun td => bareNameOfQualified td.itemMeta.name = "GList")
   match glOpt with
   | some td =>
-    if td.typeParams.size = 1 then
-      IO.println s!"  ✓ GList.typeParams = {td.typeParams}"
+    if td.generics.types.size = 1 then
+      IO.println s!"  ✓ GList.generics.types = {td.generics.types}"
     else
       throw <| IO.userError
-        s!"expected GList with 1 type param, saw {td.typeParams}"
+        s!"expected GList with 1 type param, saw {td.generics.types}"
   | none => throw <| IO.userError "expected typeDecl named 'GList'"
   -- The recursive walker carries a self-call (drives the
   -- `partial_fixpoint` trailer) and one type param on its signature.
@@ -43,7 +49,7 @@ def main : IO Unit := do
   | some f =>
     let selfCallCount : Nat := f.events.toList.foldl (init := 0) fun n ev =>
       match ev with
-      | .call calleeId _ _ _ _ _ => if calleeId = f.fnId then n + 1 else n
+      | .call calleeId _ _ _ _ _ _ => if calleeId = f.fnId then n + 1 else n
       | _ => n
     if selfCallCount ≥ 1 then
       IO.println s!"  ✓ glist_len has {selfCallCount} self-recursive EvCall(s)"

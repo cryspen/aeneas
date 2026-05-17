@@ -335,139 +335,14 @@ structure FunCert where
   prettyName : Option String := none
   deriving Repr, Inhabited
 
-/-- M9.5b: a single field inside a [TypeDecl]. `name` is `none` for
-    tuple-style positional fields; the emitter falls back to
-    `field<idx>` in that case. `ty` is the cert's opaque-tagged LLBC
-    type string. -/
-structure CertField where
-  idx : Nat
-  name : Option String
-  ty : RawTy
-  deriving Repr, Inhabited
-
-/-- M9.5d: a single variant of an enum ADT declaration. `fields` is
-    empty for C-style enums (no payload); future milestones will
-    populate it for payload-bearing variants. -/
-structure CertVariant where
-  id : Nat
-  name : String
-  fields : Array CertField
-  deriving Repr, Inhabited
-
-/-- M9.5b: kind of an ADT declaration. M9.5b supports struct; M9.5d
-    adds enum. Other shapes (union, alias) come through as `opaque`. -/
-inductive TypeDeclKind
-  | struct (fields : Array CertField)
-  | enum (variants : Array CertVariant)
-  | opaque
-  deriving Repr, Inhabited
-
-/-- M9.5b: a crate-level ADT declaration. `id` is the LLBC
-    `TypeDeclId.id` that appears inside `TAdt {id = TAdtId N; ...}` in
-    cert-event place types; the Lean checker uses `id`→`name` lookups
-    to translate borrowed-struct signatures and field projections. -/
-structure TypeDecl where
-  id : Nat
-  name : String
-  kind : TypeDeclKind
-  /-- M9.5i: the ADT's type-parameter names, in declaration order.
-      Empty for monomorphic ADTs (Pair, Sign, NumOrZero, …). The
-      Lean translator renders these as `(T : Type)` parameters on
-      the emitted `inductive` / `structure` header and uses each
-      name's position as the de-Bruijn-style index that resolves
-      `TVar (Free K)` references inside the decl's variant /
-      field types. -/
-  typeParams : Array String := #[]
-  /-- M9.5l: tuple-style positional fields (or a unit struct's empty
-      field list). When set on a struct kind, the Lean emitter
-      renders the decl as `@[reducible] def <Name> := Unit` (zero
-      fields) or as a `structure` with positional `fieldK` names
-      (tuple struct with N fields). Defaults to false on the Lean
-      side when the cert key is absent (pre-M9.5l certs). -/
-  isTupleStruct : Bool := false
-  /-- M9.5l: source span for the type decl's source-code definition.
-      Optional for back-compat (pre-M9.5l certs have no span). -/
-  sourceSpan : Option SourceSpan := none
-  /-- M9.5n: crate-prefixed qualified name (e.g.
-      `core::option::Option`, `alloc::alloc::Global`,
-      `issue_194_recursive_struct_projector::AVLNode`). Used by the
-      Driver's stdlib-suppression list to skip re-emitting ADTs that
-      already have a Lean equivalent — without this, the emitted
-      `inductive Option (T : Type) where …` would shadow Lean's
-      built-in `Option` and break the file's `open Aeneas Aeneas.Std`
-      scope. Defaults to empty for back-compat with pre-M9.5n
-      certs (which only carry the bare `name`). -/
-  qualifiedName : String := ""
-  deriving Repr, Inhabited
-
-/-- M9.5l: one method declared in a trait. Mirrors `cert_trait_method`
-    on the OCaml side; the signature uses the same opaque-tagged
-    shape as `FnSignature` so the existing `RawTy` parser recovers
-    parameter / return types. -/
-structure TraitMethodDecl where
-  name : String
-  signature : FnSignature
-  /-- M9.5o: true iff this method carries a default implementation
-      in the trait declaration. The Lean translator emits these
-      with a `Trait.<method>.default` shape (the default takes the
-      trait itself as a bound). Defaults to false on the parsing
-      side for back-compat. -/
-  hasDefault : Bool := false
-  deriving Repr, Inhabited
-
-/-- M9.5l: a crate-level trait declaration. M9.5l only handles the
-    minimal shape: no associated types, no associated consts, no
-    parent traits, no const generics, no default methods, no extra
-    generics beyond the implicit `Self`. -/
-structure TraitDecl where
-  id : Nat
-  name : String
-  /-- Crate-prefixed qualified name (`traits_basic::Numeric`) used in
-      the Lean per-decl docstring. -/
-  qualifiedName : String
-  methods : Array TraitMethodDecl
-  sourceSpan : Option SourceSpan := none
-  deriving Repr, Inhabited
-
-/-- M9.5l: one method implemented in a trait impl. `fnId` is the
-    `FunDeclId` of the concrete body (which also appears as a
-    standalone entry in `CrateCert.functions`). `name` is the trait
-    method's bare name (as it appears in the trait declaration),
-    not the impl method's qualified name. -/
-structure TraitImplMethod where
-  name : String
-  fnId : Nat
-  deriving Repr, Inhabited
-
-/-- M9.5l: a crate-level trait impl. `prettyName` is the
-    standard-Aeneas Lean impl name pre-computed by the OCaml side
-    (e.g. `Tag.Insts.Traits_basicNumeric`). `selfTypeDeclId` is the
-    Self-ADT's `TypeDeclId`, or `none` when Self is not a
-    user-declared ADT (out of M9.5l scope). -/
-structure TraitImpl where
-  id : Nat
-  prettyName : String
-  /-- Crate-prefixed qualified name
-      (`traits_basic::{traits_basic::Numeric for traits_basic::Tag}`)
-      used in the Lean per-decl docstring. -/
-  qualifiedName : String
-  traitDeclId : Nat
-  selfTypeDeclId : Option Nat
-  /-- M9.5o: for a blanket impl (Self is a type variable), this carries
-      the variable's name (e.g. `"T"`). `none` when Self is a concrete
-      ADT (the `selfTypeDeclId` case). -/
-  selfTypeVar : Option String := none
-  /-- M9.5o: type-parameter names declared on the impl itself. Empty
-      for monomorphic impls. -/
-  typeParams : Array String := #[]
-  /-- M9.5o: trait obligations on the impl's type parameters. -/
-  traitClauses : Array TraitClause := #[]
-  methods : Array TraitImplMethod
-  sourceSpan : Option SourceSpan := none
-  deriving Repr, Inhabited
-
 /- M9.7c: `CrateCert` lives in `Raw/LLBCProgram.lean` — moved there to
    carry the new structured `llbcProgram : LlbcProgram` field (cert v3)
-   without inducing a cycle (CertEvent ← LLBCProgram). -/
+   without inducing a cycle (CertEvent ← LLBCProgram).
+
+   M9.7o-E5a: the flat type/trait decl mirrors (`TypeDecl`, `TraitDecl`,
+   `TraitImpl`, `CertField`, `CertVariant`, `TypeDeclKind`,
+   `TraitMethodDecl`, `TraitImplMethod`) were deleted from this file
+   once cert v2 was dropped — the structured `LlbcProgram` subtree
+   (`Raw/LLBCProgram.lean`) is now the sole source for these decls. -/
 
 end AeneasCheck.Raw

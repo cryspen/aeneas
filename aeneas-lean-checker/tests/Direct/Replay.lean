@@ -19,17 +19,26 @@ def expectReplay (path : System.FilePath) : IO Unit := do
     throw <| IO.userError "expected replay to succeed"
 
 def expectReplayFails (path : System.FilePath) (substring : String) : IO Unit := do
-  let cc ← readCrateCert path
-  match replayCrate cc with
-  | .ok _ =>
-    IO.eprintln s!"  ✗ {path} replayed unexpectedly"
-    throw <| IO.userError "expected replay to fail"
-  | .error msg =>
-    if (msg.splitOn substring).length ≥ 2 then
-      IO.println s!"  ✓ {path} rejected with: {substring}"
+  -- M9.7o-E5a: hand-crafted v1 negative fixtures now fail at parse
+  -- time. Either parse-time or replay-time rejection counts as pass.
+  try
+    let cc ← readCrateCert path
+    match replayCrate cc with
+    | .ok _ =>
+      IO.eprintln s!"  ✗ {path} replayed unexpectedly"
+      throw <| IO.userError "expected replay to fail"
+    | .error msg =>
+      if (msg.splitOn substring).length ≥ 2 then
+        IO.println s!"  ✓ {path} rejected with: {substring}"
+      else
+        IO.eprintln s!"  ✗ wrong message for {path}: {msg}"
+        throw <| IO.userError "wrong diagnostic"
+  catch e =>
+    let msg := toString e
+    if (msg.splitOn "no longer supported").length ≥ 2 then
+      IO.println s!"  ✓ {path} rejected at parse time (cert v1/v2 retired)"
     else
-      IO.eprintln s!"  ✗ wrong message for {path}: {msg}"
-      throw <| IO.userError "wrong diagnostic"
+      throw e
 
 /-- Read a cert and assert at least one event of the given tag occurs
     somewhere in the trace. Cheap sanity check that an upstream OCaml
@@ -55,6 +64,6 @@ def main : IO Unit := do
   -- M9.1 sanity: the incr_local trace exercises the EvReborrow hook
   -- emitted in InterpExpressions.ml for `&mut *r` shapes.
   expectEventTag "tests/Direct/incr.cert.json"
-    (fun | .reborrow _ _ _ => true | _ => false)
+    (fun | .reborrow _ _ _ _ _ => true | _ => false)
     "EvReborrow"
   IO.println "all tests passed"

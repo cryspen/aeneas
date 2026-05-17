@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "f73ba901cbd0bcccc21b91339892b7a7",
+  "fmt_version": 3,
+  "crate_hash": "598fd878aafe5b6531ee2fdbf87fcd9c",
   "type_decls": [
     {
       "id": 0,
@@ -20,9 +20,20 @@
           { "id": 1, "name": "MyNone", "fields": [] }
         ]
       },
-      "type_params": [ "T" ]
+      "type_params": [ "T" ],
+      "is_tuple_struct": false,
+      "qualified_name": "generics_basic::MyOption",
+      "source_span": {
+        "file": "tests/src/generics_basic.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 14,
+        "end_col": 1
+      }
     }
   ],
+  "trait_decls": [],
+  "trait_impls": [],
   "functions": [
     {
       "fn_id": 0,
@@ -33,10 +44,11 @@
           "(Generated_Types.TVar (Generated_Types.Free 0))"
         ],
         "output": "(Generated_Types.TVar (Generated_Types.Free 0))",
-        "type_params": [ "T" ]
+        "type_params": [ "T" ],
+        "trait_clauses": []
       },
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/generics_basic.rs",
+        "file": "tests/src/generics_basic.rs",
         "beg_line": 16,
         "beg_col": 0,
         "end_line": 21,
@@ -150,9 +162,462 @@
             }
           }
         },
-        "EvReturn"
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "generics_basic::MyOption",
+          "attr_info": null,
+          "source_text": "pub enum MyOption<T> {\n    MySome(T),\n    MyNone,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/generics_basic.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "MySome",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "MyNone",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "generics_basic::get",
+          "attr_info": null,
+          "source_text": "pub fn get<T>(x: MyOption<T>, default: T) -> T {\n    match x {\n        MyOption::MySome(t) => t,\n        MyOption::MyNone => default,\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/generics_basic.rs",
+            "beg_line": 16,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+              }
+            },
+            { "TypeVar": { "Free": 0 } }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/generics_basic.rs",
+            "beg_line": 17,
+            "beg_col": 4,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/generics_basic.rs",
+                "beg_line": 17,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 35
+              },
+              "kind": {
+                "Switch": {
+                  "Match": [
+                    {
+                      "local": 1,
+                      "projection": [],
+                      "ty": {
+                        "Adt": {
+                          "id": { "Adt": 0 },
+                          "generics": {
+                            "types": [ { "TypeVar": { "Free": 0 } } ]
+                          }
+                        }
+                      }
+                    },
+                    [
+                      [
+                        [ 0 ],
+                        {
+                          "span": {
+                            "file": "tests/src/generics_basic.rs",
+                            "beg_line": 18,
+                            "beg_col": 25,
+                            "end_line": 18,
+                            "end_col": 32
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 18,
+                                "beg_col": 25,
+                                "end_line": 18,
+                                "end_col": 26
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "TypeVar": { "Free": 0 } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Move": {
+                                        "local": 1,
+                                        "projection": [
+                                          {
+                                            "Field": [
+                                              { "Adt": [ 0, 0 ] }, 0
+                                            ]
+                                          }
+                                        ],
+                                        "ty": {
+                                          "Adt": {
+                                            "id": { "Adt": 0 },
+                                            "generics": {
+                                              "types": [
+                                                { "TypeVar": { "Free": 0 } }
+                                              ]
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 18,
+                                "beg_col": 31,
+                                "end_line": 18,
+                                "end_col": 32
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "TypeVar": { "Free": 0 } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Move": {
+                                        "local": 3,
+                                        "projection": [],
+                                        "ty": { "TypeVar": { "Free": 0 } }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 18,
+                                "beg_col": 31,
+                                "end_line": 18,
+                                "end_col": 32
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "TypeVar": { "Free": 0 } }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 18,
+                                "beg_col": 31,
+                                "end_line": 18,
+                                "end_col": 32
+                              },
+                              "kind": { "StorageDead": 3 }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 0,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 2,
+                                    "projection": [],
+                                    "ty": { "TypeVar": { "Free": 0 } }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 0,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 1,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": {
+                                          "types": [
+                                            { "TypeVar": { "Free": 0 } }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 1,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ 1 ],
+                        {
+                          "span": {
+                            "file": "tests/src/generics_basic.rs",
+                            "beg_line": 19,
+                            "beg_col": 28,
+                            "end_line": 19,
+                            "end_col": 35
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 28,
+                                "end_line": 19,
+                                "end_col": 35
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "TypeVar": { "Free": 0 } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Move": {
+                                        "local": 2,
+                                        "projection": [],
+                                        "ty": { "TypeVar": { "Free": 0 } }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 0,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 2,
+                                    "projection": [],
+                                    "ty": { "TypeVar": { "Free": 0 } }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 0,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": {
+                                "Drop": [
+                                  {
+                                    "local": 1,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": {
+                                          "types": [
+                                            { "TypeVar": { "Free": 0 } }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  },
+                                  null,
+                                  null
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/generics_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 1,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    null
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 0 } },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          { "TypeVar": { "Free": 0 } },
+          { "TypeVar": { "Free": 0 } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

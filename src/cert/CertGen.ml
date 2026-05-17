@@ -182,199 +182,45 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     end
   | _ -> None
 
-(** Collect the crate's transparent ADT type declarations into a flat list
-    indexed by [TypeDeclId]. Struct decls carry their full field list
-    (name + type); other kinds are downgraded to [Opaque] so the Lean
-    parser can tolerate them. M9.5b only consumes [Struct]. *)
-let collect_type_decls (crate : crate) : CertEvent.cert_type_decl list =
-  Types.TypeDeclId.Map.values crate.type_decls
-  |> List.map (fun (td : Types.type_decl) : CertEvent.cert_type_decl ->
-         let env = Print.Contexts.decls_ctx_to_fmt_env (compute_contexts crate) in
-         let full_name =
-           Print.name_to_string env td.item_meta.name
-         in
-         let bare_name =
-           match List.rev (String.split_on_char ':' full_name) with
-           | [] -> full_name
-           | last :: _ -> last
-         in
-         let kind : CertEvent.cert_type_decl_kind =
-           match td.kind with
-           | Types.Struct fields ->
-               let cert_fields : CertEvent.cert_field list =
-                 List.mapi
-                   (fun i (f : Types.field) ->
-                     CertEvent.{
-                       cf_idx = i;
-                       cf_name = f.field_name;
-                       cf_ty = f.field_ty;
-                     })
-                   fields
-               in
-               CTDStruct cert_fields
-           | Types.Enum variants ->
-               let cert_variants : CertEvent.cert_variant list =
-                 List.mapi
-                   (fun i (v : Types.variant) ->
-                     let cert_fields : CertEvent.cert_field list =
-                       List.mapi
-                         (fun j (f : Types.field) ->
-                           CertEvent.{
-                             cf_idx = j;
-                             cf_name = f.field_name;
-                             cf_ty = f.field_ty;
-                           })
-                         v.fields
-                     in
-                     CertEvent.{
-                       cv_id = i;
-                       cv_name = v.variant_name;
-                       cv_fields = cert_fields;
-                     })
-                   variants
-               in
-               CTDEnum cert_variants
-           | _ -> CTDOpaque
-         in
-         (* M9.5l: detect tuple-style structs (positional fields, OR a
-            unit struct's empty field list). Lean side renders these
-            as `@[reducible] def <Name> := Unit` when there are zero
-            fields, mirroring the standard backend's handling. *)
-         let is_tuple_struct = TypesAnalysis.type_decl_is_tuple_struct td in
-         {
-           ctd_id = Types.TypeDeclId.to_int td.def_id;
-           ctd_name = bare_name;
-           ctd_kind = kind;
-           (* M9.5i: emit the ADT's type-parameter names so the Lean
-              side can render `inductive Foo (T : Type) where ...`
-              and resolve `TVar (Free K)` inside variant payload
-              types to the K-th name. *)
-           ctd_type_params =
-             List.map
-               (fun (tp : Types.type_param) -> tp.name)
-               td.generics.types;
-           ctd_is_tuple_struct = is_tuple_struct;
-           ctd_source_span = source_span_of_item_meta td.item_meta;
-           (* M9.5n: emit the qualified name so the Lean side can
-              recognise stdlib ADTs (`core::option::Option`,
-              `alloc::alloc::Global`, …) and skip re-emitting them
-              (they would shadow Lean's built-in `Option` and bloat
-              the output). *)
-           ctd_qualified_name = full_name;
-         })
-
 (** [M9.5l] Bare last-segment name of a Charon item. For a trait
     [traits_basic::Numeric] this returns [Numeric]; for a type
-    [traits_basic::Tag] it returns [Tag]. Used when assembling
-    standard-backend-style names for trait decls / impls. *)
+    [traits_basic::Tag] it returns [Tag]. *)
 let bare_name_of (n : Types.name) : string =
   match List.rev n with
   | Types.PeIdent (s, _) :: _ -> s
   | _ -> "__Anon"
 
-(** [M9.5l] First identifier in the name path — used as the crate
-    segment when computing flat impl names. *)
+(** [M9.5l] First identifier in the name path. *)
 let crate_segment_of (n : Types.name) : string =
   match n with
   | Types.PeIdent (s, _) :: _ -> s
   | _ -> "crate"
 
-(** [M9.5l] Collect trait declarations from the crate. The cert
-    carries the bare trait name and the trait's methods (name +
-    signature only — bodies, if any, live as standalone [fun_decl]s
-    already in [cc_functions]). *)
-let collect_trait_decls (crate : crate) : CertEvent.cert_trait_decl list =
-  let env = Print.Contexts.decls_ctx_to_fmt_env (compute_contexts crate) in
-  LlbcAst.TraitDeclId.Map.values crate.trait_decls
-  |> List.map (fun (td : trait_decl) : CertEvent.cert_trait_decl ->
-         let name = bare_name_of td.item_meta.name in
-         let qualified = Print.name_to_string env td.item_meta.name in
-         let methods : CertEvent.cert_trait_method list =
-           List.map
-             (fun (_, (b : trait_method Types.binder)) ->
-               let m = b.binder_value in
-               let sg : CertEvent.cert_signature =
-                 {
-                   csig_inputs = m.signature.inputs;
-                   csig_output = m.signature.output;
-                   (* The trait method's generics live on the binder
-                      (Charon separates value-sig from generics). *)
-                   csig_type_params =
-                     List.map
-                       (fun (tp : Types.type_param) -> tp.name)
-                       b.binder_params.types;
-                   csig_trait_clauses =
-                     trait_clauses_of_generics env crate b.binder_params;
-                 }
-               in
-               (* M9.5o: a method has a default body iff the fun_decl
-                  referenced by `m.item` carries a Structured body
-                  (Opaque means no default). *)
-               let has_default : bool =
-                 match
-                   LlbcAst.FunDeclId.Map.find_opt m.item.id crate.fun_decls
-                 with
-                 | Some fd -> (
-                     match fd.body with
-                     | StructuredBody _ -> true
-                     | _ -> false)
-                 | None -> false
-               in
-               { CertEvent.ctm_name = m.name;
-                 ctm_signature = sg;
-                 ctm_has_default = has_default })
-             (Types.TraitMethodId.Map.bindings td.methods)
-         in
-         {
-           ctrd_id = LlbcAst.TraitDeclId.to_int td.def_id;
-           ctrd_name = name;
-           ctrd_qualified_name = qualified;
-           ctrd_methods = methods;
-           ctrd_source_span = source_span_of_item_meta td.item_meta;
-         })
+(** [M9.7o-E5a] Build a [fun_decl_id → pretty_name] table by walking
+    the crate's [trait_impls] directly. Pre-M9.7o-E5a this routed
+    through the now-deleted [cert_trait_impl] mirror; we now compute
+    the same standard-backend impl-pretty-name shape inline.
 
-(** [M9.5l] Collect trait impls. For each impl, we compute the
-    standard-Aeneas Lean impl name [<SelfBare>.Insts.<CrateCap><TraitBare>]
-    (the minimal-case formula — generic / blanket impls are out of
-    scope for M9.5l). The Lean checker uses this name verbatim for
-    both the [@[reducible] def …] header and the per-method body
-    references inside [use_…] callers. *)
-let collect_trait_impls (crate : crate) : CertEvent.cert_trait_impl list =
-  let env = Print.Contexts.decls_ctx_to_fmt_env (compute_contexts crate) in
+    For each impl method, the pretty name is
+    [<impl_pretty_name>.<method_name>] — e.g.
+    [Tag.Insts.Traits_basicNumeric.value]. Used by
+    [generate_crate_cert] to set [fc_pretty_name] for impl-method
+    function bodies. The Lean side recomputes the same shape from the
+    structured [LlbcTraitImpl] (see [traitImplOfLlbcTraitImpl] in
+    [Translate/Driver.lean]); the two sides agree on the result. *)
+let build_fn_pretty_name_table (crate : crate)
+    : (int, string) Hashtbl.t =
+  let h = Hashtbl.create 16 in
   let trait_name_of (id : Types.trait_decl_id) : string =
     match LlbcAst.TraitDeclId.Map.find_opt id crate.trait_decls with
     | Some td -> bare_name_of td.item_meta.name
     | None -> "__UnknownTrait"
   in
-  let self_type_decl_id_of (impl : trait_impl) : int option =
-    match impl.impl_trait.generics.types with
-    | Types.TAdt { id = Types.TAdtId tid; _ } :: _ ->
-        Some (Types.TypeDeclId.to_int tid)
-    | _ -> None
-  in
-  (* M9.5o: when Self is `TVar (Free K)` (blanket impl shape), look
-     up the K-th impl-level type param and return its name. *)
   let self_type_var_of (impl : trait_impl) : string option =
     match impl.impl_trait.generics.types with
-    | Types.TVar dbv :: _ -> (
-        let idx_opt : int option =
-          match dbv with
-          | Types.Free i -> Some (Types.TypeVarId.to_int i)
-          | Types.Bound (_, i) -> Some (Types.TypeVarId.to_int i)
-        in
-        match idx_opt with
-        | Some k -> (
-            match List.nth_opt impl.generics.types k with
-            | Some (tp : Types.type_param) -> Some tp.name
-            | None -> None)
-        | None -> None)
+    | Types.TVar _ :: _ -> Some "_"  (* presence is what we need *)
     | _ -> None
   in
-  (* M9.5u: map a Charon [literal_type] to the Lean type name the
-     standard backend uses for primitive-Self impls (`impl Tr for bool`
-     becomes [Bool.Insts.<Crate>Tr]). The string comes from the
-     Lean backend's [Builtin.literal_type_to_string] convention,
-     not Rust's keyword form. *)
   let lean_name_of_lit_ty (lty : Types.literal_type) : string =
     match lty with
     | TBool -> "Bool"
@@ -394,97 +240,40 @@ let collect_trait_impls (crate : crate) : CertEvent.cert_trait_impl list =
         match Types.TypeDeclId.Map.find_opt tid crate.type_decls with
         | Some td -> bare_name_of td.item_meta.name
         | None -> "__UnknownSelf")
-    | Types.TVar _ :: _ ->
-        (* M9.5o: blanket impl — Lean uses the "Blanket" suffix in
-           place of a concrete Self ADT name. *)
-        "Blanket"
-    | Types.TLiteral lty :: _ ->
-        (* M9.5u: primitive Self (e.g. [impl Tr for bool]). The
-           standard backend roots the impl's pretty name in the
-           literal type's Lean name (`Bool.Insts.…`, `Std.U32.Insts.…`),
-           not the [__UnknownSelf] sentinel. *)
-        lean_name_of_lit_ty lty
+    | Types.TVar _ :: _ -> "Blanket"
+    | Types.TLiteral lty :: _ -> lean_name_of_lit_ty lty
     | _ -> "__UnknownSelf"
   in
   LlbcAst.TraitImplId.Map.values crate.trait_impls
-  |> List.map (fun (impl : trait_impl) : CertEvent.cert_trait_impl ->
-         let trait_id = impl.impl_trait.id in
-         let trait_bare = trait_name_of trait_id in
-         let self_bare = self_name_of impl in
-         let self_var = self_type_var_of impl in
-         (* M9.5l: standard-backend name shape for a non-generic impl.
-            See [ExtractBase.ctx_compute_trait_impl_name_raw] for the
-            full machinery (which handles renames, blanket impls,
-            non-ADT self types). The minimal-case formula is:
-            [<SelfBare>.Insts.<CrateCap><TraitBare>] where
-            [CrateCap] is the trait's crate segment with its first
-            letter capitalised.
-
-            M9.5o: for a blanket impl (Self is a type variable), the
-            standard backend uses `<TraitName>.Blanket` instead of
-            the Self-rooted form. *)
-         let trait_crate_seg = crate_segment_of (
-           match LlbcAst.TraitDeclId.Map.find_opt trait_id crate.trait_decls with
-           | Some td -> td.item_meta.name
-           | None -> [])
-         in
-         let pretty_name =
-           match self_var with
-           | Some _ ->
-               (* Blanket impl: `<TraitBare>.Blanket`. *)
-               Printf.sprintf "%s.Blanket" trait_bare
-           | None ->
-               Printf.sprintf "%s.Insts.%s%s" self_bare
-                 (capitalize_first_letter trait_crate_seg)
-                 trait_bare
-         in
-         (* Pair each impl-method entry with the trait method's name
-            via the shared TraitMethodId key. *)
-         let methods : CertEvent.cert_trait_impl_method list =
-           match
-             LlbcAst.TraitDeclId.Map.find_opt trait_id crate.trait_decls
-           with
-           | Some td ->
-               List.map2
-                 (fun (_, (b : Types.fun_decl_ref Types.binder))
-                      (_, (tb : trait_method Types.binder)) ->
-                   { CertEvent.ctim_name = tb.binder_value.name;
-                     ctim_fn_id = Types.FunDeclId.to_int b.binder_value.id })
-                 (Types.TraitMethodId.Map.bindings impl.methods)
-                 (Types.TraitMethodId.Map.bindings td.methods)
-           | None -> []
-         in
-         {
-           ctri_id = LlbcAst.TraitImplId.to_int impl.def_id;
-           ctri_pretty_name = pretty_name;
-           ctri_qualified_name = Print.name_to_string env impl.item_meta.name;
-           ctri_trait_decl_id = LlbcAst.TraitDeclId.to_int trait_id;
-           ctri_self_type_decl_id = self_type_decl_id_of impl;
-           ctri_self_type_var = self_var;
-           ctri_type_params =
-             List.map (fun (tp : Types.type_param) -> tp.name)
-               impl.generics.types;
-           ctri_trait_clauses =
-             trait_clauses_of_generics env crate impl.generics;
-           ctri_methods = methods;
-           ctri_source_span = source_span_of_item_meta impl.item_meta;
-         })
-
-(** [M9.5l] Build a [fun_decl_id → pretty_name] table from the trait
-    impls. For each impl method, the pretty name is
-    [<impl_pretty_name>.<method_name>] — e.g.
-    [Tag.Insts.Traits_basicNumeric.value]. Used by [collect_for_fun]
-    to set [fc_pretty_name] for impl-method functions. *)
-let build_fn_pretty_name_table (impls : CertEvent.cert_trait_impl list)
-    : (int, string) Hashtbl.t =
-  let h = Hashtbl.create 16 in
-  List.iter
-    (fun (i : CertEvent.cert_trait_impl) ->
-      List.iter
-        (fun (m : CertEvent.cert_trait_impl_method) ->
-          Hashtbl.replace h m.ctim_fn_id (i.ctri_pretty_name ^ "." ^ m.ctim_name))
-        i.ctri_methods)
-    impls;
+  |> List.iter (fun (impl : trait_impl) ->
+       let trait_id = impl.impl_trait.id in
+       let trait_bare = trait_name_of trait_id in
+       let self_bare = self_name_of impl in
+       let self_var = self_type_var_of impl in
+       let trait_crate_seg = crate_segment_of (
+         match LlbcAst.TraitDeclId.Map.find_opt trait_id crate.trait_decls with
+         | Some td -> td.item_meta.name
+         | None -> [])
+       in
+       let pretty_name =
+         match self_var with
+         | Some _ -> Printf.sprintf "%s.Blanket" trait_bare
+         | None ->
+             Printf.sprintf "%s.Insts.%s%s" self_bare
+               (capitalize_first_letter trait_crate_seg)
+               trait_bare
+       in
+       match LlbcAst.TraitDeclId.Map.find_opt trait_id crate.trait_decls with
+       | Some td ->
+           List.iter2
+             (fun (_, (b : Types.fun_decl_ref Types.binder))
+                  (_, (tb : trait_method Types.binder)) ->
+               let fn_id = Types.FunDeclId.to_int b.binder_value.id in
+               let mname = tb.binder_value.name in
+               Hashtbl.replace h fn_id (pretty_name ^ "." ^ mname))
+             (Types.TraitMethodId.Map.bindings impl.methods)
+             (Types.TraitMethodId.Map.bindings td.methods)
+       | None -> ());
   h
 
 (** Run the interpreter on every function in the crate, capturing per-function
@@ -492,9 +281,7 @@ let build_fn_pretty_name_table (impls : CertEvent.cert_trait_impl list)
 let generate_crate_cert (crate : crate) (marked_ids : marked_ids)
     (crate_hash : string) : CertEvent.crate_cert =
   let trans_ctx = compute_contexts crate in
-  let trait_decls = collect_trait_decls crate in
-  let trait_impls = collect_trait_impls crate in
-  let pretty_table = build_fn_pretty_name_table trait_impls in
+  let pretty_table = build_fn_pretty_name_table crate in
   let fun_certs : CertEvent.fun_cert list =
     List.filter_map
       (fun fd ->
@@ -506,20 +293,19 @@ let generate_crate_cert (crate : crate) (marked_ids : marked_ids)
             Some { fc with fc_pretty_name = pretty })
       (FunDeclId.Map.values crate.fun_decls)
   in
-  let type_decls = collect_type_decls crate in
-  (* M9.7d: populate the new cert-v3 [llbc_program] subtree from a
+  (* M9.7d: populate the cert-v3 [llbc_program] subtree from a
      minimal Aeneas-side LLBC -> JSON serializer. See
      [src/cert/LlbcJson.ml] for the why (Charon-ml ships only
      deserializers; no upstream [crate_to_json] binding exists) and
      for the per-type field set the Lean parser
-     ([AeneasCheck.Json.Parser.parseLlbcProgram]) actually reads. *)
+     ([AeneasCheck.Json.Parser.parseLlbcProgram]) actually reads.
+     M9.7o-E5a: with the flat ADT / trait decl mirrors removed, the
+     structured subtree is now the sole source of type / trait decls
+     on the Lean side. *)
   let llbc_program = LlbcJson.crate_to_json crate in
   {
     cc_fmt_version = CertEvent.cert_fmt_version;
     cc_crate_hash = crate_hash;
-    cc_type_decls = type_decls;
-    cc_trait_decls = trait_decls;
-    cc_trait_impls = trait_impls;
     cc_functions = fun_certs;
     cc_llbc_program = llbc_program;
   }

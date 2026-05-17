@@ -62,23 +62,23 @@ def main : IO Unit := do
   -- Cert-level sanity: the crate has two type decls (`List` and the
   -- synthesised `Global` placeholder). Find the `List` entry by name
   -- so we don't depend on Charon's ordering.
-  let listOpt := cc.typeDecls.toList.find? (·.name = "List")
+  let lp := cc.llbcProgram
+  let bareNameOfQualified (q : String) : String :=
+    match (q.splitOn "::").getLast? with
+    | some n => n
+    | none => q
+  let listOpt := lp.typeDecls.toList.find? (fun td => bareNameOfQualified td.itemMeta.name = "List")
   match listOpt with
   | some td =>
-    if td.typeParams = #[] then
-      IO.println s!"  ✓ List.typeParams = #[] (non-generic)"
+    if td.generics.types = #[] then
+      IO.println s!"  ✓ List.generics.types = #[] (non-generic)"
     else
       throw <| IO.userError
-        s!"expected List monomorphic, saw typeParams = {td.typeParams}"
+        s!"expected List monomorphic, saw generics.types = {td.generics.types}"
     match td.kind with
     | .enum vs =>
       if vs.size = 2 then
         IO.println s!"  ✓ List has {vs.size} variants"
-        -- The recursive `Cons` variant carries (U32, List) — *not*
-        -- (U32, Box<List>) — because Charon erases Box at the LLBC
-        -- layer. We don't dig into the opaque type strings here
-        -- (that's brittle); the inductive-emission assertions below
-        -- catch any Box leakage at the Lean surface.
         match vs[0]?, vs[1]? with
         | some vCons, some vNil =>
           if vCons.name = "Cons" && vCons.fields.size = 2 then
@@ -105,7 +105,7 @@ def main : IO Unit := do
   | some f =>
     let selfCallCount : Nat := f.events.toList.foldl (init := 0) fun n ev =>
       match ev with
-      | .call calleeId _ _ _ _ _ => if calleeId = f.fnId then n + 1 else n
+      | .call calleeId _ _ _ _ _ _ => if calleeId = f.fnId then n + 1 else n
       | _ => n
     if selfCallCount ≥ 1 then
       IO.println s!"  ✓ list_len has {selfCallCount} self-recursive EvCall(s)"

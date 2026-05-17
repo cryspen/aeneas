@@ -3,23 +3,23 @@ import AeneasCheck.Raw.CertEvent
 import AeneasCheck.Raw.LLBCProgram
 
 /-!
-# M9.7h — Cert v3 structural consistency (Level S)
+# M9.7h — Cert v3 structural consistency (Level S / Level R)
 
-This module pairs the cert's pre-existing "flat" metadata
-(`typeDecls`, `traitDecls`, `traitImpls`, per-function signatures,
-`fnId`/`fnName`) against the embedded `llbcProgram` and rejects the
-cert at parse-time when the two halves disagree on something
-structural — a name, a kind, an item count, or a cross-reference id.
+After M9.7o-E5a, the flat type/trait decl mirrors are gone and the
+embedded `llbcProgram` is the sole source of those decls — so the
+old "pair flat metadata against structured metadata" checks were
+deleted (they were tautological). What remains here:
 
-The check is the M9.7h piece of the cert v3 redesign (plan §C.1).
-The level-S checks here cover what the plan calls "structural
-agreement"; per-event referential validity (Level R) is the M9.7i/j
-follow-up that extends this same file.
-
-When `cc.fmtVersion < 3` (cert v1 / v2) the check is a no-op, since
-the embedded `llbcProgram` is `LlbcProgram.empty` and there is no
-second half to validate against. Existing in-tree v2 fixtures keep
-passing unchanged.
+* **Function-cert pairing** (`checkFunctions`): the cert's `FunCert.fnId`
+  / `FunCert.fnName` must point at an `LlbcFunDecl` in the embedded
+  program with matching id, name, and input arity.
+* **Per-event id-set checks** (`checkEventRefs`): `EvCall.fn` must
+  resolve in `lp.fun_decls`, `EvMatchArm.{adtId, variantId, variantName}`
+  must resolve in `lp.type_decls`, and every event's place root must
+  be in bounds of the function's `localsTypes`.
+* **Control-flow well-nestedness + abstraction lifecycle**
+  (`checkFlow`, M9.7j): `EvLoopInv` / `EvLoopEnd` balance and the
+  abs-id introduction set.
 -/
 
 namespace AeneasCheck.Typecheck.Consistency
@@ -45,10 +45,10 @@ private def err (context msg : String) : ConsErr := { context, msg }
 
 /-! ## Id-indexed lookup tables
 
-The cert's flat metadata is pairwise indexed by *id*, not by array
-position, because `cc.typeDecls` may skip ids that Charon emitted as
-opaque/global decls (and similarly for `cc.functions`). Build a
-HashMap once per check and pair via lookup. -/
+The cert's per-function metadata is pairwise indexed by *id*, not by
+array position, because `cc.functions` may skip ids that Charon
+emitted as opaque/global decls. Build a HashMap once per check and
+pair via lookup. -/
 
 private def buildTypeDeclMap (ps : Array LlbcTypeDecl) :
     Std.HashMap Nat LlbcTypeDecl :=
@@ -57,78 +57,6 @@ private def buildTypeDeclMap (ps : Array LlbcTypeDecl) :
 private def buildFunDeclMap (ps : Array LlbcFunDecl) :
     Std.HashMap Nat LlbcFunDecl :=
   ps.foldl (init := {}) fun m d => m.insert d.id d
-
-private def buildTraitDeclMap (ps : Array LlbcTraitDecl) :
-    Std.HashMap Nat LlbcTraitDecl :=
-  ps.foldl (init := {}) fun m d => m.insert d.id d
-
-private def buildTraitImplMap (ps : Array LlbcTraitImpl) :
-    Std.HashMap Nat LlbcTraitImpl :=
-  ps.foldl (init := {}) fun m d => m.insert d.id d
-
-/-! ## Type-decl pairing
-
-`cc.typeDecls[i].qualifiedName` (an M9.5n addition) is the
-crate-prefixed name used as the pretty-printer key on the OCaml side.
-`llbcProgram.type_decls[j].itemMeta.name` is the same key (Charon's
-`item_meta.name`). They must agree when ids match.
-
-Struct / Enum / Opaque kinds are paired symmetrically. Charon's
-`Union` and `TAlias` kinds (not present in M9.5b-era cc.typeDecls)
-land on the flat side as `.opaque`; we accept that as a downgrade. -/
-
-private def fieldNamesMatch (cs : Array CertField)
-    (ls : Array LlbcField) : Bool :=
-  cs.size = ls.size &&
-  (Array.zip cs ls).all fun (c, l) => c.name = l.name
-
-private def variantNamesMatch (cs : Array CertVariant)
-    (ls : Array LlbcVariant) : Bool :=
-  cs.size = ls.size &&
-  (Array.zip cs ls).all fun (c, l) =>
-    c.name = l.name && fieldNamesMatch c.fields l.fields
-
-private def checkTypeDeclPair (idx : Nat) (c : TypeDecl)
-    (l : LlbcTypeDecl) : List ConsErr := Id.run do
-  let ctx := s!"typeDecls[{idx}] id={c.id}"
-  let mut errs : List ConsErr := []
-  -- Qualified name agreement (qualifiedName is the M9.5n field on
-  -- the flat side; absent in pre-M9.5n certs but those are all v2
-  -- and short-circuit upstream).
-  if c.qualifiedName ≠ "" && c.qualifiedName ≠ l.itemMeta.name then
-    errs := errs ++ [err ctx s!"qualified name disagrees: cc={repr c.qualifiedName} lp={repr l.itemMeta.name}"]
-  -- Kind agreement.
-  match c.kind, l.kind with
-  | .struct cfields, .struct lfields =>
-    if cfields.size ≠ lfields.size then
-      errs := errs ++ [err ctx s!"struct field count disagrees: cc={cfields.size} lp={lfields.size}"]
-    else if !fieldNamesMatch cfields lfields then
-      errs := errs ++ [err ctx "struct field names disagree"]
-  | .enum cvars, .enum lvars =>
-    if cvars.size ≠ lvars.size then
-      errs := errs ++ [err ctx s!"enum variant count disagrees: cc={cvars.size} lp={lvars.size}"]
-    else if !variantNamesMatch cvars lvars then
-      errs := errs ++ [err ctx "enum variant / field names disagree"]
-  | .opaque, .opaque => pure ()
-  | .opaque, .union _ => pure ()  -- flat side falls back to .opaque for unions
-  | .opaque, .tAlias _ => pure () -- and for type aliases
-  | _, _ =>
-    errs := errs ++ [err ctx s!"kind disagrees (cc and lp record different shapes)"]
-  return errs
-
-def checkTypeDecls (ccDecls : Array TypeDecl)
-    (lpDecls : Array LlbcTypeDecl) : CR Unit := do
-  let m := buildTypeDeclMap lpDecls
-  let mut errs : List ConsErr := []
-  for i in [0 : ccDecls.size] do
-    let c := ccDecls[i]!
-    match m.get? c.id with
-    | none =>
-      errs := errs ++ [err s!"typeDecls[{i}]"
-        s!"id {c.id} ({c.qualifiedName}) is missing from llbcProgram.type_decls"]
-    | some l =>
-      errs := errs ++ checkTypeDeclPair i c l
-  if errs.isEmpty then .ok () else .error errs
 
 /-! ## Function-cert pairing
 
@@ -165,74 +93,6 @@ def checkFunctions (ccFns : Array FunCert)
         s!"fnId {c.fnId} ('{c.fnName}') is missing from llbcProgram.fun_decls"]
     | some l =>
       errs := errs ++ checkFunPair i c l
-  if errs.isEmpty then .ok () else .error errs
-
-/-! ## Trait-decl pairing -/
-
-private def checkTraitDeclPair (idx : Nat) (c : TraitDecl)
-    (l : LlbcTraitDecl) : List ConsErr := Id.run do
-  let ctx := s!"traitDecls[{idx}] id={c.id}"
-  let mut errs : List ConsErr := []
-  if c.qualifiedName ≠ l.itemMeta.name then
-    errs := errs ++ [err ctx s!"qualified name disagrees: cc={repr c.qualifiedName} lp={repr l.itemMeta.name}"]
-  if c.methods.size ≠ l.methods.size then
-    errs := errs ++ [err ctx s!"method count disagrees: cc={c.methods.size} lp={l.methods.size}"]
-  else
-    for k in [0 : c.methods.size] do
-      let cm := c.methods[k]!
-      let lm := l.methods[k]!
-      if cm.name ≠ lm.name then
-        errs := errs ++ [err ctx s!"method[{k}] name disagrees: cc={repr cm.name} lp={repr lm.name}"]
-  return errs
-
-def checkTraitDecls (ccDecls : Array TraitDecl)
-    (lpDecls : Array LlbcTraitDecl) : CR Unit := do
-  let m := buildTraitDeclMap lpDecls
-  let mut errs : List ConsErr := []
-  for i in [0 : ccDecls.size] do
-    let c := ccDecls[i]!
-    match m.get? c.id with
-    | none =>
-      errs := errs ++ [err s!"traitDecls[{i}]"
-        s!"id {c.id} ({c.qualifiedName}) is missing from llbcProgram.trait_decls"]
-    | some l =>
-      errs := errs ++ checkTraitDeclPair i c l
-  if errs.isEmpty then .ok () else .error errs
-
-/-! ## Trait-impl pairing -/
-
-private def checkTraitImplPair (idx : Nat) (c : TraitImpl)
-    (l : LlbcTraitImpl) : List ConsErr := Id.run do
-  let ctx := s!"traitImpls[{idx}] id={c.id}"
-  let mut errs : List ConsErr := []
-  if c.qualifiedName ≠ l.itemMeta.name then
-    errs := errs ++ [err ctx s!"qualified name disagrees: cc={repr c.qualifiedName} lp={repr l.itemMeta.name}"]
-  if c.traitDeclId ≠ l.traitDeclId then
-    errs := errs ++ [err ctx s!"traitDeclId disagrees: cc={c.traitDeclId} lp={l.traitDeclId}"]
-  if c.methods.size ≠ l.methods.size then
-    errs := errs ++ [err ctx s!"method count disagrees: cc={c.methods.size} lp={l.methods.size}"]
-  else
-    for k in [0 : c.methods.size] do
-      let cm := c.methods[k]!
-      let lm := l.methods[k]!
-      if cm.name ≠ lm.name then
-        errs := errs ++ [err ctx s!"method[{k}] name disagrees: cc={repr cm.name} lp={repr lm.name}"]
-      if cm.fnId ≠ lm.fnId then
-        errs := errs ++ [err ctx s!"method[{k}] fnId disagrees: cc={cm.fnId} lp={lm.fnId}"]
-  return errs
-
-def checkTraitImpls (ccImpls : Array TraitImpl)
-    (lpImpls : Array LlbcTraitImpl) : CR Unit := do
-  let m := buildTraitImplMap lpImpls
-  let mut errs : List ConsErr := []
-  for i in [0 : ccImpls.size] do
-    let c := ccImpls[i]!
-    match m.get? c.id with
-    | none =>
-      errs := errs ++ [err s!"traitImpls[{i}]"
-        s!"id {c.id} ({c.qualifiedName}) is missing from llbcProgram.trait_impls"]
-    | some l =>
-      errs := errs ++ checkTraitImplPair i c l
   if errs.isEmpty then .ok () else .error errs
 
 /-! ## Event reference checks
@@ -514,27 +374,16 @@ def checkFlow (ccFns : Array FunCert) : CR Unit := do
 
 /-! ## Top-level driver -/
 
-/-- Run the full Level-S structural consistency check against `cc`.
-    No-op when `cc.fmtVersion < 3` (the embedded `llbcProgram` is
-    `LlbcProgram.empty` under cert v1 / v2 — back-compat).
+/-- Run the full Level-S / Level-R structural consistency check
+    against `cc`. After M9.7o-E5a, this is unconditional (v1 / v2
+    certs are rejected at parse time).
 
     Aggregates errors from every sub-check so a single mis-emit
     surfaces all the divergences at once instead of one at a time. -/
 def checkLlbcVsCert (cc : CrateCert) : CR Unit := do
-  if cc.fmtVersion < 3 then
-    return ()
   let lp := cc.llbcProgram
   let mut errs : List ConsErr := []
-  match checkTypeDecls cc.typeDecls lp.typeDecls with
-  | .ok _ => pure ()
-  | .error es => errs := errs ++ es
   match checkFunctions cc.functions lp.funDecls with
-  | .ok _ => pure ()
-  | .error es => errs := errs ++ es
-  match checkTraitDecls cc.traitDecls lp.traitDecls with
-  | .ok _ => pure ()
-  | .error es => errs := errs ++ es
-  match checkTraitImpls cc.traitImpls lp.traitImpls with
   | .ok _ => pure ()
   | .error es => errs := errs ++ es
   match checkEventRefs cc.functions lp with

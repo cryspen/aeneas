@@ -87,40 +87,42 @@ def main : IO Unit := do
   -- `NumOrZero`, with variant 0 (`Num`) carrying exactly one payload
   -- field and variant 1 (`Zero`) carrying none. This is the data the
   -- Forward translator consults to pre-seed payload binders.
-  match cc.typeDecls.toList with
+  let lp := cc.llbcProgram
+  let bareNameOfQualified (q : String) : String :=
+    match (q.splitOn "::").getLast? with
+    | some n => n
+    | none => q
+  match lp.typeDecls.toList.filter (fun td => bareNameOfQualified td.itemMeta.name = "NumOrZero") with
   | [td] =>
-    if td.name = "NumOrZero" then
-      match td.kind with
-      | .enum vs =>
-        if vs.size = 2 then
-          IO.println s!"  ✓ NumOrZero has {vs.size} variants"
-          match vs[0]?, vs[1]? with
-          | some vNum, some vZero =>
-            if vNum.name = "Num" then
-              if vNum.fields.size = 1 then
-                IO.println s!"  ✓ Num carries {vNum.fields.size} payload field"
-              else
-                throw <| IO.userError
-                  s!"expected Num.fields.size = 1, saw {vNum.fields.size}"
+    match td.kind with
+    | .enum vs =>
+      if vs.size = 2 then
+        IO.println s!"  ✓ NumOrZero has {vs.size} variants"
+        match vs[0]?, vs[1]? with
+        | some vNum, some vZero =>
+          if vNum.name = "Num" then
+            if vNum.fields.size = 1 then
+              IO.println s!"  ✓ Num carries {vNum.fields.size} payload field"
             else
               throw <| IO.userError
-                s!"expected variant 0 name 'Num', saw '{vNum.name}'"
-            if vZero.name = "Zero" then
-              if vZero.fields.size = 0 then
-                IO.println s!"  ✓ Zero carries no payload"
-              else
-                throw <| IO.userError
-                  s!"expected Zero.fields.size = 0, saw {vZero.fields.size}"
+                s!"expected Num.fields.size = 1, saw {vNum.fields.size}"
+          else
+            throw <| IO.userError
+              s!"expected variant 0 name 'Num', saw '{vNum.name}'"
+          if vZero.name = "Zero" then
+            if vZero.fields.size = 0 then
+              IO.println s!"  ✓ Zero carries no payload"
             else
               throw <| IO.userError
-                s!"expected variant 1 name 'Zero', saw '{vZero.name}'"
-          | _, _ => throw <| IO.userError "expected exactly 2 variant entries"
-        else
-          throw <| IO.userError s!"expected 2 variants, saw {vs.size}"
-      | _ => throw <| IO.userError "expected NumOrZero to be an enum"
-    else
-      throw <| IO.userError s!"expected typeDecl name 'NumOrZero', saw '{td.name}'"
-  | _ => throw <| IO.userError "expected exactly 1 typeDecl"
+                s!"expected Zero.fields.size = 0, saw {vZero.fields.size}"
+          else
+            throw <| IO.userError
+              s!"expected variant 1 name 'Zero', saw '{vZero.name}'"
+        | _, _ => throw <| IO.userError "expected exactly 2 variant entries"
+      else
+        throw <| IO.userError s!"expected 2 variants, saw {vs.size}"
+    | _ => throw <| IO.userError "expected NumOrZero to be an enum"
+  | _ => throw <| IO.userError "expected exactly 1 typeDecl named 'NumOrZero'"
   -- End-to-end: translate + emit, then assert on the rendered source.
   -- We check the enum decl (with payload-typed `Num`), the function
   -- signature, and each match arm — including the `Num x2 => ok x2`

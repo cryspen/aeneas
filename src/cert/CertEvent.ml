@@ -408,183 +408,18 @@ type fun_cert = {
 }
 [@@deriving show]
 
-(** A struct field's projection-friendly summary, used by [cert_type_decl]
-    to resolve [Field K] projections on the Lean side. Field names follow
-    Charon's [field_name] convention: [None] for tuple-style positional
-    fields (the Lean side falls back to [`field<K>`] in that case). *)
-type cert_field = {
-  cf_idx : int;
-  cf_name : string option;
-  cf_ty : ty;
-}
-[@@deriving show]
+(** [M9.7o-E5a] Top-level certificate.
 
-(** A variant of an enum-style ADT declaration. M9.5d only handles the
-    C-style case (zero fields); payload-bearing variants will later
-    populate [cv_fields]. *)
-type cert_variant = {
-  cv_id : int;
-  cv_name : string;
-  cv_fields : cert_field list;
-}
-[@@deriving show]
-
-(** Kind of an ADT type declaration. M9.5b carries [Struct]; M9.5d adds
-    [Enum] (with variants). Other shapes (unions, aliases) downgrade to
-    [Opaque] so the Lean parser can tolerate them. *)
-type cert_type_decl_kind =
-  | CTDStruct of cert_field list
-  | CTDEnum of cert_variant list
-  | CTDOpaque
-[@@deriving show]
-
-(** A single ADT type declaration. [ctd_id] matches the OCaml
-    [TypeDeclId.id] that appears inside [TAdt {id = TAdtId N; ...}]
-    type strings in [cert_place.cp_ty] / [cert_signature]; the Lean side
-    uses this to resolve [TAdtId N] to a struct name and field names.
-
-    [ctd_name] is the bare ADT name (e.g. [Pair], not [reborrows::Pair]).
-    The Lean translator surfaces it directly. *)
-type cert_type_decl = {
-  ctd_id : int;
-  ctd_name : string;
-  ctd_kind : cert_type_decl_kind;
-  (** [M9.5i] The ADT's type-parameter names, in declaration order.
-      For `enum MyOption<T> { … }`, this is `["T"]`; for a monomorphic
-      struct (e.g. `Pair { fst: u32, snd: u32 }`) it is empty. The Lean
-      side renders these as `(T : Type)` parameters on the
-      `inductive` / `structure` declaration head, and variant payload
-      types referencing `TVar (Free K)` resolve to the K-th entry of
-      this list. *)
-  ctd_type_params : string list;
-  (** [M9.5l] True iff the struct uses tuple-style (positional) fields,
-      OR is a unit struct (`struct Tag;` — zero-field tuple struct).
-      The Lean side renders unit structs as `@[reducible] def Tag := Unit`
-      instead of `structure Tag where`. Only meaningful for [CTDStruct];
-      always false for [CTDEnum] / [CTDOpaque]. *)
-  ctd_is_tuple_struct : bool;
-  ctd_source_span : cert_source_span option;
-  (** [M9.5l] Source span for the type decl's source-code definition.
-      Used by the Lean emitter for the per-decl docstring. *)
-  ctd_qualified_name : string;
-  (** [M9.5n] Crate-prefixed qualified name (e.g.
-      [core::option::Option], [alloc::alloc::Global],
-      [issue_194_recursive_struct_projector::AVLNode]). The Lean side
-      uses this to suppress emission of stdlib ADTs that already have
-      a Lean equivalent ([Option], [Result], [Ordering], …), avoiding
-      shadowing of the built-in [Option] in the emitted file's
-      `open Aeneas Aeneas.Std` scope. *)
-}
-[@@deriving show]
-
-(** [M9.5l] One method declared in a trait. The signature uses the same
-    opaque-tagged form as [cert_signature] so the Lean side can recover
-    parameter / return types via the existing [RawTy] parser. *)
-type cert_trait_method = {
-  ctm_name : string;
-  ctm_signature : cert_signature;
-  (** [M9.5o] True iff this method has a default implementation in
-      the trait declaration. The Lean side emits these as
-      `Trait.<method>.default` decls (taking the trait itself as a
-      bound) alongside the trait. Default-method bodies still appear
-      in [cc_functions] as standalone fun_certs, but the Lean side
-      consumes the [ctm_has_default] flag here to know to emit them
-      with the `.default` shape (and to suppress the duplicate
-      standalone emission). *)
-  ctm_has_default : bool;
-}
-[@@deriving show]
-
-(** [M9.5l] A crate-level trait declaration. M9.5l only handles the
-    minimal shape: no associated types, no associated constants, no
-    parent traits, no const generics, no default methods. The trait
-    may carry type parameters via [ctd_type_params]-style binders, but
-    the M9.5l fixture only exercises the [Self : Type] case (no extra
-    generics beyond Self).
-
-    The Lean side renders this as `structure <Name> (Self : Type) where
-    <method> : Self → Result <out>`. *)
-type cert_trait_decl = {
-  ctrd_id : int;
-  ctrd_name : string;
-  (** Bare trait name, e.g. [Numeric] for `traits_basic::Numeric`. *)
-  ctrd_qualified_name : string;
-  (** Crate-prefixed qualified name, used by the Lean docstring. *)
-  ctrd_methods : cert_trait_method list;
-  ctrd_source_span : cert_source_span option;
-  (** Source span for the trait's `trait X { … }` block. *)
-}
-[@@deriving show]
-
-(** [M9.5l] One method implemented in a trait impl. [ctim_fn_id] is the
-    [fun_decl_id] of the concrete method body (which also appears as a
-    standalone entry in [cc_functions]). [ctim_name] is the trait
-    method's name (i.e., the name as it appears in the trait
-    declaration), not the impl method's qualified name. *)
-type cert_trait_impl_method = {
-  ctim_name : string;
-  ctim_fn_id : int;
-}
-[@@deriving show]
-
-(** [M9.5l] A crate-level trait impl. [ctri_self_type_decl_id] is the
-    [TypeDeclId] of the [Self] ADT (for the minimal M9.5l case where
-    [Self] is a concrete user-declared ADT — generic / primitive
-    self-types are out of scope). [ctri_pretty_name] is the
-    standard-Aeneas Lean name for the impl, pre-computed on the OCaml
-    side so the Lean checker does not have to reproduce the
-    [ExtractBase.ctx_compute_trait_impl_name] machinery (which would
-    require the full extraction context). For the M9.5l minimal case
-    this resolves to [<SelfBare>.Insts.<CrateCapitalized><TraitBare>]. *)
-type cert_trait_impl = {
-  ctri_id : int;
-  ctri_pretty_name : string;
-  (** Lean name for the impl, e.g. [Tag.Insts.Traits_basicNumeric]. *)
-  ctri_qualified_name : string;
-  (** Crate-prefixed qualified name (`traits_basic::{traits_basic::Numeric
-      for traits_basic::Tag}`) used by the Lean docstring. *)
-  ctri_trait_decl_id : int;
-  ctri_self_type_decl_id : int option;
-  (** [None] when [Self] is not a user-declared ADT. M9.5l only
-      consumes the [Some] case. *)
-  ctri_self_type_var : string option;
-  (** [M9.5o] When the impl's [Self] is a type parameter rather than a
-      concrete ADT, this carries its name (e.g. ["T"] for
-      `impl<T: Trait1> Trait2 for T`). Both [ctri_self_type_decl_id]
-      and [ctri_self_type_var] are [None] for impls whose Self is
-      neither a known ADT nor a type variable (out of scope). *)
-  ctri_type_params : string list;
-  (** [M9.5o] Type-parameter names declared on the impl itself
-      (i.e. the [T] in `impl<T: ...> ...`). Empty for monomorphic
-      (concrete-Self) impls. *)
-  ctri_trait_clauses : (string * int) list;
-  (** [M9.5o] Trait obligations on the impl's type parameters; same
-      shape as [csig_trait_clauses]. *)
-  ctri_methods : cert_trait_impl_method list;
-  ctri_source_span : cert_source_span option;
-}
-[@@deriving show]
-
-(** Top-level certificate. *)
+    The flat ADT / trait decl mirrors (`cert_type_decl`,
+    `cert_trait_decl`, `cert_trait_impl`, and their sub-types) were
+    deleted once cert v2 was retired — the embedded
+    {!cc_llbc_program} subtree is the sole source for those decls on
+    the Lean side. *)
 type crate_cert = {
   cc_fmt_version : int;
   cc_crate_hash : string;
       (** Hex SHA-256 of the LLBC JSON file's bytes; the Lean parser refuses
           mismatched (LLBC, cert) pairs. *)
-  cc_type_decls : cert_type_decl list;
-      (** [M9.5b] The crate's ADT type declarations, indexed by
-          [TypeDeclId]. The cert is the only source of truth for type
-          shape (the companion [llbc.json] is a stub); the Lean checker
-          uses this to render [structure …] decls and to resolve
-          [TAdtId N] references inside event places. *)
-  cc_trait_decls : cert_trait_decl list;
-      (** [M9.5l] The crate's trait declarations. Empty for crates with
-          no traits; the Lean parser tolerates a missing
-          [trait_decls] JSON key for backwards-compat with older
-          certs. *)
-  cc_trait_impls : cert_trait_impl list;
-      (** [M9.5l] The crate's trait implementations. Empty for crates
-          with no impls. *)
   cc_functions : fun_cert list;
   cc_llbc_program : Yojson.Basic.t;
       (** [M9.7d] The structured LLBC subtree embedded under the

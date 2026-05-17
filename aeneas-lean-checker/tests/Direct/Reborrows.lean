@@ -45,7 +45,7 @@ def main : IO Unit := do
   -- projection, confirming the OCaml hook emitted both M9.1 cert
   -- vocabulary additions.
   let cc ← readCrateCert "tests/Direct/reborrows.cert.json"
-  let nReborrow := countEvents cc fun | .reborrow _ _ _ => true | _ => false
+  let nReborrow := countEvents cc fun | .reborrow _ _ _ _ _ => true | _ => false
   if nReborrow ≥ 2 then
     IO.println s!"  ✓ saw {nReborrow} EvReborrow events"
   else
@@ -59,7 +59,7 @@ def main : IO Unit := do
     cc.functions.foldl (init := #[]) fun acc f =>
       f.events.foldl (init := acc) fun a e =>
         match e with
-        | .reborrow c p _ => a.push (c, p)
+        | .reborrow c p _ _ _ => a.push (c, p)
         | _ => a
   let children := allReborrows.foldl (init := (∅ : Std.HashSet Nat))
     fun s (c, _) => s.insert c

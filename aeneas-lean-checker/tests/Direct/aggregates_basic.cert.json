@@ -1,6 +1,6 @@
 {
-  "fmt_version": 1,
-  "crate_hash": "801d8da22d41c4a3d4d8b045ec81ec07",
+  "fmt_version": 3,
+  "crate_hash": "f782d74a9cb760a1e8e673395f9aadea",
   "type_decls": [
     {
       "id": 0,
@@ -169,7 +169,21 @@
             }
           }
         },
-        "EvReturn"
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.U32));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U32))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.U32));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U32))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     },
@@ -317,9 +331,473 @@
             }
           }
         },
-        "EvReturn"
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "aggregates_basic::Pair",
+          "attr_info": null,
+          "source_text": "pub struct Pair {\n    pub x: u32,\n    pub y: u32,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/aggregates_basic.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "x",
+              "ty": { "Literal": { "UInt": "U32" } },
+              "attr_info": null
+            },
+            {
+              "idx": 1,
+              "name": "y",
+              "ty": { "Literal": { "UInt": "U32" } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "aggregates_basic::mk_tuple",
+          "attr_info": null,
+          "source_text": "pub fn mk_tuple(x: u32, y: u32) -> (u32, u32) {\n    (x, y)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/aggregates_basic.rs",
+            "beg_line": 14,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  { "Literal": { "UInt": "U32" } },
+                  { "Literal": { "UInt": "U32" } }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/aggregates_basic.rs",
+            "beg_line": 15,
+            "beg_col": 4,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 15,
+                "beg_col": 5,
+                "end_line": 15,
+                "end_col": 6
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 15,
+                "beg_col": 8,
+                "end_line": 15,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 15,
+                "beg_col": 4,
+                "end_line": 15,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": "Tuple",
+                        "generics": {
+                          "types": [
+                            { "Literal": { "UInt": "U32" } },
+                            { "Literal": { "UInt": "U32" } }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 3,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          }
+                        },
+                        {
+                          "Move": {
+                            "local": 4,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 15,
+                "beg_col": 9,
+                "end_line": 15,
+                "end_col": 10
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 15,
+                "beg_col": 9,
+                "end_line": 15,
+                "end_col": 10
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 16,
+                "beg_col": 1,
+                "end_line": 16,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  { "Literal": { "UInt": "U32" } },
+                  { "Literal": { "UInt": "U32" } }
+                ]
+              }
+            }
+          },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "aggregates_basic::mk_pair",
+          "attr_info": null,
+          "source_text": "pub fn mk_pair(x: u32, y: u32) -> Pair {\n    Pair { x, y }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/aggregates_basic.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": {
+            "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/aggregates_basic.rs",
+            "beg_line": 19,
+            "beg_col": 4,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 19,
+                "beg_col": 11,
+                "end_line": 19,
+                "end_col": 12
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 19,
+                "beg_col": 14,
+                "end_line": 19,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": { "Adt": 0 }, "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 3,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          }
+                        },
+                        {
+                          "Move": {
+                            "local": 4,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 19,
+                "beg_col": 16,
+                "end_line": 19,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 19,
+                "beg_col": 16,
+                "end_line": 19,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/aggregates_basic.rs",
+                "beg_line": 20,
+                "beg_col": 1,
+                "end_line": 20,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }
