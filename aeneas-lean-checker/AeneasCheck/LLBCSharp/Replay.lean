@@ -23,7 +23,8 @@ structure CheckedTrace where
 /-- Apply one event to the running symbolic state. -/
 def stepEvent (st : SymState) (ev : Event) : Result SymState := do
   match ev with
-  | .mutBorrow loan place symval _ => stepMutBorrow st loan place symval
+  | .mutBorrow loan place symval kindHint =>
+    stepMutBorrow st loan place symval kindHint
   | .sharedBorrow loan sbId place symval =>
     stepSharedBorrow st loan sbId place symval
   | .assign dst rhs => stepAssign st dst rhs

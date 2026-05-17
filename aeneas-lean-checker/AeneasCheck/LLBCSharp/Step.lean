@@ -71,7 +71,8 @@ body; the place is replaced by a `mutLoan b` token tracking the loan.
 -/
 
 def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
-    (_symval : Nat) : Result SymState := do
+    (_symval : Nat) (kindHint : MutBorrowKind := .direct) :
+    Result SymState := do
   if st.loans.contains loan then
     fail s!"E-MutBorrow: borrow id {loan} already live"
   else
@@ -79,28 +80,34 @@ def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
     if root ≥ st.numLocals then
       fail s!"E-MutBorrow: local {root} out of bounds (have {st.numLocals})"
     else
-      -- M9.5w: a `&mut (*x).…` (place projection has any Deref) is
-      -- conceptually a reborrow of `x`'s loan, even though the OCaml
-      -- cert emitter only recognizes the immediate-outer-Deref shape
-      -- as EvReborrow. Classify these as `.reborrow` kind so they're
-      -- allowed to leak past the function-exit `leakedDirect` check
-      -- (their lifetime is owned by the parent borrow's input
-      -- abstraction). For the `.reborrow` kind we also skip the
-      -- `setLocal root (.mutLoan loan)` token-park: the parent already
-      -- has a `mutLoan` token in `root`, and overwriting it would
-      -- corrupt the parent's loan-tracking.
-      if place.projection.any (· == ProjElem.deref) then
+      -- M9.6 (Option C, plan §4.1.1) — strict path: dispatch on the
+      -- OCaml-supplied `kindHint`. When the hint is an explicit
+      -- non-Direct constructor we trust it directly:
+      --   * .inAbsReborrow absId   ⇒ classify as .reborrow
+      --     (caller-input abstraction owns the lifetime; subsumes
+      --     M9.5w's "place has any Deref" inference).
+      --   * .loopOwned loopId      ⇒ classify as .lazyExpand
+      --     (subsumes M9.5aa's loopDepth check).
+      -- When the hint is .direct (also the back-compat default for
+      -- pre-M9.6 / v1 certs) we still run the pragmatic
+      -- M9.5w / M9.5aa inference: a place with any Deref → reborrow,
+      -- an in-loop borrow → lazyExpand. Commit #23 retires that
+      -- fallback once the OCaml side is fully trusted.
+      match kindHint with
+      | .inAbsReborrow _ =>
         return st.addLoan loan .bottom .reborrow
-      else
+      | .loopOwned _ =>
         let inner := st.getLocal root
         let st := st.setLocal root (.mutLoan loan)
-        -- M9.5aa: a direct `&mut local` issued inside a loop body has
-        -- no explicit end event (its lifetime is owned by the loop's
-        -- region abstraction). Use `.lazyExpand` so it parks the
-        -- mut-loan token like `.direct` but is allowed to leak past
-        -- function exit like `.reborrow`.
-        let kind := if st.loopDepth > 0 then LoanKind.lazyExpand else .direct
-        return st.addLoan loan inner kind
+        return st.addLoan loan inner .lazyExpand
+      | .direct =>
+        if place.projection.any (· == ProjElem.deref) then
+          return st.addLoan loan .bottom .reborrow
+        else
+          let inner := st.getLocal root
+          let st := st.setLocal root (.mutLoan loan)
+          let kind := if st.loopDepth > 0 then LoanKind.lazyExpand else .direct
+          return st.addLoan loan inner kind
 
 /-! ## E-SharedBorrow
 
