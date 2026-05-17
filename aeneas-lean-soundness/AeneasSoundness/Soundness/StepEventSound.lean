@@ -512,6 +512,114 @@ theorem stepMutBorrow_loopOwned_sound
         Concretise.concretise_addLoan,
         Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
+/-! ### End-borrow trio (C11-C13)
+
+`stepEndBorrow` reads the cert's `restore.givenBack` and dispatches
+on the live loan's `LoanKind`. The three soundness lemmas mirror
+the three `LStep.endBorrow_*` constructors:
+
+* `.direct` / `.lazyExpand` → `LStep.endBorrow_direct`: the unique
+  local holding `mutLoan loan` is set to the given-back value;
+  the paper side picks `(Ω.setLocal x v)`.
+* `.reborrow` → `LStep.endBorrow_reborrow`: env untouched, Ω unchanged.
+* `.shared` → `LStep.endBorrow_shared`: env untouched, Ω unchanged.
+
+Each lemma takes a Phase-D-dischargeable *result-shape* hypothesis
+that pins the replayer's post-state. This avoids unrolling the
+env-scan `for ... in st.env.toList` loop here; Phase D (or a
+follow-up M9.8 micro-bump if needed) discharges it from the
+`LoanTokenInvariant` uniqueness fact + cert emission discipline. -/
+
+/-- C11 / M10.2k — `EvEndBorrow` with `.direct` (or `.lazyExpand`)
+    loan kind triggers `Reorg-End-MutBorrow` (paper Fig. 3). The
+    Phase-D-dischargeable `hShape` hypothesis pins the result of
+    `stepEndBorrow` to a single setLocal of the unique
+    `mutLoan loan`-holding local with the cert's given-back value;
+    `hHolder` lifts the holder local to the paper-side `Ω.ctx`
+    side. Both are Phase-D-dischargeable via the `LoanTokenInvariant`
+    that pairs the replayer's `mutLoan` token positions with the
+    paper's `ctx`. -/
+theorem stepEndBorrow_direct_sound
+  (hRep : concretise st = Ω)
+  (loan : Nat) (restore : RestoreInfo)
+  (x : Nat) (v : AeneasCheck.LLBCSharp.Val) (stTake : SymState)
+  (hTake : ∃ li : LoanInfo,
+    st.takeLoan loan = some (li, stTake) ∧
+    (li.kind = .direct ∨ li.kind = .lazyExpand))
+  (hHolder : Ω.ctx x = some (.mutLoan loan))
+  (hShape : stepEvent st (.endBorrow loan restore) =
+            .ok (stTake.setLocal x v)) :
+  stepEvent st (.endBorrow loan restore) = .ok st' →
+  ∃ Ω', Valid (.endBorrow loan restore) Ω ∧
+        LStep Ω (.endBorrow loan restore) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  -- Result-shape collapses st' = stTake.setLocal x v.
+  rw [hShape] at hStep
+  simp only [Except.ok.injEq] at hStep
+  subst hStep
+  obtain ⟨li, hTakeOk, _hKind⟩ := hTake
+  -- concretise stTake = concretise st (takeLoan commute; M10.1h).
+  have hConc : concretise stTake = concretise st :=
+    Concretise.concretise_takeLoan _ _ hTakeOk
+  -- Witness Ω' := Ω.setLocal x (liftVal v). LStep.endBorrow_direct
+  -- consumes `hHolder` and pins its existential `v` field to
+  -- `liftVal v`.
+  refine ⟨Ω.setLocal x (Concretise.liftVal v),
+          trivial,
+          (LStep.endBorrow_direct hHolder :
+            LStep Ω (.endBorrow loan restore)
+              (Ω.setLocal x (Concretise.liftVal v))),
+          ?_⟩
+  -- concretise (stTake.setLocal x v) = Ω.setLocal x (liftVal v)
+  -- via concretise_setLocal + concretise_takeLoan + hRep.
+  simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+    Concretise.concretise_setLocal, hConc, hRep]
+
+/-- C12 / M10.2l — `EvEndBorrow` with `.reborrow` loan kind. The
+    replayer's `stepEndBorrow` releases the loan id (via `takeLoan`)
+    but leaves env unchanged; the paper side picks
+    `LStep.endBorrow_reborrow`, whose post-state equals the
+    pre-state. -/
+theorem stepEndBorrow_reborrow_sound
+  (hRep : concretise st = Ω)
+  (loan : Nat) (restore : RestoreInfo) (stTake : SymState)
+  (hTake : ∃ li : LoanInfo,
+    st.takeLoan loan = some (li, stTake) ∧ li.kind = .reborrow)
+  (hShape : stepEvent st (.endBorrow loan restore) = .ok stTake) :
+  stepEvent st (.endBorrow loan restore) = .ok st' →
+  ∃ Ω', Valid (.endBorrow loan restore) Ω ∧
+        LStep Ω (.endBorrow loan restore) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  rw [hShape] at hStep
+  simp only [Except.ok.injEq] at hStep
+  subst hStep
+  obtain ⟨_li, hTakeOk, _hKind⟩ := hTake
+  refine ⟨Ω, trivial, LStep.endBorrow_reborrow, ?_⟩
+  exact (Concretise.concretise_takeLoan _ _ hTakeOk).trans hRep
+
+/-- C13 / M10.2m — `EvEndBorrow` with `.shared` loan kind. Same
+    shape as C12: env untouched, Ω unchanged. The paper side picks
+    `LStep.endBorrow_shared`. -/
+theorem stepEndBorrow_shared_sound
+  (hRep : concretise st = Ω)
+  (loan : Nat) (restore : RestoreInfo) (stTake : SymState)
+  (hTake : ∃ li : LoanInfo,
+    st.takeLoan loan = some (li, stTake) ∧ li.kind = .shared)
+  (hShape : stepEvent st (.endBorrow loan restore) = .ok stTake) :
+  stepEvent st (.endBorrow loan restore) = .ok st' →
+  ∃ Ω', Valid (.endBorrow loan restore) Ω ∧
+        LStep Ω (.endBorrow loan restore) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  rw [hShape] at hStep
+  simp only [Except.ok.injEq] at hStep
+  subst hStep
+  obtain ⟨_li, hTakeOk, _hKind⟩ := hTake
+  refine ⟨Ω, trivial, LStep.endBorrow_shared, ?_⟩
+  exact (Concretise.concretise_takeLoan _ _ hTakeOk).trans hRep
+
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
     rules named by each witness. Per-entry induction over
     [witnesses] is the heart of the join soundness proof. Closed by
