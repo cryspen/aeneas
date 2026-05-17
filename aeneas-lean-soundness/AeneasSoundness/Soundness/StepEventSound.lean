@@ -2,6 +2,7 @@ import AeneasCheck.LLBCSharp.Replay
 import AeneasSoundness.LLBCSharpPaper.Step
 import AeneasSoundness.LLBCSharpPaper.Valid
 import AeneasSoundness.Soundness.Concretise.Defn
+import AeneasSoundness.Soundness.Concretise.Lemmas
 
 /-!
 # Soundness of `stepEvent`
@@ -116,6 +117,92 @@ theorem stepLoopEnd_sound (hRep : concretise st = Ω) (loopId : Nat) :
   simp only [stepEvent, Pure.pure, Except.pure, Except.ok.injEq] at h
   subst h
   exact ⟨Ω, trivial, LStep.loopEnd, hRep⟩
+
+/-! ### Move / Copy
+
+`stepMove` / `stepCopy` operate on the root local of `src` /
+`dst` (`placeRootLocal p = p.local_`), ignoring any projection.
+For the paper-side `LStep.move` / `LStep.copy` premise
+(`resolvePlace src = some v`) to fire under that semantics we
+require:
+
+* `src.projection = #[]` — projection-empty, so
+  `resolvePlace src = getLocal src.local_`.
+* `dst.projection = #[]` — symmetric assumption on the destination.
+* `(st.env[src.local_]?).isSome` — `src.local_` is declared in
+  the replayer's env, so `liftEnv` maps it to `some (liftVal _)`.
+
+The three hypotheses are *Phase-D-dischargeable* — the cert's
+emission discipline (root-only places for move / copy) is enforced
+either by `WellFormedProgram` / `CertGen_faithful` or by a future
+checker-side pre-pass. Until then Phase D / Phase F threads them
+through the case-split. -/
+
+/-- C3 / M10.2c — `E-Move`. Replayer `stepMove` performs
+    `setLocal src.local_ .bottom; setLocal dst.local_ v` where
+    `v := st.env.getD src.local_ .bottom`. The paper-side
+    `LStep.move` mutates the same fields; we witness `v` as
+    `liftVal vR` where `vR` is the replayer-observed value. -/
+theorem stepMove_sound
+  (hRep : concretise st = Ω)
+  (src dst : Place)
+  (hSrcProj : src.projection = #[])
+  (_hDstProj : dst.projection = #[])
+  (hSrcEnv : ∃ v, st.env[src.local_]? = some v) :
+  stepEvent st (.move src dst) = .ok st' →
+  ∃ Ω', Valid (.move src dst) Ω ∧
+        LStep Ω (.move src dst) Ω' ∧
+        concretise st' = Ω' := by
+  obtain ⟨vR, hvR⟩ := hSrcEnv
+  intro h
+  -- The replayer's stepMove is a pure pipeline of two setLocals.
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepMove,
+    AeneasCheck.LLBCSharp.placeRootLocal, AeneasCheck.LLBCSharp.SymState.getLocal,
+    Pure.pure, Except.pure, Except.ok.injEq] at h
+  subst h
+  -- Common fact: `Ω.resolvePlace src = some (liftVal vR)`.
+  have hResolve : Ω.resolvePlace src = some (Concretise.liftVal vR) := by
+    subst hRep
+    simp [LLBCState.resolvePlace, hSrcProj, LLBCState.resolveProj,
+      LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
+  refine ⟨(Ω.setLocal src.local_ .bottom).setLocal dst.local_ (Concretise.liftVal vR),
+          ⟨_, hResolve⟩, LStep.move hResolve, ?_⟩
+  -- concretise st' = Ω' via two setLocal commutes; the source value
+  -- coincides with `liftVal vR` because `st.env[src.local_]? = some vR`.
+  have hGetD : (st.env.getD src.local_ (.bottom : Val)) = vR := by
+    rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
+  simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+    Concretise.concretise_setLocal, hRep, hGetD, Concretise.liftVal]
+
+/-- C3 / M10.2c — `E-Copy`. Like `stepMove_sound` but the source is
+    not cleared; the replayer's `stepCopy` performs a single
+    `setLocal dst.local_ v`. -/
+theorem stepCopy_sound
+  (hRep : concretise st = Ω)
+  (src dst : Place)
+  (hSrcProj : src.projection = #[])
+  (_hDstProj : dst.projection = #[])
+  (hSrcEnv : ∃ v, st.env[src.local_]? = some v) :
+  stepEvent st (.copy src dst) = .ok st' →
+  ∃ Ω', Valid (.copy src dst) Ω ∧
+        LStep Ω (.copy src dst) Ω' ∧
+        concretise st' = Ω' := by
+  obtain ⟨vR, hvR⟩ := hSrcEnv
+  intro h
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepCopy,
+    AeneasCheck.LLBCSharp.placeRootLocal, AeneasCheck.LLBCSharp.SymState.getLocal,
+    Pure.pure, Except.pure, Except.ok.injEq] at h
+  subst h
+  have hResolve : Ω.resolvePlace src = some (Concretise.liftVal vR) := by
+    subst hRep
+    simp [LLBCState.resolvePlace, hSrcProj, LLBCState.resolveProj,
+      LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
+  refine ⟨Ω.setLocal dst.local_ (Concretise.liftVal vR),
+          ⟨_, hResolve⟩, LStep.copy hResolve, ?_⟩
+  have hGetD : (st.env.getD src.local_ (.bottom : Val)) = vR := by
+    rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
+  simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+    Concretise.concretise_setLocal, hRep, hGetD]
 
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
