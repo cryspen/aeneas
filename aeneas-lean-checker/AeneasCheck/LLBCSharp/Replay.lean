@@ -55,13 +55,6 @@ def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := false) :
     -- M12.0/M12.1: structural no-op. The OCaml side emits an
     -- EvLoopInv at the start of each loop's canonical synthesized
     -- body, paired with an EvLoopEnd at the end (see InterpLoops.ml).
-    -- The cert is already structurally checked by `checkEvent`; the
-    -- LLBC# loop rule (T-Loop-Fixpoint) is structurally handled by
-    -- the Forward translator. The semantic ≤-relation check lands in
-    -- M12.3.
-    -- M9.5aa: open a loop scope so `stepMutBorrow` knows to
-    -- classify in-body direct `&mut local` as `.lazyExpand`.
-    let mut st := { st with loopDepth := st.loopDepth + 1 }
     -- M9.6 (Option C, plan §4.1.3) — strict path: when
     -- [loanRegistry] is non-empty, register exactly the loans
     -- the OCaml side identified in the loop's input
@@ -70,6 +63,10 @@ def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := false) :
     -- the M9.5z scan of [invariant.liveLoans] + [invariant.env]
     -- for [SymMutBorrowTok n] tokens. The parent_abs id is
     -- recorded by commit #19's AbsRegistry consumer.
+    -- (M9.5aa loopDepth bump removed in commit #21 — the
+    -- in-loop-borrow classification is now driven entirely by
+    -- the OCaml emitter's MbkLoopOwned kindHint.)
+    let mut st := st
     if loanRegistry.isEmpty then
       for b in invariant.liveLoans do
         if !st.loans.contains b then
@@ -86,8 +83,8 @@ def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := false) :
           st := st.addLoan b .bottom .reborrow
     return st
   | .loopEnd _ =>
-    -- M9.5aa: close the matching loop scope.
-    return { st with loopDepth := st.loopDepth - 1 }
+    -- M9.5aa loopDepth tracking retired in commit #21.
+    return st
   | .matchArm _ _ _ _ =>
     -- M9.5d: structural no-op for the replayer. The `matchArm`
     -- marker partitions the trace into per-arm event ranges; the

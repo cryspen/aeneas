@@ -49,13 +49,6 @@ structure SymState where
   loans : Std.HashMap Nat LoanInfo
   /-- Number of locals declared in the current function. -/
   numLocals : Nat
-  /-- M9.5aa: number of currently-open loops; bumped by `EvLoopInv` and
-      decremented by `EvLoopEnd`. `EvMutBorrow` issued while
-      `loopDepth > 0` is classified as `.lazyExpand` so the exit
-      `leakedDirect` check tolerates it (the OCaml interpreter does
-      not emit an explicit `EvEndBorrow`; the loan's lifetime is owned
-      by the loop's region abstraction). -/
-  loopDepth : Nat
   /-- M9.6 (Option C, plan §4.1.8): registry of region-abstraction
       shapes populated by `EvCall` (`absSig` hint, commit #7
       source) and consumed by `EvEndAbs` to validate that the
@@ -69,7 +62,7 @@ structure SymState where
 namespace SymState
 
 def empty (numLocals : Nat) : SymState := {
-  env := {}, loans := {}, numLocals, loopDepth := 0, absRegistry := {}
+  env := {}, loans := {}, numLocals, absRegistry := {}
 }
 
 /-- Lookup a local's current value; missing locals are `bottom`. -/

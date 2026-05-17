@@ -101,13 +101,17 @@ def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
         let st := st.setLocal root (.mutLoan loan)
         return st.addLoan loan inner .lazyExpand
       | .direct =>
+        -- M9.5w fallback (kept while v1 certs without kind_hint
+        -- still exist): place projection has any Deref ⇒ reborrow.
+        -- M9.5aa's loopDepth fallback is gone in commit #21 — the
+        -- OCaml emitter (commit #4) is the source of truth for
+        -- the loop-owned case via MbkLoopOwned.
         if place.projection.any (· == ProjElem.deref) then
           return st.addLoan loan .bottom .reborrow
         else
           let inner := st.getLocal root
           let st := st.setLocal root (.mutLoan loan)
-          let kind := if st.loopDepth > 0 then LoanKind.lazyExpand else .direct
-          return st.addLoan loan inner kind
+          return st.addLoan loan inner .direct
 
 /-! ## E-SharedBorrow
 

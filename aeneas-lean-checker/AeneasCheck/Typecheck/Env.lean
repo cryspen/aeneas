@@ -50,13 +50,6 @@ structure FnEnv where
   /-- Borrow ids that were once live but have since been ended. We keep
       them so that a duplicate `endBorrow` produces a precise error. -/
   endedLoans : Std.HashSet Nat
-  /-- M9.5aa: number of currently-open loops (each `EvLoopInv` opens
-      one, each `EvLoopEnd` closes one). An `EvMutBorrow` issued while
-      `loopDepth > 0` is loop-iteration-bound — the OCaml interpreter
-      does not emit an explicit `EvEndBorrow` for it (its lifetime is
-      owned by the loop's region abstraction), so we mark it as a
-      reborrow-class loan to keep `checkFnPost` happy. -/
-  loopDepth : Nat
   /-- 0-based event index — incremented as we walk the trace. -/
   cursor : Nat
   deriving Inhabited
@@ -64,7 +57,7 @@ structure FnEnv where
 def FnEnv.empty (fnId numLocals : Nat) : FnEnv := {
   fnId, numLocals,
   liveLoans := {}, reborrowLoans := {}, endedLoans := {},
-  loopDepth := 0, cursor := 0
+  cursor := 0
 }
 
 abbrev TC α := StateT FnEnv (Except CheckErr) α

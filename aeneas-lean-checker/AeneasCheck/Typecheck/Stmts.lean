@@ -50,16 +50,14 @@ def checkEvent (ev : Event) : TC Unit := do
     addLoan loan
     -- M9.6 (Option C, plan §4.1.1) — strict path: when the cert
     -- hints the borrow is owned by a caller abstraction or by a
-    -- loop, classify as reborrow-class. The Direct case falls
-    -- back to the M9.5w (Deref-projection) / M9.5aa (in-loop)
-    -- pragmatic inference; commit #23 retires that fallback once
-    -- the OCaml side is fully trusted.
-    let st ← get
+    -- loop, classify as reborrow-class. The Direct case keeps
+    -- the M9.5w (Deref-projection) fallback. M9.5aa's loopDepth
+    -- fallback was retired in commit #21 — MbkLoopOwned now
+    -- comes from the OCaml emitter.
     let leakClass : Bool :=
       match kindHint with
       | .inAbsReborrow _ | .loopOwned _ => true
-      | .direct =>
-        place.projection.any (· == ProjElem.deref) || st.loopDepth > 0
+      | .direct => place.projection.any (· == ProjElem.deref)
     if leakClass then
       modify fun st => { st with reborrowLoans := st.reborrowLoans.insert loan }
   | .sharedBorrow loan _ place _ => do
@@ -123,10 +121,10 @@ def checkEvent (ev : Event) : TC Unit := do
     -- (commit #12 fixed the OCaml side to not emit the redundant
     -- post-join EvEndBorrow that the dedupe used to swallow).
   | .loopInv _ invariant loanRegistry => do
-    -- M9.5aa: open a new loop scope. `EvMutBorrow` issued while any
-    -- loop is open is reborrow-class (lifetime owned by the loop's
-    -- region abstraction, no explicit end event in the cert).
-    modify fun st => { st with loopDepth := st.loopDepth + 1 }
+    -- M9.5aa loopDepth bump removed in commit #21. The OCaml
+    -- emitter now sets MbkLoopOwned for in-loop &mut local at
+    -- emission time (commit #4), so the typechecker no longer
+    -- needs to track loop nesting.
     -- M9.6 (Option C, plan §4.1.3) — strict path: when
     -- [loanRegistry] is non-empty, register exactly those
     -- (borrowId, parentAbsId) pairs. Otherwise fall back to the
@@ -157,13 +155,12 @@ def checkEvent (ev : Event) : TC Unit := do
     -- the "begin loop body" marker (paired with EvLoopEnd).
     for (_, e) in invariant.env do checkSymExpr e
   | .loopEnd _ =>
-    -- M12.1: structural no-op for the cert. EvLoopEnd is a sentinel
-    -- marker for the Forward translator's T-Loop-Fixpoint walker; the
-    -- replayer ignores it.
-    -- M9.5aa: close the corresponding loop scope.
-    -- (M9.6: the M9.5x joinDedupe promotion is gone — commit #12
-    -- fixed the OCaml emitter.)
-    modify fun st => { st with loopDepth := st.loopDepth - 1 }
+    -- M12.1: structural no-op for the cert. EvLoopEnd is a
+    -- sentinel marker for the Forward translator's
+    -- T-Loop-Fixpoint walker; the replayer / typechecker
+    -- ignore it. (M9.5x joinDedupe and M9.5aa loopDepth
+    -- bookkeeping both retired in commits #20/#21.)
+    pure ()
   | .matchArm scrutinee _ _ _ =>
     -- M9.5d: structural well-formedness on the match-arm marker. The
     -- arm body's events run separately and are checked one by one;
