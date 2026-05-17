@@ -91,6 +91,32 @@ theorem stepRetn_sound (hRep : concretise st = Ω) :
   subst h
   exact ⟨Ω, trivial, LStep.retn, hRep⟩
 
+/-- C2 / M10.2b — match-arm marker. `stepEvent` reduces `.matchArm`
+    to `return st`; on the paper side `LStep.matchArm` is a no-op. -/
+theorem stepMatchArm_sound (hRep : concretise st = Ω)
+  (scrutinee : SymExpr) (adtId variantId : Nat) (variantName : String) :
+  stepEvent st (.matchArm scrutinee adtId variantId variantName) = .ok st' →
+  ∃ Ω', Valid (.matchArm scrutinee adtId variantId variantName) Ω ∧
+        LStep Ω (.matchArm scrutinee adtId variantId variantName) Ω' ∧
+        concretise st' = Ω' := by
+  intro h
+  simp only [stepEvent, Pure.pure, Except.pure, Except.ok.injEq] at h
+  subst h
+  exact ⟨Ω, trivial, LStep.matchArm, hRep⟩
+
+/-- C2 / M10.2b — end-of-loop-iteration marker. Symmetric to
+    `stepMatchArm_sound`. The full loop semantics lives in
+    `stepLoopInv_sound` (C17). -/
+theorem stepLoopEnd_sound (hRep : concretise st = Ω) (loopId : Nat) :
+  stepEvent st (.loopEnd loopId) = .ok st' →
+  ∃ Ω', Valid (.loopEnd loopId) Ω ∧
+        LStep Ω (.loopEnd loopId) Ω' ∧
+        concretise st' = Ω' := by
+  intro h
+  simp only [stepEvent, Pure.pure, Except.pure, Except.ok.injEq] at h
+  subst h
+  exact ⟨Ω, trivial, LStep.loopEnd, hRep⟩
+
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
 theorem stepMutBorrow_direct_sound
