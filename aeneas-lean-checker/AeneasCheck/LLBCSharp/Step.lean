@@ -528,6 +528,19 @@ def stepJoin (st : SymState) (left right result : StateSummary)
       match joinEntryStrictOk leftMap rightMap resultMap entry with
       | none => pure ()
       | some msg => fail msg
+  -- M9.8 (cert v4): install the Collapse-Dup-MutBorrow fresh
+  -- region abstraction in `absRegistry` from the cert's
+  -- `AbsShape` payload. Mirrors `stepCall`'s `absSig.foldl
+  -- SymState.addAbsShape` install path; the paper-side
+  -- `JoinEntryStep.mutBorrows` post-state names exactly the
+  -- abs installed here, so `concretise st'.abs absId =
+  -- liftAbsShape abs` matches the paper by construction. Only
+  -- `joinMutBorrows` carries an `AbsShape`; the other rules
+  -- leave `absRegistry` untouched.
+  let st := witnesses.foldl (init := st) fun st entry =>
+    match entry.rule with
+    | .joinMutBorrows _ _ _ absShape => st.addAbsShape absShape
+    | _ => st
   -- Update the symbolic state to match the result.
   let newEnv : Std.HashMap Nat Val :=
     result.env.foldl (init := st.env) fun m (l, v) =>

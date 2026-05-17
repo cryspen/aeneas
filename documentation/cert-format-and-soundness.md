@@ -60,18 +60,27 @@ The authoritative schema lives in
 `aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean`. This section
 describes the constructs and the LLBC# rule each one witnesses.
 
-### 2.1 Top-level: `CrateCert` (cert v3)
+### 2.1 Top-level: `CrateCert` (cert v4)
 
 ```
 structure CrateCert where
-  fmtVersion  : Nat                 -- must be 3 (M9.7o-E5a rejects v1/v2)
+  fmtVersion  : Nat                 -- must be 4 (M9.8 rejects all earlier versions)
   crateHash   : String              -- digest of the source crate
   functions   : Array FunCert       -- the per-function execution traces
   llbcProgram : LlbcProgram         -- the post-pre-pass LLBC subtree
 ```
 
-The cert v3 format (introduced in M9.7d, mandated by M9.7o-E5a) embeds
-the *post-pre-pass* LLBC program as a structured subtree under
+The cert v4 format (introduced in M9.8) refines v3's
+`JrJoinMutBorrows` rule to carry the full `AbsShape` (id + parents +
+roles) of the fresh region abstraction created by the
+Collapse-Dup-MutBorrow join rule (paper Fig. 11), so the Lean
+replayer can install the abs in `SymState.absRegistry` from cert
+data alone — closing the C23 "fresh abs" soundness gap that the
+M10 LLBC# soundness campaign had escalated. All other v3 shape is
+preserved verbatim.
+
+The cert v3 format (introduced in M9.7d) embeds the
+*post-pre-pass* LLBC program as a structured subtree under
 `llbcProgram`. This replaces the flat `typeDecls` / `traitDecls` /
 `traitImpls` / signature-string mirrors that v1 and v2 carried.
 
@@ -298,6 +307,19 @@ or `SymMutBorrowTok n` (Join-MutBorrows/Collapse-Dup-MutBorrow, M9.5y).
 This is sound modulo the cert promise that the OCaml interpreter
 already discharged the side conditions; the full ≤-algebra is the
 subject of the soundness theorem (§4 below).
+
+**M9.8 (cert v4): `JoinMutBorrows` carries the fresh abs's shape.**
+Each `JrJoinMutBorrows` rule in the witnesses array now carries a
+full `AbsShape` (id + parents + roles) for the fresh region
+abstraction created by Collapse-Dup-MutBorrow. The OCaml emitter
+populates this with `parents = []` and `roles = [(MutBorrow,
+l_left), (MutBorrow, l_right), (MutLoan, l_fresh)]` (paper Fig. 11
+canonical content). `Step.stepJoin` installs the shape in
+`SymState.absRegistry` via `SymState.addAbsShape`, mirroring how
+`stepCall` already installs `EvCall.abs_sig` shapes. On the
+soundness side the paper's `JoinEntryStep.mutBorrows` lifts this
+same `AbsShape` via `liftAbsShape`, so `concretise st' = Ω'`
+follows by construction (no axiomatic-abs-creation needed).
 
 ##### `EvLoopInv loopId invariant` and `EvLoopEnd loopId`
 
