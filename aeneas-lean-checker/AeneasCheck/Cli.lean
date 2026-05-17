@@ -4,17 +4,25 @@ import AeneasCheck
 `lake exe aeneas-check` entry point.
 
 Usage:
-  aeneas-check <llbc.json> <cert.json> [--out <generated.lean>] [--rust-model <model.rs>]
+  aeneas-check <cert.json>                  [--out …] [--rust-model …]    -- v3+
+  aeneas-check <llbc.json> <cert.json>      [--out …] [--rust-model …]    -- legacy
 
 Pipeline: parse → typecheck → replay → translate → (Lean/Rust emit).
 The `--out` and `--rust-model` flags are optional; without them the
 checker just validates the cert and prints a summary.
+
+M9.7f: cert v3 embeds the post-pre-pass LLBC inside the cert itself
+(`cc.llbcProgram`), so the separate `<llbc.json>` argument is no
+longer needed. The 2-argument form is still accepted (the first
+positional is discarded) for back-compat with scripts that haven't
+been updated yet.
 -/
 
 open AeneasCheck Json Typecheck LLBCSharp Translate Backends
 
 def usage : String :=
-  "Usage: aeneas-check <llbc.json> <cert.json> [--out <generated.lean>] [--rust-model <model.rs>]"
+  "Usage: aeneas-check <cert.json> [--out <generated.lean>] [--rust-model <model.rs>]\n" ++
+  "       aeneas-check <llbc.json> <cert.json> [--out …] [--rust-model …]    (legacy, llbc.json ignored)"
 
 /-- Find `--flag value` in args, return value if present. -/
 def findFlag (args : List String) (flag : String) : Option String :=
@@ -24,9 +32,26 @@ def findFlag (args : List String) (flag : String) : Option String :=
     if f = flag then some v else findFlag (v :: rest) flag
   | [_] => none
 
-def main (args : List String) : IO UInt32 := do
+/-- M9.7f: pick the cert path and the remaining args from the CLI tail.
+
+    Accepts the 1-arg form (`<cert.json> …`) and the 2-arg legacy
+    form (`<llbc.json> <cert.json> …`, where `<llbc.json>` is
+    discarded). The heuristic: if the first positional ends with
+    `.cert.json` it is the cert path; otherwise we treat it as the
+    legacy LLBC arg and consume the next positional as the cert. -/
+def parsePositional (args : List String) : Option (String × List String) :=
   match args with
-  | _llbcJson :: certJson :: rest => do
+  | first :: rest =>
+    if first.endsWith ".cert.json" then some (first, rest)
+    else
+      match rest with
+      | cert :: tail => some (cert, tail)
+      | [] => none
+  | [] => none
+
+def main (args : List String) : IO UInt32 := do
+  match parsePositional args with
+  | some (certJson, rest) => do
     let cc ← readCrateCert certJson
     IO.println s!"parsed cert: fmt={cc.fmtVersion}, hash={cc.crateHash}, fns={cc.functions.size}"
     -- M9.6 (Option C, plan §7.1 #22): strict EvJoin per-witness
@@ -65,6 +90,6 @@ def main (args : List String) : IO UInt32 := do
         IO.println s!"  wrote Rust model:  {rustPath}"
       | none => pure ()
       return 0
-  | _ => do
+  | none => do
     IO.println usage
     return 1
