@@ -61,12 +61,35 @@ the name so per-event lemma signatures stay short. -/
     `concretise st` directly. -/
 abbrev concretise : SymState → LLBCState := Concretise.concretise
 
-/-! ## Per-event sub-soundness lemmas (all `sorry`'d) -/
+/-! ## Per-event sub-soundness lemmas -/
 
 section StepEvent
 
 variable (st st' : SymState) (Ω : LLBCState)
 variable (hRep : concretise st = Ω)
+
+/-- C1 / M10.2a — `E-Panic` (paper Fig. 3). `stepEvent st .panic`
+    returns `st` unchanged; we witness `Ω' = Ω`, `LStep.panic`, and
+    transport `hRep` along the `st = st'` equality the replayer
+    exposes. `Valid .panic Ω = True`. -/
+theorem stepPanic_sound (hRep : concretise st = Ω) :
+  stepEvent st .panic = .ok st' →
+  ∃ Ω', Valid .panic Ω ∧ LStep Ω .panic Ω' ∧ concretise st' = Ω' := by
+  intro h
+  simp only [stepEvent, Pure.pure, Except.pure, Except.ok.injEq] at h
+  subst h
+  exact ⟨Ω, trivial, LStep.panic, hRep⟩
+
+/-- C1 / M10.2a — `E-Step-Return` (paper Fig. 7). Symmetric to
+    `stepPanic_sound`: `stepEvent st .retn` is `return st`, so the
+    replayer leaves the state unchanged. `Valid .retn Ω = True`. -/
+theorem stepRetn_sound (hRep : concretise st = Ω) :
+  stepEvent st .retn = .ok st' →
+  ∃ Ω', Valid .retn Ω ∧ LStep Ω .retn Ω' ∧ concretise st' = Ω' := by
+  intro h
+  simp only [stepEvent, Pure.pure, Except.pure, Except.ok.injEq] at h
+  subst h
+  exact ⟨Ω, trivial, LStep.retn, hRep⟩
 
 /-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
