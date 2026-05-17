@@ -1,6 +1,7 @@
 import AeneasSoundness.LLBCSharpPaper.Syntax
 import AeneasSoundness.LLBCSharpPaper.State
 import AeneasSoundness.LLBCSharpPaper.Program
+import AeneasSoundness.LLBCSharpPaper.WellFormed
 import AeneasSoundness.Soundness.StepEventSound
 
 /-!
