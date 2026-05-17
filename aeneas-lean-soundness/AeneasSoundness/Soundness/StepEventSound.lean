@@ -620,6 +620,83 @@ theorem stepEndBorrow_shared_sound
   refine ⟨Ω, trivial, LStep.endBorrow_shared, ?_⟩
   exact (Concretise.concretise_takeLoan _ _ hTakeOk).trans hRep
 
+/-! ### Reborrow (C14)
+
+`stepReborrow` allocates a fresh child loan id. The replayer's M9.6
+strict path pre-adds the parent as a `.reborrow` loan if it isn't
+already in `st.loans` (covers the case where the cert's parent loan
+lives inside an abs the replayer doesn't model). The paper's
+`LStep.reborrow` post-state is just `Ω.bumpLoanId child`; the
+parent-pre-add is invisible on the paper side as long as `parent <
+Ω.freshness.nextLoanId` (i.e. parent was previously allocated and
+the HWM is already past it) — making `Ω.bumpLoanId parent = Ω` a
+no-op. Both branches collapse to the same paper-side conclusion. -/
+
+/-- C14 / M10.2n — `EvReborrow child parent place …` triggers
+    `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8 body-position entry).
+    Two Phase-D-dischargeable freshness premises:
+    * `hChildFresh : st.loanIdHwm ≤ child` — matches the paper's
+      `loanIdFresh child` premise after the `concretise` lift.
+    * `hParentInHwm : parent < st.loanIdHwm` — used to discharge
+      the no-op `Ω.bumpLoanId parent = Ω` when the replayer's
+      strict-path falls through to the pre-add-parent branch. Cert
+      emission discipline (parent loan id was previously allocated)
+      discharges. -/
+theorem stepReborrow_sound
+  (hRep : concretise st = Ω)
+  (child parent : Nat) (place : Place)
+  (parentLive : Bool) (parentAbs : Option Nat)
+  (hChildFresh : st.loanIdHwm ≤ child)
+  (hParentInHwm : parent < st.loanIdHwm) :
+  stepEvent st (.reborrow child parent place parentLive parentAbs)
+    = .ok st' →
+  ∃ Ω', Valid (.reborrow child parent place parentLive parentAbs) Ω ∧
+        LStep Ω (.reborrow child parent place parentLive parentAbs) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepReborrow,
+    AeneasCheck.LLBCSharp.placeRootLocal] at hStep
+  -- Guard 1: child id is not already live.
+  by_cases hC : st.loans.contains child = true
+  · rw [if_pos hC] at hStep; cases hStep
+  · rw [if_neg hC] at hStep
+    -- Guard 2: place's root local is in bounds.
+    by_cases hB : place.local_ ≥ st.numLocals
+    · rw [if_pos hB] at hStep; cases hStep
+    · rw [if_neg hB] at hStep
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      -- Paper-side freshness on the child id.
+      have hChildIdFresh : Ω.loanIdFresh child := by
+        subst hRep
+        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hChildFresh
+      -- Paper-side bumpLoanId is a no-op on `parent` since parent
+      -- is already past the HWM.
+      have hParentNoOp : Ω.bumpLoanId parent = Ω := by
+        unfold LLBCState.bumpLoanId
+        have hParentHwm : parent < Ω.freshness.nextLoanId := by
+          subst hRep
+          simpa [Concretise.concretise] using hParentInHwm
+        rcases Ω with ⟨ctx, abs, ⟨nL, nA, nS⟩⟩
+        simp only at *
+        have : max nL (parent + 1) = nL :=
+          Nat.max_eq_left (Nat.succ_le_of_lt hParentHwm)
+        simp [this]
+      refine ⟨Ω.bumpLoanId child,
+              hChildIdFresh,
+              LStep.reborrow hChildIdFresh, ?_⟩
+      -- Both replayer branches conclude `?.addLoan child .bottom .reborrow`.
+      -- Push concretise through the outer addLoan unconditionally.
+      by_cases hP : st.loans.contains parent = true
+      · rw [if_pos hP]
+        simp only [show (concretise : SymState → LLBCState)
+                            = Concretise.concretise from rfl,
+          Concretise.concretise_addLoan, hRep]
+      · rw [if_neg hP]
+        simp only [show (concretise : SymState → LLBCState)
+                            = Concretise.concretise from rfl,
+          Concretise.concretise_addLoan, hParentNoOp, hRep]
+
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
     rules named by each witness. Per-entry induction over
     [witnesses] is the heart of the join soundness proof. Closed by
