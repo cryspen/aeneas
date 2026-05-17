@@ -4,8 +4,9 @@
 
     Conceptually mirrors [BorrowCheck.borrow_check_crate]: we don't synthesize
     a Pure AST, we just exercise the interpreter to populate the event
-    buffer. The post-prepass crate is also written to [<input>.llbc.json] so
-    the Lean side reads exactly what the OCaml side checked. *)
+    buffer. The post-prepass crate is serialized into [cc_llbc_program]
+    inside the cert itself (cert_fmt_version >= 3), so the Lean side
+    reads exactly what the OCaml side checked from a single artifact. *)
 
 open Interp
 open InterpStatements
@@ -533,47 +534,17 @@ let write_cert (input_path : string) (cc : CertEvent.crate_cert) : string =
   log#linfo (lazy ("Wrote certificate: " ^ out_path));
   out_path
 
-(** Round-trip the post-prepass crate to JSON next to the cert.
+(** Top-level entry point.
 
-    For M3 we emit a minimal envelope that records the crate name and the
-    list of fun-decl ids covered by the cert. M4+ will replace this with a
-    full crate dump when the Lean Raw parser needs more than that. *)
-let write_llbc_json (input_path : string) (crate : crate) : string =
-  let out_path =
-    let base = Filename.remove_extension input_path in
-    base ^ ".llbc.json"
-  in
-  let oc = open_out out_path in
-  let payload : Yojson.Basic.t =
-    `Assoc
-      [
-        "fmt_version", `Int CertEvent.cert_fmt_version;
-        "crate_name", `String crate.name;
-        ( "fun_decl_ids",
-          `List
-            (List.map
-               (fun (d : fun_decl) -> `Int (FunDeclId.to_int d.def_id))
-               (FunDeclId.Map.values crate.fun_decls)) );
-      ]
-  in
-  Yojson.Basic.pretty_to_channel oc payload;
-  output_char oc '\n';
-  close_out oc;
-  log#linfo (lazy ("Wrote llbc.json: " ^ out_path));
-  out_path
-
-(** Top-level entry point. *)
+    The cert (cert_fmt_version >= 3) embeds the post-pre-pass LLBC
+    program directly via [LlbcJson.crate_to_json]. The companion
+    [.llbc.json] stub previously written via [-emit-llbc-json] was
+    retired in M9.7e (commit B2). [cc_crate_hash] now hashes the
+    input LLBC file (the Charon emission Aeneas consumed); the
+    post-pre-pass content travels inside the cert itself. *)
 let emit (input_path : string) (crate : crate) (marked_ids : marked_ids) : unit =
-  let llbc_path =
-    if !Config.emit_llbc_json then Some (write_llbc_json input_path crate)
-    else None
-  in
   if !Config.emit_cert then begin
-    let crate_hash =
-      match llbc_path with
-      | Some p -> CertJson.sha256_file p
-      | None -> CertJson.sha256_file input_path
-    in
+    let crate_hash = CertJson.sha256_file input_path in
     let cc = generate_crate_cert crate marked_ids crate_hash in
     let _ = write_cert input_path cc in
     ()

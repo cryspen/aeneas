@@ -96,11 +96,10 @@ let () =
       ( "-emit-cert",
         Arg.Set emit_cert,
         " Emit a <input>.cert.json file with the LLBC# trace, for \
-         consumption by aeneas-lean-checker. Implies borrow-checking." );
-      ( "-emit-llbc-json",
-        Arg.Set emit_llbc_json,
-        " Emit a <input>.llbc.json file: a canonical, post-pre-pass JSON \
-         dump of the crate (used in tandem with -emit-cert)." );
+         consumption by aeneas-lean-checker. Implies borrow-checking. \
+         The cert (fmt_version >= 3) embeds the post-pre-pass LLBC \
+         program directly, so a companion .llbc.json file is no longer \
+         emitted." );
       ( "-backend",
         Arg.Symbol (backend_names, set_backend),
         " Specify the target backend (" ^ String.concat ", " backend_names ^ ")"
@@ -487,10 +486,10 @@ let () =
     !loops_to_recursive_functions
     "-loops-to-rec" !no_recursive_loops "-loops-no-rec";
 
-  (* -emit-cert and -emit-llbc-json count as "no backend, just check"; they
-     are allowed without -borrow-check. -emit-cert without -borrow-check
-     implies borrow-checking. *)
-  if !emit_cert || !emit_llbc_json then borrow_check := true;
+  (* -emit-cert counts as "no backend, just check"; it is allowed
+     without -borrow-check. -emit-cert without -borrow-check implies
+     borrow-checking. *)
+  if !emit_cert then borrow_check := true;
 
   (* Check that the user specified a backend *)
   let _ =
@@ -500,8 +499,7 @@ let () =
           "Arguments `-backend` and `-borrow-check` are not compatible"
     | None ->
         check !borrow_check
-          "Missing `-backend`, `-borrow-check`, `-emit-cert`, or \
-           `-emit-llbc-json` argument"
+          "Missing `-backend`, `-borrow-check`, or `-emit-cert` argument"
   in
 
   (* Set some options depending on the backend *)
@@ -747,7 +745,7 @@ let () =
       (* Translate or borrow-check the crate *)
       let extracted_opaque = ref false in
       if !borrow_check then begin
-        if !emit_cert || !emit_llbc_json then
+        if !emit_cert then
           Aeneas.CertGen.emit filename m marked_ids
         else Aeneas.BorrowCheck.borrow_check_crate m marked_ids
       end
