@@ -1,6 +1,6 @@
 {
-  "fmt_version": 2,
-  "crate_hash": "1d5b11ff9c0e23835feda74e09362388",
+  "fmt_version": 3,
+  "crate_hash": "5ac6acc203967c0adc07f436ea806bcc",
   "type_decls": [
     {
       "id": 0,
@@ -558,5 +558,926 @@
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "reborrows::Pair",
+          "attr_info": null,
+          "source_text": "pub struct Pair {\n    pub fst: u32,\n    pub snd: u32,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/reborrows.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "fst",
+              "ty": { "Literal": { "UInt": "U32" } },
+              "attr_info": null
+            },
+            {
+              "idx": 1,
+              "name": "snd",
+              "ty": { "Literal": { "UInt": "U32" } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "reborrows::set_fst",
+          "attr_info": null,
+          "source_text": "pub fn set_fst(p: &mut Pair, v: u32) {\n    p.fst = v;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/reborrows.rs",
+            "beg_line": 14,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/reborrows.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 15,
+                "beg_col": 12,
+                "end_line": 15,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 15,
+                "beg_col": 4,
+                "end_line": 15,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [
+                      "Deref", { "Field": [ { "Adt": [ 0, null ] }, 0 ] }
+                    ],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 15,
+                "beg_col": 12,
+                "end_line": 15,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 14,
+                "beg_col": 37,
+                "end_line": 16,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 16,
+                "beg_col": 1,
+                "end_line": 16,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "reborrows::set_idx",
+          "attr_info": null,
+          "source_text": "pub fn set_idx(xs: &mut [u32; 4], i: usize, v: u32) {\n    xs[i] = v;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/reborrows.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Array": [
+                    { "Literal": { "UInt": "U32" } },
+                    {
+                      "kind": {
+                        "Literal": {
+                          "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "Mut"
+              ]
+            },
+            { "Literal": { "UInt": "Usize" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/reborrows.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 19,
+                "beg_col": 12,
+                "end_line": 19,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 19,
+                "beg_col": 7,
+                "end_line": 19,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U32" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U32" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "4" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U32" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "4" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Copy": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 19,
+                "beg_col": 12,
+                "end_line": 19,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 19,
+                "beg_col": 13,
+                "end_line": 19,
+                "end_col": 14
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 18,
+                "beg_col": 52,
+                "end_line": 20,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 20,
+                "beg_col": 1,
+                "end_line": 20,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U32" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U32" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "reborrows::reborrow_chain",
+          "attr_info": null,
+          "source_text": "pub fn reborrow_chain(x: &mut u32) {\n    let s: &mut u32 = &mut *x;\n    *s = 7;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/reborrows.rs",
+            "beg_line": 22,
+            "beg_col": 0,
+            "end_line": 25,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/reborrows.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 25,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 23,
+                "beg_col": 22,
+                "end_line": 23,
+                "end_col": 29
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 23,
+                "beg_col": 22,
+                "end_line": 23,
+                "end_col": 29
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 3,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 23,
+                "beg_col": 29,
+                "end_line": 23,
+                "end_col": 30
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 24,
+                "beg_col": 4,
+                "end_line": 24,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "7" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 22,
+                "beg_col": 35,
+                "end_line": 25,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 25,
+                "beg_col": 0,
+                "end_line": 25,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/reborrows.rs",
+                "beg_line": 25,
+                "beg_col": 1,
+                "end_line": 25,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

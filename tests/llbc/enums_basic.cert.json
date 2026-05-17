@@ -1,6 +1,6 @@
 {
-  "fmt_version": 2,
-  "crate_hash": "dde44fb8f99931d410847e1389ca686e",
+  "fmt_version": 3,
+  "crate_hash": "c2947f86f6ee8849b09b669d02850563",
   "type_decls": [
     {
       "id": 0,
@@ -169,5 +169,331 @@
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "enums_basic::Sign",
+          "attr_info": null,
+          "source_text": "pub enum Sign {\n    Pos,\n    Neg,\n    Zero,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/enums_basic.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Pos",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Neg",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 2,
+              "name": "Zero",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "2" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "enums_basic::flip",
+          "attr_info": null,
+          "source_text": "pub fn flip(s: Sign) -> Sign {\n    match s {\n        Sign::Pos => Sign::Neg,\n        Sign::Neg => Sign::Pos,\n        Sign::Zero => Sign::Zero,\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/enums_basic.rs",
+            "beg_line": 15,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+          ],
+          "output": {
+            "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/enums_basic.rs",
+            "beg_line": 16,
+            "beg_col": 4,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/enums_basic.rs",
+                "beg_line": 16,
+                "beg_col": 4,
+                "end_line": 21,
+                "end_col": 1
+              },
+              "kind": {
+                "Switch": {
+                  "Match": [
+                    {
+                      "local": 1,
+                      "projection": [],
+                      "ty": {
+                        "Adt": {
+                          "id": { "Adt": 0 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    },
+                    [
+                      [
+                        [ 0 ],
+                        {
+                          "span": {
+                            "file": "tests/src/enums_basic.rs",
+                            "beg_line": 16,
+                            "beg_col": 4,
+                            "end_line": 16,
+                            "end_col": 11
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/enums_basic.rs",
+                                "beg_line": 17,
+                                "beg_col": 21,
+                                "end_line": 17,
+                                "end_col": 30
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "Aggregate": [
+                                      {
+                                        "Adt": [
+                                          {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          },
+                                          1,
+                                          null
+                                        ]
+                                      },
+                                      []
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/enums_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 1,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ 1 ],
+                        {
+                          "span": {
+                            "file": "tests/src/enums_basic.rs",
+                            "beg_line": 18,
+                            "beg_col": 21,
+                            "end_line": 21,
+                            "end_col": 1
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/enums_basic.rs",
+                                "beg_line": 18,
+                                "beg_col": 21,
+                                "end_line": 18,
+                                "end_col": 30
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "Aggregate": [
+                                      {
+                                        "Adt": [
+                                          {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          },
+                                          0,
+                                          null
+                                        ]
+                                      },
+                                      []
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/enums_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 1,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ 2 ],
+                        {
+                          "span": {
+                            "file": "tests/src/enums_basic.rs",
+                            "beg_line": 19,
+                            "beg_col": 22,
+                            "end_line": 21,
+                            "end_col": 1
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/enums_basic.rs",
+                                "beg_line": 19,
+                                "beg_col": 22,
+                                "end_line": 19,
+                                "end_col": 32
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "Aggregate": [
+                                      {
+                                        "Adt": [
+                                          {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          },
+                                          2,
+                                          null
+                                        ]
+                                      },
+                                      []
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/enums_basic.rs",
+                                "beg_line": 21,
+                                "beg_col": 1,
+                                "end_line": 21,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    null
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

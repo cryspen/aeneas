@@ -1,6 +1,6 @@
 {
-  "fmt_version": 2,
-  "crate_hash": "a4306b8a29636193ff21e823752fab92",
+  "fmt_version": 3,
+  "crate_hash": "86355042071fdd6c7d6990ce813651a1",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -331,5 +331,452 @@
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "incr_cert::incr",
+          "attr_info": null,
+          "source_text": "pub fn incr(x: &mut u32) {\n    *x += 1;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 1,
+                          "projection": [ "Deref" ],
+                          "ty": {
+                            "Ref": [
+                              0, { "Literal": { "UInt": "U32" } }, "Mut"
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 7,
+                "beg_col": 25,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 9,
+                "beg_col": 1,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "incr_cert::incr_local",
+          "attr_info": null,
+          "source_text": "pub fn incr_local(mut y: u32) -> u32 {\n    let r: &mut u32 = &mut y;\n    *r += 1;\n    y\n}",
+          "lang_item": null,
+          "span": {
+            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "beg_line": 12,
+            "beg_col": 8,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 12,
+                "beg_col": 22,
+                "end_line": 12,
+                "end_col": 28
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 12,
+                "beg_col": 22,
+                "end_line": 12,
+                "end_col": 28
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 3,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 12,
+                "beg_col": 28,
+                "end_line": 12,
+                "end_col": 29
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 13,
+                "beg_col": 4,
+                "end_line": 13,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 2,
+                          "projection": [ "Deref" ],
+                          "ty": {
+                            "Ref": [
+                              0, { "Literal": { "UInt": "U32" } }, "Mut"
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 13,
+                "beg_col": 4,
+                "end_line": 13,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 14,
+                "beg_col": 4,
+                "end_line": 14,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 15,
+                "beg_col": 0,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "beg_line": 15,
+                "beg_col": 1,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

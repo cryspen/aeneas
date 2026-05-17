@@ -1,6 +1,6 @@
 {
-  "fmt_version": 2,
-  "crate_hash": "c4b123a4c47d69e3e29006fb07b0fc43",
+  "fmt_version": 3,
+  "crate_hash": "9b8592a26914d4682f868f49827d9fd5",
   "type_decls": [
     {
       "id": 0,
@@ -331,5 +331,530 @@
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "enums_payload::NumOrZero",
+          "attr_info": null,
+          "source_text": "pub enum NumOrZero {\n    Num(u32),\n    Zero,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/enums_payload.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Num",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "Literal": { "UInt": "U32" } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Zero",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "enums_payload::value",
+          "attr_info": null,
+          "source_text": "pub fn value(x: NumOrZero) -> u32 {\n    match x {\n        NumOrZero::Num(n) => n,\n        NumOrZero::Zero => 0,\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/enums_payload.rs",
+            "beg_line": 12,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/enums_payload.rs",
+            "beg_line": 13,
+            "beg_col": 4,
+            "end_line": 17,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/enums_payload.rs",
+                "beg_line": 13,
+                "beg_col": 4,
+                "end_line": 17,
+                "end_col": 1
+              },
+              "kind": {
+                "Switch": {
+                  "Match": [
+                    {
+                      "local": 1,
+                      "projection": [],
+                      "ty": {
+                        "Adt": {
+                          "id": { "Adt": 0 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    },
+                    [
+                      [
+                        [ 0 ],
+                        {
+                          "span": {
+                            "file": "tests/src/enums_payload.rs",
+                            "beg_line": 13,
+                            "beg_col": 4,
+                            "end_line": 13,
+                            "end_col": 11
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/enums_payload.rs",
+                                "beg_line": 14,
+                                "beg_col": 23,
+                                "end_line": 14,
+                                "end_col": 24
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 2,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Copy": {
+                                        "local": 1,
+                                        "projection": [
+                                          {
+                                            "Field": [
+                                              { "Adt": [ 0, 0 ] }, 0
+                                            ]
+                                          }
+                                        ],
+                                        "ty": {
+                                          "Adt": {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/enums_payload.rs",
+                                "beg_line": 14,
+                                "beg_col": 29,
+                                "end_line": 14,
+                                "end_col": 30
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Copy": {
+                                        "local": 2,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/enums_payload.rs",
+                                "beg_line": 14,
+                                "beg_col": 29,
+                                "end_line": 14,
+                                "end_col": 30
+                              },
+                              "kind": { "StorageDead": 2 }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/enums_payload.rs",
+                                "beg_line": 17,
+                                "beg_col": 1,
+                                "end_line": 17,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ 1 ],
+                        {
+                          "span": {
+                            "file": "tests/src/enums_payload.rs",
+                            "beg_line": 15,
+                            "beg_col": 27,
+                            "end_line": 17,
+                            "end_col": 1
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/enums_payload.rs",
+                                "beg_line": 15,
+                                "beg_col": 27,
+                                "end_line": 15,
+                                "end_col": 28
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "0" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/enums_payload.rs",
+                                "beg_line": 17,
+                                "beg_col": 1,
+                                "end_line": 17,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    null
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "enums_payload::wrap",
+          "attr_info": null,
+          "source_text": "pub fn wrap(x: u32) -> NumOrZero {\n    NumOrZero::Num(x)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/enums_payload.rs",
+            "beg_line": 19,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": {
+            "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/enums_payload.rs",
+            "beg_line": 20,
+            "beg_col": 4,
+            "end_line": 21,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/enums_payload.rs",
+                "beg_line": 20,
+                "beg_col": 19,
+                "end_line": 20,
+                "end_col": 20
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/enums_payload.rs",
+                "beg_line": 20,
+                "beg_col": 4,
+                "end_line": 20,
+                "end_col": 21
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": { "Adt": 0 }, "generics": { "types": [] } },
+                          0,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 2,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/enums_payload.rs",
+                "beg_line": 20,
+                "beg_col": 20,
+                "end_line": 20,
+                "end_col": 21
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/enums_payload.rs",
+                "beg_line": 21,
+                "beg_col": 1,
+                "end_line": 21,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "enums_payload::zero",
+          "attr_info": null,
+          "source_text": "pub fn zero() -> NumOrZero {\n    NumOrZero::Zero\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/enums_payload.rs",
+            "beg_line": 23,
+            "beg_col": 0,
+            "end_line": 25,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": {
+            "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/enums_payload.rs",
+            "beg_line": 24,
+            "beg_col": 4,
+            "end_line": 25,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/enums_payload.rs",
+                "beg_line": 24,
+                "beg_col": 4,
+                "end_line": 24,
+                "end_col": 19
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": { "Adt": 0 }, "generics": { "types": [] } },
+                          1,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/enums_payload.rs",
+                "beg_line": 25,
+                "beg_col": 1,
+                "end_line": 25,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

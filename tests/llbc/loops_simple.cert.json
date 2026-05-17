@@ -1,6 +1,6 @@
 {
-  "fmt_version": 2,
-  "crate_hash": "c45b3d984bd77172a8a9de89ca37aed2",
+  "fmt_version": 3,
+  "crate_hash": "05d5a3ecc864ab3f76a3043ce608ddfe",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -316,5 +316,501 @@
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "loops_simple::count_to",
+          "attr_info": null,
+          "source_text": "pub fn count_to(n: u32) -> u32 {\n    let mut i: u32 = 0;\n    while i < n {\n        i = i + 1;\n    }\n    i\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/loops_simple.rs",
+            "beg_line": 13,
+            "beg_col": 0,
+            "end_line": 19,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/loops_simple.rs",
+            "beg_line": 14,
+            "beg_col": 8,
+            "end_line": 19,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 14,
+                "beg_col": 21,
+                "end_line": 14,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 15,
+                "beg_col": 4,
+                "end_line": 17,
+                "end_col": 5
+              },
+              "kind": {
+                "Loop": {
+                  "span": {
+                    "file": "tests/src/loops_simple.rs",
+                    "beg_line": 15,
+                    "beg_col": 4,
+                    "end_line": 17,
+                    "end_col": 5
+                  },
+                  "statements": [
+                    {
+                      "span": {
+                        "file": "tests/src/loops_simple.rs",
+                        "beg_line": 15,
+                        "beg_col": 10,
+                        "end_line": 15,
+                        "end_col": 11
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 4,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          },
+                          {
+                            "Use": {
+                              "Copy": {
+                                "local": 2,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/loops_simple.rs",
+                        "beg_line": 15,
+                        "beg_col": 14,
+                        "end_line": 15,
+                        "end_col": 15
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 5,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          },
+                          {
+                            "Use": {
+                              "Copy": {
+                                "local": 1,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/loops_simple.rs",
+                        "beg_line": 15,
+                        "beg_col": 10,
+                        "end_line": 15,
+                        "end_col": 15
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 3,
+                            "projection": [],
+                            "ty": { "Literal": "Bool" }
+                          },
+                          {
+                            "BinaryOp": [
+                              "Lt",
+                              {
+                                "Move": {
+                                  "local": 4,
+                                  "projection": [],
+                                  "ty": { "Literal": { "UInt": "U32" } }
+                                }
+                              },
+                              {
+                                "Move": {
+                                  "local": 5,
+                                  "projection": [],
+                                  "ty": { "Literal": { "UInt": "U32" } }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/loops_simple.rs",
+                        "beg_line": 15,
+                        "beg_col": 4,
+                        "end_line": 17,
+                        "end_col": 5
+                      },
+                      "kind": {
+                        "Switch": {
+                          "If": [
+                            {
+                              "Move": {
+                                "local": 3,
+                                "projection": [],
+                                "ty": { "Literal": "Bool" }
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/loops_simple.rs",
+                                "beg_line": 15,
+                                "beg_col": 4,
+                                "end_line": 17,
+                                "end_col": 5
+                              },
+                              "statements": [
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 15,
+                                    "beg_col": 14,
+                                    "end_line": 15,
+                                    "end_col": 15
+                                  },
+                                  "kind": { "StorageDead": 5 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 15,
+                                    "beg_col": 14,
+                                    "end_line": 15,
+                                    "end_col": 15
+                                  },
+                                  "kind": { "StorageDead": 4 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 16,
+                                    "beg_col": 12,
+                                    "end_line": 16,
+                                    "end_col": 13
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 6,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "Use": {
+                                          "Copy": {
+                                            "local": 2,
+                                            "projection": [],
+                                            "ty": {
+                                              "Literal": { "UInt": "U32" }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 16,
+                                    "beg_col": 12,
+                                    "end_line": 16,
+                                    "end_col": 17
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 7,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "BinaryOp": [
+                                          "AddPanic",
+                                          {
+                                            "Copy": {
+                                              "local": 6,
+                                              "projection": [],
+                                              "ty": {
+                                                "Literal": { "UInt": "U32" }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "Const": {
+                                              "kind": {
+                                                "Literal": {
+                                                  "Scalar": {
+                                                    "Unsigned": [
+                                                      "U32", "1"
+                                                    ]
+                                                  }
+                                                }
+                                              },
+                                              "ty": {
+                                                "Literal": { "UInt": "U32" }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 16,
+                                    "beg_col": 8,
+                                    "end_line": 16,
+                                    "end_col": 17
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 2,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "Use": {
+                                          "Move": {
+                                            "local": 7,
+                                            "projection": [],
+                                            "ty": {
+                                              "Literal": { "UInt": "U32" }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 16,
+                                    "beg_col": 16,
+                                    "end_line": 16,
+                                    "end_col": 17
+                                  },
+                                  "kind": { "StorageDead": 6 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 17,
+                                    "beg_col": 4,
+                                    "end_line": 17,
+                                    "end_col": 5
+                                  },
+                                  "kind": { "StorageDead": 3 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 15,
+                                    "beg_col": 4,
+                                    "end_line": 17,
+                                    "end_col": 5
+                                  },
+                                  "kind": { "Continue": 0 }
+                                }
+                              ]
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/loops_simple.rs",
+                                "beg_line": 15,
+                                "beg_col": 10,
+                                "end_line": 15,
+                                "end_col": 15
+                              },
+                              "statements": [
+                                {
+                                  "span": {
+                                    "file": "tests/src/loops_simple.rs",
+                                    "beg_line": 15,
+                                    "beg_col": 10,
+                                    "end_line": 15,
+                                    "end_col": 15
+                                  },
+                                  "kind": { "Break": 0 }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 15,
+                "beg_col": 14,
+                "end_line": 15,
+                "end_col": 15
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 15,
+                "beg_col": 14,
+                "end_line": 15,
+                "end_col": 15
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 17,
+                "beg_col": 4,
+                "end_line": 17,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 18,
+                "beg_col": 4,
+                "end_line": 18,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 19,
+                "beg_col": 0,
+                "end_line": 19,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/loops_simple.rs",
+                "beg_line": 19,
+                "beg_col": 1,
+                "end_line": 19,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

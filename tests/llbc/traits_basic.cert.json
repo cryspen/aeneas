@@ -1,6 +1,6 @@
 {
-  "fmt_version": 2,
-  "crate_hash": "745626c597dd823fc61ceb14c6169184",
+  "fmt_version": 3,
+  "crate_hash": "d2a74f9132d6e46988cab22541af1bfb",
   "type_decls": [
     {
       "id": 0,
@@ -204,5 +204,426 @@
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "traits_basic::Tag",
+          "attr_info": null,
+          "source_text": "pub struct Tag;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 14,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 15
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "traits_basic::use_numeric",
+          "attr_info": null,
+          "source_text": "pub fn use_numeric(t: Tag) -> u32 {\n    t.value()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 22,
+            "beg_col": 0,
+            "end_line": 24,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 23,
+            "beg_col": 4,
+            "end_line": 24,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/traits_basic.rs",
+                "beg_line": 23,
+                "beg_col": 4,
+                "end_line": 23,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/traits_basic.rs",
+                "beg_line": 23,
+                "beg_col": 4,
+                "end_line": 23,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 2 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/traits_basic.rs",
+                "beg_line": 23,
+                "beg_col": 12,
+                "end_line": 23,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/traits_basic.rs",
+                "beg_line": 24,
+                "beg_col": 1,
+                "end_line": 24,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "traits_basic::Numeric::value",
+          "attr_info": null,
+          "source_text": "fn value(&self) -> u32;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 11,
+            "beg_col": 4,
+            "end_line": 11,
+            "end_col": 27
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "traits_basic::Numeric", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}::value",
+          "attr_info": null,
+          "source_text": "fn value(&self) -> u32 {\n        42\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 17,
+            "beg_col": 4,
+            "end_line": 19,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 18,
+            "beg_col": 8,
+            "end_line": 19,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/traits_basic.rs",
+                "beg_line": 18,
+                "beg_col": 8,
+                "end_line": 18,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "42" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/traits_basic.rs",
+                "beg_line": 19,
+                "beg_col": 5,
+                "end_line": 19,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "traits_basic::Numeric",
+          "attr_info": null,
+          "source_text": "pub trait Numeric {\n    fn value(&self) -> u32;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 10,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "value",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "Literal": { "UInt": "U32" } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "traits_basic::Numeric", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}",
+          "attr_info": null,
+          "source_text": "impl Numeric for Tag {\n    fn value(&self) -> u32 {\n        42\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/traits_basic.rs",
+            "beg_line": 16,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": 0,
+        "self_type": {
+          "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "value", "fn_id": 2 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }

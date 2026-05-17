@@ -1,6 +1,6 @@
 {
-  "fmt_version": 2,
-  "crate_hash": "802fa3c7e2f99242175e02e622c73316",
+  "fmt_version": 3,
+  "crate_hash": "fa89cc9f7b92f55b111608bceb0e60e2",
   "type_decls": [],
   "trait_decls": [],
   "trait_impls": [],
@@ -410,5 +410,580 @@
       ],
       "final_state": { "env": [], "live_loans": [] }
     }
-  ]
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "slices_basic::get_first",
+          "attr_info": null,
+          "source_text": "pub fn get_first(xs: &[u32]) -> u32 {\n    xs[0]\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/slices_basic.rs",
+            "beg_line": 8,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "Literal": { "UInt": "U32" } } }, "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/slices_basic.rs",
+            "beg_line": 9,
+            "beg_col": 4,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 9,
+                "beg_col": 7,
+                "end_line": 9,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U32" } } },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U32" } } },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 9
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U32" } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "U32" } }, "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 4,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 10,
+                "beg_col": 0,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 10,
+                "beg_col": 1,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U32" } } }, "Shared"
+            ]
+          },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U32" } } }, "Shared"
+            ]
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "slices_basic::set_idx_slice",
+          "attr_info": null,
+          "source_text": "pub fn set_idx_slice(xs: &mut [u32], i: usize, v: u32) {\n    xs[i] = v;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/slices_basic.rs",
+            "beg_line": 12,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "Literal": { "UInt": "U32" } } }, "Mut"
+              ]
+            },
+            { "Literal": { "UInt": "Usize" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/slices_basic.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 13,
+                "beg_col": 12,
+                "end_line": 13,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 13,
+                "beg_col": 7,
+                "end_line": 13,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 13,
+                "beg_col": 4,
+                "end_line": 13,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U32" } } },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U32" } } },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 13,
+                "beg_col": 4,
+                "end_line": 13,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U32" } } },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Copy": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 13,
+                "beg_col": 4,
+                "end_line": 13,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 13,
+                "beg_col": 12,
+                "end_line": 13,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 13,
+                "beg_col": 13,
+                "end_line": 13,
+                "end_col": 14
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 12,
+                "beg_col": 55,
+                "end_line": 14,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/slices_basic.rs",
+                "beg_line": 14,
+                "beg_col": 1,
+                "end_line": 14,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U32" } } }, "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U32" } } }, "Mut"
+            ]
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
 }
