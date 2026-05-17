@@ -26,7 +26,7 @@ them.
 namespace AeneasSoundness.Soundness.Concretise
 
 open AeneasCheck.LLBCSharp
-open AeneasSoundness.LLBCSharpPaper (LLBCState)
+open AeneasSoundness.LLBCSharpPaper (LLBCState NonceCounters)
 
 /-! ## Inversion lemmas (M10.1d) -/
 
@@ -113,10 +113,22 @@ theorem concretise_setLocal (st : SymState) (l : Nat)
     `stepMutBorrow_direct_sound`). -/
 theorem concretise_addLoan (st : SymState) (b : Nat)
     (inner : AeneasCheck.LLBCSharp.Val) (kind : LoanKind)
-    (_hFresh : maxKeyPlusOne st.loans ≤ b) :
+    (hFresh : maxKeyPlusOne st.loans ≤ b) :
     concretise (st.addLoan b inner kind) =
       (concretise st).bumpLoanId b := by
-  sorry
+  unfold concretise SymState.addLoan LLBCState.bumpLoanId
+  -- Both sides share `ctx`, `abs`, `freshness.nextAbsId`, `freshness.nextSymValId`.
+  -- The only nontrivial obligation is on `freshness.nextLoanId`:
+  --   maxKeyPlusOne (st.loans.insert b _) = max (maxKeyPlusOne st.loans) (b+1)
+  -- which equals `b + 1` under `hFresh` (Nat.max_eq_right).
+  refine LLBCState.mk.injEq .. |>.mpr ⟨rfl, rfl, ?_⟩
+  -- Remaining goal: equality of `freshness` (NonceCounters) records.
+  -- The `nextAbsId` and `nextSymValId` fields are equal definitionally;
+  -- only `nextLoanId` needs work.
+  refine NonceCounters.mk.injEq .. |>.mpr ⟨?_, rfl, rfl⟩
+  -- Goal: maxKeyPlusOne (st.loans.insert b _) = max (maxKeyPlusOne st.loans) (b + 1)
+  rw [maxKeyPlusOne_insert_fresh _ _ _ hFresh]
+  exact (Nat.max_eq_right (Nat.le_succ_of_le hFresh)).symm
 
 /-- `takeLoan` commute: removing a loan from the replayer's loan
     store is a no-op on the paper side (loans live inside `ctx` /

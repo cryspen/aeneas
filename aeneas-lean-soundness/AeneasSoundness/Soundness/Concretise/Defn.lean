@@ -128,6 +128,149 @@ theorem maxKeyPlusOne_empty {α : Type} :
   rw [maxKeyPlusOne, Std.HashMap.fold_eq_foldl_toList]
   simp
 
+/-! ### `maxKeyPlusOne` and `insert`
+
+The load-bearing lemma used by `concretise_addLoan` (Phase B `M10.1f`):
+inserting a fresh key `k` (i.e. `maxKeyPlusOne m ≤ k`) into `m` bumps
+`maxKeyPlusOne` to exactly `k + 1`. The proof goes via
+`Std.HashMap.toList_insert_perm` + `List.Perm.foldl_eq`
+(`max` is right-commutative on `Nat`), plus two structural facts about
+folding `max` over a list:
+
+* `foldl_max_succ_mono`: starting accumulator grows monotonically through the fold.
+* `foldl_max_succ_le`: the fold result is bounded above by `max acc B`
+  whenever every key in the list is ≤ `B - 1`.
+-/
+
+/-- Folding `max acc (k'+1)` over a list is monotone in the starting
+    accumulator. Auxiliary for `maxKeyPlusOne_insert_fresh`. -/
+private theorem foldl_max_succ_mono {α : Type}
+    (xs : List (Nat × α)) (acc₁ acc₂ : Nat) (h : acc₁ ≤ acc₂) :
+    xs.foldl (fun acc p => max acc (p.1 + 1)) acc₁ ≤
+      xs.foldl (fun acc p => max acc (p.1 + 1)) acc₂ := by
+  induction xs generalizing acc₁ acc₂ with
+  | nil => simpa
+  | cons p ps ih =>
+    simp only [List.foldl_cons]
+    apply ih
+    -- max is monotone in both args: max acc₁ x ≤ max acc₂ x.
+    rcases Nat.lt_or_ge acc₁ (p.1 + 1) with h₁ | h₁
+    · -- acc₁ < p.1 + 1, so max acc₁ (p.1+1) = p.1 + 1.
+      rw [Nat.max_eq_right (Nat.le_of_lt h₁)]
+      exact Nat.le_max_right _ _
+    · -- p.1 + 1 ≤ acc₁, so max acc₁ (p.1+1) = acc₁.
+      rw [Nat.max_eq_left h₁]
+      exact le_trans h (Nat.le_max_left _ _)
+
+/-- The starting accumulator is a lower bound on the fold result. -/
+private theorem le_foldl_max_succ {α : Type}
+    (xs : List (Nat × α)) (acc : Nat) :
+    acc ≤ xs.foldl (fun acc p => max acc (p.1 + 1)) acc := by
+  induction xs generalizing acc with
+  | nil => simp
+  | cons p ps ih =>
+    simp only [List.foldl_cons]
+    exact le_trans (Nat.le_max_left _ _) (ih _)
+
+/-- If every key in `xs` is bounded by `k`, the fold stays bounded by `B`
+    whenever the starting accumulator is bounded by `B` and `k + 1 ≤ B`. -/
+private theorem foldl_max_succ_le_aux {α : Type}
+    (xs : List (Nat × α)) (B : Nat)
+    (hKeys : ∀ p ∈ xs, p.1 + 1 ≤ B) :
+    ∀ (acc : Nat), acc ≤ B →
+      xs.foldl (fun acc p => max acc (p.1 + 1)) acc ≤ B := by
+  induction xs with
+  | nil => intro acc hacc; simpa
+  | cons p ps ih =>
+    intro acc hacc
+    simp only [List.foldl_cons]
+    have hp : p.1 + 1 ≤ B := hKeys p List.mem_cons_self
+    have hps : ∀ q ∈ ps, q.1 + 1 ≤ B := fun q hq =>
+      hKeys q (List.mem_cons_of_mem _ hq)
+    apply ih hps
+    exact Nat.max_le.mpr ⟨hacc, hp⟩
+
+/-- If every key in `xs` is bounded by `k`, the fold is bounded by
+    `max acc (k+1)`. -/
+private theorem foldl_max_succ_le {α : Type}
+    (xs : List (Nat × α)) (k acc : Nat)
+    (hKeys : ∀ p ∈ xs, p.1 + 1 ≤ k + 1) :
+    xs.foldl (fun acc p => max acc (p.1 + 1)) acc ≤ max acc (k + 1) := by
+  apply foldl_max_succ_le_aux xs (max acc (k + 1))
+  · intro p hp
+    exact le_trans (hKeys p hp) (Nat.le_max_right _ _)
+  · exact Nat.le_max_left _ _
+
+/-- Bound for every key in the toList of a hashmap: every `(j+1)` is
+    ≤ `maxKeyPlusOne m`. Auxiliary for `maxKeyPlusOne_insert_fresh`. -/
+private theorem succ_le_maxKeyPlusOne_of_mem_toList {α : Type}
+    (m : Std.HashMap Nat α) (p : Nat × α) (hp : p ∈ m.toList) :
+    p.1 + 1 ≤ maxKeyPlusOne m := by
+  unfold maxKeyPlusOne
+  rw [Std.HashMap.fold_eq_foldl_toList]
+  -- We show that for any prefix accumulator `acc`, if `p` is in the
+  -- remaining list, then `p.1 + 1 ≤ foldl ... acc list`.
+  suffices h : ∀ (xs : List (Nat × α)) (acc : Nat),
+      p ∈ xs → p.1 + 1 ≤ xs.foldl (fun acc q => max acc (q.1 + 1)) acc by
+    exact h m.toList 0 hp
+  intro xs acc hpx
+  induction xs generalizing acc with
+  | nil => cases hpx
+  | cons q qs ih =>
+    simp only [List.foldl_cons]
+    rcases List.mem_cons.mp hpx with heq | htail
+    · subst heq
+      exact le_trans (Nat.le_max_right _ _) (le_foldl_max_succ qs _)
+    · exact ih _ htail
+
+/-- If every key in `m` is < `k+1` (equivalently, `maxKeyPlusOne m ≤ k`),
+    then inserting `(k, v)` bumps `maxKeyPlusOne` to exactly `k + 1`. -/
+theorem maxKeyPlusOne_insert_fresh {α : Type} (m : Std.HashMap Nat α)
+    (k : Nat) (v : α) (hFresh : maxKeyPlusOne m ≤ k) :
+    maxKeyPlusOne (m.insert k v) = k + 1 := by
+  -- Step 1: rewrite via `fold_eq_foldl_toList`, then use the permutation
+  -- of `(m.insert k v).toList` with `(k, v) :: m.toList.filter (¬k == ·.1)`.
+  unfold maxKeyPlusOne
+  rw [Std.HashMap.fold_eq_foldl_toList]
+  have hPerm :
+      (m.insert k v).toList.Perm (⟨k, v⟩ :: m.toList.filter (¬k == ·.1)) :=
+    Std.HashMap.toList_insert_perm (m := m) (k := k) (v := v)
+  -- Use `Perm.foldl_eq'` (Std variant taking an explicit comm argument).
+  -- `max` is commutative + associative on `Nat`, hence the fold step
+  -- `fun acc p => max acc (p.1 + 1)` is right-commutative.
+  have hCommMax : ∀ (a b c : Nat), max (max a b) c = max (max a c) b := by
+    intro a b c
+    rw [Nat.max_assoc, Nat.max_comm b c, ← Nat.max_assoc]
+  have hFoldEq :
+      (m.insert k v).toList.foldl (fun acc (p : Nat × α) => max acc (p.1 + 1)) 0 =
+      ((⟨k, v⟩ :: m.toList.filter (¬k == ·.1)) : List (Nat × α)).foldl
+        (fun acc (p : Nat × α) => max acc (p.1 + 1)) 0 :=
+    hPerm.foldl_eq'
+      (f := fun acc (p : Nat × α) => max acc (p.1 + 1))
+      (by intro x _ y _ z; simp [hCommMax]) 0
+  rw [hFoldEq]
+  -- Step 2: simplify the cons.
+  simp only [List.foldl_cons, Nat.zero_max]
+  -- Step 3: show every key in the filtered tail is ≤ k (from hFresh).
+  have hAll : ∀ p ∈ m.toList.filter (fun p => ¬k == p.1), p.1 + 1 ≤ k + 1 := by
+    intro p hp
+    have hpMem : p ∈ m.toList := (List.mem_filter.mp hp).1
+    have hp_bound : p.1 + 1 ≤ maxKeyPlusOne m :=
+      succ_le_maxKeyPlusOne_of_mem_toList m p hpMem
+    exact Nat.le_succ_of_le (le_trans hp_bound hFresh)
+  -- Step 4: upper bound: fold ≤ max (k+1) (k+1) = k+1.
+  have hUB : (m.toList.filter (fun p => ¬k == p.1)).foldl
+      (fun acc p => max acc (p.1 + 1)) (k + 1) ≤ k + 1 := by
+    have := foldl_max_succ_le
+      (m.toList.filter (fun p => ¬k == p.1)) k (k + 1) hAll
+    simpa [Nat.max_self] using this
+  -- Step 5: lower bound: starting accumulator ≤ fold.
+  have hLB : k + 1 ≤
+      (m.toList.filter (fun p => ¬k == p.1)).foldl
+        (fun acc p => max acc (p.1 + 1)) (k + 1) :=
+    le_foldl_max_succ _ _
+  exact Nat.le_antisymm hUB hLB
+
 /-! ## Concretise -/
 
 /-- Full concretisation. Lifts:
