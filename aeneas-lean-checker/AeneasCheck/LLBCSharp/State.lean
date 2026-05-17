@@ -64,12 +64,21 @@ structure SymState where
       not emit an explicit `EvEndBorrow`; the loan's lifetime is owned
       by the loop's region abstraction). -/
   loopDepth : Nat
+  /-- M9.6 (Option C, plan §4.1.8): registry of region-abstraction
+      shapes populated by `EvCall` (`absSig` hint, commit #7
+      source) and consumed by `EvEndAbs` to validate that the
+      released loans match the abstraction's recorded MutBorrow /
+      MutLoan roles. Keys are abstraction ids; values are the
+      paper-`A_in(ρ)`-content [AbsShape]. Empty until the first
+      EvCall with non-empty `absSig` is processed. -/
+  absRegistry : Std.HashMap Nat AbsShape := {}
   deriving Inhabited
 
 namespace SymState
 
 def empty (numLocals : Nat) : SymState := {
-  env := {}, loans := {}, numLocals, joinDedupe := {}, loopDepth := 0
+  env := {}, loans := {}, numLocals, joinDedupe := {}, loopDepth := 0,
+  absRegistry := {}
 }
 
 /-- Lookup a local's current value; missing locals are `bottom`. -/

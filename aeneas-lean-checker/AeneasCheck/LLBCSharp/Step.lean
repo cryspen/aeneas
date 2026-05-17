@@ -271,12 +271,20 @@ symbolic placeholder. Backward functions / region abstractions are
 M10.2 work — for forward-only `wrapping_add`-style calls the dst
 binding is all the replayer needs to thread the trace through. -/
 
-def stepCall (st : SymState) (dst : Place) : Result SymState := do
+def stepCall (st : SymState) (dst : Place) (absSig : Array AbsShape := #[]) :
+    Result SymState := do
   let root := placeRootLocal dst
   if root ≥ st.numLocals then
     fail s!"E-Call: dst local {root} out of bounds (have {st.numLocals})"
   else
-    return st.setLocal root (.sym 0)
+    -- M9.6 (Option C, plan §4.1.8): record each new abstraction's
+    -- shape in [absRegistry] so [stepEndAbs] can later validate
+    -- that the abstraction releases exactly the loans (and clears
+    -- the locals) it owns. Empty [absSig] (v1 / hint-empty
+    -- default) is a no-op.
+    let st := absSig.foldl (init := st) fun st shape =>
+      { st with absRegistry := st.absRegistry.insert shape.absId shape }
+    return (st.setLocal root (.sym 0))
 
 /-! ## E-SymExpandMutBorrow
 
@@ -361,8 +369,27 @@ makes the paper.rs `call_choose` pattern check — loan 1 flowed into
 the call's abstraction, is implicitly ended on EvEndAbs, and so
 must no longer count as "live at function exit". -/
 
-def stepEndAbs (st : SymState) (released : Array Nat)
+def stepEndAbs (st : SymState) (absId : Nat) (released : Array Nat)
     (tokenClearLocals : Array Nat := #[]) : Result SymState := do
+  -- M9.6 (Option C, plan §4.1.8): when the closing abstraction is
+  -- in [absRegistry] (populated by [stepCall.absSig] in commit
+  -- #7's path), validate that every released loan matches one of
+  -- its recorded MutBorrow / MutLoan roles. Roles for unreleased
+  -- loans are fine — the abstraction may carry side-channel
+  -- borrows that don't end here. Unrecognised loan ids in the
+  -- released list are a cert violation when the registry has the
+  -- abs but doesn't list the loan.
+  match st.absRegistry[absId]? with
+  | none => pure ()
+  | some shape =>
+    let knownLoans : Std.HashSet Nat :=
+      shape.roles.foldl (init := {}) fun s r =>
+        match r with
+        | .mutBorrow _ lid | .mutLoan lid => s.insert lid
+        | .sharedBorrow _ _ => s
+    for l in released do
+      if !knownLoans.contains l then
+        fail s!"E-EndAbs: abs {absId} released loan {l} not in its role list"
   let mut st := st
   for loan in released do
     if st.loans.contains loan then

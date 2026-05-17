@@ -43,9 +43,9 @@ def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := false) :
   | .retn => return st
   | .reborrow child parent place parentLive parentAbs =>
     stepReborrow st child parent place parentLive parentAbs
-  | .call _ _ _ _ dst _ _ => stepCall st dst
-  | .endAbs _ _ released tokenClearLocals =>
-    stepEndAbs st released tokenClearLocals
+  | .call _ _ _ _ dst _ absSig => stepCall st dst absSig
+  | .endAbs absId _ released tokenClearLocals =>
+    stepEndAbs st absId released tokenClearLocals
   | .proj _ _ _ => .error "proj: not implemented until M10"
   | .symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans =>
     stepSymExpandMutBorrow st svId bid innerSv parentAbs substLocals substLoans
