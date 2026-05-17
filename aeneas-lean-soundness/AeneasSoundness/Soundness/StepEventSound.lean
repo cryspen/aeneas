@@ -363,39 +363,164 @@ theorem stepSharedBorrow_sound
         hGetD, LLBCState.bumpSymValId,
         Concretise.concretise_addLoan _ _ _ _ hLoanFresh, hRep]
 
-/-- M9.6 hint case: `EvMutBorrow { kind_hint = MbkDirect }` triggers
-    `E-MutBorrow` (paper Fig. 3). Closed by Phase-C M10.2h. -/
+/-- C8 / M10.2h — `EvMutBorrow { kind_hint = MbkDirect }` triggers
+    `E-MutBorrow` (paper Fig. 3). The replayer additionally replaces
+    `place.local_` by a `mutLoan loan` token; we chain
+    `concretise_setLocal` and `concretise_addLoan` to discharge the
+    post-state equality. Same Phase-D-dischargeable hypotheses as
+    `stepSharedBorrow_sound`. -/
 theorem stepMutBorrow_direct_sound
-  (loan : Nat) (place : Place) (symval : Nat) :
+  (hRep : concretise st = Ω)
+  (loan : Nat) (place : Place) (symval : Nat)
+  (hPlaceProj : place.projection = #[])
+  (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
+  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
   stepEvent st (.mutBorrow loan place symval .direct) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval .direct) Ω ∧
         LStep Ω (.mutBorrow loan place symval .direct) Ω' ∧
         concretise st' = Ω' := by
-  sorry
+  obtain ⟨vR, hvR⟩ := hPlaceEnv
+  intro h
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepMutBorrow,
+    AeneasCheck.LLBCSharp.placeRootLocal,
+    AeneasCheck.LLBCSharp.SymState.getLocal] at h
+  by_cases hC : st.loans.contains loan = true
+  · rw [if_pos hC] at h; cases h
+  · rw [if_neg hC] at h
+    by_cases hB : place.local_ ≥ st.numLocals
+    · rw [if_pos hB] at h; cases h
+    · rw [if_neg hB] at h
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+      subst h
+      have hResolve : Ω.resolvePlace place = some (Concretise.liftVal vR) := by
+        subst hRep
+        simp [LLBCState.resolvePlace, hPlaceProj, LLBCState.resolveProj,
+          LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
+      have hLoanIdFresh : Ω.loanIdFresh loan := by
+        subst hRep
+        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+      have hSymValIdFresh : Ω.symValIdFresh symval := by
+        subst hRep
+        simp [LLBCState.symValIdFresh, Concretise.concretise]
+      refine ⟨((Ω.setLocal place.local_ (.mutLoan loan)).bumpLoanId loan).bumpSymValId symval,
+              ⟨⟨_, hResolve⟩, hLoanIdFresh, hSymValIdFresh⟩,
+              LStep.mutBorrow_direct hResolve hLoanIdFresh hSymValIdFresh, ?_⟩
+      -- concretise ((st.setLocal _ (.mutLoan loan)).addLoan loan _ .direct)
+      --   = (Ω.setLocal _ (.mutLoan loan)).bumpLoanId loan  (bumpSymValId no-op)
+      -- setLocal preserves `.loans` (it only mutates `env`), so the
+      -- freshness premise carries over without any transport.
+      have hGetD :
+        (st.env.getD place.local_ (.bottom : Val)) = vR := by
+        rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
+      -- setLocal preserves `.loans` (only touches env); the freshness
+      -- premise transports definitionally.
+      have hFreshSet :
+          Concretise.maxKeyPlusOne
+            (st.setLocal place.local_ (.mutLoan loan)).loans ≤ loan :=
+        hLoanFresh
+      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+        hGetD, LLBCState.bumpSymValId,
+        Concretise.concretise_addLoan _ _ _ _ hFreshSet,
+        Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
-/-- M9.6 hint case: `kind_hint = MbkInAbsReborrow abs` triggers
-    `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8) on the named abs.
-    Closed by Phase-C M10.2i. -/
+/-- C9 / M10.2i — `EvMutBorrow { kind_hint = MbkInAbsReborrow abs }`
+    triggers `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8) on the named
+    abs. The replayer records a `.reborrow`-kind loan but leaves `env`
+    untouched, so this discharge only needs `concretise_addLoan`. The
+    `hAbsExists` hypothesis is the Phase-D-dischargeable replacement
+    for the `Ω.abs absId = some r` premise. -/
 theorem stepMutBorrow_inAbsReborrow_sound
-  (loan : Nat) (place : Place) (symval : Nat) (absId : Nat) :
+  (hRep : concretise st = Ω)
+  (loan : Nat) (place : Place) (symval : Nat) (absId : Nat)
+  (hAbsExists : ∃ r, st.absRegistry[absId]? = some r)
+  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
   stepEvent st
     (.mutBorrow loan place symval (.inAbsReborrow absId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.inAbsReborrow absId)) Ω ∧
         LStep Ω (.mutBorrow loan place symval (.inAbsReborrow absId)) Ω' ∧
         concretise st' = Ω' := by
-  sorry
+  obtain ⟨r, hr⟩ := hAbsExists
+  intro h
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepMutBorrow,
+    AeneasCheck.LLBCSharp.placeRootLocal] at h
+  by_cases hC : st.loans.contains loan = true
+  · rw [if_pos hC] at h; cases h
+  · rw [if_neg hC] at h
+    by_cases hB : place.local_ ≥ st.numLocals
+    · rw [if_pos hB] at h; cases h
+    · rw [if_neg hB] at h
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+      subst h
+      have hAbsLifted : Ω.abs absId = some (Concretise.liftAbsShape r) := by
+        subst hRep
+        simp [Concretise.concretise, Concretise.liftAbsRegistry, hr]
+      have hLoanIdFresh : Ω.loanIdFresh loan := by
+        subst hRep
+        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+      have hSymValIdFresh : Ω.symValIdFresh symval := by
+        subst hRep
+        simp [LLBCState.symValIdFresh, Concretise.concretise]
+      refine ⟨(Ω.bumpLoanId loan).bumpSymValId symval,
+              ⟨⟨_, hAbsLifted⟩, hLoanIdFresh, hSymValIdFresh⟩,
+              LStep.mutBorrow_inAbsReborrow hAbsLifted hLoanIdFresh hSymValIdFresh, ?_⟩
+      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+        LLBCState.bumpSymValId,
+        Concretise.concretise_addLoan _ _ _ _ hLoanFresh, hRep]
 
-/-- M9.6 hint case: `kind_hint = MbkLoopOwned loop` triggers the
-    loop-fixpoint borrow rule (paper §5.2). Closed by Phase-C
-    M10.2j. -/
+/-- C10 / M10.2j — `EvMutBorrow { kind_hint = MbkLoopOwned loop }`
+    triggers the loop-fixpoint borrow rule (paper §5.2). Same shape
+    as `stepMutBorrow_direct_sound`: the replayer additionally writes
+    a `mutLoan` token to `place.local_`. The replayer's recorded kind
+    is `.lazyExpand` (distinct from `.direct`) but `concretise_addLoan`
+    is kind-agnostic. -/
 theorem stepMutBorrow_loopOwned_sound
-  (loan : Nat) (place : Place) (symval : Nat) (loopId : Nat) :
+  (hRep : concretise st = Ω)
+  (loan : Nat) (place : Place) (symval : Nat) (loopId : Nat)
+  (hPlaceProj : place.projection = #[])
+  (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
+  (hLoanFresh : Concretise.maxKeyPlusOne st.loans ≤ loan) :
   stepEvent st
     (.mutBorrow loan place symval (.loopOwned loopId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.loopOwned loopId)) Ω ∧
         LStep Ω (.mutBorrow loan place symval (.loopOwned loopId)) Ω' ∧
         concretise st' = Ω' := by
-  sorry
+  obtain ⟨vR, hvR⟩ := hPlaceEnv
+  intro h
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepMutBorrow,
+    AeneasCheck.LLBCSharp.placeRootLocal,
+    AeneasCheck.LLBCSharp.SymState.getLocal] at h
+  by_cases hC : st.loans.contains loan = true
+  · rw [if_pos hC] at h; cases h
+  · rw [if_neg hC] at h
+    by_cases hB : place.local_ ≥ st.numLocals
+    · rw [if_pos hB] at h; cases h
+    · rw [if_neg hB] at h
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+      subst h
+      have hResolve : Ω.resolvePlace place = some (Concretise.liftVal vR) := by
+        subst hRep
+        simp [LLBCState.resolvePlace, hPlaceProj, LLBCState.resolveProj,
+          LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
+      have hLoanIdFresh : Ω.loanIdFresh loan := by
+        subst hRep
+        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+      have hSymValIdFresh : Ω.symValIdFresh symval := by
+        subst hRep
+        simp [LLBCState.symValIdFresh, Concretise.concretise]
+      refine ⟨((Ω.setLocal place.local_ (.mutLoan loan)).bumpLoanId loan).bumpSymValId symval,
+              ⟨⟨_, hResolve⟩, hLoanIdFresh, hSymValIdFresh⟩,
+              LStep.mutBorrow_loopOwned hResolve hLoanIdFresh hSymValIdFresh, ?_⟩
+      have hGetD :
+        (st.env.getD place.local_ (.bottom : Val)) = vR := by
+        rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
+      have hFreshSet :
+          Concretise.maxKeyPlusOne
+            (st.setLocal place.local_ (.mutLoan loan)).loans ≤ loan :=
+        hLoanFresh
+      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+        hGetD, LLBCState.bumpSymValId,
+        Concretise.concretise_addLoan _ _ _ _ hFreshSet,
+        Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
 /-- `EvJoin { witnesses }` triggers the conjunction of the Fig. 11
     rules named by each witness. Per-entry induction over
