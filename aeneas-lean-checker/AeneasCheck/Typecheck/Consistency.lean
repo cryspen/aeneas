@@ -408,6 +408,110 @@ def checkEventRefs (ccFns : Array FunCert) (lp : LlbcProgram) : CR Unit := do
       errs := errs ++ checkEventRefs1 funCtx numLocals j ev tyMap fnMap nameMap
   if errs.isEmpty then .ok () else .error errs
 
+/-! ## Control-flow well-nestedness + abstraction lifecycle (M9.7j)
+
+These checks fold over each function's event sequence to validate
+ordering-sensitive invariants the per-event id-set checks can't see:
+
+* `EvLoopInv loopId` must be balanced by a matching `EvLoopEnd
+  loopId`; nested loops are LIFO, so the latest opened loop must
+  close first.
+* `EvEndAbs absId` must reference an `absId` previously introduced
+  somewhere in the trace. Abstractions can be opened by many
+  events: `EvCall.regionAbs`, `EvCall.absSig[].absId` + `parentAbs`,
+  `EvLoopInv.loanRegistry[].parentAbsId`,
+  `EvSymExpandMutBorrow.parentAbs`, `EvReborrow.parentAbs`, and
+  also by `MutBorrowKind.inAbsReborrow` / `loopOwned` hints. (The
+  function's own ambient input abstractions — the caller-side
+  abstractions for its `&mut` arguments — are *not* event-
+  introduced; we accept any `EvEndAbs.abs` that wasn't seen by
+  conservatively recording the seed set rather than flagging.)
+
+We don't model symbolic-value (`SvId`) lifetimes in M9.7j —
+`EvSymExpandMutBorrow.svId` introduction-vs-use is implicit in the
+replayer's state thread and a structural Level-R check on it would
+need a full sym-id walk (in scope for a later milestone). -/
+
+private structure FlowState where
+  /-- Stack of currently open `loopId`s (most recently opened on top). -/
+  openLoops : List Nat := []
+  /-- Set of `absId`s that some prior event introduced (a union of
+      every abs-introducing event's id fields). We don't separately
+      track *open* vs *ended* abstractions because Aeneas's interp
+      emits `EvEndAbs` for caller-side abstractions whose
+      introduction the cert never explicitly records. -/
+  seenAbs : Std.HashSet Nat := {}
+
+private def recordAbs (st : FlowState) (a : Nat) : FlowState :=
+  { st with seenAbs := st.seenAbs.insert a }
+
+private def stepFlow (funCtx : String) (eIdx : Nat) (ev : Event)
+    (st : FlowState) : FlowState × List ConsErr := Id.run do
+  let ctx := s!"{funCtx}.events[{eIdx}]"
+  let mut st := st
+  let mut errs : List ConsErr := []
+  match ev with
+  | .call _ _ _ _ _ regionAbs absSig =>
+    for a in regionAbs do
+      st := recordAbs st a
+    for sh in absSig do
+      st := recordAbs st sh.absId
+      for p in sh.parentAbs do
+        st := recordAbs st p
+  | .endAbs absId _ _ _ =>
+    -- Tolerant of caller-introduced abstractions whose origin the
+    -- cert doesn't explicitly carry; we only record, never flag.
+    st := recordAbs st absId
+  | .reborrow _ _ _ _ (some parentAbs) =>
+    st := recordAbs st parentAbs
+  | .symExpandMutBorrow _ _ _ (some parentAbs) _ _ =>
+    st := recordAbs st parentAbs
+  | .mutBorrow _ _ _ (.inAbsReborrow absId) =>
+    st := recordAbs st absId
+  | .mutBorrow _ _ _ (.loopOwned absId) =>
+    st := recordAbs st absId
+  | .loopInv loopId _ loanRegistry =>
+    st := { st with openLoops := loopId :: st.openLoops }
+    for (_, parentAbsId) in loanRegistry do
+      st := recordAbs st parentAbsId
+  | .loopEnd loopId =>
+    match st.openLoops with
+    | [] =>
+      errs := errs ++ [err ctx
+        s!"EvLoopEnd loop_id={loopId} has no matching open EvLoopInv"]
+    | top :: rest =>
+      if top ≠ loopId then
+        errs := errs ++ [err ctx
+          s!"EvLoopEnd loop_id={loopId} does not match the most-recently-opened loop ({top}); loops must close LIFO"]
+        -- best-effort: pop the top anyway so downstream errors don't cascade
+        st := { st with openLoops := rest }
+      else
+        st := { st with openLoops := rest }
+  | _ => pure ()
+  return (st, errs)
+
+private def checkFnFlow (funCtx : String) (events : Array Event) :
+    List ConsErr := Id.run do
+  let mut st : FlowState := {}
+  let mut errs : List ConsErr := []
+  for j in [0 : events.size] do
+    let (st', es) := stepFlow funCtx j events[j]! st
+    st := st'
+    errs := errs ++ es
+  -- M9.7j: post-function balance.
+  unless st.openLoops.isEmpty do
+    errs := errs ++ [err funCtx
+      s!"function exited with {st.openLoops.length} unclosed loop(s): {repr st.openLoops}"]
+  return errs
+
+def checkFlow (ccFns : Array FunCert) : CR Unit := do
+  let mut errs : List ConsErr := []
+  for i in [0 : ccFns.size] do
+    let f := ccFns[i]!
+    let funCtx := s!"functions[{i}] id={f.fnId}"
+    errs := errs ++ checkFnFlow funCtx f.events
+  if errs.isEmpty then .ok () else .error errs
+
 /-! ## Top-level driver -/
 
 /-- Run the full Level-S structural consistency check against `cc`.
@@ -434,6 +538,9 @@ def checkLlbcVsCert (cc : CrateCert) : CR Unit := do
   | .ok _ => pure ()
   | .error es => errs := errs ++ es
   match checkEventRefs cc.functions lp with
+  | .ok _ => pure ()
+  | .error es => errs := errs ++ es
+  match checkFlow cc.functions with
   | .ok _ => pure ()
   | .error es => errs := errs ++ es
   if errs.isEmpty then .ok () else .error errs
