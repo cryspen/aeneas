@@ -6,6 +6,7 @@ import AeneasSoundness.LLBCSharpPaper.Step
 import AeneasSoundness.LLBCSharpPaper.Valid
 import AeneasSoundness.Soundness.Concretise.Defn
 import AeneasSoundness.Soundness.Concretise.Lemmas
+import AeneasSoundness.Soundness.JoinLemmas
 import AeneasSoundness.Soundness.StepEventSound
 
 /-!
