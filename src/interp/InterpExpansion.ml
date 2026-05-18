@@ -590,13 +590,12 @@ let expand_symbolic_value_borrow (span : Meta.span)
          and replaces it with [.mutLoan bid], registering loan [bid]
          with [given := .sym sv.sv_id] so a subsequent [EvEndBorrow
          loan=bid] can resolve. *)
-      ctx_emit_event ctx
-        (CertEvent.EvSymExpandMutBorrow
-           {
-             sv_id = original_sv.sv_id; bid; inner_sv = sv.sv_id;
-             parent_abs = parent_abs_opt;
-             subst_locals; subst_loans;
-           });
+      Observer.notify ctx
+        (Event.SymExpandMutBorrow {
+           sv_id = original_sv.sv_id; bid; inner_sv = sv.sv_id;
+           parent_abs = parent_abs_opt;
+           subst_locals; subst_loans;
+         });
       (* Apply the continuation *)
       ( ctx,
         fun e ->

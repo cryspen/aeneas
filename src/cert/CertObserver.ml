@@ -36,6 +36,11 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
              child; parent; place = cp; parent_live; parent_abs;
            })
        | None -> None)
+  | Event.SymExpandMutBorrow
+      { sv_id; bid; inner_sv; parent_abs; subst_locals; subst_loans } ->
+      Some (CertEvent.EvSymExpandMutBorrow {
+        sv_id; bid; inner_sv; parent_abs; subst_locals; subst_loans;
+      })
   | Event.MutBorrow { loan; place; value } ->
       (match CertEvent.cert_place_of_place place with
        | Some cp ->
