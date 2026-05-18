@@ -242,7 +242,26 @@ private def applyFieldProj
         match tdm[adtId]? with
         | some info =>
           match info.fieldNames[k]? with
-          | some fname => .fieldAccess e fname
+          | some fname =>
+            -- Phase 1B: when the root expression is a default zero
+            -- placeholder (the `0#u32` `lookupPlace` emits for an
+            -- untracked local) AND the field's expected type can be
+            -- inferred to be a literal integer, drop the field
+            -- access and emit a typed zero of the field's type
+            -- directly. This keeps a global-constant body like
+            -- `unwrap_y` (where the cert never seeds local 1)
+            -- well-typed against its declared return type
+            -- (`Result Std.I32`) instead of emitting the
+            -- nonsense-typed `0#u32.value`. Non-literal field types
+            -- still flow through the standard `.fieldAccess` path,
+            -- which yields a (still type-imprecise) `0#u32.fname`
+            -- but doesn't change the rest of the output.
+            match e with
+            | .lit (.scalar .u32 0) =>
+              match stepLlbcTy t (Raw.ProjElem.field k) with
+              | some fieldTy => placeholderPExprOf fieldTy
+              | none => .fieldAccess e fname
+            | _ => .fieldAccess e fname
           | none => e
         | none => e
       | none => e
