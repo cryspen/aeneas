@@ -91,3 +91,81 @@ pub fn calls_pick_model(x1: bool, x2: u32, x3: u32) -> u32 {
     let t0 = if x1 { x2 } else { x3 };
     u32::wrapping_add(t0, 1u32)
 }
+
+// ---- scalars.cert.json (Phase 4b — new fixture) ----
+//   The cert emits ~22 fns; we wire only those whose body is a clean
+//   self-contained arithmetic / bitwise / shift / rotate. The rest
+//   (casts that the emitter renders as identity, `Default::default`
+//   that gets emitted as `u32::default` without parens, the match-
+//   shaped fns that fold to constants) are skipped per the prompt's
+//   "well-emitted bodies only" rule. Bodies copied verbatim from
+//   /tmp/sweep-rust-models/scalars.rs (post Phase 4a-2 brace fix).
+
+pub fn scalars_u32_use_wrapping_add_model(x1: u32, x2: u32) -> u32 {
+    u32::wrapping_add(x1, x2)
+}
+
+pub fn scalars_i32_use_wrapping_add_model(x1: i32, x2: i32) -> i32 {
+    i32::wrapping_add(x1, x2)
+}
+
+pub fn scalars_u32_use_wrapping_sub_model(x1: u32, x2: u32) -> u32 {
+    u32::wrapping_sub(x1, x2)
+}
+
+pub fn scalars_i32_use_wrapping_sub_model(x1: i32, x2: i32) -> i32 {
+    i32::wrapping_sub(x1, x2)
+}
+
+pub fn scalars_u32_use_shift_right_model(x1: u32) -> u32 {
+    (x1 >> 2i32)
+}
+
+pub fn scalars_i32_use_shift_right_model(x1: i32) -> i32 {
+    (x1 >> 2i32)
+}
+
+pub fn scalars_u32_use_shift_left_model(x1: u32) -> u32 {
+    (x1 << 2i32)
+}
+
+pub fn scalars_i32_use_shift_left_model(x1: i32) -> i32 {
+    (x1 << 2i32)
+}
+
+pub fn scalars_add_and_model(x1: u32, x2: u32) -> u32 {
+    let t0 = (x2 & x1);
+    let t1 = (x2 & x1);
+    (t0 + t1)
+}
+
+pub fn scalars_u32_use_rotate_right_model(x1: u32) -> u32 {
+    u32::rotate_right(x1, 2u32)
+}
+
+pub fn scalars_i32_use_rotate_right_model(x1: i32) -> i32 {
+    i32::rotate_right(x1, 2u32)
+}
+
+pub fn scalars_u32_use_rotate_left_model(x1: u32) -> u32 {
+    u32::rotate_left(x1, 2u32)
+}
+
+pub fn scalars_i32_use_rotate_left_model(x1: i32) -> i32 {
+    i32::rotate_left(x1, 2u32)
+}
+
+// ---- demo.cert.json (Phase 4b — new fixture) ----
+//   `mul2_add1` and `incr` are self-contained (no intra-crate calls).
+//   `use_mul2_add1` and `use_incr` reference `demo::*` in the emit —
+//   would need module wrapping; skipped. Closure-based `choose` /
+//   `list_nth` skipped (M12.2a placeholder).
+
+pub fn demo_mul2_add1_model(x1: u32) -> u32 {
+    let t0 = (x1 + x1);
+    (t0 + 1u32)
+}
+
+pub fn demo_incr_model(x1: u32) -> u32 {
+    (x1 + 1u32)
+}

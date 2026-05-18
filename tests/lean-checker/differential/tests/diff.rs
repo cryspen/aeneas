@@ -207,3 +207,122 @@ proptest! {
         prop_assert_eq!(r.snd, m.snd);
     }
 }
+
+// ====================================================================
+// scalars.rs (Phase 4b — new fixture, 13 differential fns)
+// ====================================================================
+
+proptest! {
+    #[test]
+    fn scalars_u32_use_wrapping_add_matches_model(x in any::<u32>(), y in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_u32_use_wrapping_add(x, y),
+            model::scalars_u32_use_wrapping_add_model(x, y)
+        );
+    }
+    #[test]
+    fn scalars_i32_use_wrapping_add_matches_model(x in any::<i32>(), y in any::<i32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_i32_use_wrapping_add(x, y),
+            model::scalars_i32_use_wrapping_add_model(x, y)
+        );
+    }
+    #[test]
+    fn scalars_u32_use_wrapping_sub_matches_model(x in any::<u32>(), y in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_u32_use_wrapping_sub(x, y),
+            model::scalars_u32_use_wrapping_sub_model(x, y)
+        );
+    }
+    #[test]
+    fn scalars_i32_use_wrapping_sub_matches_model(x in any::<i32>(), y in any::<i32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_i32_use_wrapping_sub(x, y),
+            model::scalars_i32_use_wrapping_sub_model(x, y)
+        );
+    }
+    #[test]
+    fn scalars_u32_use_shift_right_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_u32_use_shift_right(x),
+            model::scalars_u32_use_shift_right_model(x)
+        );
+    }
+    #[test]
+    fn scalars_i32_use_shift_right_matches_model(x in any::<i32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_i32_use_shift_right(x),
+            model::scalars_i32_use_shift_right_model(x)
+        );
+    }
+    #[test]
+    fn scalars_u32_use_shift_left_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_u32_use_shift_left(x),
+            model::scalars_u32_use_shift_left_model(x)
+        );
+    }
+    #[test]
+    fn scalars_i32_use_shift_left_matches_model(x in any::<i32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_i32_use_shift_left(x),
+            model::scalars_i32_use_shift_left_model(x)
+        );
+    }
+    #[test]
+    fn scalars_add_and_matches_model(a in any::<u32>(), b in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_add_and(a, b),
+            model::scalars_add_and_model(a, b)
+        );
+    }
+    #[test]
+    fn scalars_u32_use_rotate_right_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_u32_use_rotate_right(x),
+            model::scalars_u32_use_rotate_right_model(x)
+        );
+    }
+    #[test]
+    fn scalars_i32_use_rotate_right_matches_model(x in any::<i32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_i32_use_rotate_right(x),
+            model::scalars_i32_use_rotate_right_model(x)
+        );
+    }
+    #[test]
+    fn scalars_u32_use_rotate_left_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_u32_use_rotate_left(x),
+            model::scalars_u32_use_rotate_left_model(x)
+        );
+    }
+    #[test]
+    fn scalars_i32_use_rotate_left_matches_model(x in any::<i32>()) {
+        prop_assert_eq!(
+            ref_impl::scalars_i32_use_rotate_left(x),
+            model::scalars_i32_use_rotate_left_model(x)
+        );
+    }
+}
+
+// ====================================================================
+// demo.rs (Phase 4b — new fixture, 2 differential fns)
+// ====================================================================
+
+proptest! {
+    #[test]
+    fn demo_mul2_add1_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::demo_mul2_add1(x),
+            model::demo_mul2_add1_model(x)
+        );
+    }
+    #[test]
+    fn demo_incr_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::demo_incr(x),
+            model::demo_incr_model(x)
+        );
+    }
+}
