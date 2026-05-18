@@ -358,7 +358,7 @@ let eval_loop_symbolic (config : config) (span : span)
      body (synthesized once from [fp_ctx], below) reaches the
      trace. *)
   let fp_ctx, fixed_ids =
-    ctx_with_cert_events_suppressed ctx (fun () ->
+    Observer.with_suppressed ctx (fun () ->
       compute_loop_entry_fixed_point config span loop_id eval_loop_body ctx)
   in
   let input_abs_list =
@@ -388,7 +388,7 @@ let eval_loop_symbolic (config : config) (span : span)
   let fixed_aids = InterpJoinCore.compute_fixed_abs_ids ctx fp_ctx in
   let fixed_dids = ctx_get_dummy_var_ids ctx in
   let break_info =
-    ctx_with_cert_events_suppressed ctx (fun () ->
+    Observer.with_suppressed ctx (fun () ->
       compute_loop_break_context config span loop_id eval_loop_body fp_ctx
         fixed_aids fixed_dids)
   in
@@ -461,47 +461,16 @@ let eval_loop_symbolic (config : config) (span : span)
      the body events in the cert. The Lean translator
      (T-Loop-Fixpoint) extracts everything between the two into a
      separate body decl and synthesises the loop wrapper. *)
-  (* M9.6 (Option C): collect [(borrow_id, parent_abs_id)] pairs
-     for every loop-introduced loan visible in [fp_ctx]'s loop
-     abstractions. The Lean strict path (commit #17) consumes
-     this registry directly; while empty, the M9.5z scan-env
-     fallback still runs. *)
-  let loan_registry : (BorrowId.id * AbsId.id) list =
-    let acc = ref [] in
-    List.iter
-      (fun (abs : abs) ->
-        let visitor = object
-          inherit [_] iter_tavalue as super
-          method! visit_AMutLoan env pm lid child =
-            if not (List.mem_assoc lid !acc) then
-              acc := (lid, abs.abs_id) :: !acc;
-            super#visit_AMutLoan env pm lid child
-          method! visit_aproj_loans env apl =
-            (* aproj_loans projects a symbolic value into the
-               abstraction's loan side; the projected sv_id is
-               the value that would surface as SymMutBorrowTok
-               on the Lean side. We treat each aproj_loans's
-               implied borrow as registering against this abs. *)
-            ignore apl.proj.sv_id;
-            super#visit_aproj_loans env apl
-        end in
-        List.iter (fun av -> visitor#visit_tavalue () av) abs.avalues)
-      input_abs_list;
-    List.rev !acc
-  in
-  ctx_emit_event ctx
-    (CertEvent.EvLoopInv
-       {
-         loop_id;
-         invariant = CertEvent.cert_state_summary_of_env fp_ctx.env;
-         loan_registry;
-       });
-
-  (* M9.6 (Option C): push this loop onto the cert-side loop-id stack
-     before synthesising the body so any [EvMutBorrow] emitted inside
-     can carry [kind_hint = MbkLoopOwned loop_id]. Popped right after
-     [EvLoopEnd] below. *)
-  ctx.cert_loop_id_stack := loop_id :: !(ctx.cert_loop_id_stack);
+  (* Cert: emit LoopInv right before the canonical body synthesis,
+     and LoopEnd right after. Together they bracket the body events
+     in the cert. The observer derives the cert state-summary and
+     loan registry from [fp_env] / [input_abs_list], and manages the
+     loop-id stack (push on LoopInv / pop on LoopEnd) so any
+     in-body MutBorrow can be tagged [MbkLoopOwned loop_id]. -*)
+  Observer.notify ctx
+    (Event.LoopInv {
+       loop_id; fp_env = fp_ctx.env; input_abs_list;
+     });
 
   (* Synthesize the loop body *)
   let break_info', loop_body =
@@ -512,11 +481,7 @@ let eval_loop_symbolic (config : config) (span : span)
       break_info
   in
 
-  ctx_emit_event ctx (CertEvent.EvLoopEnd { loop_id });
-  (* M9.6 (Option C): pop the loop we just closed. *)
-  (match !(ctx.cert_loop_id_stack) with
-   | _ :: rest -> ctx.cert_loop_id_stack := rest
-   | [] -> ());
+  Observer.notify ctx (Event.LoopEnd { loop_id });
 
   let break_ctx, break_abs, break_input_svalues =
     match break_info with

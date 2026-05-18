@@ -73,7 +73,8 @@ type t =
     }
   | LoopInv of {
       loop_id : loop_id;
-      fp_ctx : eval_ctx;
+      fp_env : env;
+      input_abs_list : abs list;
     }
   | LoopEnd of { loop_id : loop_id }
   | MatchArm of {

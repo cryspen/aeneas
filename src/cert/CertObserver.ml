@@ -141,6 +141,47 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
         released_loans = cert_released_loans;
         token_clear_locals = cert_token_clear_locals;
       })
+  | Event.LoopInv { loop_id; fp_env; input_abs_list } ->
+      (* M9.6 (Option C): collect [(borrow_id, parent_abs_id)] pairs
+         for every loop-introduced loan visible in the input abs
+         list. Walk mirrors the original inline derivation at
+         InterpLoops.ml. -*)
+      let loan_registry : (BorrowId.id * AbsId.id) list =
+        let acc = ref [] in
+        List.iter
+          (fun (abs : abs) ->
+            let visitor = object
+              inherit [_] iter_tavalue as super
+              method! visit_AMutLoan env pm lid child =
+                if not (List.mem_assoc lid !acc) then
+                  acc := (lid, abs.abs_id) :: !acc;
+                super#visit_AMutLoan env pm lid child
+              method! visit_aproj_loans env apl =
+                (* aproj_loans projects a symbolic value into the
+                   abstraction's loan side; tolerated as a no-op
+                   here for visitor symmetry with the original. -*)
+                ignore apl.proj.sv_id;
+                super#visit_aproj_loans env apl
+            end in
+            List.iter (fun av -> visitor#visit_tavalue () av) abs.avalues)
+          input_abs_list;
+        List.rev !acc
+      in
+      (* Push the loop onto the cert-side loop-id stack so any
+         in-body [MutBorrow] event can derive
+         [MbkLoopOwned loop_id]. Popped on [LoopEnd]. -*)
+      ctx.cert_loop_id_stack := loop_id :: !(ctx.cert_loop_id_stack);
+      Some (CertEvent.EvLoopInv {
+        loop_id;
+        invariant = CertEvent.cert_state_summary_of_env fp_env;
+        loan_registry;
+      })
+  | Event.LoopEnd { loop_id } ->
+      (* Pop the loop we just closed. -*)
+      (match !(ctx.cert_loop_id_stack) with
+       | _ :: rest -> ctx.cert_loop_id_stack := rest
+       | [] -> ());
+      Some (CertEvent.EvLoopEnd { loop_id })
   | Event.SymExpandMutBorrow
       { sv_id; bid; inner_sv; parent_abs; subst_locals; subst_loans } ->
       Some (CertEvent.EvSymExpandMutBorrow {

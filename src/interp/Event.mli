@@ -111,11 +111,16 @@ type t =
           slices. -*)
   | LoopInv of {
       loop_id : loop_id;
-      fp_ctx : eval_ctx;
+      fp_env : env;
+      input_abs_list : abs list;
+          (** The loop's input abstractions (filtered from
+              [fp_ctx.env]). Observers walk these to build the cert
+              loan registry. -*)
     }
-      (** Start of a loop body's canonical synthesis. The fixpoint
-          context [fp_ctx] carries the loan registry observers need to
-          walk. -*)
+      (** Start of a loop body's canonical synthesis. Observers also
+          push [loop_id] onto their loop-id stack here (popped on
+          [LoopEnd]) so in-body [MutBorrow] events can derive
+          [MbkLoopOwned]. -*)
   | LoopEnd of { loop_id : loop_id }
   | MatchArm of {
       scrutinee : tvalue;
