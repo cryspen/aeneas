@@ -17,14 +17,14 @@ namespace bitwise
 /-- [bitwise::shift_u32]:
     Source: 'tests/src/bitwise.rs', lines 4:0-9:1 -/
 def shift_u32 (x1 : Std.U32) : Result Std.U32 := do
-  let t0 ← (x1 >>> (16 : Std.Usize))
-  (t0 <<< (16 : Std.Usize))
+  let t0 ← (x1 >>> 16#usize)
+  (t0 <<< 16#usize)
 
 /-- [bitwise::shift_i32]:
     Source: 'tests/src/bitwise.rs', lines 11:0-16:1 -/
 def shift_i32 (x1 : Std.I32) : Result Std.I32 := do
-  let t0 ← (x1 >>> (16 : Std.Isize))
-  (t0 <<< (16 : Std.Isize))
+  let t0 ← (x1 >>> 16#isize)
+  (t0 <<< 16#isize)
 
 /-- [bitwise::xor_u32]:
     Source: 'tests/src/bitwise.rs', lines 18:0-20:1 -/

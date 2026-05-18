@@ -50,6 +50,15 @@ namespace Std
     use `ISize` from core.) -/
 @[reducible] def Isize : Type := ISize
 
+-- Phase 1A: signed-integer literal constructors mirroring the
+-- `Usize.ofNat` shape. The real `Aeneas.Std.Scalar.Notations` macros
+-- carry an in-bounds proof; the shim drops it (the underlying core
+-- `Int*.ofInt` wraps modulo `2^width`). Just enough so emitter output
+-- like `16#isize` / `16#i32` / `16#i64` parses against the shim.
+@[reducible] def Isize.ofInt (n : Int) : Isize := ISize.ofInt n
+@[reducible] def I32.ofInt (n : Int) : I32 := Int32.ofInt n
+@[reducible] def I64.ofInt (n : Int) : I64 := Int64.ofInt n
+
 -- Re-derive OfNat through the underlying types so literals like
 -- `(0 : Std.U32)` resolve to the UInt32 OfNat instance.
 instance (n : Nat) [OfNat UInt8 n]  : OfNat U8 n   := inferInstanceAs (OfNat UInt8 n)
@@ -329,6 +338,16 @@ already opened `Aeneas.Std`. -/
 
 macro:max x:term:max noWs "#usize" : term => `(Aeneas.Std.Usize.ofNat $x)
 macro:max x:term:max noWs "#u32"   : term => `(Aeneas.Std.U32.ofNat $x)
+
+-- Phase 1A: signed-integer literal macros. The emitter renders
+-- shift amounts as `16#isize` (Rust shift-rhs is always platform
+-- isize) and other signed-typed numerals as `N#i32` / `N#i64`. The
+-- real `Aeneas.Std.Scalar.Notations.lean` uses an identical surface
+-- shape; we drop the in-bounds proof obligation (the shim's
+-- `*.ofInt` wraps modulo width).
+macro:max x:term:max noWs "#isize" : term => `(Aeneas.Std.Isize.ofInt $x)
+macro:max x:term:max noWs "#i32"   : term => `(Aeneas.Std.I32.ofInt $x)
+macro:max x:term:max noWs "#i64"   : term => `(Aeneas.Std.I64.ofInt $x)
 
 /-! ## Rust-attribute markers
 
