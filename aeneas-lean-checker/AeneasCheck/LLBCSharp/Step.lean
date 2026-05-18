@@ -223,23 +223,31 @@ def stepEndBorrow (st : SymState) (loan : Nat) (restore : RestoreInfo)
       -- lifetime is owned by an abstraction (so it's allowed to
       -- "leak" past function exit per the post-condition in
       -- Replay.lean).
-      let mut found := false
-      let mut newEnv := st.env
-      for (l, vv) in st.env.toList do
-        match vv with
-        | .mutLoan b => if b = loan then
-            newEnv := newEnv.insert l v
-            found := true
-        | _ => pure ()
-      if not found then
-        -- Lazy expansions may have substituted the token through
-        -- intermediate locals that the cert subsequently overwrote;
-        -- if no local currently holds the token, just release the
-        -- loan id without restoration.
+      --
+      -- M10.x.9: cert v6 `restore.holderLocal` hint drives a
+      -- single-shot env update; falls back to `findHolder` (a pure
+      -- env-walk helper) when the cert omits the hint (legacy
+      -- emit-sites or `holderLocal = none`). For `.lazyExpand`, a
+      -- missing or mismatched holder triggers the leak path (return
+      -- `st` unchanged); for `.direct`, it's a hard fail. The
+      -- soundness proof inverts this dispatch directly, replacing
+      -- the previous `CertGen_faithful.endBorrow_direct_witness`
+      -- axiom.
+      let holderOpt := restore.holderLocal.orElse (fun () => findHolder st loan)
+      match holderOpt with
+      | some x =>
+        match st.env[x]? with
+        | some (.mutLoan b) =>
+          if b = loan then
+            return { st with env := st.env.insert x v }
+          else if li.kind == .lazyExpand then return st
+          else fail s!"end-borrow: local {x} holds mutLoan {b} ≠ {loan}"
+        | _ =>
+          if li.kind == .lazyExpand then return st
+          else fail s!"end-borrow: local {x} doesn't hold mutLoan {loan}"
+      | none =>
         if li.kind == .lazyExpand then return st
         else fail s!"end-borrow: no local holds loan {loan}"
-      else
-        return { st with env := newEnv }
     | .reborrow =>
       -- A reborrow doesn't park a `mutLoan` token in env (the parent's
       -- token is still there); ending it only releases the loan id.

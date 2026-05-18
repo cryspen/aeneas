@@ -28,7 +28,6 @@ by one Phase-C lemma:
 
 | Extractor | Discharges (for stepX_sound) |
 |---|---|
-| `endBorrow_direct_witness` | for `LoanKind ∈ {.direct, .lazyExpand}`: holder local `x` + result value `v` + `hShape` |
 | `join` | `(Ω', hChain, hConcMatch)` triple |
 | `proj` | unreachable — replayer rejects, no extractor needed |
 | `call` (dst-in-bounds) | dropped M10.4a-post — provable by `hStep` inversion |
@@ -42,6 +41,7 @@ by one Phase-C lemma:
 | `endAbs` | dropped M10.x.6 — paper-side rule's `Ω.abs abs = some r` premise was vestigial; post-state strengthened with `tokenClearLocals.foldl clearMutLoanToken` so the replayer's env-clearing is mirrored honestly; the previous "ugly triple" axiom existentially bound an `stPre` that did NOT satisfy `concretise stPre = concretise st` in general |
 | `loopInv` | dropped M10.x.7 — paper-side rule's `Ω → Ω` no-op was strictly weaker than the replayer's conditional `addLoan` fold; M10.x.7 strengthened the post-state to `loanRegistry.foldl bumpLoanId Ω`, mirroring the replayer up to HwmInvariant skip-branch equivalence. The lemma now consumes `HwmInvariant st` (threaded through `stepEvent_sound`) |
 | `symExpandMutBorrow` | dropped M10.x.8 — paper-side rule's no-op-on-ctx weakening matched only 5/423 fixtures (the cert routinely populates `substLocals`). M10.x.8 strengthened the post-state to `(substLocals.foldl substLocalOne Ω).bumpLoanId bid.bumpSymValId innerSv`, mirroring the replayer's env-rewrite of `.sym svId → .mutLoan bid` per substLocals entry. `bid`-freshness clauses replayer-discharged via guard + M10.x.8 HWM reject |
+| `endBorrow_direct_witness` | dropped M10.x.9 — the replayer's `stepEndBorrow.{.direct,.lazyExpand}` arm consumes cert v6 `restore.holderLocal` (fast path) + `findHolder` fallback for a single `env.insert`. Soundness inverts `hStep` directly: success → existing `stepEndBorrow_direct_sound`; leak (lazyExpand only) → new `stepEndBorrow_leak_sound` (post = Ω; the paper rule `endBorrow_reborrow` has no `LoanKind` constraint) |
 
 ## What's NOT here
 
@@ -210,29 +210,35 @@ HwmInvariant skip-branch equivalence. The per-event lemma threads
 `HwmInvariant st` through the dispatcher; the M10.x.1 invariants
 infrastructure was scaffolded for exactly this. -/
 
-/-! ### EndBorrow — `.direct`/`.lazyExpand` result-shape witness
+/-! ### EndBorrow — `.direct` / `.lazyExpand` — dropped (M10.x.9)
 
-The replayer's `stepEndBorrow` opens with `match st.takeLoan loan`
-and dispatches on `LoanKind`. The `none`-fail path, the `.reborrow`
-arm result-shape, and the `.shared` arm result-shape are all
-hStep-derivable by inversion through the replayer (M10.4a-post). The
-remaining `.direct`/`.lazyExpand` shape — which env local holds the
-`mutLoan` token plus the returned value — is genuine cert content
-not recoverable from the replayer alone. -/
+The previous extractor packaged a `(x, v, hHolder, hShape)` triple for
+the `.direct`/`.lazyExpand` arms: a holder local `x`, a returned value
+`v`, the holder-in-`Ω.ctx` clause `Ω.ctx x = some (.mutLoan loan)`,
+and the result-shape `stepEvent st (.endBorrow loan restore) =
+.ok (stTake.setLocal x v)`. M10.x.9 drops the axiom by consuming the
+cert v6 `RestoreInfo.holderLocal` hint (Session 12 schema bump) in the
+replayer:
 
-/-- For `LoanKind ∈ {.direct, .lazyExpand}`: there exists a holder
-    local `x` in the paper-side ctx and the cert's `restore.givenBack`
-    reduces to some `v` such that the replayer's post-state is exactly
-    `stTake.setLocal x v`. The C11 lemma consumes this triple. -/
-axiom endBorrow_direct_witness (st st' : SymState) (loan : Nat)
-    (restore : RestoreInfo) (Ω : LLBCState) (hRep : concretise st = Ω)
-    (hStep : stepEvent st (.endBorrow loan restore) = .ok st')
-    (li : LoanInfo) (stTake : SymState)
-    (hTake : st.takeLoan loan = some (li, stTake))
-    (hKind : li.kind = .direct ∨ li.kind = .lazyExpand) :
-    ∃ (x : Nat) (v : Val),
-      Ω.ctx x = some (.mutLoan loan) ∧
-      stepEvent st (.endBorrow loan restore) = .ok (stTake.setLocal x v)
+* The replayer's `stepEndBorrow.{.direct,.lazyExpand}` arm now reads
+  `restore.holderLocal.orElse (findHolder st loan)` to pick the env
+  local in one shot, then verifies `env[x]? = some (.mutLoan loan)`
+  before doing a single `env.insert`. For `.direct`, mismatch fails;
+  for `.lazyExpand`, mismatch falls through to the leak branch
+  (`return st`, preserving the M9.5r leak tolerance).
+* The soundness dispatcher inverts `hStep` through that case split
+  directly, extracting `(x, v, env[x]? = some (.mutLoan loan))` from
+  the success arm and re-using the existing `stepEndBorrow_direct_sound`
+  Phase-C lemma. The leak arm is routed to a new
+  `stepEndBorrow_leak_sound` helper that picks
+  `LStep.endBorrow_reborrow` (post = Ω; the paper rule has no
+  `LoanKind` constraint).
+
+No cert-honesty premise remains: the holder local and value are
+extracted from the replayer's `.ok` shape; the env-side promise
+`stTake.env[x]? = some (.mutLoan loan)` lifts to
+`Ω.ctx x = some (.mutLoan loan)` via `concretise_takeLoan` + the
+`concretise.ctx = liftEnv` definition. -/
 
 /-! ### Join — chain terminal + concretise match
 

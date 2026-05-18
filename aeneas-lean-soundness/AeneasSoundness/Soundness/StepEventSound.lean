@@ -23,13 +23,14 @@ each lemma's Phase-D-dischargeable hypotheses via the
 `#print axioms stepEvent_sound` reports:
 
 * `propext`, `Quot.sound`, `Classical.choice` (Lean core).
-* `CertGen_faithful.{endBorrow_direct_witness, join}` — the remaining
-  OCaml-side honesty axioms after M10.x.8. Plan §0.3 + `CertGen.lean`'s
-  header note are the audit surface. (Earlier-dropped extractors:
+* `CertGen_faithful.join` — the last remaining OCaml-side honesty
+  axiom after M10.x.9. Plan §0.3 + `CertGen.lean`'s header note are
+  the audit surface. (Earlier-dropped extractors:
   `move` / `copy` in M10.x.3; `sharedBorrow` / `mutBorrow_direct` /
   `mutBorrow_loopOwned` / `reborrow` in M10.x.4;
   `mutBorrow_inAbsReborrow` in M10.x.5; `endAbs` in M10.x.6;
   `loopInv` in M10.x.7; `symExpandMutBorrow` in M10.x.8;
+  `endBorrow_direct_witness` in M10.x.9;
   `call` / `endBorrow_takeOk` / `endBorrow_reborrow_witness` /
   `endBorrow_shared_witness` in M10.4a-post.)
 
@@ -622,6 +623,33 @@ theorem stepEndBorrow_shared_sound
   refine ⟨Ω, trivial, LStep.endBorrow_shared, ?_⟩
   exact (Concretise.concretise_takeLoan _ _ hTakeOk).trans hRep
 
+/-- M10.x.9 / C13' — `EvEndBorrow` with `.lazyExpand` loan kind, leak
+    case: no env local holds the `mutLoan loan` token (either the cert
+    omits `holderLocal` and `findHolder` returns `none`, or
+    `holderLocal` points to a slot whose contents have been
+    overwritten). The replayer's `stepEndBorrow` `.direct |
+    .lazyExpand` arm returns `stTake` unchanged in this case (the
+    "leak" branch); the paper side picks `LStep.endBorrow_reborrow`,
+    whose post-state is `Ω` (no `LoanKind` constraint — the paper rule
+    is naming-misleading but operationally just "post = Ω"). -/
+theorem stepEndBorrow_leak_sound
+  (hRep : concretise st = Ω)
+  (loan : Nat) (restore : RestoreInfo) (stTake : SymState)
+  (hTake : ∃ li : LoanInfo,
+    st.takeLoan loan = some (li, stTake) ∧ li.kind = .lazyExpand)
+  (hShape : stepEvent st (.endBorrow loan restore) = .ok stTake) :
+  stepEvent st (.endBorrow loan restore) = .ok st' →
+  ∃ Ω', Valid (.endBorrow loan restore) Ω ∧
+        LStep Ω (.endBorrow loan restore) Ω' ∧
+        concretise st' = Ω' := by
+  intro hStep
+  rw [hShape] at hStep
+  simp only [Except.ok.injEq] at hStep
+  subst hStep
+  obtain ⟨_li, hTakeOk, _hKind⟩ := hTake
+  refine ⟨Ω, trivial, LStep.endBorrow_reborrow, ?_⟩
+  exact (Concretise.concretise_takeLoan _ _ hTakeOk).trans hRep
+
 /-! ### Reborrow (C14)
 
 `stepReborrow` allocates a fresh child loan id. The replayer's M9.6
@@ -1133,17 +1161,135 @@ theorem stepEvent_sound :
     -- Dispatch by the replayer's `LoanKind`.
     cases hKind : li.kind with
     | direct =>
-      obtain ⟨x, v, hHolder, hShape⟩ :=
-        CertGen_faithful.endBorrow_direct_witness st st' loan restore Ω hRep hStep
-          li stTake hTakeRaw (Or.inl hKind)
-      exact stepEndBorrow_direct_sound st st' Ω hRep loan restore x v stTake
-        ⟨li, hTakeRaw, Or.inl hKind⟩ hHolder hShape hStep
+      -- M10.x.9: `endBorrow_direct_witness` retired. Invert hStep through
+      -- evalSymExpr, the holderOpt dispatch, and the env[x] / b = loan
+      -- check. `.direct` rejects every non-success path via `.error`, so
+      -- hStep's `.ok` forces the success-branch shape and extracts
+      -- `(x, v, env[x]? = some (.mutLoan loan))`.
+      have hStep' := hStep
+      simp only [stepEvent, stepEndBorrow, hTakeRaw, hKind, bind, Except.bind] at hStep'
+      match hEval : evalSymExpr stTake restore.givenBack with
+      | .error _ => rw [hEval] at hStep'; cases hStep'
+      | .ok v =>
+        rw [hEval] at hStep'
+        simp only [] at hStep'
+        match hHo : restore.holderLocal.orElse (fun () => findHolder stTake loan) with
+        | none =>
+          rw [hHo] at hStep'; simp only [] at hStep'; cases hStep'
+        | some x =>
+          rw [hHo] at hStep'
+          simp only [] at hStep'
+          match hLk : stTake.env[x]? with
+          | none =>
+            rw [hLk] at hStep'; simp only [] at hStep'; cases hStep'
+          | some .bottom =>
+            rw [hLk] at hStep'; simp only [] at hStep'; cases hStep'
+          | some (.sym _) =>
+            rw [hLk] at hStep'; simp only [] at hStep'; cases hStep'
+          | some (.lit _) =>
+            rw [hLk] at hStep'; simp only [] at hStep'; cases hStep'
+          | some (.mutBorrow _ _) =>
+            rw [hLk] at hStep'; simp only [] at hStep'; cases hStep'
+          | some (.mutLoan b) =>
+            rw [hLk] at hStep'
+            simp only [] at hStep'
+            by_cases hb : b = loan
+            · -- Success path: b = loan; st' = { stTake with env := env.insert x v }.
+              rw [hb] at hLk hStep'
+              simp only [if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+              have hShape : stepEvent st (.endBorrow loan restore) =
+                            .ok (stTake.setLocal x v) := by
+                rw [hStep, ← hStep']; rfl
+              have hHolder : Ω.ctx x = some (.mutLoan loan) := by
+                have hConc : concretise stTake = concretise st :=
+                  Concretise.concretise_takeLoan _ _ hTakeRaw
+                rw [← hRep, ← hConc]
+                show (concretise stTake).ctx x = some (.mutLoan loan)
+                rw [Concretise.concretise_ctx_apply, hLk]; rfl
+              exact stepEndBorrow_direct_sound st st' Ω hRep loan restore x v stTake
+                ⟨li, hTakeRaw, Or.inl hKind⟩ hHolder hShape hStep
+            · -- b ≠ loan + .direct: replayer's "else fail" branch fires.
+              simp only [hb, if_false, Pure.pure, Except.pure] at hStep'
+              cases hStep'
     | lazyExpand =>
-      obtain ⟨x, v, hHolder, hShape⟩ :=
-        CertGen_faithful.endBorrow_direct_witness st st' loan restore Ω hRep hStep
-          li stTake hTakeRaw (Or.inr hKind)
-      exact stepEndBorrow_direct_sound st st' Ω hRep loan restore x v stTake
-        ⟨li, hTakeRaw, Or.inr hKind⟩ hHolder hShape hStep
+      -- M10.x.9: same inversion as `.direct`, but the leak-branch
+      -- (no-holder / env-mismatch) also yields `.ok stTake`; route those
+      -- to `stepEndBorrow_leak_sound`.
+      have hStep' := hStep
+      simp only [stepEvent, stepEndBorrow, hTakeRaw, hKind, bind, Except.bind] at hStep'
+      match hEval : evalSymExpr stTake restore.givenBack with
+      | .error _ => rw [hEval] at hStep'; cases hStep'
+      | .ok v =>
+        rw [hEval] at hStep'
+        simp only [] at hStep'
+        -- Helper for the leak-branch: discharge via stepEndBorrow_leak_sound.
+        have leakDispatch : st' = stTake →
+            ∃ Ω', Valid (.endBorrow loan restore) Ω ∧
+                  LStep Ω (.endBorrow loan restore) Ω' ∧
+                  concretise st' = Ω' := by
+          intro hStEq
+          have hShape : stepEvent st (.endBorrow loan restore) = .ok stTake := by
+            rw [hStep, hStEq]
+          exact stepEndBorrow_leak_sound st st' Ω hRep loan restore stTake
+            ⟨li, hTakeRaw, hKind⟩ hShape hStep
+        match hHo : restore.holderLocal.orElse (fun () => findHolder stTake loan) with
+        | none =>
+          rw [hHo] at hStep'
+          simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+            if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+          exact leakDispatch hStep'.symm
+        | some x =>
+          rw [hHo] at hStep'
+          simp only [] at hStep'
+          match hLk : stTake.env[x]? with
+          | none =>
+            rw [hLk] at hStep'
+            simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+              if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+            exact leakDispatch hStep'.symm
+          | some .bottom =>
+            rw [hLk] at hStep'
+            simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+              if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+            exact leakDispatch hStep'.symm
+          | some (.sym _) =>
+            rw [hLk] at hStep'
+            simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+              if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+            exact leakDispatch hStep'.symm
+          | some (.lit _) =>
+            rw [hLk] at hStep'
+            simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+              if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+            exact leakDispatch hStep'.symm
+          | some (.mutBorrow _ _) =>
+            rw [hLk] at hStep'
+            simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+              if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+            exact leakDispatch hStep'.symm
+          | some (.mutLoan b) =>
+            rw [hLk] at hStep'
+            simp only [] at hStep'
+            by_cases hb : b = loan
+            · -- Success path: same as the `.direct` success arm.
+              rw [hb] at hLk hStep'
+              simp only [if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+              have hShape : stepEvent st (.endBorrow loan restore) =
+                            .ok (stTake.setLocal x v) := by
+                rw [hStep, ← hStep']; rfl
+              have hHolder : Ω.ctx x = some (.mutLoan loan) := by
+                have hConc : concretise stTake = concretise st :=
+                  Concretise.concretise_takeLoan _ _ hTakeRaw
+                rw [← hRep, ← hConc]
+                show (concretise stTake).ctx x = some (.mutLoan loan)
+                rw [Concretise.concretise_ctx_apply, hLk]; rfl
+              exact stepEndBorrow_direct_sound st st' Ω hRep loan restore x v stTake
+                ⟨li, hTakeRaw, Or.inr hKind⟩ hHolder hShape hStep
+            · -- b ≠ loan: leak (lazyExpand-only).
+              simp only [hb, if_false,
+                show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+                if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep'
+              exact leakDispatch hStep'.symm
     | reborrow =>
       -- M10.4a-post: `endBorrow_reborrow_witness` was hStep-derivable; the
       -- replayer's `.reborrow` arm runs `evalSymExpr` then returns `stTake`,
