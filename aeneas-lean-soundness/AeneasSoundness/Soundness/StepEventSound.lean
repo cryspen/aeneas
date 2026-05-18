@@ -1076,8 +1076,15 @@ theorem stepEvent_sound :
       CertGen_faithful.copy st st' src dst hStep
     exact stepCopy_sound st st' Ω hRep src dst hSrcProj hDstProj hSrcEnv hStep
   | endBorrow loan restore =>
-    obtain ⟨li, stTake, hTakeRaw⟩ :=
-      CertGen_faithful.endBorrow_takeOk st st' loan restore hStep
+    -- M10.4a-post: `endBorrow_takeOk` was a hStep-derivable extractor; replaced
+    -- by direct inversion through the replayer's `stepEndBorrow`-on-`none` fail.
+    obtain ⟨li, stTake, hTakeRaw⟩ : ∃ li stTake, st.takeLoan loan = some (li, stTake) := by
+      match h : st.takeLoan loan with
+      | none =>
+        exfalso
+        simp [stepEvent, stepEndBorrow, h] at hStep
+        injection hStep
+      | some (li, stTake) => exact ⟨li, stTake, rfl⟩
     -- Dispatch by the replayer's `LoanKind`.
     cases hKind : li.kind with
     | direct =>
@@ -1093,13 +1100,26 @@ theorem stepEvent_sound :
       exact stepEndBorrow_direct_sound st st' Ω hRep loan restore x v stTake
         ⟨li, hTakeRaw, Or.inr hKind⟩ hHolder hShape hStep
     | reborrow =>
-      have hShape := CertGen_faithful.endBorrow_reborrow_witness st st' loan restore hStep
-        li stTake hTakeRaw hKind
+      -- M10.4a-post: `endBorrow_reborrow_witness` was hStep-derivable; the
+      -- replayer's `.reborrow` arm runs `evalSymExpr` then returns `stTake`,
+      -- so `hStep` forces `st' = stTake`.
+      have hShape : stepEvent st (.endBorrow loan restore) = .ok stTake := by
+        have hStep' := hStep
+        simp only [stepEvent, stepEndBorrow, hTakeRaw, hKind] at hStep'
+        cases hEval : evalSymExpr stTake restore.givenBack with
+        | error e => rw [hEval] at hStep'; simp at hStep'
+        | ok v => rw [hEval] at hStep'; simp at hStep'; subst hStep'; exact hStep
       exact stepEndBorrow_reborrow_sound st st' Ω hRep loan restore stTake
         ⟨li, hTakeRaw, hKind⟩ hShape hStep
     | shared =>
-      have hShape := CertGen_faithful.endBorrow_shared_witness st st' loan restore hStep
-        li stTake hTakeRaw hKind
+      -- M10.4a-post: `endBorrow_shared_witness` was hStep-derivable, same
+      -- shape as the `.reborrow` arm above.
+      have hShape : stepEvent st (.endBorrow loan restore) = .ok stTake := by
+        have hStep' := hStep
+        simp only [stepEvent, stepEndBorrow, hTakeRaw, hKind] at hStep'
+        cases hEval : evalSymExpr stTake restore.givenBack with
+        | error e => rw [hEval] at hStep'; simp at hStep'
+        | ok v => rw [hEval] at hStep'; simp at hStep'; subst hStep'; exact hStep
       exact stepEndBorrow_shared_sound st st' Ω hRep loan restore stTake
         ⟨li, hTakeRaw, hKind⟩ hShape hStep
   | assert cond expected =>
@@ -1116,8 +1136,13 @@ theorem stepEvent_sound :
     exact stepReborrow_sound st st' Ω hRep child parent place parentLive parentAbs
       hChildFresh hParentInHwm hStep
   | call fn callId fnName args dst regionAbs absSig =>
-    have hDstInBounds :=
-      CertGen_faithful.call st st' fn callId fnName args dst regionAbs absSig hStep
+    -- M10.4a-post: `CertGen_faithful.call` (dst-in-bounds) was hStep-derivable;
+    -- the replayer's `stepCall` fails on `root ≥ numLocals`, so the inequality
+    -- falls out by inverting through that fail-path.
+    have hDstInBounds : dst.local_ < st.numLocals := by
+      by_contra h
+      simp [stepEvent, stepCall, placeRootLocal, Nat.not_lt.mp h] at hStep
+      injection hStep
     exact stepCall_sound st st' Ω hRep fn callId fnName args dst regionAbs absSig
       hDstInBounds hStep
   | endAbs absId finalValues releasedLoans tokenClearLocals =>

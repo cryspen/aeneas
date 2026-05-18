@@ -33,16 +33,16 @@ by one Phase-C lemma:
 | `mutBorrow_direct` / `mutBorrow_loopOwned` | as `sharedBorrow` |
 | `mutBorrow_inAbsReborrow` | `∃ r, st.absRegistry[absId]? = some r` + loan-fresh |
 | `reborrow` | `st.loanIdHwm ≤ child ∧ parent < st.loanIdHwm` |
-| `call` | `dst.local_ < st.numLocals` |
 | `endAbs` | abs-registry-lookup + (stPre, hConcPre, hShape) preamble triple |
 | `symExpandMutBorrow` | `substLocals = #[] ∧ substLoans = #[]` + `bid` freshness |
 | `loopInv` | `loanRegistry = #[]` (paper LStep.loopInv is a no-op) |
-| `endBorrow_takeOk` | `∃ li stTake, st.takeLoan loan = some (li, stTake)` |
 | `endBorrow_direct_witness` | for `LoanKind ∈ {.direct, .lazyExpand}`: holder local `x` + result value `v` + `hShape` |
-| `endBorrow_reborrow_witness` | for `LoanKind = .reborrow`: result-shape `st' = stTake` |
-| `endBorrow_shared_witness` | for `LoanKind = .shared`: result-shape `st' = stTake` |
 | `join` | `(Ω', hChain, hConcMatch)` triple |
 | `proj` | unreachable — replayer rejects, no extractor needed |
+| `call` (dst-in-bounds) | dropped M10.4a-post — provable by `hStep` inversion |
+| `endBorrow_takeOk` | dropped M10.4a-post — provable by `hStep` inversion |
+| `endBorrow_reborrow_witness` | dropped M10.4a-post — provable by `hStep` inversion |
+| `endBorrow_shared_witness` | dropped M10.4a-post — provable by `hStep` inversion |
 
 ## What's NOT here
 
@@ -137,19 +137,6 @@ axiom reborrow (st st' : SymState) (child parent : Nat) (place : Place)
     (hStep : stepEvent st (.reborrow child parent place parentLive parentAbs) = .ok st') :
     st.loanIdHwm ≤ child ∧ parent < st.loanIdHwm
 
-/-! ### Call — dst-in-bounds
-
-The replayer's `stepCall` bounds-checks `dst.local_ < st.numLocals`;
-on success the inequality holds, so it's a strict consequence of
-`hStep` (not a separate cert promise). Kept as an extractor anyway so
-the dispatcher's case-block is uniform. -/
-
-axiom call (st st' : SymState) (fn callId : Nat) (fnName : String)
-    (args : Array SymExpr) (dst : Place) (regionAbs : Array Nat)
-    (absSig : Array AbsShape)
-    (hStep : stepEvent st (.call fn callId fnName args dst regionAbs absSig) = .ok st') :
-    dst.local_ < st.numLocals
-
 /-! ### EndAbs — abs-in-registry + (stPre, hConcPre, hShape) preamble
 
 C16's `stepEndAbs_sound` collapses the replayer's loan-erase +
@@ -195,19 +182,15 @@ axiom loopInv (st st' : SymState) (loopId : Nat) (invariant : StateSummary)
     (hStep : stepEvent st (.loopInv loopId invariant loanRegistry) = .ok st') :
     loanRegistry = #[]
 
-/-! ### EndBorrow — kind discovery + per-kind result-shape
+/-! ### EndBorrow — `.direct`/`.lazyExpand` result-shape witness
 
 The replayer's `stepEndBorrow` opens with `match st.takeLoan loan`
-and dispatches on `LoanKind`. CertGen_faithful supplies:
-
-1. `endBorrow_takeOk` — the takeLoan lookup is `some (li, stTake)`,
-   not `none` (the latter would surface as a replayer failure).
-2. Per-kind result-shape extractors, keyed by `li.kind`. -/
-
-axiom endBorrow_takeOk (st st' : SymState) (loan : Nat) (restore : RestoreInfo)
-    (hStep : stepEvent st (.endBorrow loan restore) = .ok st') :
-    ∃ (li : LoanInfo) (stTake : SymState),
-      st.takeLoan loan = some (li, stTake)
+and dispatches on `LoanKind`. The `none`-fail path, the `.reborrow`
+arm result-shape, and the `.shared` arm result-shape are all
+hStep-derivable by inversion through the replayer (M10.4a-post). The
+remaining `.direct`/`.lazyExpand` shape — which env local holds the
+`mutLoan` token plus the returned value — is genuine cert content
+not recoverable from the replayer alone. -/
 
 /-- For `LoanKind ∈ {.direct, .lazyExpand}`: there exists a holder
     local `x` in the paper-side ctx and the cert's `restore.givenBack`
@@ -222,25 +205,6 @@ axiom endBorrow_direct_witness (st st' : SymState) (loan : Nat)
     ∃ (x : Nat) (v : Val),
       Ω.ctx x = some (.mutLoan loan) ∧
       stepEvent st (.endBorrow loan restore) = .ok (stTake.setLocal x v)
-
-/-- For `LoanKind = .reborrow`: the replayer's post-state is exactly
-    `stTake` (the takeLoan result, no env mutation). -/
-axiom endBorrow_reborrow_witness (st st' : SymState) (loan : Nat)
-    (restore : RestoreInfo)
-    (hStep : stepEvent st (.endBorrow loan restore) = .ok st')
-    (li : LoanInfo) (stTake : SymState)
-    (hTake : st.takeLoan loan = some (li, stTake))
-    (hKind : li.kind = .reborrow) :
-    stepEvent st (.endBorrow loan restore) = .ok stTake
-
-/-- For `LoanKind = .shared`: mirror of `endBorrow_reborrow_witness`. -/
-axiom endBorrow_shared_witness (st st' : SymState) (loan : Nat)
-    (restore : RestoreInfo)
-    (hStep : stepEvent st (.endBorrow loan restore) = .ok st')
-    (li : LoanInfo) (stTake : SymState)
-    (hTake : st.takeLoan loan = some (li, stTake))
-    (hKind : li.kind = .shared) :
-    stepEvent st (.endBorrow loan restore) = .ok stTake
 
 /-! ### Join — chain terminal + concretise match
 
