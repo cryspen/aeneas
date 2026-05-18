@@ -42,4 +42,16 @@ def test_incr : Result Unit := do
 def choose {T : Type} (b : Bool) (x : T) (y : T) : Result (T × (T → (T × T))) := do
   if b then ok (x, fun ret => (ret, y)) else ok (y, fun ret => (x, ret))
 
+/-- [paper::test_choose]:
+    Source: 'tests/src/paper.rs', lines 28:0-36:1
+    Visibility: public -/
+def test_choose : Result Unit := do
+  let (t0_v, t0_back) ← (paper.choose true 0#i32 0#i32)
+  let t1 ← t0_v + 1#i32
+  let t2 := t0_v = 1#i32
+  let t3 := 0#i32 = 1#i32
+  let t4 := 0#i32 = 0#i32
+  let _ := (t0_back t1)
+  ok ()
+
 end paper

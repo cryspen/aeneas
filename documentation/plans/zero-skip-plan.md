@@ -191,29 +191,64 @@ returns).
 
 **Acceptance:** remove the three `list_nth1*` skips. Re-run.
 
-### Step 6 — Back-closure tail position not wrapped in `ok` (Cluster: `tail_back_closure_wrap`)
+### Step 6 — Back-closure tail position not wrapped in `ok` (Cluster: `tail_back_closure_wrap`) — PARTIAL 2026-05-18
 
-**Unlocks:** `paper::test_choose`, `paper::call_choose`. **2 decls.**
+**Actual work:** ~2 hours. `test_choose` unlocked; `call_choose` deferred
+(see BLOCKED subsection below). Net: 1 of 2 decls in the cluster ship.
 
-**Symptom:**
-- `paper::test_choose`: tail call `(t0_back t1)` has type `I32 × I32`, but
-  the function returns `Result Unit`. Need to wrap in `ok ()` (discarding
-  the call's value) or change the emit to bind-and-discard.
-- `paper::call_choose`: input is `p : U32 × U32`; the walker binds
-  `p_post_v : U32 × U32` and then tries `p_post_v + 1#u32` without
-  destructuring. Needs a tuple-input pattern.
+**`test_choose` fix:** for a Unit-returning function whose `vm[0]` was
+written with a back-closure application (an `.app` head with no `.` / `:`
+qualifier, not a binop, not a `__cast::` head — the cert walker writes
+this when an `&mut`-borrowing helper's effect is dropped at end-of-scope),
+discard the tail value via `let _ := <tailE>` and emit `ok ()`. Lives in
+`Forward.lean::translateFunWith`, just after the existing tail-placeholder
+adjustment for non-Unit ADT returns. The discard is gated on an
+`isBackClosureApp` predicate so existing Unit-tail paths (empty trait
+bodies, pure qualified calls) stay byte-identical — verified against
+`blanket_impl` which remains the lone G_byte-pass trait fixture.
 
-These are two distinct narrow bugs in the same cluster.
+**Bonus:** the same fix incidentally repairs `paper::test_nth`'s tail
+shape (it also drops a `(t3_back t4)` at end-of-scope). `test_nth` still
+cascade-depends on the Step 3-blocked `list_nth_mut` and `sum`, so it
+stays in the skip list for now — but once Step 3 lands, no further fix
+will be needed for `test_nth`.
 
-**Fix surface:**
-- `Forward.lean::tailToResult` predicate widening (already touched this
-  area in Session 7 Item 1c for `:`-paths).
-- Tuple-input destructuring in the BackSig pass.
+**Decl counts.** Skips: 17 → 16. Removed `--skip-decl test_choose` from
+`run-diff.sh:61`. Kept `--skip-decl call_choose` per BLOCKED notes.
 
-**Estimated work: 2-4 hours.**
+#### Step 6 — BLOCKED on `call_choose`
 
-**Acceptance:** remove `--skip-decl test_choose` and `--skip-decl
-call_choose` from `run-diff.sh:66, 70`. Re-run.
+The walker emits `(paper.choose true p p)` for a call whose Rust source
+is `choose(true, &mut p.0, &mut p.1)` — the two `&mut`-field args have
+been collapsed into the parent tuple `p`. Then `p_post_v : U32 × U32`
+(the post-state of the *whole* tuple, not of the borrowed field) is
+arithmetic'd as if it were a `U32`. The mainline emit threads each field
+separately via an explicit `let (px, py) := p` at function entry, which
+makes the call args `px py` and the post-state per-field.
+
+Fixing this requires:
+1. Detecting tuple-typed inputs at `translateFunWith` time and
+   synthesising a `letPat` destructure binding to seed.
+2. Updating `vm` so the field-projected places resolve to the
+   destructured locals (not back to the parent tuple).
+3. Plumbing through to the call-args resolver (`lookupSymExpr`
+   chain) so `EvCall`'s `args.map (lookupSymExpr ...)` produces the
+   destructured names, not the tuple.
+4. Threading the post-state back from the destructured slots, and
+   rebuilding the return value from those slots.
+
+That's a multi-day walker change touching `Forward.lean`,
+`Loops.lean`, and probably the `WalkState` shape itself. Well outside
+Step 6's 2-4 hour scope. Suspected to share root with Step 3
+(recursive match-arm scoping) and Step 4 (closure-leak trait `&mut
+self`) — all three are walker-shaping bugs where the cert event
+stream's "post-state per place" model doesn't line up with what the
+emitted Lean wants. Recommend bundling into a deeper walker session
+alongside Steps 3-5 rather than narrow-fixing here.
+
+**Acceptance (revised):** removed `--skip-decl test_choose` from
+`run-diff.sh:61`. Kept the remaining `paper` skips (`list_nth_mut`,
+`sum`, `test_nth`, `call_choose`).
 
 ### Step 7 — `use_v` generic-global arity mismatch (Cluster: `use_v_arity`)
 

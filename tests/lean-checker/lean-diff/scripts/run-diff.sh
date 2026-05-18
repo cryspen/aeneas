@@ -56,9 +56,17 @@ echo "[lean-diff] regenerating demo.lean (with --skip-decl filter)"
 # Session 7 (Item 3): `paper` regen with the skip list. `ref_incr`
 # elaborates cleanly; the other decls hit open emit gaps (see
 # `LeanDiff/PaperRunner.lean`'s file-level doc).
+#
+# Zero-Skip Step 6 (2026-05-18, partial): `test_choose` removed from the
+# skip list — the back-closure-tail discard wrap in `Forward.lean`'s
+# Unit-output path now emits `let _ := (t0_back t1); ok ()` so the tail
+# elaborates against `Result Unit`. `call_choose` remains skipped (the
+# tuple-input destructure is a deeper walker change, deferred — see
+# `zero-skip-plan.md` Step 6 — BLOCKED subsection). `test_nth` cascade-
+# depends on the still-skipped `list_nth_mut` and `sum` so it stays
+# skipped too.
 echo "[lean-diff] regenerating paper.lean (with --skip-decl filter)"
 "$aeneas_check" "$llbc_dir/paper.cert.json" --out "$here/generated/paper.lean" \
-  --skip-decl test_choose \
   --skip-decl list_nth_mut \
   --skip-decl sum \
   --skip-decl test_nth \

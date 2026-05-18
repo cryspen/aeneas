@@ -2603,7 +2603,35 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
             | .tAdt _ _ => placeholderPExprOfWith tdm t
             | _ => tailE0
           | _, _ => tailE0
-        assembleBody finalSt.binds (tailToResult tailE)
+        -- Zero-Skip Step 6 (tail_back_closure_wrap): for a Unit-returning
+        -- function whose `vm[0]` was written with a back-closure
+        -- application like `(t0_back t1)` (an `.app` whose head is a
+        -- locally-bound name — no `.` / `:` qualifier, not a binop, not
+        -- a `__cast::` head), discard the tail value and emit `ok ()`.
+        -- The cert walker writes the back-closure call into vm[0] when
+        -- an `&mut`-borrowing helper's effect is dropped at end-of-scope
+        -- (e.g. `test_choose` after `*z = *z + 1`). Without this the
+        -- do-tail elaborates against the back-closure's pure return type
+        -- (e.g. `I32 × I32`) and fails to match `Result Unit`. Other
+        -- Unit-returning patterns (empty body via `.var "()"`, a pure
+        -- call via qualified head, …) are left untouched so existing
+        -- byte-identical fixtures stay byte-identical.
+        let isBackClosureApp : PExpr → Bool := fun e =>
+          match e with
+          | .app head _ =>
+            !(head.contains '.') && !(head.contains ':') &&
+              !isPureBinop head && !head.startsWith "__cast::"
+          | _ => false
+        let needsUnitDiscard : Bool :=
+          bs.outputIsUnit && isBackClosureApp tailE
+        let body :=
+          if needsUnitDiscard then
+            assembleBody finalSt.binds
+              (.letPure "_" placeholderTy tailE
+                (tailToResult (.var "()")))
+          else
+            assembleBody finalSt.binds (tailToResult tailE)
+        body
       else if !finalSt.multiRegionTail.isEmpty then
         -- M12.2b: caller of a multi-region helper. The deref-EvAssigns
         -- through each destructured local accumulated one back-
