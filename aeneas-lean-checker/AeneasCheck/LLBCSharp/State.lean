@@ -169,6 +169,22 @@ def substLocalsOne (svId bid : Nat) (env : Std.HashMap Nat Val) (l : Nat) :
   | some (.sym k) => if k = svId then env.insert l (.mutLoan bid) else env
   | _ => env
 
+/-- M10.x.9: find the first env local that holds a `mutLoan loan`
+    token (in `Std.HashMap.toList` iteration order). Used as the
+    env-walk fallback when `restore.holderLocal` is `none` (cf.
+    `cert v6`'s `holderLocal` emit-site at `InterpBorrows.ml:1050`,
+    which is itself an env walk on the OCaml side). The replayer's
+    `stepEndBorrow` `.direct | .lazyExpand` arm uses this as a
+    single-shot replacement for the previous `for+mut` env loop;
+    the LoanTokenInvariant guarantees at most one local holds a
+    given `mutLoan` token, so single-shot matches the previous
+    multi-update behaviour. -/
+def findHolder (st : SymState) (loan : Nat) : Option Nat :=
+  (st.env.toList.find? (fun p =>
+    match p.2 with
+    | .mutLoan b => b == loan
+    | _ => false)).map Prod.fst
+
 /-- M10.x.8: one substLoans rewrite step. If `loans[b].given = .sym svId`,
     overwrite to `.mutLoan bid`; otherwise unchanged. Concretise-no-op
     because `concretise` does not read `loans`; kept symmetric to
