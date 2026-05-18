@@ -38,11 +38,26 @@ echo "[lean-diff] regenerating constants.lean"
 # `LeanDiff/DemoRunner.lean`'s file-level doc). The 5 well-emitted
 # fns are exercised by the runner.
 echo "[lean-diff] regenerating demo.lean (with --skip-decl filter)"
+# Zero-Skip Step 3 (2026-05-18): `demo::list_nth` removed from the
+# skip list. The forward walker now detects Charon's *grouped*
+# match-arm layout (markers up front, bodies trailing in reverse
+# variant-id order) and re-slices the body chunks so arm 0 (CCons)
+# gets the rich body and arm 1 (CNil) gets the panic / no-op body
+# (`fail panic` → emitted as `error panic` against RuntimeShim).
+# The walker also threads `(variantId, fieldIdx) → binderName`
+# precomputed from the LLBC body so pattern slots agree with the
+# seeded vm names (`x`, `tl`) — no more bogus `(demo.list_nth l _)`
+# fallbacks. See `documentation/plans/skip-decl-audit.md` §2 cluster
+# `recursive_match_arm_scoping`. The rest of the list_nth* /
+# list_tail / i32_id / DemoCounter cluster still blocks on
+# pre-existing emit gaps (`ok (match ...)` wrap on
+# back-closure-returning fns, `, fun ret => l)` closure-tail
+# rendering, dropped recursive call in i32_id, DemoCounter trait
+# signature). Those are tracked separately.
 "$aeneas_check" "$llbc_dir/demo.cert.json" --out "$here/generated/demo.lean" \
   --skip-decl Counter \
   --skip-decl "Std.Usize.Insts.DemoCounter" \
   --skip-decl "Std.Usize.Insts.DemoCounter.incr" \
-  --skip-decl list_nth \
   --skip-decl list_nth_mut \
   --skip-decl list_tail \
   --skip-decl list_nth1 \
@@ -65,9 +80,17 @@ echo "[lean-diff] regenerating demo.lean (with --skip-decl filter)"
 # depends on the still-skipped `list_nth_mut` and `sum` so it stays
 # skipped too.
 echo "[lean-diff] regenerating paper.lean (with --skip-decl filter)"
+# Zero-Skip Step 3 (2026-05-18): `paper::sum` removed from the skip
+# list — the grouped-match walker fix (see demo.lean comment above)
+# also unblocks `sum`, which now elaborates against RuntimeShim as
+# `match l with | List.Cons x tl => let t0 ← sum tl; x + t0
+# | List.Nil => ok 0#i32`. `list_nth_mut` and `test_nth` (cascade)
+# remain skipped — the cluster fix re-aligned their bodies but the
+# `ok (match …)` wrap and back-closure-tail rendering for `&mut`-
+# returning functions are pre-existing emit gaps outside the
+# cluster's scope. `call_choose` stays skipped (Step 6 cluster).
 "$aeneas_check" "$llbc_dir/paper.cert.json" --out "$here/generated/paper.lean" \
   --skip-decl list_nth_mut \
-  --skip-decl sum \
   --skip-decl test_nth \
   --skip-decl call_choose \
   | tail -2

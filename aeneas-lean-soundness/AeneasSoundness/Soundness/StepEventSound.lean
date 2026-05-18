@@ -4,6 +4,7 @@ import AeneasSoundness.LLBCSharpPaper.Valid
 import AeneasSoundness.Soundness.Concretise.Defn
 import AeneasSoundness.Soundness.Concretise.Lemmas
 import AeneasSoundness.Soundness.JoinLemmas
+import AeneasSoundness.Soundness.JoinChainFold
 import AeneasSoundness.Soundness.CertGen
 
 /-!
@@ -983,18 +984,20 @@ fixture set is empty-only. The full case awaits an M9.8-style
 schema follow-up (extend `LStep.loopInv` to allow `.reborrow`-only
 loan additions, or split into a `loopRegisterLoan` event). -/
 
-/-- C24 / M10.3a (M10.x.7 revision) — `EvLoopInv loopId invariant
-    loanRegistry` (paper §5.2 fixpoint snapshot). M10.x.7 dropped
-    `CertGen_faithful.loopInv`'s `loanRegistry = #[]` hypothesis;
-    instead the paper-side `LStep.loopInv` post-state was
+/-- C24 / M10.3a (M10.x.7 / M10.x.11 revision) — `EvLoopInv loopId
+    invariant loanRegistry` (paper §5.2 fixpoint snapshot). M10.x.7
+    dropped `CertGen_faithful.loopInv`'s `loanRegistry = #[]`
+    hypothesis; instead the paper-side `LStep.loopInv` post-state was
     strengthened to a `loanRegistry.foldl bumpLoanId` (which the
     M10.x.7 commute lemma matches against the replayer's
-    conditional `addLoan` fold). The lemma takes `HwmInvariant st`
-    as an extra hypothesis (the skip-branch in the commute requires
-    `b ∈ st.loans → b < st.loanIdHwm`). -/
+    conditional `addLoan` fold). M10.x.11 weakens the precondition
+    from `HwmInvariant` to `LoanHwmInvariant` — only the loan-half
+    is consumed by the skip-branch (`b ∈ st.loans → b < st.loanIdHwm`),
+    so Phase E can thread the (preservation-easier)
+    `LoanHwmInvariant` through `replayFun_sound`. -/
 theorem stepLoopInv_sound
   (hRep : concretise st = Ω)
-  (hInv : Invariants.HwmInvariant st)
+  (hInv : Invariants.LoanHwmInvariant st)
   (loopId : Nat) (invariant : StateSummary)
   (loanRegistry : Array (Nat × Nat)) :
   stepEvent st (.loopInv loopId invariant loanRegistry) = .ok st' →
@@ -1055,30 +1058,58 @@ corollary (`witnesses = #[]` => `chain = JoinChain.nil` =>
 `Ω' = Ω`); kept as `stepJoin_witnessed_sound_empty` below for
 regression-anchoring. -/
 
-/-- C23 / M10.2t — `EvJoin { witnesses }` soundness, general case.
-    The chain terminal `Ω'` and the chain `hChain` are explicit
-    inputs; Phase D builds them by induction over `witnesses.toList`
-    via the per-entry `JoinLemmas.join<Rule>_step` helpers. The
-    correspondence `hConcMatch : concretise st' = Ω'` is also
-    Phase-D-dispatched from `CertGen_faithful`'s promise about
-    `result.env` / `result.liveLoans` shape. -/
+/-- C23 / M10.x.10 — `EvJoin { witnesses }` soundness, axiom-free.
+
+    Replaces the previous `CertGen_faithful.join` axiom by computing
+    the chain on the soundness side: inverting `hStep` through
+    `stepJoinBody` yields the replayer's chain-fold output;
+    `JoinChainFold.concretise_foldlM_joinChainFoldStep` lifts that
+    to the paper-side fold; `joinChain_of_paper_foldM` builds the
+    `JoinChain`; `LStep.join` wraps it. The post-state matches
+    because the post-fold loans handling is `concretise`-no-op.
+
+    Pre-M10.x.10 the lemma took explicit `Ω' / hChain / hConcMatch`
+    inputs supplied by the (now-retired) axiom; the new signature
+    consumes `hRep` + `hStep` directly. -/
 theorem stepJoin_witnessed_sound
   (left right result : StateSummary) (witnesses : Array JoinEntry)
-  (_hRep : concretise st = Ω)
-  (Ω' : LLBCState)
-  (hChain : LLBCSharpPaper.JoinChain Ω witnesses.toList Ω')
-  (hConcMatch : concretise st' = Ω') :
+  (hRep : concretise st = Ω) :
   stepEvent st (.join left right result witnesses) = .ok st' →
   ∃ Ω', Valid (.join left right result witnesses) Ω ∧
         LStep Ω (.join left right result witnesses) Ω' ∧
         concretise st' = Ω' := by
-  intro _hStep
-  -- `_hRep` and `_hStep` are unused in the body because the chain
-  -- terminal `Ω'` and the correspondence `hConcMatch` are provided
-  -- directly; they're kept in the signature for parity with the
-  -- other C-lemmas (Phase D's case dispatch threads `hRep` /
-  -- `hStep` to every per-event lemma uniformly).
-  exact ⟨Ω', ⟨Ω', hChain⟩, LStep.join hChain, hConcMatch⟩
+  intro hStep
+  -- Unfold the join through `stepJoinStrictCheck` + `stepJoinBody`.
+  -- The strict check has no state effect; we extract `stepJoinBody`'s
+  -- success from `hStep`.
+  simp only [stepEvent, stepJoin, bind, Except.bind] at hStep
+  cases hCheck : stepJoinStrictCheck left right result witnesses with
+  | error _ => rw [hCheck] at hStep; cases hStep
+  | ok _ =>
+    rw [hCheck] at hStep
+    simp only [] at hStep
+    -- hStep: stepJoinBody st result witnesses = .ok st'.
+    -- M10.x.10b: stepJoinBody is now just the chain fold; .ok st' IS the chain output.
+    have hFold : witnesses.foldlM (init := st) joinChainFoldStep = .ok st' :=
+      stepJoinBody_chain_extract st st' result witnesses hStep
+    -- Lift the replayer fold to the paper-side fold via the commute.
+    have hPaperFold :
+        witnesses.toList.foldlM joinChainFoldStep_paper (concretise st) =
+          some (concretise st') := by
+      have hList : witnesses.foldlM (init := st) joinChainFoldStep =
+                    witnesses.toList.foldlM joinChainFoldStep st := by
+        simp [Array.foldlM_toList]
+      rw [hList] at hFold
+      exact concretise_foldlM_joinChainFoldStep witnesses.toList st st' hFold
+    -- Build the chain via the paper-side fold output.
+    have hChain : LLBCSharpPaper.JoinChain (concretise st) witnesses.toList
+                    (concretise st') :=
+      joinChain_of_paper_foldM witnesses.toList (concretise st)
+        (concretise st') hPaperFold
+    -- The chain's pre-state is `Ω` because `concretise st = Ω`.
+    rw [hRep] at hChain
+    -- Witness Ω' := concretise st'; LStep.join wraps the chain.
+    refine ⟨concretise st', ⟨concretise st', hChain⟩, LStep.join hChain, rfl⟩
 
 /-- C23 corollary — `EvJoin` with empty `witnesses` (the M10.2s
     case). The chain is `JoinChain.nil`, terminal `Ω' = Ω`, and the
@@ -1114,7 +1145,7 @@ the per-event lemmas added across Phase C). -/
 theorem stepEvent_sound :
     ∀ (ev : Event) (st st' : SymState) (Ω : LLBCState),
       concretise st = Ω →
-      Invariants.HwmInvariant st →
+      Invariants.LoanHwmInvariant st →
       stepEvent st ev = .ok st' →
       ∃ Ω', Valid ev Ω ∧ LStep Ω ev Ω' ∧ concretise st' = Ω' := by
   intro ev st st' Ω hRep hInv hStep
@@ -1359,10 +1390,11 @@ theorem stepEvent_sound :
     exact stepSymExpandMutBorrow_sound st st' Ω hRep svId bid innerSv parentAbs
       substLocals substLoans hStep
   | join left right result witnesses =>
-    obtain ⟨Ω', hChain, hConcMatch⟩ :=
-      CertGen_faithful.join st st' left right result witnesses Ω hRep hStep
-    exact stepJoin_witnessed_sound st st' Ω left right result witnesses hRep Ω'
-      hChain hConcMatch hStep
+    -- M10.x.10: `CertGen_faithful.join` retired. The replayer's
+    -- `stepJoinBody` chain-fold reconstructs the post-state on the
+    -- soundness side via `JoinChainFold.{concretise_foldlM_join...
+    -- ChainFoldStep, joinChain_of_paper_foldM}`. No axiom call.
+    exact stepJoin_witnessed_sound st st' Ω left right result witnesses hRep hStep
   | loopInv loopId invariant loanRegistry =>
     -- M10.x.7: `CertGen_faithful.loopInv` retired. The paper-side
     -- `LStep.loopInv` post-state was strengthened to a

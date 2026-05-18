@@ -9,8 +9,11 @@ import AeneasSoundness.Soundness.Concretise.Lemmas
 import AeneasSoundness.Soundness.Invariants.HWM
 import AeneasSoundness.Soundness.Invariants.AbsRegistry
 import AeneasSoundness.Soundness.JoinLemmas
+import AeneasSoundness.Soundness.JoinChainFold
 import AeneasSoundness.Soundness.StepEventSound
 import AeneasSoundness.Soundness.InitialFinal
+import AeneasSoundness.Soundness.ReplayFunSound
+import AeneasSoundness.Soundness.ReplayCrateSound
 
 /-!
 Top-level module for the Aeneas LLBC# soundness package.

@@ -199,4 +199,30 @@ def substLoansOne (svId bid : Nat) (loans : Std.HashMap Nat LoanInfo) (b : Nat) 
     | _ => loans
   | none => loans
 
+/-- M10.x.10: paper-side `JoinEntryStep.mutBorrows` post-state mirrored
+    on the SymState side. Installs the abs shape in `absRegistry`
+    (direct insert — does NOT bump `absIdHwm`) and writes the new
+    `.mutBorrow` value at `localId`. Used by `joinChainFoldStep` in
+    `Step.lean`.
+
+    Critically does NOT use `addLoan` / `addAbsShape`, both of which
+    raise the soundness-side HWMs (`loanIdHwm` / `absIdHwm`). If they
+    did, a multi-witness join whose witnesses share an abs id (the
+    `loops::issue400_2` event-60 case has 2 joinMutBorrows witnesses
+    both at abs 306) would see the second witness's HWM-freshness
+    check fail. Keeping HWMs fixed across the chain mirrors the paper
+    side: `JoinEntryStep.mutBorrows`'s `Ω.absIdFresh` / `Ω.loanIdFresh`
+    premise is now checked against the pre-fold Ω throughout, and the
+    OCaml emitter guarantees `l_fresh / abs.absId ≥ pre-join HWM` per
+    witness. The shared-abs case becomes a last-write-wins overwrite
+    in `absRegistry`; on the paper side `JoinEntryStep.mutBorrows`'s
+    `setAbs` is similarly idempotent-with-overwrite via
+    `Function.update`. The chain post-state HWMs match by `concretise`
+    because neither side bumps. -/
+def joinMutBorrowsStep (st : SymState)
+    (localId : Nat) (l_fresh : Nat) (absShape : AbsShape) :
+    SymState :=
+  ({ st with absRegistry := st.absRegistry.insert absShape.absId absShape }).setLocal localId
+    (.mutBorrow l_fresh .bottom)
+
 end AeneasCheck.LLBCSharp

@@ -240,32 +240,56 @@ extracted from the replayer's `.ok` shape; the env-side promise
 `Ω.ctx x = some (.mutLoan loan)` via `concretise_takeLoan` + the
 `concretise.ctx = liftEnv` definition. -/
 
-/-! ### Join — chain terminal + concretise match
+/-! ### Join — dropped (M10.x.10)
 
-C23's `stepJoin_witnessed_sound` takes a `(Ω', hChain, hConcMatch)`
-triple. The chain `JoinChain Ω witnesses.toList Ω'` is the
-sequential composition of the per-entry `JoinEntryStep`s; the
-cert's join-witness algebra IS the chain. The
-`concretise st' = Ω'` clause is the structural match between the
-replayer's wholesale env replace + abs-install fold (post-M9.8) and
-the chain's terminal env / abs state.
+The previous extractor packaged `(Ω', JoinChain Ω witnesses.toList Ω',
+concretise st' = Ω')`. M10.x.10 (Path B from the audit) replaces this
+with computation on the soundness side:
 
-This extractor packages the full triple. An earlier draft considered
-factoring the chain construction as a separate `buildJoinChain`
-helper proved by induction over `witnesses.toList` via the per-entry
-`JoinLemmas.join<Rule>_step` helpers, with CertGen_faithful supplying
-the freshness / abs-existence premises per entry. That factoring is
-cleaner-on-paper but requires CertGen_faithful to promise premises
-about the *running* intermediate states Ω_i, not just the initial Ω
-— the freshness counters change at each step. The bundled
-formulation (this axiom) is simpler and equally trust-minimal: the
-chain's existence + the terminal-match are both pure facts about the
-trace's join algebra, which the cert is the witness of. -/
+* **Replayer refactor** (`aeneas-lean-checker`): `stepJoin`'s previous
+  wholesale `result.env.foldl` env-override + `addAbsShape` fold are
+  replaced by a `witnesses.foldlM joinChainFoldStep` over the cert's
+  witness array. Each chain step mirrors the corresponding paper-side
+  `JoinEntryStep` constructor on the SymState side: `joinSymbolic`
+  writes `.sym freshSv` at the witness's localId; `joinMutBorrows`
+  writes `.mutBorrow l_fresh .bottom` AND installs the abs shape via
+  direct `absRegistry.insert` (NOT `addAbsShape` — bumping HWMs in
+  the chain would break the multi-witness-same-abs case the
+  `loops::issue400_2` event-60 fixture exercises); `joinBottomOther`/
+  `joinOtherBottom` verify the abs is in registry. Pre-flight scan
+  of all 89 fixtures' 30 EvJoin events confirmed `result.env` keys
+  are EXACTLY the witnessed localIds, so the wholesale override
+  carried no information that the chain doesn't.
 
-axiom join (st st' : SymState) (left right result : StateSummary)
-    (witnesses : Array JoinEntry) (Ω : LLBCState) (hRep : concretise st = Ω)
-    (hStep : stepEvent st (.join left right result witnesses) = .ok st') :
-    ∃ Ω', JoinChain Ω witnesses.toList Ω' ∧ concretise st' = Ω'
+* **Paper-rule refactor** (`AeneasSoundness/LLBCSharpPaper/Step.lean`):
+  `JoinEntryStep.symbolic` drops `bumpSymValId` (was no-op) AND its
+  `Ω.symValIdFresh` premise (was vacuous on concretise post-states).
+  `JoinEntryStep.mutBorrows` drops `bumpLoanId l_fresh` and
+  `bumpAbsId abs.absId` — neither is needed since the chain's
+  intermediate states share `freshness` with the pre-join Ω
+  (matching the replayer's HWMs-unchanged-through-the-chain shape).
+
+* **Soundness reconstruction** (`AeneasSoundness/Soundness/JoinChainFold
+  .lean`): `joinChainFoldStep_paper` mirrors the replayer chain step on
+  the paper side (`Option`-flavored to track freshness/registry
+  premise failures). `concretise_joinChainFoldStep` proves per-step
+  commute (`.ok` on replayer ↔ `some` on paper at the same post-state).
+  `concretise_foldlM_joinChainFoldStep` lifts to fold-style.
+  `joinChain_of_paper_foldM` builds `JoinChain Ω xs Ω'` from
+  `xs.foldlM joinChainFoldStep_paper Ω = some Ω'`.
+
+* **`stepJoin_witnessed_sound`** (`StepEventSound.lean`) now composes
+  these: inverts `hStep` through `stepJoinStrictCheck` + `stepJoinBody`,
+  extracts the chain-fold output, lifts to paper-side via the commute,
+  builds `JoinChain`, and wraps with `LStep.join`. The post-state's
+  loans-handling tail is `concretise`-no-op.
+
+The trust shape that remains is what the user explicitly accepted in
+M10.x.10's session prompt: the emit-site is still trusted to (a) emit
+witnesses at every join, (b) classify each rule correctly, (c) supply
+correct freshness IDs in deltas. The replayer now COMPUTES the post-
+state rather than trusting OCaml's `result.env` claim; this is the
+"replayer-becomes-source-of-truth" engineering position. -/
 
 end CertGen_faithful
 

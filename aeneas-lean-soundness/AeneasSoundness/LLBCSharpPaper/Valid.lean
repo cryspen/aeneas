@@ -133,20 +133,107 @@ def Valid (e : Event) (Ω : LLBCState) : Prop :=
 
 /-! ### Smoke lemma: `Valid_iff_LStep_exists`
 
-The pairing lemma. `sorry`'d at M10.0j (the file lives under
-`LLBCSharpPaper/`, outside G6's `Soundness/` scope). Phase C closes
-each direction case-by-case:
+The pairing lemma. Discharged at M10 cleanup (post-campaign-close):
+the proof is a 17-arm case-split, one per `Event` constructor,
+mirroring each `LStep` constructor's premises with the
+corresponding `Valid` arm.
 
-* `(→)`: per-event existence — given the premises, build `Ω'` and
-  apply the corresponding `LStep` constructor.
-* `(←)`: per-event inversion — given an `LStep` proof, extract the
-  premises by inverting on the constructor.
+* `(→)`: per-event existence — given the `Valid` premises, build
+  `Ω'` and apply the matching `LStep` constructor. Hint-bearing
+  events (`mutBorrow.kindHint`, `assert.expected`) pick the
+  matching `LStep` arm.
+* `(←)`: per-event inversion — given an `LStep` proof, extract
+  the premises by `cases` on the constructor. Each arm
+  discharges the `Valid` clause for the matching event shape.
 
-The `LStep`-side existence direction (`→`) is more useful in
-Phase C/D; the inversion direction is bookkeeping. The lemma is
-load-bearing for Phase D's `stepEvent_sound` case analysis. -/
+The `proj` arm is doubly vacuous: `Valid (.proj …) = False` and
+`LStep` has no `.proj` constructor, so both sides reduce to
+`False`. -/
 theorem Valid_iff_LStep_exists (e : Event) (Ω : LLBCState) :
     Valid e Ω ↔ ∃ Ω', LStep Ω e Ω' := by
-  sorry
+  constructor
+  · -- Forward: Valid e Ω → ∃ Ω', LStep Ω e Ω'.
+    intro hV
+    cases e with
+    | mutBorrow ℓ p σ kindHint =>
+      cases kindHint with
+      | direct =>
+        obtain ⟨hLF, hSF⟩ := hV
+        exact ⟨_, LStep.mutBorrow_direct hLF hSF⟩
+      | inAbsReborrow absId =>
+        obtain ⟨hLF, hSF⟩ := hV
+        exact ⟨_, LStep.mutBorrow_inAbsReborrow hLF hSF⟩
+      | loopOwned loopId =>
+        obtain ⟨hLF, hSF⟩ := hV
+        exact ⟨_, LStep.mutBorrow_loopOwned hLF hSF⟩
+    | sharedBorrow ℓ sbId p σ =>
+      obtain ⟨hLF, hSF⟩ := hV
+      exact ⟨_, LStep.sharedBorrow hLF hSF⟩
+    | endBorrow _ _ =>
+      -- Valid is True. Pick `endBorrow_reborrow` (post = Ω, premise-free).
+      exact ⟨Ω, LStep.endBorrow_reborrow⟩
+    | move _ _ => exact ⟨_, LStep.move⟩
+    | copy _ _ => exact ⟨_, LStep.copy⟩
+    | assign _ _ =>
+      -- LStep.assign existentially binds `v`. Pick any.
+      exact ⟨_, LStep.assign (v := .bottom)⟩
+    | assert _ expected =>
+      cases expected with
+      | true => exact ⟨Ω, LStep.assert_true⟩
+      | false => exact ⟨Ω, LStep.assert_false_panic⟩
+    | panic => exact ⟨Ω, LStep.panic⟩
+    | retn => exact ⟨Ω, LStep.retn⟩
+    | binop _ _ _ _ =>
+      obtain ⟨_, hSF⟩ := hV
+      exact ⟨_, LStep.binop hSF⟩
+    | reborrow _ _ _ _ _ =>
+      -- Valid carries `Ω.loanIdFresh child`. Pick `LStep.reborrow`
+      -- (tracked-parent branch); the untracked variant is also
+      -- inhabited but we only need one witness.
+      exact ⟨_, LStep.reborrow hV⟩
+    | call _ _ _ _ _ _ _ =>
+      obtain ⟨_, hSF⟩ := hV
+      exact ⟨_, LStep.call hSF⟩
+    | endAbs _ _ _ _ => exact ⟨_, LStep.endAbs⟩
+    | symExpandMutBorrow _ _ _ _ _ _ =>
+      obtain ⟨hBF, hIF⟩ := hV
+      exact ⟨_, LStep.symExpandMutBorrow hBF hIF⟩
+    | proj _ _ _ =>
+      -- Valid is False — contradiction.
+      exact absurd hV (by intro h; exact h)
+    | join _ _ _ witnesses =>
+      obtain ⟨Ω', hChain⟩ := hV
+      exact ⟨Ω', LStep.join hChain⟩
+    | loopInv _ _ _ => exact ⟨_, LStep.loopInv⟩
+    | loopEnd _ => exact ⟨Ω, LStep.loopEnd⟩
+    | matchArm _ _ _ _ => exact ⟨Ω, LStep.matchArm⟩
+  · -- Reverse: (∃ Ω', LStep Ω e Ω') → Valid e Ω.
+    intro hEx
+    obtain ⟨Ω', hStep⟩ := hEx
+    cases hStep with
+    | mutBorrow_direct hLF hSF => exact ⟨hLF, hSF⟩
+    | mutBorrow_inAbsReborrow hLF hSF => exact ⟨hLF, hSF⟩
+    | mutBorrow_loopOwned hLF hSF => exact ⟨hLF, hSF⟩
+    | sharedBorrow hLF hSF => exact ⟨hLF, hSF⟩
+    | endBorrow_direct _ => trivial
+    | endBorrow_reborrow => trivial
+    | endBorrow_shared => trivial
+    | move => trivial
+    | copy => trivial
+    | assign => trivial
+    | assert_true => trivial
+    | assert_false_panic => trivial
+    | panic => trivial
+    | retn => trivial
+    | binop hSF => exact ⟨_, hSF⟩
+    | reborrow hLF => exact hLF
+    | reborrow_untracked hLF => exact hLF
+    | call hSF => exact ⟨_, hSF⟩
+    | endAbs => trivial
+    | symExpandMutBorrow hBF hIF => exact ⟨hBF, hIF⟩
+    | join hChain => exact ⟨_, hChain⟩
+    | loopInv => trivial
+    | loopEnd => trivial
+    | matchArm => trivial
 
 end AeneasSoundness.LLBCSharpPaper
