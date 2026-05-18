@@ -15,12 +15,12 @@ set_option maxRecDepth 2048
 namespace incr_cert
 
 /-- [incr_cert::incr]:
-    Source: '/Users/karthik/aeneas/tests/src/incr_cert.rs', lines 7:0-9:1 -/
+    Source: 'tests/src/incr_cert.rs', lines 7:0-9:1 -/
 def incr (x1 : Std.U32) : Result Std.U32 := do
   (x1 + 1#u32)
 
 /-- [incr_cert::incr_local]:
-    Source: '/Users/karthik/aeneas/tests/src/incr_cert.rs', lines 11:0-15:1 -/
+    Source: 'tests/src/incr_cert.rs', lines 11:0-15:1 -/
 def incr_local (x1 : Std.U32) : Result Std.U32 := do
   (x1 + 1#u32)
 
