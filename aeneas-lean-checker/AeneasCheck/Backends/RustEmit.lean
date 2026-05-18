@@ -191,27 +191,37 @@ partial def PExpr.toRust : PExpr → String
   | .letPat pat _ e1 e2 =>
     let pats := String.intercalate ", " pat.toList
     s!"let ({pats}) = {e1.toRust};\n    {e2.toRust}"
-  | .structUpdate base field value =>
-    -- M9.5b: Rust's struct-update syntax is `Name { field: value, ..base }`.
-    -- We don't know the struct's name from PExpr alone; the differential
-    -- Rust model passes structs through as a coarse approximation. Render
-    -- as a function-call-style `with_<field>(base, value)` placeholder so
-    -- the M13 model can supply a matching helper. Real ADT support in the
-    -- differential model is tracked separately.
-    s!"with_{field}({base.toRust}, {value.toRust})"
+  | .structUpdate base field value adtName =>
+    -- Phase 1C: when the PExpr carries the struct's bare Lean name,
+    -- emit Rust's native struct-update syntax `Foo { field: value, ..base }`.
+    -- Otherwise fall back to the historic `with_<field>(base, value)`
+    -- placeholder — kept so test fixtures or proof paths that
+    -- synthesise a PExpr without the ADT name still produce *some*
+    -- output (the differential test will then fail to parse, but the
+    -- rest of the pipeline keeps working).
+    match adtName with
+    | some name =>
+      s!"{name} \{ {field}: {value.toRust}, ..{base.toRust} }"
+    | none =>
+      s!"with_{field}({base.toRust}, {value.toRust})"
   | .fieldAccess base field =>
     -- M9.5n: Rust uses the same dot-notation as Lean for struct
     -- field reads. We pass it through verbatim.
     s!"{base.toRust}.{field}"
-  | .recordLit fields =>
-    -- M9.5p: a struct literal `Pair { x: e1, y: e2 }` in Rust. The
-    -- PExpr ctor doesn't carry the struct's qualified name, so the
-    -- differential Rust model emits a placeholder `record_lit(...)`
-    -- call carrying named-field key=value pairs. The real ADT path
-    -- through the differential model is tracked separately.
+  | .recordLit fields adtName =>
+    -- Phase 1C: when the PExpr carries the struct's bare Lean name,
+    -- emit Rust's struct-literal syntax `Foo { x: e1, y: e2 }`. The
+    -- field names already match the original Rust struct's surface
+    -- names (the OCaml cert generator resolves `field_name` or
+    -- falls back to `fieldK` for tuple-style structs). When the name
+    -- is absent (legacy / synthesised PExpr), fall back to the
+    -- historic `record_lit { … }` placeholder so the rest of the
+    -- pipeline keeps emitting something rather than panicking.
     let body := String.intercalate ", "
       (fields.toList.map fun (n, v) => s!"{n}: {v.toRust}")
-    s!"record_lit \{ {body} }"
+    match adtName with
+    | some name => s!"{name} \{ {body} }"
+    | none => s!"record_lit \{ {body} }"
   | .matchE scrutinee arms =>
     -- M9.5d / M9.5e: Rust's `match` syntax differs only in arm
     -- separator (comma) and ctor path. The Pure IR's ctor strings
