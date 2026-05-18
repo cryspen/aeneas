@@ -233,6 +233,20 @@ instance : HSub U64 U64 (Result U64) :=
 instance : HMul U64 U64 (Result U64) :=
   ⟨liftRes2 (UInt64.mul : UInt64 → UInt64 → UInt64)⟩
 
+-- Phase 4a-1: signed-integer arithmetic instances for I32. Mirror the
+-- U32 set: the emitter renders `const fn add(a: i32, b: i32) -> i32 {
+-- a + b }` as the bare `(x1 + x2)` shape against `Result I32`. Without
+-- a matching `HAdd I32 I32 (Result I32)` instance, the `+` doesn't
+-- elaborate. Same Result-wrapped, wrapping-arithmetic convention as
+-- the U32 shims: the real Aeneas runtime errors on overflow; the shim
+-- wraps and returns `.ok`.
+instance : HAdd I32 I32 (Result I32) :=
+  ⟨liftRes2 (Int32.add : Int32 → Int32 → Int32)⟩
+instance : HSub I32 I32 (Result I32) :=
+  ⟨liftRes2 (Int32.sub : Int32 → Int32 → Int32)⟩
+instance : HMul I32 I32 (Result I32) :=
+  ⟨liftRes2 (Int32.mul : Int32 → Int32 → Int32)⟩
+
 -- M12.1: comparison instances. Generated Lean from the loop
 -- translation uses `if i < n then ...` directly (bool-returning LT),
 -- so we forward to the underlying UInt32 instance. Since
