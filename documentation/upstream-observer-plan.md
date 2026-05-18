@@ -206,12 +206,15 @@ initialiser) shrinks correspondingly.
 
 ## Migration sequence
 
-12 commits, sequenced so each is independently verifiable against
-gate `G_cert`. The cert wire format never changes during this
-refactor.
+13 commits — a prerequisite cleanup (commit #0, drops the dead
+`EvProj` variant) followed by the 12-commit refactor. Each is
+independently verifiable against gate `G_cert`. The cert wire format
+changes only at commit #0 (the `EvProj` removal); afterwards it
+never changes during the refactor.
 
 | # | Commit | Files | Gate |
 |---|---|---|---|
+| 0 | Drop dead `EvProj` variant. Touches the cert wire format (removes the variant from the schema); fixture certs are unaffected since none contain `EvProj`. | `src/cert/CertEvent.{ml,mli}`, `src/cert/CertJson.ml`, `src/cert/cert_schema.json`, `aeneas-lean-checker/AeneasCheck/Typecheck/Stmts.lean`, `aeneas-lean-checker/AeneasCheck/Json/Parser.lean` | `G_cert`, `G_build`, `G_lean` |
 | 1 | Land `Event.ml{,i}` + `Observer.ml{,i}` with no-op default. | `src/interp/Event.{ml,mli}`, `src/interp/Observer.{ml,mli}`, `src/dune` | `G_build` |
 | 2 | Land `CertObserver.ml` skeleton: registers as `Observer.current`, owns the four state refs, implements an empty `event_to_cert`. Wire `Main.ml:748` to register it under `-emit-cert`. Cert output drops to empty until commit 3+. | `src/cert/CertObserver.{ml,mli}`, `src/cert/dune`, `src/Main.ml` | `G_build` |
 | 3 | Migrate `InterpExpressions.ml`'s 4 sites (`EvCopy`, `EvMove`, `EvReborrow`, `EvMutBorrow`). Extend `event_to_cert` with the matching cases. After this commit, certs for fixtures exercising only copy/move/borrow/reborrow restore byte-equality. | `src/interp/InterpExpressions.ml`, `src/cert/CertObserver.ml` | `G_cert` (partial: copy-only fixtures), `G_build` |
@@ -266,59 +269,89 @@ perf budget:
 * **`G_eval_ctx`** — `grep -n 'cert' src/llbc/Contexts.ml` empty
   after commit #10.
 
-## Open design questions
+## Design decisions
 
-* **`notify` vs `notify_lazy`.** The old plan suggested exposing both.
-  Recommendation: expose both. `notify` is the common case (cheap
-  payloads — `Place.t`, `BorrowId.t`, `tvalue`). `notify_lazy` is
-  required for `Event.Call` (region-abs role walk over `abs.avalues`,
-  ~30 LOC of iterator boilerplate), `Event.Join` (re-derivation of
-  rule + delta from three state summaries), and `Event.LoopInv`
-  (loan-registry walk over fixpoint-context abs values). Forcing all
-  three into eager `notify` makes the no-op observer pay for cert-only
-  payload work; collapsing both into `notify_lazy` makes every cheap
-  emit site allocate a thunk. The two-API surface is one extra
-  function, not a maintenance burden.
+### `notify` vs `notify_lazy`
 
-* **`Event.Join` payload: pass full eval_ctxs or pre-flatten.** The
-  inline derivation at `InterpStatements.ml:1616-1725` reads
-  `left_summary.cs_env`, `right_summary.cs_env`,
-  `result_summary.cs_env` — those are `cert_state_summary` values
-  already pre-built before the witness loop. Recommendation: the
-  observer receives `(left, right, result : eval_ctx)` and builds
-  the summaries inside `event_to_cert`. This keeps `Event.t` free of
-  cert vocabulary. Confirm by reading lines 1500–1615 (the summary
-  construction site) — if those summaries are *only* used for cert
-  emission, lifting them into the observer is clean; if they're used
-  for non-cert interpreter logic, the `Event.Join` payload should
-  pass them through. Read-only audit could not resolve.
+Expose both. `notify` is the common case (cheap payloads — `Place.t`,
+`BorrowId.t`, `tvalue`). `notify_lazy` is required for `Event.Call`
+(region-abs role walk over `abs.avalues`, ~30 LOC of iterator
+boilerplate), `Event.Join` (re-derivation of rule + delta from three
+state summaries), and `Event.LoopInv` (loan-registry walk over
+fixpoint-context abs values). Eager `notify` would make the no-op
+observer pay for cert-only payload work; collapsing both into
+`notify_lazy` would make every cheap emit site allocate a thunk.
 
-* **`EndBorrow` ordering.** `cert_ended_loans` was on `eval_ctx` so
-  the dedupe set survived ctx copies under joins. After the move to
-  the observer's closure state, the set is module-global and
-  monotonic — the borrow-id allocator is per-fun-decl-monotonic, so
-  global is fine *within* a function, but the observer must reset
-  the set at function boundary. The current `CertGen.ml` runs
-  `collect_for_fun` per `fdef` with a fresh `eval_ctx`; the
-  `CertObserver.make` constructor should clear the state on each
-  function entry. Confirm by reading `CertGen.ml:54-147` — the
-  per-function setup at line 60 (`initialize_symbolic_context_for_fun`)
-  is the natural reset point.
+### `Event.Join` payload — pass full `eval_ctx`s
 
-* **`EvProj` enumeration.** The `.mli` declares `EvProj` but
-  `grep` finds no emit site in `src/interp/`. Either it's emitted
-  through a path the audit missed, or it's a dead variant left over
-  from an earlier milestone. Resolve by checking
-  `src/cert/CertGen.ml` and the Lean replayer — if no producer
-  exists, the refactor can drop the variant from `Event.t` (and
-  `CertEvent.ml`).
+Resolved: pass `(ctx_left, ctx_right, ctx_joined : eval_ctx)` and have
+`CertObserver` rebuild summaries. Audit (Q1) confirms `cert_state_summary`
+is used exclusively for cert emission:
 
-* **New emit sites since the old plan.** M10.x.0's three v6
-  additions did not add emit sites — they added payload fields to
-  existing `EvEndBorrow` (`ri_holder_local`), existing `EvJoin`
-  (`je_delta` per-entry), and the per-function `fc_stmt_refs` (not
-  per-event). Audit confirms 25 emit sites today, all enumerated
-  above.
+* `src/interp/InterpStatements.ml:1547-1735` — three summaries built,
+  read only by the witness loop, then immediately passed to
+  `ctx_emit_event(EvJoin)` at 1728-1735. Execution continues with
+  `joined_ctx` alone (1740+); summaries are not returned, stored, or
+  consulted downstream.
+* `src/interp/InterpLoops.ml:496` — invariant summary built and
+  immediately passed to `ctx_emit_event(EvLoopInv)` at 492-498.
+* No other `src/interp/*.ml` file references `cert_state_summary`.
+
+Caveat: `cert_state_summary` is a deliberately lossy flattening —
+ADT and `⊥` values are dropped from `cs_env` (`CertEvent.ml:659-661`).
+The lossiness is by design (sufficient for the M11 pragmatic `≤`
+check); `CertObserver` reproducing the flattening at observe time
+preserves the same lossiness.
+
+### `cert_ended_loans` reset point — `CertObserver.make`
+
+Resolved: reset inside `CertObserver.make`. No separate hook needed.
+Audit (Q2) confirms:
+
+* `src/cert/CertGen.ml:250` iterates `crate.fun_decls` sequentially
+  via `List.filter_map` — no concurrency, fresh state per function.
+* `src/cert/CertGen.ml:60` calls
+  `initialize_symbolic_context_for_fun` per function;
+  `src/interp/InterpUtils.ml:820` initialises a fresh
+  `cert_ended_loans = ref BorrowId.Set.empty` on every fresh
+  `eval_ctx`.
+* `src/interp/InterpBorrows.ml:1035-1040` is the only read/write
+  site within a function; no cross-function reads anywhere.
+
+Migration: `CertObserver.make` is instantiated per-function alongside
+the per-function `eval_ctx`. Drop the `cert_ended_loans` field from
+`eval_ctx`, move it into `CertObserver`'s closure with an empty
+initialiser. The dedupe semantics are preserved automatically because
+observer lifetime tracks function lifetime.
+
+### `EvProj` — dead, drop it
+
+Resolved: drop. Audit (Q3) confirms:
+
+* **Zero producers.** `src/interp/` has no `EvProj` construction.
+  `EvProj` appears only in: `CertEvent.{ml,mli}` (declaration),
+  `CertJson.ml:455` (serialization pattern match), and
+  `cert_schema.json:405` (schema entry).
+* **Lean rejects.** `aeneas-lean-checker/AeneasCheck/Typecheck/
+  Stmts.lean:109` emits `"EvProj: not supported until M10"` on
+  any `.proj` event.
+* **Zero corpus hits.** `grep '"EvProj"' tests/llbc/*.cert.json` is
+  empty.
+* `EvProj` was declared in `ec9800af` (M3) and never populated.
+
+Add a prerequisite cleanup commit (commit #0 — see migration table):
+remove the constructor from `CertEvent.{ml,mli}`, the serializer arm
+from `CertJson.ml`, the schema entry, and the Lean error arm in
+`Stmts.lean`. ~30 LOC delete across four files. Independent of the
+observer refactor; lands first to keep the `Event.t` vocabulary
+minimal.
+
+### New emit sites since the old plan
+
+None. M10.x.0's three v6 additions added payload fields to existing
+`EvEndBorrow` (`ri_holder_local`), existing `EvJoin` (`je_delta`
+per-entry), and the per-function `fc_stmt_refs` (not per-event).
+Audit confirms 25 emit sites today, all enumerated above.
 
 ## Risks
 
