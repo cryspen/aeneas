@@ -158,3 +158,104 @@ Then a follow-up:
 - **No agent dispatches this session.** All work was done inline in the diff-test worktree. Worktree HEAD stayed on `aeneas-lean-certificate-diff-test`; no contamination of the parent or any of the 7 still-locked `agent-*` worktrees.
 - **`aeneas-check` rebuilt from this worktree's source** at the start of each Phase 4a sub-task. The Phase-2 lesson ("pre-built binaries can lie") was honoured — never trusted the May 18 10:02 timestamp on the worktree's `.lake/build/bin/aeneas-check`.
 - **No files under `aeneas-lean-soundness/` or `aeneas-lean-checker/AeneasCheck/Theorems/` touched.** Files modified live in `RuntimeShim/`, `Backends/{LeanEmit, Pretty}.lean`, `Translate/Forward.lean`, and the test-harness tree. The M10 agent's parent-branch work was not disturbed.
+
+---
+
+## Session 4 (2026-05-18) — Phase 4b Items 1 + 4
+
+### What landed (top 3 commits over `ea642bdd`)
+```
+644e4336 Phase 4b Item 4a: scale G_rust — demo intra-crate calls (+2 proptests)
+c84781e4 Phase 4b Item 4b: RustEmit Type.Ctor → Type::Ctor + enum fixtures
+6539a087 Phase 4b Item 1: scale G_lean — add scalars fixture (+105 vectors)
+```
+Plus one merge of `aeneas-lean-certificate` mid-session (M10.x.3/4/5 axiom-drop commits from the parent).
+
+### Item 1 outcome — `scalars.lean` wired into G_lean
+
+Two emit-side changes + a batch of shim fills:
+
+| Layer | Change | File |
+|---|---|---|
+| LeanEmit | Detect pure-binop heads (`BitXor`/`BitAnd`/`BitOr` + comparisons) on `letIn` RHS; emit `let t := …` instead of `let t ← …`. Pure bitwise resolves to Lean's `HXor UInt32 UInt32 UInt32` etc.; the `←` bind otherwise fails to elaborate against the shim. | `Pure/Pretty.lean` |
+| Shim | `HShift{L,R} {U32,I32} I32 (Result …)` — Charon types short-literal shift rhs as `i32`, not `usize`. | `RuntimeShim/Aeneas/Std.lean` |
+| Shim | `core.num.I32.wrapping_{add,sub,mul}`, `core.num.{U32,I32}.rotate_{left,right}`. | same |
+| Shim | `HAdd/Sub/Mul Isize Isize (Result Isize)` (match_isize), `core.default.{U32,I32}.default` (`Default::default` lowering). | same |
+| Shim | `CoeHead U32→U16 / U16→U32 / U32→I16 / I16→U32` — cast placeholders so the file imports; the runner does NOT exercise these (cert drops the cast op). | same |
+
+`LeanDiff.ScalarsRunner` exercises 13 differential-testable fns × ~5 vectors (wrapping_add/sub × {u32,i32}; shift_left/right × {u32,i32}; add_and; rotate_left/right × {u32,i32}) = 105 new vectors. G_lean: 119 → 224, all byte-identical.
+
+### Item 2 deferred — demo.lean
+
+The Session-3 handoff predicted Item 2 in ~1 hour, but `demo.lean` regen surfaces several emit gaps beyond the let-bind fix:
+
+- `@[discriminant isize]` attribute on the `CList` inductive (Lean doesn't know `discriminant` as a registered attr).
+- `Std.Usize.Insts.DemoCounter.incr` is declared returning `Result (Std.Usize × (Unit → Std.Usize))` but the `Counter` trait field expects `Self → Result Std.Usize` — declarer/field signature mismatch.
+- `list_nth` / `list_nth_mut` / `list_tail` / `list_nth1_loop.body` emit broken bodies (`ok ()` where `T` expected, `if x1` on a non-bool scrutinee, undefined free variable `s33` / `t3`, `partial_fixpoint` on a non-recursive body).
+- `choose` returns a closure (M12.2a placeholder territory).
+
+The five differential-testable fns (`mul2_add1`, `incr`, `use_mul2_add1`, `use_incr`, `mod_add`) can't be wired in until the surrounding broken defs compile. Defer to a future session — would need a per-decl skip list in the emit pipeline, or a per-fixture include-only filter.
+
+### Item 4 outcome — Phase 4b G_rust sweep (+6 proptests)
+
+**Item 4b — enum-ctor path fix:** `PExpr.toRust`'s `.var` and `.app` head cases were not rewriting Lean-style `Sign.Pos` / `NumOrZero.Num` to Rust's `Sign::Pos` / `NumOrZero::Num`. `matchE` already handled the arm-pattern side; the value-construction side was missed. New `rustifyPath` helper: `sanitizeRustPath` (brace strip) then `.` → `::`. Safe because the only synthesised `.` in head strings come from `Forward.variantPExpr`'s `s!"{adtName}.{variantName}"`.
+
+Unblocked fixtures (4 new proptests in `enums_basic` + `enums_payload`):
+- `enums_basic::flip` (3-variant nullary enum, match-arm round trip).
+- `enums_payload::value` (payload-bearing match arm).
+- `enums_payload::wrap` (payload ctor call).
+- `enums_payload::zero` (nullary ctor ref).
+
+**Item 4a — demo intra-crate calls:** Wrapped the demo model fns in `pub mod demo { ... }` (mirrors the `aggregates_basic` / `reborrows` pattern). Inside-the-module call `self::mul2_add1` substitutes for the cert's `demo::mul2_add1` (Rust scoping; semantic logic untouched). Two new proptests:
+- `demo::use_mul2_add1` — intra-crate call resolution.
+- `demo::mod_add` — Aeneas modular-add via wrapping_sub + shift mask (exercises `>> 16i32` on `u32` via Rust's `Shr<i32> for u32` impl).
+
+**Item 4c (cast keyword) deferred.** The cast emit gap is deeper than the prompt suggested: `cast_u32_to_i32_model(x1: u32) -> i32 { x1 }` is *syntactically* wrong Rust (can't return `u32` as `i32` without coercion). Adjacent fn `get_max_model` has another emit bug — uses `if x1 { … }` on a `u32` scrutinee where the cert should have piped the precomputed `t0 : bool`. Both need cert-walker fixes, not just RustEmit polish.
+
+### Coverage matrix snapshot (post-Session 4)
+
+| Fixture | G_rust | G_lean | C_lean (against shim) |
+|---|---|---|---|
+| incr_cert | ✓ 1/1 | ✓ 16/16 | ✓ |
+| compare_simple | ✓ 3/3 | ✓ 22/22 | ✓ |
+| calls | ✓ 2/2 | ✓ 22/22 | ✓ |
+| bitwise | ✓ 5/5 | ✓ 30/30 | ✓ |
+| constants | ✓ 5/5 | ✓ 29/29 | ✓ (S3 / V.LEN compile via placeholder) |
+| aggregates_basic | ✓ 2/2 | (skip, ADT runner) | n/a |
+| reborrows | ✓ 1/1 | (skip, ADT runner) | n/a |
+| scalars | ✓ 13/13 | ✓ 105/105 | ✓ (casts compile via Coe; runner skips them) |
+| demo | ✓ 4/4 | (skip — see Item 2 deferral) | partial |
+| enums_basic | ✓ 1/1 | — | n/a |
+| enums_payload | ✓ 3/3 | — | n/a |
+| **Total** | **39 proptests / 11 fixtures** | **224 vectors / 6 fixtures** | 6/89 |
+
+### Bugs found by the differential pipeline (Session 4)
+
+The harness as a whole has so far surfaced one *real* backend bug and several emit gaps requiring shim or emit-side patches. No "model returns wrong value for differential-testable input" bugs detected — every wired proptest / vector passes.
+
+| Class | Bug | Fix layer |
+|---|---|---|
+| Real backend bug | `PExpr.toRust` left Lean-style `Sign.Pos` / `NumOrZero.Num` paths untouched in `.var` and `.app` head; Rust requires `::`. Blocked enum fixtures from G_rust. | RustEmit (`rustifyPath`) |
+| Emit-side gap | Cert walker emits monadic-let bind on pure-binop RHS; bind fails to elaborate (`HXor U32 U32 U32` is pure, not Result-lifted). | LeanEmit (`Pure/Pretty.lean`) |
+| Shim gaps | 13 missing instances (HShift U32/I32 I32, HAdd Isize, wrapping_/rotate_ helpers, default::, Coe casts). | `RuntimeShim/Aeneas/Std.lean` |
+| Known cert-walker gaps (not fixed this session) | `S3`-class statics emit placeholder value rather than reading the dependent static; `match_isize` body fold; `_use_bits` lowering; `cast_*` op drops; `get_max`-class branch variable confusion. | Forward.lean / cert event walker |
+
+### Carry-forward into Session 5
+
+Priority order:
+
+1. **Cert-walker `S3`-class fix** (~half day): the EvAssign-from-EvGlobal walker drops the RHS. Item 3 of the Session-4 handoff carries over verbatim; the cert JSON for `constants` is the canonical source.
+
+2. **demo.lean wire-in** (~half day, was Item 2): needs an emit-side per-decl skip list (or a `--only` CLI flag) so the 5 well-emitted fns can be exported without dragging the broken ones along. Alternative: a per-fixture include-only Lake setup, which keeps the emitter unmodified.
+
+3. **More mod-crate wraps** (~1 hour per fixture): `nested_borrows::call_inner_mut` (skipping closure-returning callees), `no_nested_borrows::test2` / `test3` (skipping the assertion bodies); `paper::ref_incr`.
+
+4. **Cast keyword fix** (~half day): `RustEmit` needs a cast-head detection in `.app`. Same shape as the `binopRustOp` table — add `binopRustCast : String → Option (String × String)` or similar — and emit `(<inner> as <target>)` instead of dropping the op.
+
+5. **Phase 2 (G_byte sweep)**: lowest-effort highest-signal next gate. Extend `scripts/compare-backends.sh` from single-fixture interactive to sweep-mode with per-fixture allowed-divergence list.
+
+### Operational notes (Session 4 specifics)
+- **No agent dispatches.** Inline work in `/Users/karthik/aeneas/.claude/worktrees/diff-test`. Worktree HEAD stayed on `aeneas-lean-certificate-diff-test`.
+- **One mid-session merge** of `aeneas-lean-certificate` (`04b675ff` `M10.x.5`) — pure soundness territory; clean merge, no conflicts in diff-test files.
+- **Pre-built binaries lesson honoured.** Rebuilt `aeneas-check` from this worktree's source at every regen point.
+- **No files under `aeneas-lean-soundness/` or `AeneasCheck/Theorems/` touched.** Changes localised to `RuntimeShim/`, `Backends/{RustEmit,Pretty}.lean`, the lean-diff harness, the differential proptest harness, and the docs.

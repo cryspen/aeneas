@@ -52,8 +52,8 @@ gates** and treat the implied pairs as bonus coverage if cheap.
 
 | Pair | Comparison | What it tells us | Status today |
 |---|---|---|---|
-| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 33 proptests / 9 fixtures (in `tests/lean-checker/differential/`); needs scaling |
-| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 119 vectors / 5 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
+| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 39 proptests / 11 fixtures (in `tests/lean-checker/differential/`); needs scaling |
+| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 224 vectors / 6 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
 | **G_byte** | L₀ ↔ L₁ (byte-equal) | Our Lean backend produces the same source as mainline (cheap syntactic check) | `scripts/compare-backends.sh` exists; per-fixture, opt-in; no allowed-divergence list |
 | **G_rfl** | L₀ ↔ L₁ (definitional equality, `rfl`) | Our Lean's *meaning* matches mainline's, even where syntax differs (e.g. binder order, beta-equivalence) | Does not exist; this plan adds it |
 | (implied) | R₀ ↔ L₀ | Mainline Aeneas's Lean matches developer intent | Trusted via upstream test suite; we don't add separate coverage |
@@ -98,8 +98,9 @@ fixtures from passing should be filed as separate emitter-bug tickets.
 Resolved on this branch:
 - `3d086b79` — brace-decorated paths (`core::num::{u32}::wrapping_add`); unblocks `compare_simple::add_u32`, `calls::pick`, parts of `builtin`.
 - `ac176ee3` + `df1441cd` (Phase 1C) — ADT placeholders: `record_lit { … }` and `with_<field>(base, value)` now render as real `Foo { f: e, … }` and `Foo { f: v, ..base }` syntax via plumbed `adtName` on `PExpr.recordLit` / `PExpr.structUpdate`. Unblocks `aggregates_basic`, `reborrows::set_fst` and other ADT-heavy fixtures.
+- `c84781e4` (Session 4 / Phase 4b-4b) — variant-ctor path rewrite: `PExpr.toRust` introduces `rustifyPath` (sanitize braces + `.` → `::`) and applies it to `.var` (nullary ctor) and `.app` head (payload ctor). Unblocks `enums_basic::flip`, `enums_payload::{value,wrap,zero}`.
 
-Remaining: generic binders on `<T,U>` functions; `Array.update` rendered as Lean dot-notation instead of `Array::update(…)` (surfaces in `reborrows::set_idx_model`).
+Remaining: generic binders on `<T,U>` functions; `Array.update` rendered as Lean dot-notation instead of `Array::update(…)` (surfaces in `reborrows::set_idx_model`); the cast emitter drops the `as` op (`x as u16` emits as bare `x`, so `cast_*` fixtures in `no_nested_borrows` produce ill-typed Rust); branch-variable confusion in `get_max` / similar (`if x1 { x1 } else { x2 }` where the if-cond should be the precomputed bool `t0`).
 
 ### G_lean — Source Rust ↔ Our Lean (executed)
 
@@ -135,10 +136,11 @@ if smaller). Same exclusion list as G_rust for non-testable functions.
 - `e03f1aa5` (Phase 4a-2) — `LeanEmit.sanitizeCallName` switched to a balanced-brace walker mirroring `RustEmit.sanitizeRustPath`; `def {constants.Wrap<T>}.new` → `def Wrap.new` and the call-site `constants.{constants.Wrap<T>}.new` → `constants.Wrap.new`. Applied symmetrically at the def-head in `Decl.toLean`.
 - `c59c91ed` (Phase 4a-3 + Phase 4a-5) — tdm-aware ADT placeholder + caller-decl topological sort. `static S3: Pair<u32, u32> = P3` now emits `ok { x := 0#u32, y := 0#u32 }` (typechecks against `Result (Pair U32 U32)` — value still placeholder); `V.LEN : Result Usize` emits `ok 0#usize` (was the U32-typed catch-all); `def Y` (line 42 source) now emits *after* its dependency `def Wrap.new` (line 55 source) via the DFS sort over caller decls.
 - `fede2492` (Phase 4a wire-in) — `constants.lean` is wired into the lean-diff harness; the runner exercises the subset of fns whose emit is non-placeholder (incr, add, mk_pair0, plus 7 nullary const/static evaluations).
+- `6539a087` (Session 4 / Phase 4b-1) — `scalars.lean` wired in. Pure-binop let-bind fix in `Pretty.lean` (detect `BitXor`/`BitAnd`/`BitOr` + comparisons in `letIn` RHS, emit `let t := …` instead of `let t ← …`). Shim adds: `HShift{L,R} {U32,I32} I32 (Result …)`, `HAdd/Sub/Mul Isize Isize (Result Isize)`, `core.num.I32.wrapping_{add,sub,mul}`, `core.num.{U32,I32}.rotate_{left,right}`, `core.default.{U32,I32}.default`, `CoeHead U32→U16 / U16→U32 / U32→I16 / I16→U32` (cast placeholders). G_lean: 119 → 224 vectors.
 
 Remaining for the next session (cert-walker-level, not LeanEmit):
 - The `S3`-class placeholders are syntactically valid but semantically wrong (`{ x := 0, y := 0 }` vs the source `P3 = { x: 0, y: 1 }`). The cert event walker is dropping the right-hand side; pinning it down requires a Charon-cert-event-side patch.
-- `scalars.lean` and `demo.lean` need additional shim instances (`HShiftRight U32 I32 (Result U32)`, `HShiftRight I32 I32 (Result I32)`, and a pure-bitwise-in-monadic-let elaboration adjustment) before they can be wired into the lean-diff harness. The G_rust side already covers these fixtures (33 proptests across 9 fixtures).
+- `demo.lean` needs more than the let-bind fix: `@[discriminant isize]` attribute (currently unknown), `Counter` trait impl signature mismatch (`incr : Self → Result Std.Usize` declared vs `Self → Result (Usize × (Unit → Usize))` emitted), broken bodies for closure-returning `choose` / `list_nth` / `list_nth_mut` / `list_tail`, undefined variables `s33` / `t3` in `list_nth1_loop.body` and `i32_id`. These are M12.2a-placeholder territory; wire-in deferred.
 
 ### G_byte — Mainline Lean ↔ Our Lean (byte diff)
 
