@@ -596,37 +596,23 @@ def stepJoinStrictCheck (left right result : StateSummary)
       | .joinOtherBottom _, .otherBottom _ => pure ()
       | _, _ => fail s!"E-Join v6: rule {repr entry.rule} and delta {repr entry.delta} name different constructors for local {entry.localId}"
 
-/-- M10.x.10: body of `stepJoin` once strict validation is past.
-    Runs the chain-fold and the (concretise-no-op) loans handling.
-    Soundness proves `stepJoinBody`'s post-state via the
-    paper-side chain reconstruction. -/
-def stepJoinBody (st : SymState) (result : StateSummary)
+/-- M10.x.10b: body of `stepJoin` once strict validation is past.
+    Just the chain-fold over witnesses. The previous live-loans
+    rebuild was `concretise`-no-op (loans live outside `LLBCState`)
+    but its raw `HashMap.insert` could install loan ids ≥
+    `loanIdHwm`, breaking `LoanHwmInvariant.loanBound`. Phase E
+    (`replayFun_sound`) needs that invariant preserved so the
+    loopInv arm of `stepEvent_sound` can fire downstream.
+
+    Empirical justification (all 89 G4 fixtures): removing the
+    live-loans rebuild keeps G4 at 89/89 — no subsequent event in
+    any fixture actually consumes a loan id introduced by the
+    rebuild. The cert's `result.liveLoans` field becomes dead in
+    the replayer; it remains in the schema for cert-emit-site
+    parity but no longer flows into the abstract state. -/
+def stepJoinBody (st : SymState) (_result : StateSummary)
     (witnesses : Array JoinEntry) : Result SymState := do
-  -- M10.x.10: chain-fold over witnesses (replaces the prior
-  -- `addAbsShape` fold + wholesale `result.env.foldl` env-override).
-  -- Each step matches `JoinEntryStep.<rule>` and updates env /
-  -- absRegistry. Locals not named by any witness keep their
-  -- pre-join `st.env` value. The pre-flight scan of all 89 fixtures
-  -- (30 joins) confirmed that `result.env` keys are exactly the
-  -- witnessed localIds — no information loss from dropping the
-  -- wholesale override.
-  let st ← witnesses.foldlM (init := st) joinChainFoldStep
-  -- Rebuild loans: keep direct kinds we already had, add any new
-  -- ids the join's liveLoans list reports. `concretise` does not
-  -- read `loans`, so this is invisible to soundness; we keep it
-  -- for cert behavior parity.
-  let newLoans : Std.HashMap Nat LoanInfo :=
-    result.liveLoans.foldl (init := st.loans) fun m b =>
-      if m.contains b then m
-      else m.insert b { given := .bottom, kind := .reborrow }
-  let liveSet : Std.HashSet Nat :=
-    result.liveLoans.foldl (init := {}) (·.insert ·)
-  let prunedLoans : Std.HashMap Nat LoanInfo :=
-    newLoans.fold (init := {}) fun m b li =>
-      if liveSet.contains b then m.insert b li
-      else if li.kind == .direct then m.insert b li
-      else m
-  return { st with loans := prunedLoans }
+  witnesses.foldlM (init := st) joinChainFoldStep
 
 def stepJoin (st : SymState) (left right result : StateSummary)
     (witnesses : Array JoinEntry := #[])

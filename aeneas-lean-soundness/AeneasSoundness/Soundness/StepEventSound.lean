@@ -1087,31 +1087,27 @@ theorem stepJoin_witnessed_sound
     rw [hCheck] at hStep
     simp only [] at hStep
     -- hStep: stepJoinBody st result witnesses = .ok st'.
-    -- Extract the chain-fold result.
-    obtain ⟨st_chain, hFold, hConc⟩ :=
+    -- M10.x.10b: stepJoinBody is now just the chain fold; .ok st' IS the chain output.
+    have hFold : witnesses.foldlM (init := st) joinChainFoldStep = .ok st' :=
       stepJoinBody_chain_extract st st' result witnesses hStep
     -- Lift the replayer fold to the paper-side fold via the commute.
     have hPaperFold :
         witnesses.toList.foldlM joinChainFoldStep_paper (concretise st) =
-          some (concretise st_chain) := by
+          some (concretise st') := by
       have hList : witnesses.foldlM (init := st) joinChainFoldStep =
                     witnesses.toList.foldlM joinChainFoldStep st := by
         simp [Array.foldlM_toList]
       rw [hList] at hFold
-      exact concretise_foldlM_joinChainFoldStep witnesses.toList st st_chain hFold
+      exact concretise_foldlM_joinChainFoldStep witnesses.toList st st' hFold
     -- Build the chain via the paper-side fold output.
     have hChain : LLBCSharpPaper.JoinChain (concretise st) witnesses.toList
-                    (concretise st_chain) :=
+                    (concretise st') :=
       joinChain_of_paper_foldM witnesses.toList (concretise st)
-        (concretise st_chain) hPaperFold
+        (concretise st') hPaperFold
     -- The chain's pre-state is `Ω` because `concretise st = Ω`.
     rw [hRep] at hChain
-    -- Witness Ω' := concretise st_chain. `concretise st' = concretise st_chain`
-    -- from `hConc`; the LStep.join constructor wraps the chain.
-    refine ⟨concretise st_chain,
-            ⟨concretise st_chain, hChain⟩,
-            LStep.join hChain,
-            hConc⟩
+    -- Witness Ω' := concretise st'; LStep.join wraps the chain.
+    refine ⟨concretise st', ⟨concretise st', hChain⟩, LStep.join hChain, rfl⟩
 
 /-- C23 corollary — `EvJoin` with empty `witnesses` (the M10.2s
     case). The chain is `JoinChain.nil`, terminal `Ω' = Ω`, and the

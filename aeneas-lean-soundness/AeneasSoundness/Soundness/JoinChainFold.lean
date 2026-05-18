@@ -382,36 +382,14 @@ M10.x.10: replaces the `CertGen_faithful.join` axiom. Inverting
 fold; `joinChain_of_paper_foldM` builds the `JoinChain`; `LStep.join`
 wraps it. -/
 
-/-- Concretise commutes with the post-chain-fold loans handling
-    in `stepJoinBody`: writing to `st.loans` (no matter what the
-    new value is) is a `concretise`-no-op. -/
-private theorem concretise_loans_overwrite (st : SymState)
-    (loans' : Std.HashMap Nat LoanInfo) :
-    concretise ({ st with loans := loans' } : SymState) = concretise st := by
-  unfold concretise Concretise.concretise
-  rfl
-
-/-- Inversion: if `stepJoinBody` succeeds with `.ok st'`, then there
-    exists a chain-fold output `st_chain` matched by `concretise` to
-    `st'` (the trailing loans rewrite is `concretise`-no-op). -/
+/-- Inversion: `stepJoinBody` (M10.x.10b) is the chain fold. Its
+    `.ok` result IS the chain-fold output — no post-processing,
+    no `loans` overwrite. -/
 theorem stepJoinBody_chain_extract
     (st st' : SymState) (result : StateSummary) (witnesses : Array JoinEntry)
     (hStep : stepJoinBody st result witnesses = .ok st') :
-    ∃ st_chain, witnesses.foldlM joinChainFoldStep st = .ok st_chain ∧
-                concretise st' = concretise st_chain := by
+    witnesses.foldlM joinChainFoldStep st = .ok st' := by
   unfold stepJoinBody at hStep
-  simp only [bind, Except.bind] at hStep
-  cases hFold : witnesses.foldlM (init := st) joinChainFoldStep with
-  | error _ =>
-    rw [hFold] at hStep; cases hStep
-  | ok st_chain =>
-    rw [hFold] at hStep
-    simp only [pure, Except.pure, Except.ok.injEq] at hStep
-    -- Lean's `cases h : x with | ok n =>` substitutes `x` with
-    -- `Except.ok n` everywhere in the goal, so the existential's
-    -- first conjunct here is `Except.ok st_chain = .ok st_chain` (rfl).
-    refine ⟨st_chain, rfl, ?_⟩
-    rw [← hStep]
-    exact concretise_loans_overwrite st_chain _
+  exact hStep
 
 end AeneasSoundness.Soundness
