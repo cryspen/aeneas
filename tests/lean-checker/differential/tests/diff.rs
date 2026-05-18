@@ -328,6 +328,31 @@ proptest! {
 }
 
 // ====================================================================
+// demo.rs (Session 4 — Phase 4b sweep Item 4a: intra-crate calls
+// via `mod demo` wrap).
+// ====================================================================
+
+proptest! {
+    /// `use_mul2_add1(x, y) = mul2_add1(x) + y = (x + x + 1) + y`.
+    /// Exercises the intra-crate-call path resolution via the
+    /// per-fixture `mod demo` wrap.
+    #[test]
+    fn demo_use_mul2_add1_matches_model(x in any::<u32>(), y in any::<u32>()) {
+        use aeneas_cert_differential::demo::{use_mul2_add1_ref, use_mul2_add1_model};
+        prop_assert_eq!(use_mul2_add1_ref(x, y), use_mul2_add1_model(x, y));
+    }
+
+    /// `mod_add(x, y)` — Aeneas-style modular addition by 3329 via
+    /// wrapping_sub + shift mask. Tests both the bit-shift emit
+    /// (`>> 16i32` on `u32`) and a longer let-chain.
+    #[test]
+    fn demo_mod_add_matches_model(x in any::<u32>(), y in any::<u32>()) {
+        use aeneas_cert_differential::demo::{mod_add_ref, mod_add_model};
+        prop_assert_eq!(mod_add_ref(x, y), mod_add_model(x, y));
+    }
+}
+
+// ====================================================================
 // enums_basic.rs (Session 4 — newly unblocked by the RustEmit
 // `Type.Ctor` → `Type::Ctor` path rewrite).
 // ====================================================================

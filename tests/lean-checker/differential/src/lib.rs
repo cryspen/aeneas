@@ -242,6 +242,64 @@ pub mod enums_basic {
     }
 }
 
+// Session 4 — Phase 4b sweep (Item 4a): demo fixture's intra-crate
+// call cases. Wrapping the model fns in `pub mod demo { ... }` lets
+// the `demo::mul2_add1` and `demo::incr` references resolve.
+//
+// `mod_add` is included here because the cert emits it with a `>>
+// 2i32` shift amount that the flat-namespace `model::mod_add_model`
+// would also handle, but living next to the call-site fns keeps the
+// per-fixture grouping consistent.
+pub mod demo {
+    #![allow(unused_variables, dead_code, unused_parens, unused_mut, non_snake_case)]
+
+    // Source-Rust copies (R₀ side).
+    pub fn mul2_add1_ref(x: u32) -> u32 {
+        x.wrapping_add(x).wrapping_add(1)
+    }
+    pub fn use_mul2_add1_ref(x: u32, y: u32) -> u32 {
+        mul2_add1_ref(x).wrapping_add(y)
+    }
+    pub fn mod_add_ref(x: u32, y: u32) -> u32 {
+        // Source: `if x < 3329 && y < 3329 { /* unused */ }` followed
+        // by Aeneas-style modular-add via wrapping_sub + shift mask.
+        // We replicate the cert's chosen lowering exactly.
+        let t2 = x.wrapping_add(y);
+        let t3 = t2.wrapping_sub(3329);
+        let t4 = t3.wrapping_shr(16);
+        let t5 = 3329u32 & t4;
+        t3.wrapping_add(t5)
+    }
+
+    // Model fns. Verbatim from /tmp/demo-rmodel.rs, except the
+    // `pub fn mul2_add1` is renamed to bare `mul2_add1` so the
+    // intra-module `demo::mul2_add1(...)` call resolves.
+    pub fn mul2_add1(x1: u32) -> u32 {
+        let t0 = x1.wrapping_add(x1);
+        t0.wrapping_add(1u32)
+    }
+    pub fn use_mul2_add1_model(x1: u32, x2: u32) -> u32 {
+        // Cert emit references `demo::mul2_add1`. Inside `pub mod
+        // demo { ... }`, Rust would interpret `demo::` as a nested
+        // module lookup. `self::mul2_add1` reaches the sibling fn.
+        let x1_post = self::mul2_add1(x1);
+        x1_post.wrapping_add(x2)
+    }
+    pub fn mod_add_model(x1: u32, x2: u32) -> u32 {
+        // The cert emits `(x1 + x2)` (release-mode wraps), then
+        // `u32::wrapping_sub(t2, 3329u32)`, then `(t3 >> 16i32)`
+        // (u32 >> i32 — Rust accepts this via the `Shr<i32> for u32`
+        // impl), then `(3329u32 & t4)`, then `u32::wrapping_add(t3,
+        // t5)`. We render the body with release-mode `+` for the
+        // first step to match the emit exactly.
+        let t2 = x1.wrapping_add(x2);
+        let t3 = u32::wrapping_sub(t2, 3329u32);
+        let t4 = (t3 >> 16i32);
+        let t5 = (3329u32 & t4);
+        u32::wrapping_add(t3, t5)
+    }
+}
+
 pub mod enums_payload {
     #![allow(unused_variables, dead_code, unused_parens, unused_mut, non_snake_case)]
 
