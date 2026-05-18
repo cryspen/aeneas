@@ -205,6 +205,20 @@ def resolvePlace (Ω : LLBCState) (p : Place) : Option Val :=
   | none => none
   | some v => resolveProj v p.projection.toList
 
+/-- Projection-tolerant root-local read. Returns the value at
+    `p.local_` defaulted to `.bottom` when the local is undeclared.
+
+    Mirrors the replayer's `placeRootLocal + getLocal` semantics for
+    `E-Move` / `E-Copy`: those events operate on the root local
+    regardless of the projection chain, and treat undeclared locals
+    as `.bottom` (via `Std.HashMap.getD`). M10.x.3 replaced
+    `LStep.move` / `LStep.copy`'s `resolvePlace`-based premise with
+    a premise-free formulation that reads via `resolvePlaceRoot`;
+    the change discharged the `CertGen_faithful.move` / `.copy`
+    extractors at the soundness boundary. -/
+def resolvePlaceRoot (Ω : LLBCState) (p : Place) : Val :=
+  (Ω.getLocal p.local_).getD .bottom
+
 end LLBCState
 
 end AeneasSoundness.LLBCSharpPaper

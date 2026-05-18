@@ -67,24 +67,32 @@ open AeneasCheck.Raw
 def Valid (e : Event) (Ω : LLBCState) : Prop :=
   match e with
   -- Fig. 3 — direct-borrow / ownership / control-flow ---
-  | .mutBorrow ℓ p σ .direct =>
-      (∃ v, Ω.resolvePlace p = some v) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
-  | .mutBorrow ℓ _ σ (.inAbsReborrow absId) =>
-      (∃ r, Ω.abs absId = some r) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
-  | .mutBorrow ℓ p σ (.loopOwned _) =>
-      (∃ v, Ω.resolvePlace p = some v) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
-  | .sharedBorrow ℓ _ p σ =>
-      (∃ v, Ω.resolvePlace p = some v) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  -- M10.x.4 — the `.direct` / `.loopOwned` / `.sharedBorrow` rules
+  -- dropped their `Ω.resolvePlace p = some v` existential (the
+  -- value `v` was vestigial in the `LStep` post-state); the
+  -- premise list collapses to freshness only.
+  | .mutBorrow ℓ _ σ .direct =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  -- M10.x.5 — `.inAbsReborrow` lost its `∃ r, Ω.abs absId = some r`
+  -- premise (the bound `r` was vestigial in `LStep.mutBorrow_inAbsReborrow`'s
+  -- post-state). 112/783 fixtures emit `inAbsReborrow.absId` for ambient
+  -- function-input abs not event-installed; the existential would have
+  -- been false on those certs.
+  | .mutBorrow ℓ _ σ (.inAbsReborrow _) =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  | .mutBorrow ℓ _ σ (.loopOwned _) =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  | .sharedBorrow ℓ _ _ σ =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
   -- `endBorrow` splits into endBorrow_direct (∃ x, ctx x =
   -- some (.mutLoan ℓ)), endBorrow_reborrow (no premise), and
   -- endBorrow_shared (no premise). The disjunction is `True`.
   | .endBorrow _ _ => True
-  | .move src _ => ∃ v, Ω.resolvePlace src = some v
-  | .copy src _ => ∃ v, Ω.resolvePlace src = some v
+  -- M10.x.3 — `.move` / `.copy` are premise-free in `LStep` after
+  -- the `resolvePlaceRoot` refactor (the rule reads the root local
+  -- with `.bottom` default rather than walking a projection chain).
+  | .move _ _ => True
+  | .copy _ _ => True
   -- `assign`'s rhs reduces to `v` existentially in LStep; no
   -- baseline premise on Ω.
   | .assign _ _ => True
