@@ -543,7 +543,15 @@ partial def PExpr.calledNames : PExpr → Array String
   | .lit _ => #[]
   | .app head args =>
     let acc := args.foldl (init := #[]) fun s a => s ++ PExpr.calledNames a
-    acc.push (sanitizeCallName head)
+    -- Zero-Skip Step 7: strip a leading `@` from the call head before
+    -- sanitising. The `@` is the emit-time "make implicits explicit"
+    -- marker (see `buildGlobalGenericCall`); the sibling-decl topo
+    -- sort in `LeanEmit.lean::topoSortCallerDecls` looks up the bare
+    -- decl name, so leaving the `@` in would mis-classify an in-crate
+    -- call as a primitive/extern reference and the resulting decl
+    -- order would forward-reference V.LEN's def.
+    let bareHead := if head.startsWith "@" then (head.drop 1).toString else head
+    acc.push (sanitizeCallName bareHead)
   | .letIn _ _ e1 e2 => PExpr.calledNames e1 ++ PExpr.calledNames e2
   | .ok e => PExpr.calledNames e
   | .ifThenElse c t e =>
@@ -620,6 +628,18 @@ def Decl.toLean (d : Decl) : String :=
     else
       (String.intercalate " "
         (d.typeParams.toList.map fun n => s!"\{{n} : Type}")) ++ " "
+  -- Zero-Skip Step 7: const-generic value binders rendered after the
+  -- implicit type binders and before the trait-bound binders. Standard
+  -- Aeneas backend emits these as *explicit* parens `(N : Std.Usize)`
+  -- so call sites pass them explicitly (matching how Charon's
+  -- `global_generics` propagates the names). Empty for the 99% of
+  -- fixtures without const-generics, so the existing byte-identical
+  -- emit shape is preserved.
+  let constBinders :=
+    if d.constParams.isEmpty then ""
+    else
+      (String.intercalate " "
+        (d.constParams.toList.map fun n => s!"({n} : Std.Usize)")) ++ " "
   -- M9.5o: trait-bound binders between the type-param binders and
   -- value params. Rendered as `(Trait1Inst : Trait1 T)`. Empty for
   -- functions without where-clauses, so the M9.5i shape is
@@ -644,9 +664,9 @@ def Decl.toLean (d : Decl) : String :=
   let leanName := sanitizeCallName d.name
   let sigHead :=
     if d.params.isEmpty then
-      s!"def {leanName} {typeBinders}{traitBoundBinders}: Result {retParens}"
+      s!"def {leanName} {typeBinders}{constBinders}{traitBoundBinders}: Result {retParens}"
     else
-      s!"def {leanName} {typeBinders}{traitBoundBinders}{params} : Result {retParens}"
+      s!"def {leanName} {typeBinders}{constBinders}{traitBoundBinders}{params} : Result {retParens}"
   -- M9.5j: optional trailer keyword line (`partial_fixpoint`, etc.)
   -- attaches at column 0 after the do-block. The standard Aeneas
   -- backend emits this for recursive functions where Lean's

@@ -268,6 +268,16 @@ structure Decl where
       shape (`def get {T : Type} (x : MyOption T) (default : T)
       : Result T := do …`). -/
   typeParams : Array String := #[]
+  /-- Zero-Skip Step 7: const-generic parameter names (e.g. `N` from
+      `pub fn use_v<const N: usize, T>()`). Rendered as explicit value-
+      typed binders `(N : Std.Usize)` AFTER the type-param binders so
+      they can be referenced both in the signature's value params and
+      at call sites. Empty when the function has no const-generics
+      (every fixture except `constants::use_v` / `V::LEN`). Currently
+      assumes the const-generic is `Usize`-typed — Charon's
+      `const_generics` carries the source type but we don't yet thread
+      it. -/
+  constParams : Array String := #[]
   /-- M9.5o: trait-bound binders inserted between type-param binders
       and value-param binders. Empty when the function carries no
       trait obligations. Renders as `(Trait1Inst : Trait1 T)

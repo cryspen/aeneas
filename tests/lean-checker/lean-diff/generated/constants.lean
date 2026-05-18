@@ -116,6 +116,18 @@ def get_z2 : Result Std.I32 := do
   let t1 ← (constants.add t0 g3)
   (constants.add g4 t1)
 
+/-- [constants::{constants::V<T, N>}::LEN]:
+    Source: 'tests/src/constants.rs', lines 92:4-92:29
+    Visibility: public -/
+def V.LEN {T : Type} (N : Std.Usize) : Result Std.Usize := do
+  ok 0#usize
+
+/-- [constants::use_v]:
+    Source: 'tests/src/constants.rs', lines 95:0-97:1
+    Visibility: public -/
+def use_v {T : Type} (N : Std.Usize) : Result Std.Usize := do
+  (@constants.V.LEN T N)
+
 /-- [constants::X0]:
     Source: 'tests/src/constants.rs', lines 6:0-6:22
     Visibility: public -/
@@ -194,11 +206,5 @@ def S3 : Result (Pair Std.U32 Std.U32) := do
     Visibility: public -/
 def S4 : Result (Pair Std.U32 Std.U32) := do
   (constants.mk_pair1 7#u32 8#u32)
-
-/-- [constants::{constants::V<T, N>}::LEN]:
-    Source: 'tests/src/constants.rs', lines 92:4-92:29
-    Visibility: public -/
-def V.LEN {T : Type} : Result Std.Usize := do
-  ok 0#usize
 
 end constants

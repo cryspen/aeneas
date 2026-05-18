@@ -250,23 +250,52 @@ alongside Steps 3-5 rather than narrow-fixing here.
 `run-diff.sh:61`. Kept the remaining `paper` skips (`list_nth_mut`,
 `sum`, `test_nth`, `call_choose`).
 
-### Step 7 — `use_v` generic-global arity mismatch (Cluster: `use_v_arity`)
+### Step 7 — `use_v` generic-global arity mismatch (Cluster: `use_v_arity`) — DONE 2026-05-18
 
-**Unlocks:** `constants::use_v`. **1 decl** (the last remaining `constants`
-skip).
+**Actual work:** ~1.5 hours. Audit's assumption that `V.LEN` was shimmed
+was wrong — `V.LEN` is locally emitted under `namespace constants`. The
+real bug had three layers:
 
-**Symptom:** Session 7 Item 2 made the emitter write `(constants.V.LEN T N)`
-but `V.LEN` is shimmed as zero-arg `Result Usize`. The emitted call doesn't
-elaborate.
+1. **`Decl` had no const-generic binder slot.** `use_v` and `V.LEN`
+   both have a const-generic `N`; the emitter only carried
+   `typeParams` so neither signature bound `N`, even though the seed
+   pass already emitted `(constants.V.LEN T N)` referencing it.
 
-**Fix surface:** either teach the emitter to drop generic args when the
-shim binding is non-generic (requires shim-arity awareness in the emitter
-— intrusive), or update the shim to accept the type/const-generic
-parameters as no-ops. The shim path is cleaner.
+2. **At the call site, `T` was passed positionally as an explicit
+   arg.** With `V.LEN`'s emit-time signature `{T : Type} (N : Std.Usize)`,
+   `(V.LEN T N)` mis-applied `T` to the const-generic slot. Lean
+   reports `T has type Type of sort Type 1 but expected Usize`.
 
-**Estimated work: 1 hour.**
+3. **`V.LEN`'s def landed *after* `use_v` in the namespace.** The cert
+   stream's source order had `use_v` first; the topo-sort in
+   `LeanEmit.lean::topoSortCallerDecls` looks up call-head names in
+   the sibling-decl index, but my `@`-prefix on the call head broke
+   the lookup (sanitised head was `@constants.V.LEN`, the index has
+   `V.LEN`).
 
-**Acceptance:** remove `--skip-decl use_v` from `run-diff.sh:34`. Re-run.
+**Fix surface (one commit, four files):**
+
+- `Pure/Syntax.lean::Decl` — added `constParams : Array String := #[]`.
+- `Pure/Pretty.lean::Decl.toLean` — emit `(N : Std.Usize)` after the
+  implicit type binders. Empty for the 99% of fixtures without const-
+  generics, so byte-identical fixtures stay byte-identical.
+- `Translate/Forward.lean::translateFunWith` — populate
+  `constParams := lsig.generics.constGenerics`.
+- `Translate/Forward.lean::buildGlobalGenericCall` — when type-args are
+  non-empty, prefix the call head with `@` so the callee's implicit
+  `{T : Type}` binder takes the type-arg explicitly. (For globals
+  without type-args, `@` is omitted so the byte shape stays unchanged.)
+- `Pure/Pretty.lean::PExpr.calledNames` — strip a leading `@` from
+  the call head before sanitising, so the topo-sort recognises the
+  call as in-crate and reorders `V.LEN` before `use_v`.
+
+**Decl counts.** Skips: 16 → 15. Removed `--skip-decl use_v` from
+`run-diff.sh:34` (the only `constants` skip — the fixture is now
+fully shipped). Gate-level deltas: G_lean stays at 275 lines (no
+runner vector added for `use_v` yet); G_byte stays at 3 pass; G_rust
+stays at 44.
+
+**Acceptance:** removed `--skip-decl use_v` from `run-diff.sh:34`.
 
 ## Total estimate
 

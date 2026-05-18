@@ -22,16 +22,15 @@ for fx in "${fixtures[@]}"; do
     | tail -2
 done
 
-# Session 7 (Item 2 follow-up): `constants` regen with `use_v` skipped.
-# Item 2's generic-globals work emits `V.LEN T N`, but the shim's
-# `constants.V.LEN` is a zero-arg `Result Usize` (no type-binders),
-# so applying it to `T N` fails to elaborate. Once the shim grows
-# the typed `(T : Type) (N : Std.Usize) → Result Std.Usize` form (or
-# the emitter learns to drop generic args when calling a non-generic
-# shim binding), `use_v` can rejoin the build.
-echo "[lean-diff] regenerating constants.lean (with --skip-decl filter)"
+# Zero-Skip Step 7 (2026-05-18): `constants` regen no longer needs
+# `--skip-decl use_v` — `Decl.constParams` now carries const-generic
+# binders (rendered as explicit `(N : Std.Usize)`),
+# `buildGlobalGenericCall` prefixes generic-arg call heads with `@` so
+# the implicit type-params resolve at the call site, and the topo-sort
+# in `LeanEmit.lean::topoSortCallerDecls` strips the `@` before
+# looking the callee up so `V.LEN` is emitted *before* `use_v`.
+echo "[lean-diff] regenerating constants.lean"
 "$aeneas_check" "$llbc_dir/constants.cert.json" --out "$here/generated/constants.lean" \
-  --skip-decl use_v \
   | tail -2
 
 # Session 5 (Item 2): `demo` regen with the skip list. The 11

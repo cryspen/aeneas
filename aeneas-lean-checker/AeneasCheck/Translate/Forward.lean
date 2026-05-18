@@ -2304,7 +2304,20 @@ def buildGlobalGenericCall
     (resolveGlobalGenericArg typeNames constNames s).map PExpr.var
   let tyArgs ← gg.types.mapM resolve
   let cgArgs ← gg.constGenerics.mapM resolve
-  some (.app bareName (tyArgs ++ cgArgs))
+  -- Zero-Skip Step 7: when the callee carries both type-params and
+  -- const-generics, the type-params are emitted as *implicit*
+  -- `{T : Type}` binders (see `Pretty.lean::Decl.toLean`). Passing
+  -- type-args via the bare-app form `(<head> T N)` mis-applies `T` to
+  -- the const-generic's explicit slot; passing them via the
+  -- `@<head> T N` form makes the implicits explicit so the
+  -- application order matches the binder order. We prefix the
+  -- sanitised head with `@` and include both arg lists. For globals
+  -- without type-args (just const-generics, e.g. a future
+  -- monomorphic-T const), the `@` is harmless. For globals without
+  -- generics at all, this branch isn't entered (see callers — the
+  -- non-generic path uses `.app g #[]`).
+  let head := if tyArgs.isEmpty then bareName else "@" ++ bareName
+  some (.app head (tyArgs ++ cgArgs))
 
 mutual
 
@@ -2677,6 +2690,15 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
     -- M9.5i: emit `{T : Type}` binders. Empty for monomorphic
     -- functions, so the emit shape stays byte-identical with M9.5h.
     typeParams
+    -- Zero-Skip Step 7: emit `(N : Std.Usize)` binders for const-
+    -- generics. Empty for the 99% of fixtures without const-generics
+    -- so the byte-identical emit shape stays unchanged. The
+    -- `seedGlobalRefsFromBlock` pass already references these names
+    -- via `genericConstNames` for global call args; binding them here
+    -- closes the loop so e.g. `use_v` emits
+    -- `def use_v {T : Type} (N : Std.Usize) : Result Std.Usize`
+    -- and the seeded `(constants.V.LEN T N)` resolves.
+    constParams := lsig.generics.constGenerics
     -- M9.5j: `partial_fixpoint` only when we observed a self-call.
     trailer
     -- Session 7 Item 1a: thread Charon's `attr_info.public` so the
