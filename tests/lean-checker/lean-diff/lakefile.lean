@@ -33,23 +33,22 @@ lean_lib «RuntimeShim» where
 /-- The emitter-generated fixture source. Files in `generated/` are
     produced by `aeneas-check --out`; we just compile them.
 
-    NOTE: `bitwise` is intentionally excluded — the M10-era emitter
-    on this branch produces `16#isize` for the `>>>` rhs in
-    `shift_i32`, but the RuntimeShim only registers a `#usize` /
-    `#u32` macro. The committed `aeneas-lean-checker/tests/Generated/
-    Bitwise.lean` predates that emitter regression and uses
-    `(16 : Std.Isize)` instead, hiding the gap from gate G3. Tracked
-    in the LeanEmit observations in the final report. -/
+    Phase 1A: `bitwise` re-enabled. The RuntimeShim now registers
+    `#isize` (alongside `#i32` and `#i64`), so the emitter's
+    `16#isize` shift-amount literal in `shift_i32` typechecks
+    without the hand-patch the committed
+    `aeneas-lean-checker/tests/Generated/Bitwise.lean` used to need. -/
 lean_lib «Generated» where
   srcDir := "generated"
-  roots := #[`incr_cert, `compare_simple, `calls]
+  roots := #[`incr_cert, `compare_simple, `calls, `bitwise]
 
 /-- Common formatting + the per-fixture runners. -/
 lean_lib «LeanDiff» where
   roots := #[`LeanDiff.Common,
              `LeanDiff.IncrRunner,
              `LeanDiff.CompareSimpleRunner,
-             `LeanDiff.CallsRunner]
+             `LeanDiff.CallsRunner,
+             `LeanDiff.BitwiseRunner]
 
 /-- The differential entry point. Calls each runner's `runAll` so a
     single invocation produces the full expected-line stream. -/

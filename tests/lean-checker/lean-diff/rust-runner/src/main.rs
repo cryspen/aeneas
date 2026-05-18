@@ -57,11 +57,39 @@ mod calls {
     }
 }
 
+mod bitwise {
+    // Mirrors tests/src/bitwise.rs. The Lean shim's shift instances
+    // are `liftRes2 UInt32.shiftLeft` / `Int32.shiftLeft`, which on
+    // Lean's side perform a 32-bit wrapping shift; the Rust source
+    // uses `>>` / `<<` which would panic on overflow. We use
+    // `wrapping_shr` / `wrapping_shl` so the oracle matches the
+    // shim's panic-free behavior on the cross-language vectors.
+    pub fn shift_u32(a: u32) -> u32 {
+        let i: u32 = 16;
+        let t = a.wrapping_shr(i);
+        t.wrapping_shl(i)
+    }
+    pub fn shift_i32(a: i32) -> i32 {
+        let i: u32 = 16;
+        let t = a.wrapping_shr(i);
+        t.wrapping_shl(i)
+    }
+    pub fn xor_u32(a: u32, b: u32) -> u32 { a ^ b }
+    pub fn or_u32(a: u32, b: u32) -> u32 { a | b }
+    pub fn and_u32(a: u32, b: u32) -> u32 { a & b }
+}
+
 // ---------------------------------------------------------------------------
 // Line formatting — must match `LeanDiff/Common.lean::mkLine` exactly.
 // ---------------------------------------------------------------------------
 
 fn ok_u32(fixture: &str, fn_name: &str, args: &[String], v: u32) {
+    println!("{}::{}({}) = ok {}", fixture, fn_name, args.join(","), v);
+}
+
+fn ok_i32(fixture: &str, fn_name: &str, args: &[String], v: i32) {
+    // The Lean side's `Show1 Int32` instance prints the signed decimal
+    // via `Int32.toInt`; match that here with Rust's signed `Display`.
     println!("{}::{}({}) = ok {}", fixture, fn_name, args.join(","), v);
 }
 
@@ -111,6 +139,35 @@ const PICK_TRIPLES: &[(bool, u32, u32)] = &[
     (false, 0xFFFFFFFF, 0),
     (true, 0, 0xFFFFFFFF),
     (false, 0, 0xFFFFFFFF),
+];
+
+// Bitwise fixture vectors. Must agree with
+// `LeanDiff/BitwiseRunner.lean` order.
+const BITWISE_U32: [u32; 6] = [
+    0,
+    1,
+    0xDEADBEEF,
+    0xFFFFFFFF,
+    0x80000000,
+    0x7FFFFFFF,
+];
+
+const BITWISE_I32: [i32; 6] = [
+    0,
+    1,
+    -1,
+    0x7FFFFFFF,
+    -0x80000000,
+    0xDEADBEEFu32 as i32,
+];
+
+const BITWISE_PAIRS_U32: &[(u32, u32)] = &[
+    (0, 0),
+    (0xFFFFFFFF, 0),
+    (0xFFFFFFFF, 0xFFFFFFFF),
+    (0xDEADBEEF, 0xCAFEBABE),
+    (0x55555555, 0xAAAAAAAA),
+    (0x12345678, 0x87654321),
 ];
 
 // ---------------------------------------------------------------------------
@@ -180,6 +237,48 @@ fn main() {
             "pick",
             &[b.to_string(), x.to_string(), y.to_string()],
             calls::pick(b, x, y),
+        );
+    }
+
+    // bitwise
+    for &x in &BITWISE_U32 {
+        ok_u32(
+            "bitwise",
+            "shift_u32",
+            &[x.to_string()],
+            bitwise::shift_u32(x),
+        );
+    }
+    for &x in &BITWISE_I32 {
+        ok_i32(
+            "bitwise",
+            "shift_i32",
+            &[x.to_string()],
+            bitwise::shift_i32(x),
+        );
+    }
+    for &(a, b) in BITWISE_PAIRS_U32 {
+        ok_u32(
+            "bitwise",
+            "xor_u32",
+            &[a.to_string(), b.to_string()],
+            bitwise::xor_u32(a, b),
+        );
+    }
+    for &(a, b) in BITWISE_PAIRS_U32 {
+        ok_u32(
+            "bitwise",
+            "or_u32",
+            &[a.to_string(), b.to_string()],
+            bitwise::or_u32(a, b),
+        );
+    }
+    for &(a, b) in BITWISE_PAIRS_U32 {
+        ok_u32(
+            "bitwise",
+            "and_u32",
+            &[a.to_string(), b.to_string()],
+            bitwise::and_u32(a, b),
         );
     }
 }
