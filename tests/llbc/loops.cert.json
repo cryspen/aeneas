@@ -56015,7 +56015,8 @@
                                                   }
                                                 }
                                               ]
-                                            }
+                                            },
+                                            "global": "loops::copy_carray::CARRAY"
                                           },
                                           "kind": "Shared",
                                           "ptr_metadata": null

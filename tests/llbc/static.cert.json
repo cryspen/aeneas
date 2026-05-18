@@ -715,7 +715,8 @@
                             },
                             "Shared"
                           ]
-                        }
+                        },
+                        "global": "static::use_static::PREFIX"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null

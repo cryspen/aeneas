@@ -4544,7 +4544,8 @@
                                                   }
                                                 }
                                               ]
-                                            }
+                                            },
+                                            "global": "loops_issues::CARRAY"
                                           },
                                           "kind": "Shared",
                                           "ptr_metadata": null
@@ -6977,7 +6978,8 @@
                                   "place": {
                                     "local": 0,
                                     "projection": [],
-                                    "ty": { "Literal": { "UInt": "Usize" } }
+                                    "ty": { "Literal": { "UInt": "Usize" } },
+                                    "global": "loops_issues::MAX_NROWS"
                                   },
                                   "kind": "Shared",
                                   "ptr_metadata": null

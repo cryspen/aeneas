@@ -320,7 +320,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "U32" } }
+                        "ty": { "Literal": { "UInt": "U32" } },
+                        "global": "issue_815_global_referencing_fallible_global::INNER"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null

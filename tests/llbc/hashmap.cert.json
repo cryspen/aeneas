@@ -17216,7 +17216,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "Usize" } }
+                        "ty": { "Literal": { "UInt": "Usize" } },
+                        "global": "core::num::{usize}::MAX"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null

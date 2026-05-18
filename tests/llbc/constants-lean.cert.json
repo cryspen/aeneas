@@ -1644,7 +1644,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "Usize" } }
+                        "ty": { "Literal": { "UInt": "Usize" } },
+                        "global": "constants_lean::N"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -1677,7 +1678,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "Usize" } }
+                        "ty": { "Literal": { "UInt": "Usize" } },
+                        "global": "constants_lean::M"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null

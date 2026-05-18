@@ -14746,7 +14746,8 @@
                                                   }
                                                 }
                                               ]
-                                            }
+                                            },
+                                            "global": "loops_nested::FACTORS"
                                           },
                                           "kind": "Shared",
                                           "ptr_metadata": null
