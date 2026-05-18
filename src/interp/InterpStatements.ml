@@ -1336,205 +1336,21 @@ and eval_switch_with_join (config : config) (span : Meta.span)
       InterpJoin.join_ctxs_list config span ~recoverable:!Config.recover_joins
         ~with_abs_conts:true Join ctx_to_join
     in
-    (* M11.0: emit [EvJoin] with the per-branch and post-join state
-       summaries. We take the first two contexts in [ctx_to_join] as
-       the canonical "left" and "right" branches — for [If] this
-       corresponds to the true/false pair; for [SwitchInt] and [Match]
-       with >2 arms this collapses extra arms into "right" (M12 will
-       generalise to N-ary joins).
-
-       The summaries are best-effort: locals whose values can't be
-       flattened to a [cert_sym_expr] are dropped from [cs_env].
-       Live loan ids are deduped across the env. *)
-    (let left_summary, right_summary =
+    (* M11.0: emit [Join] with the per-branch and post-join contexts.
+       We take the first two contexts in [ctx_to_join] as the
+       canonical "left" and "right" — for [If] this is the true/false
+       pair; for [SwitchInt] and [Match] with >2 arms this collapses
+       extras into "right" (M12 generalises to N-ary). The observer
+       builds the cert state summaries and per-local witness list
+       from these three contexts. -*)
+    (let ctx_left, ctx_right =
        match ctx_to_join with
-       | l :: r :: _ ->
-           ( CertEvent.cert_state_summary_of_env l.env,
-             CertEvent.cert_state_summary_of_env r.env )
-       | [ only ] ->
-           let s = CertEvent.cert_state_summary_of_env only.env in
-           (s, s)
+       | l :: r :: _ -> (l, r)
+       | [ only ] -> (only, only)
        | [] -> ([%internal_error] span)
      in
-     let result_summary =
-       CertEvent.cert_state_summary_of_env joined_ctx.env
-     in
-     (* M9.6 (Option C): per-result-env-local witness of which
-        Fig. 11 rule the join algebra fired. Commit #10 shipped
-        JoinSame / JoinSymbolic / JoinVar; commit #11 extends
-        with the Collapse-Dup-MutBorrow case (JoinMutBorrows) and
-        the ⊥-propagation cases (JoinBottomOther /
-        JoinOtherBottom). For JoinMutBorrows.abs, we look up the
-        new fresh borrow id in [joined_ctx]'s abstractions to
-        find which one owns it; failing that, we record 0 (the
-        Lean AbsRegistry validation in commit #19 will reject
-        mismatched pairs). *)
-     let cert_witnesses : CertEvent.cert_join_entry list =
-       let lookup env l =
-         try Some (List.assoc l env) with Not_found -> None
-       in
-       let sym_expr_eq (a : CertEvent.cert_sym_expr)
-           (b : CertEvent.cert_sym_expr) : bool =
-         (* Structural equality is fine — cert_sym_expr is a flat
-            algebraic type built from ints / strings / sub-exprs. *)
-         a = b
-       in
-       let is_sym_val (e : CertEvent.cert_sym_expr) :
-           Values.symbolic_value_id option =
-         match e with SymVal sv -> Some sv | _ -> None
-       in
-       let is_sym_mut_borrow_tok (e : CertEvent.cert_sym_expr) :
-           Values.BorrowId.id option =
-         match e with SymMutBorrowTok bid -> Some bid | _ -> None
-       in
-       let abs_of_borrow (bid : Values.BorrowId.id) :
-           Values.AbsId.id option =
-         let found = ref None in
-         List.iter
-           (fun (e : env_elem) ->
-             match e with
-             | EAbs abs ->
-               let visitor = object
-                 inherit [_] iter_tavalue as super
-                 method! visit_AMutLoan env pm lid child =
-                   if lid = bid && Option.is_none !found then
-                     found := Some abs.abs_id;
-                   super#visit_AMutLoan env pm lid child
-               end in
-               List.iter (fun av -> visitor#visit_tavalue () av)
-                 abs.avalues
-             | _ -> ())
-           joined_ctx.env;
-         !found
-       in
-       (* M10.x.0 (cert v6, plan §"Cert v6 design" #12):
-          alongside each [cert_join_rule] witness we now also emit
-          a [cert_join_entry_delta]. The constructor names are
-          parallel; the Lean replayer cross-checks the pair in
-          [stepJoin]. The delta carries only the
-          [JoinEntryStep.<rule>] freshness premise (a few ints) —
-          intermediate [Ω_i]'s are reconstructed in Lean by
-          folding. *)
-       List.filter_map
-         (fun (l, r_expr) ->
-           let l_left = lookup left_summary.cs_env l in
-           let l_right = lookup right_summary.cs_env l in
-           match l_left, l_right with
-           | Some le, Some re
-             when sym_expr_eq le re && sym_expr_eq le r_expr ->
-             Some
-               CertEvent.{
-                 je_local = l;
-                 je_rule = JrJoinSame;
-                 je_delta = JedTrivial;
-               }
-           | _, _ ->
-             (* JoinMutBorrows (Collapse-Dup-MutBorrow): both
-                sides hold a mut borrow with different ids, the
-                join introduces a fresh id. *)
-             (match l_left, l_right, is_sym_mut_borrow_tok r_expr with
-              | Some le, Some re, Some l_fresh
-                when (match is_sym_mut_borrow_tok le,
-                            is_sym_mut_borrow_tok re with
-                      | Some a, Some b ->
-                        a <> b
-                      | _ -> false) ->
-                let l_l =
-                  Option.get (is_sym_mut_borrow_tok le)
-                in
-                let l_r =
-                  Option.get (is_sym_mut_borrow_tok re)
-                in
-                let abs_id =
-                  match abs_of_borrow l_fresh with
-                  | Some a -> a
-                  | None -> Values.AbsId.of_int 0
-                in
-                (* [M9.8] Cert v4: name the fresh region
-                   abstraction's structure (id + parents + roles)
-                   in the cert so the Lean replayer can install it
-                   in [absRegistry] directly. Paper Fig. 11's
-                   Collapse-Dup-MutBorrow installs
-                   [Ω.abs abs := { roles = {(mutBorrow, l_left),
-                   (mutBorrow, l_right), (mutLoan, l_fresh)},
-                   parents = #[] }] — we encode that role list
-                   here. The [arg_idx] decoration on
-                   [ArMutBorrow] has no caller-arg meaning for
-                   this join-introduced abs (it gets dropped on
-                   the paper-side [liftAbsRoleEntry]); we pass 0
-                   for it. *)
-                let abs : CertEvent.cert_abs_shape =
-                  CertEvent.{
-                    as_abs_id = abs_id;
-                    as_parent_abs = [];
-                    as_roles =
-                      [ ArMutBorrow { arg_idx = 0; loan = l_l };
-                        ArMutBorrow { arg_idx = 0; loan = l_r };
-                        ArMutLoan { loan = l_fresh } ];
-                  }
-                in
-                Some
-                  CertEvent.{
-                    je_local = l;
-                    je_rule =
-                      JrJoinMutBorrows
-                        { l_left = l_l; l_right = l_r; l_fresh; abs };
-                    je_delta = JedMutBorrows { l_fresh; abs_id };
-                  }
-              | _ ->
-                (match is_sym_val r_expr with
-                 | Some sv
-                   when (match l_left with
-                         | Some le -> not (sym_expr_eq le r_expr)
-                         | None -> true)
-                     && (match l_right with
-                         | Some re -> not (sym_expr_eq re r_expr)
-                         | None -> true) ->
-                   Some
-                     CertEvent.{
-                       je_local = l;
-                       je_rule = JrJoinSymbolic sv;
-                       je_delta = JedSymbolic sv;
-                     }
-                 | _ ->
-                   (match l_left, l_right with
-                    | Some _, Some _ ->
-                      Some
-                        CertEvent.{
-                          je_local = l;
-                          je_rule = JrJoinVar;
-                          je_delta = JedTrivial;
-                        }
-                    | None, Some _ ->
-                      (* Left was ⊥ / unflattenable, right
-                         carries something through to the
-                         result wrapped in an abs. *)
-                      let a0 = Values.AbsId.of_int 0 in
-                      Some
-                        CertEvent.{
-                          je_local = l;
-                          je_rule = JrJoinBottomOther a0;
-                          je_delta = JedBottomOther a0;
-                        }
-                    | Some _, None ->
-                      let a0 = Values.AbsId.of_int 0 in
-                      Some
-                        CertEvent.{
-                          je_local = l;
-                          je_rule = JrJoinOtherBottom a0;
-                          je_delta = JedOtherBottom a0;
-                        }
-                    | None, None -> None))))
-         result_summary.cs_env
-     in
-     ctx_emit_event joined_ctx
-       (CertEvent.EvJoin
-          {
-            left = left_summary;
-            right = right_summary;
-            result = result_summary;
-            witnesses = cert_witnesses;
-          }));
+     Observer.notify joined_ctx
+       (Event.Join { ctx_left; ctx_right; ctx_joined = joined_ctx }));
     [%ldebug "Joined ctx:\n" ^ eval_ctx_to_string joined_ctx];
     let ctx0_aids = env_get_abs_ids ctx0.env in
     [%ldebug "ctx0_aids:\n" ^ AbsId.Set.to_string None ctx0_aids];

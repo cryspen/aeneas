@@ -419,6 +419,157 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
              abs_sig;
            })
        | _ -> None)
+  | Event.Join { ctx_left; ctx_right; ctx_joined } ->
+      let left_summary =
+        CertEvent.cert_state_summary_of_env ctx_left.env
+      in
+      let right_summary =
+        CertEvent.cert_state_summary_of_env ctx_right.env
+      in
+      let result_summary =
+        CertEvent.cert_state_summary_of_env ctx_joined.env
+      in
+      (* M9.6 (Option C): per-result-env-local witness of which
+         Fig. 11 rule the join algebra fired. Commit #10 shipped
+         JoinSame / JoinSymbolic / JoinVar; commit #11 added the
+         Collapse-Dup-MutBorrow case (JoinMutBorrows) and the
+         ⊥-propagation cases (JoinBottomOther / JoinOtherBottom).
+         For JoinMutBorrows.abs, we look up the new fresh borrow
+         id in [ctx_joined]'s abstractions to find the owner;
+         failing that, we record 0 (the Lean AbsRegistry
+         validation rejects mismatched pairs). -*)
+      let cert_witnesses : CertEvent.cert_join_entry list =
+        let lookup env l =
+          try Some (List.assoc l env) with Not_found -> None
+        in
+        let sym_expr_eq (a : CertEvent.cert_sym_expr)
+            (b : CertEvent.cert_sym_expr) : bool = a = b
+        in
+        let is_sym_val (e : CertEvent.cert_sym_expr) :
+            symbolic_value_id option =
+          match e with SymVal sv -> Some sv | _ -> None
+        in
+        let is_sym_mut_borrow_tok (e : CertEvent.cert_sym_expr) :
+            BorrowId.id option =
+          match e with SymMutBorrowTok bid -> Some bid | _ -> None
+        in
+        let abs_of_borrow (bid : BorrowId.id) : AbsId.id option =
+          let found = ref None in
+          List.iter
+            (fun (e : env_elem) ->
+              match e with
+              | EAbs abs ->
+                let visitor = object
+                  inherit [_] iter_tavalue as super
+                  method! visit_AMutLoan env pm lid child =
+                    if lid = bid && Option.is_none !found then
+                      found := Some abs.abs_id;
+                    super#visit_AMutLoan env pm lid child
+                end in
+                List.iter (fun av -> visitor#visit_tavalue () av)
+                  abs.avalues
+              | _ -> ())
+            ctx_joined.env;
+          !found
+        in
+        (* M10.x.0 (cert v6 #12): alongside each [cert_join_rule]
+           witness we also emit a [cert_join_entry_delta]. The
+           Lean replayer cross-checks the pair in [stepJoin]. -*)
+        List.filter_map
+          (fun (l, r_expr) ->
+            let l_left = lookup left_summary.cs_env l in
+            let l_right = lookup right_summary.cs_env l in
+            match l_left, l_right with
+            | Some le, Some re
+              when sym_expr_eq le re && sym_expr_eq le r_expr ->
+              Some
+                CertEvent.{
+                  je_local = l;
+                  je_rule = JrJoinSame;
+                  je_delta = JedTrivial;
+                }
+            | _, _ ->
+              (* JoinMutBorrows (Collapse-Dup-MutBorrow). *)
+              (match l_left, l_right, is_sym_mut_borrow_tok r_expr with
+               | Some le, Some re, Some l_fresh
+                 when (match is_sym_mut_borrow_tok le,
+                             is_sym_mut_borrow_tok re with
+                       | Some a, Some b -> a <> b
+                       | _ -> false) ->
+                 let l_l = Option.get (is_sym_mut_borrow_tok le) in
+                 let l_r = Option.get (is_sym_mut_borrow_tok re) in
+                 let abs_id =
+                   match abs_of_borrow l_fresh with
+                   | Some a -> a
+                   | None -> AbsId.of_int 0
+                 in
+                 let abs : CertEvent.cert_abs_shape =
+                   CertEvent.{
+                     as_abs_id = abs_id;
+                     as_parent_abs = [];
+                     as_roles =
+                       [ ArMutBorrow { arg_idx = 0; loan = l_l };
+                         ArMutBorrow { arg_idx = 0; loan = l_r };
+                         ArMutLoan { loan = l_fresh } ];
+                   }
+                 in
+                 Some
+                   CertEvent.{
+                     je_local = l;
+                     je_rule =
+                       JrJoinMutBorrows
+                         { l_left = l_l; l_right = l_r; l_fresh; abs };
+                     je_delta = JedMutBorrows { l_fresh; abs_id };
+                   }
+               | _ ->
+                 (match is_sym_val r_expr with
+                  | Some sv
+                    when (match l_left with
+                          | Some le -> not (sym_expr_eq le r_expr)
+                          | None -> true)
+                      && (match l_right with
+                          | Some re -> not (sym_expr_eq re r_expr)
+                          | None -> true) ->
+                    Some
+                      CertEvent.{
+                        je_local = l;
+                        je_rule = JrJoinSymbolic sv;
+                        je_delta = JedSymbolic sv;
+                      }
+                  | _ ->
+                    (match l_left, l_right with
+                     | Some _, Some _ ->
+                       Some
+                         CertEvent.{
+                           je_local = l;
+                           je_rule = JrJoinVar;
+                           je_delta = JedTrivial;
+                         }
+                     | None, Some _ ->
+                       let a0 = AbsId.of_int 0 in
+                       Some
+                         CertEvent.{
+                           je_local = l;
+                           je_rule = JrJoinBottomOther a0;
+                           je_delta = JedBottomOther a0;
+                         }
+                     | Some _, None ->
+                       let a0 = AbsId.of_int 0 in
+                       Some
+                         CertEvent.{
+                           je_local = l;
+                           je_rule = JrJoinOtherBottom a0;
+                           je_delta = JedOtherBottom a0;
+                         }
+                     | None, None -> None))))
+          result_summary.cs_env
+      in
+      Some (CertEvent.EvJoin {
+        left = left_summary;
+        right = right_summary;
+        result = result_summary;
+        witnesses = cert_witnesses;
+      })
   | Event.LoopInv { loop_id; fp_env; input_abs_list } ->
       (* M9.6 (Option C): collect [(borrow_id, parent_abs_id)] pairs
          for every loop-introduced loan visible in the input abs
