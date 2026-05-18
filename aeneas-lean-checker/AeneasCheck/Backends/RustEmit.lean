@@ -93,6 +93,67 @@ def binopRustMethod : String → Option String
   | "MulChecked" => some "checked_mul"
   | _ => none
 
+/-- Rewrite a Charon-style qualified name like
+    `core::num::{u32}::wrapping_add` or
+    `core::clone::impls::{core::clone::Clone for bool}::clone` into a
+    parseable Rust path. Each `{…}` brace group is replaced by a
+    "type" hint extracted from inside it (text after the last ` for `
+    if present, else the inner stripped of any `::` prefix). The path
+    prefix before the brace group is dropped, since Rust addresses
+    primitives like `u32::wrapping_add` without a `core::num::` prefix.
+    If no braces are present, the input is returned unchanged. -/
+def sanitizeRustPath (n : String) : String := Id.run do
+  if !n.contains '{' then return n
+  let cs := n.toList
+  -- Split into balanced top-level chunks of "outside" text vs "{…}" groups.
+  let mut chunks : Array (Bool × String) := #[]  -- (isBrace, text)
+  let mut buf : String := ""
+  let mut depth : Nat := 0
+  for c in cs do
+    if c == '{' then
+      if depth == 0 then
+        if !buf.isEmpty then chunks := chunks.push (false, buf)
+        buf := ""
+      else
+        buf := buf.push c
+      depth := depth + 1
+    else if c == '}' then
+      depth := depth - 1
+      if depth == 0 then
+        chunks := chunks.push (true, buf)
+        buf := ""
+      else
+        buf := buf.push c
+    else
+      buf := buf.push c
+  if !buf.isEmpty then chunks := chunks.push (false, buf)
+  -- Extract a "type" from a brace-group's inner text: prefer the
+  -- segment after the last ` for `, else the last `::`-segment.
+  let pickType (inner : String) : String :=
+    let after :=
+      match inner.splitOn " for " with
+      | [] => inner
+      | xs => xs.getLast!
+    -- Trim and drop trailing `>` from generic args we don't model.
+    let after := after.trimAscii.toString
+    -- Take last `::`-segment.
+    match (after.splitOn "::").getLast? with
+    | some s => s
+    | none => after
+  -- Walk chunks; when we see a brace group, drop trailing `::` from
+  -- the previously-emitted outside text (so `core::num::{u32}::foo`
+  -- becomes `u32::foo`, not `core::num::u32::foo`).
+  let mut out : String := ""
+  for (isBrace, txt) in chunks do
+    if isBrace then
+      -- Strip a trailing `::` from `out`, plus the entire path prefix
+      -- before the brace group. We choose the simpler "drop prefix"
+      -- rule by resetting `out` to empty whenever we see a brace.
+      out := pickType txt
+    else
+      out := out ++ txt
+  return out
+
 partial def PExpr.toRust : PExpr → String
   | .var name => name
   | .lit l => litToRust l
@@ -103,6 +164,9 @@ partial def PExpr.toRust : PExpr → String
     | _, some m, [l, r] =>
       l.toRust ++ "." ++ m ++ "(" ++ r.toRust ++ ")"
     | _, _, _ =>
+      -- Strip Charon-style `{…}` brace-decorated segments (impl-for
+      -- and type-instantiation markers) which aren't valid Rust.
+      let head := sanitizeRustPath head
       if args.isEmpty then head
       else s!"{head}(" ++ String.intercalate ", " (args.toList.map PExpr.toRust) ++ ")"
   | .letIn name _ e1 e2 =>
