@@ -513,7 +513,7 @@ errors are flagged before semantic ones), then replays each function.
 ### 3.2 Where the replayer is intentionally weaker than the paper
 
 Several deliberate simplifications. M9.6 (Option C, see
-`option-c-implementation-plan.md`) closed weaknesses 1 and 2 by
+`plans/option-c-implementation-plan.md`) closed weaknesses 1 and 2 by
 adding rule-choice *hints* on `EvCall` / `EvJoin` /
 `EvSymExpandMutBorrow` / etc.; the rest remain.
 

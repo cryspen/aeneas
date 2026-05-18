@@ -78,7 +78,7 @@ existing `Event` constructors (with defaults that preserve the
 pragmatic behaviour of v1 certs). The Lean checker's "strict path"
 (landed across plan §7.1 commits #13-#23) consumes them; the JSON
 parser fills the defaults for any v1 cert or any v2 cert that omits
-the field. See `documentation/option-c-implementation-plan.md` §1 for
+the field. See `documentation/plans/option-c-implementation-plan.md` §1 for
 the per-field specification and `documentation/cert-format-and-soundness.md`
 §3.2 for the pragmatic shortcuts each hint eliminates. -/
 

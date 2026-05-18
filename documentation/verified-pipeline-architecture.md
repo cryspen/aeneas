@@ -9,7 +9,7 @@ correspondence to the source Rust is guaranteed end-to-end by a chain
 of Lean theorems plus a small, named trust base.
 
 It is paired with `cert-format-and-soundness.md` (the cert format
-reference) and `llbc-sharp-soundness-plan.md` (the M10 campaign).
+reference) and `plans/llbc-sharp-soundness-plan.md` (the M10 campaign).
 
 **Project scope (current):** the only step we are verifying in Lean
 is **step 4 (the cert checker, M10)**. All other steps stay as
@@ -307,7 +307,7 @@ verified perimeter.
 
 ## 5. M10 in this context
 
-The M10 campaign (`llbc-sharp-soundness-plan.md`) is precisely the
+The M10 campaign (`plans/llbc-sharp-soundness-plan.md`) is precisely the
 step-4 verification:
 
 * **Input** to step 4: the cert (untrusted) + the LLBC' (post-pre-pass,
@@ -358,7 +358,7 @@ the cert-checker architecture, not redo the paper's metatheorems.
 
 ## 7. Document anchors
 
-* M10 campaign plan: `documentation/llbc-sharp-soundness-plan.md`
+* M10 campaign plan: `documentation/plans/llbc-sharp-soundness-plan.md`
 * Cert format reference: `documentation/cert-format-and-soundness.md`
 * The current pre-pass code (engineering TCB entry): `src/PrePasses.ml`
 * The current symbolic interpreter (no longer trusted post-M10):

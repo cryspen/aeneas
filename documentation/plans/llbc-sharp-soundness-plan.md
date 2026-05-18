@@ -517,7 +517,7 @@ After each phase boundary, run the following sequence before declaring the phase
 
 ### 8.4 Recovery from stuck agents
 
-The `lean4:autoprove` hard-stop pattern (`option-c-execution-prompt.md:222-247`) ports here. Specific stuck-paths:
+The `lean4:autoprove` hard-stop pattern (established for M9.6; the boot prompt that documented it was retired post-campaign) ports here. Specific stuck-paths:
 
 - **`lean4:autoprove` hits 10 cycles with no progress on a Phase-C lemma.** Escalate to `lean4:sorry-filler-deep` with a tightened scope (`--deep-scope=target`, `--deep-max-lines=300`).
 - **`lean4:sorry-filler-deep` returns "no progress" twice in a row.** Stop and escalate to the user: the lemma's *statement* may be wrong (Phase-A definition mismatch). Often the fix is a small `WellFormed` strengthening that ripples back into Phase B.
@@ -942,9 +942,8 @@ Total extra: ~1.5–2 weeks. Recommend deferring to M11+. Flagged for user choic
 
 The orchestrator and per-phase agents will need exact file:line citations throughout. Anchors:
 
-- M9.6 plan: `/Users/karthik/aeneas/documentation/option-c-implementation-plan.md`
-- M9.6 prompt: `/Users/karthik/aeneas/documentation/option-c-execution-prompt.md`
-- M9.7 plan (cert v3): `/Users/karthik/aeneas/documentation/cert-v3-implementation-plan.md`
+- M9.6 plan: `/Users/karthik/aeneas/documentation/plans/option-c-implementation-plan.md`
+- M9.7 plan (cert v3): `/Users/karthik/aeneas/documentation/plans/cert-v3-implementation-plan.md`
 - M9.7 progress (post-campaign state): `/Users/karthik/aeneas/.cert-v3-progress.md`
 - Cert format spec: `/Users/karthik/aeneas/documentation/cert-format-and-soundness.md` (§2.1–2.2 rewritten for cert v3)
 - Verified-pipeline architecture (cert-self-contains-LLBC narrative): `/Users/karthik/aeneas/documentation/verified-pipeline-architecture.md` (§2 Step 4)
