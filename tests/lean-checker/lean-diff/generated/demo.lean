@@ -14,6 +14,20 @@ set_option maxRecDepth 2048
 
 namespace demo
 
+/-- [demo::CList]
+    Source: 'tests/src/demo.rs', lines 37:0-40:1
+    Visibility: public -/
+@[discriminant isize]
+inductive CList (T : Type) where
+| CCons : T → CList T → CList T
+| CNil : CList T
+
+/-- [demo::choose]:
+    Source: 'tests/src/demo.rs', lines 8:0-14:1
+    Visibility: public -/
+def choose {T : Type} (b : Bool) (x : T) (y : T) : Result (T × (T → (T × T))) := do
+  if b then ok (x, fun ret => (ret, y)) else ok (y, fun ret => (x, ret))
+
 /-- [demo::mul2_add1]:
     Source: 'tests/src/demo.rs', lines 16:0-18:1
     Visibility: public -/

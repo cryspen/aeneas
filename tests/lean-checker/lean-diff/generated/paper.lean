@@ -14,10 +14,32 @@ set_option maxRecDepth 2048
 
 namespace paper
 
+/-- [paper::List]
+    Source: 'tests/src/paper.rs', lines 40:0-43:1
+    Visibility: public -/
+@[discriminant isize]
+inductive List (T : Type) where
+| Cons : T → List T → List T
+| Nil : List T
+
 /-- [paper::ref_incr]:
     Source: 'tests/src/paper.rs', lines 7:0-9:1
     Visibility: public -/
 def ref_incr (x : Std.I32) : Result Std.I32 := do
   x + 1#i32
+
+/-- [paper::test_incr]:
+    Source: 'tests/src/paper.rs', lines 12:0-16:1
+    Visibility: public -/
+def test_incr : Result Unit := do
+  let t0 ← (paper.ref_incr 0#i32)
+  let t1 := 0#i32 = 1#i32
+  ok ()
+
+/-- [paper::choose]:
+    Source: 'tests/src/paper.rs', lines 19:0-25:1
+    Visibility: public -/
+def choose {T : Type} (b : Bool) (x : T) (y : T) : Result (T × (T → (T × T))) := do
+  if b then ok (x, fun ret => (ret, y)) else ok (y, fun ret => (x, ret))
 
 end paper

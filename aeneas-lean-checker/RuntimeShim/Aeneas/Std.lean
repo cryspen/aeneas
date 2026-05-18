@@ -401,6 +401,20 @@ no-op user attributes. -/
 register_simp_attr rust_loop
 register_simp_attr rust_loop_body
 
+/-! Session 8 / Zero-Skip Step 1: `@[discriminant isize]` is emitted on
+inductives that originated from `#[repr(isize)]` (e.g. `demo::CList`,
+`paper::List`). The mainline `Aeneas.Std` declares this as a parameterized
+user attribute; the shim only needs it to *parse* so the generated
+inductive elaborates. Register a no-op user attribute so the parser
+accepts `@[discriminant isize]` (and any other concrete type argument). -/
+
+initialize Lean.registerBuiltinAttribute {
+  name := `discriminant
+  descr := "no-op shim for the standard backend's @[discriminant <type>] tag"
+  applicationTime := .afterTypeChecking
+  add := fun _ _ _ => pure ()
+}
+
 /-! ## Qualified-call shims
 
 The M10.1 emitter renders `EvCall(core::num::{u32}::wrapping_add)` as

@@ -40,11 +40,9 @@ echo "[lean-diff] regenerating constants.lean (with --skip-decl filter)"
 # fns are exercised by the runner.
 echo "[lean-diff] regenerating demo.lean (with --skip-decl filter)"
 "$aeneas_check" "$llbc_dir/demo.cert.json" --out "$here/generated/demo.lean" \
-  --skip-decl CList \
   --skip-decl Counter \
   --skip-decl "Std.Usize.Insts.DemoCounter" \
   --skip-decl "Std.Usize.Insts.DemoCounter.incr" \
-  --skip-decl choose \
   --skip-decl list_nth \
   --skip-decl list_nth_mut \
   --skip-decl list_tail \
@@ -60,9 +58,6 @@ echo "[lean-diff] regenerating demo.lean (with --skip-decl filter)"
 # `LeanDiff/PaperRunner.lean`'s file-level doc).
 echo "[lean-diff] regenerating paper.lean (with --skip-decl filter)"
 "$aeneas_check" "$llbc_dir/paper.cert.json" --out "$here/generated/paper.lean" \
-  --skip-decl List \
-  --skip-decl test_incr \
-  --skip-decl choose \
   --skip-decl test_choose \
   --skip-decl list_nth_mut \
   --skip-decl sum \
