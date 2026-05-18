@@ -1507,7 +1507,12 @@ def parseCrateCert (j : Json) : Result CrateCert := do
   -- structurally identical but with the bare-id JoinMutBorrows.abs;
   -- regenerate v3 certs with the current `aeneas -emit-cert`.
   -- M9.7o-E5a: v2 / v1 were retired at the cert v3 cutover.
-  if fmtVersion ≠ 4 then
+  -- Local widening (diff-test branch): accept v4 OR v6. v6 (parent
+  -- M10.x.0 bump) is structurally a superset of v4 — adds optional
+  -- fields holderLocal/JoinEntryDelta/stmtRefs which this parser
+  -- ignores. Keeps the diff-test harness working against the v6
+  -- aeneas binary the parent campaign produces.
+  if fmtVersion ≠ 4 ∧ fmtVersion ≠ 6 then
     fail s!"cert v{fmtVersion} is no longer supported (M9.8); regenerate with current aeneas -emit-cert"
   else
     let crateHash ← asStr (← field j "crate_hash")
@@ -1516,7 +1521,7 @@ def parseCrateCert (j : Json) : Result CrateCert := do
     -- M9.7c: `llbc_program` is required (kept under v4).
     let llbcProgram : LlbcProgram ← match (j.getObjVal? "llbc_program").toOption with
       | some lj => parseLlbcProgram lj
-      | none => fail "cert v4 missing required field 'llbc_program'"
+      | none => fail "cert v4/v6 missing required field 'llbc_program'"
     return { fmtVersion, crateHash, functions, llbcProgram }
 
 /-- Top-level entry: parse a cert JSON string. -/
