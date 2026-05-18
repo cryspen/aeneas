@@ -21,13 +21,29 @@ no separate runner. `g_rfl` is not implemented yet.
 ```bash
 cargo build --manifest-path tools/meta-harness/Cargo.toml --release
 
+# Single fixture
 ./tools/meta-harness/target/release/meta-harness \
   --cert tests/llbc/incr_cert.cert.json \
   --source-crate tests/lean-checker/differential \
   --gates g_byte,g_rust \
   --report-json report.json \
   --report-md report.md
+
+# Fleet-wide sweep over all *.cert.json in a directory
+./tools/meta-harness/target/release/meta-harness \
+  --sweep tests/llbc \
+  --source-crate tests/lean-checker/differential \
+  --gates g_byte,g_rust \
+  --report-json sweep.json \
+  --report-md sweep.md
 ```
+
+In sweep mode the harness:
+- runs `cargo test` once and shares the result across fixtures
+- resolves test ownership globally (longest matching stem wins; ties
+  are reported as `ambiguous` and excluded so no decl falsely claims
+  the test) — this prevents short-stem fallbacks like `incr` from
+  being claimed by every fixture that happens to define an `incr` fn
 
 Exit codes:
 - `0` — all gates clean (modulo `divergent` allowlisted entries)
@@ -39,7 +55,8 @@ Exit codes:
 
 | Flag                          | Meaning |
 |-------------------------------|---------|
-| `--cert <path>`               | A pre-built `.cert.json`. Required for now. |
+| `--cert <path>`               | A pre-built `.cert.json`. |
+| `--sweep <dir>`               | Directory of `*.cert.json` files. Produces a fleet-wide report. |
 | `--crate <path>`              | A Cargo crate root. **Not yet wired in.** |
 | `--llbc <path>`               | A pre-built `.llbc`. **Not yet wired in.** |
 | `--source-crate <path>`       | Crate whose `cargo test` is the G_rust oracle. Defaults to `--crate` if set. |

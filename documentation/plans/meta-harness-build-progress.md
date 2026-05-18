@@ -86,6 +86,59 @@ aeneas-check** so that future work can replace the slicer with
 single-decl invocations; the OCaml mainline side is still required
 for an apples-to-apples L₀ comparison and is deferred.
 
+## Fleet-wide sweep (`--sweep <dir>`)
+
+`tools/meta-harness/src/sweep.rs` lands the multi-fixture orchestration:
+
+```bash
+meta-harness --sweep tests/llbc \
+  --source-crate tests/lean-checker/differential \
+  --gates g_byte,g_rust
+```
+
+What it does:
+
+1. Enumerates every `*.cert.json` under `<dir>` (sorted alphabetically).
+2. Runs `cargo test` against `--source-crate` **once** and shares
+   the parsed results across all fixtures. With 89 fixtures and the
+   in-tree differential crate, sweep wall-clock is ~3 minutes
+   (versus 89× redundant test runs if each fixture invoked cargo).
+3. Computes **global** longest-stem-wins test→decl ownership across
+   all fixtures, not per-fixture. This prevents the short-stem
+   fallback (e.g. `incr`) from being claimed by every fixture that
+   happens to define a fn called `incr`.
+4. **Ambiguous ties → no claim.** When N decls in N different
+   fixtures all match a test via the same stem length, no decl
+   claims the test (every candidate falls to
+   `skip(no_test_coverage)`), and a one-line diagnostic surfaces:
+   `[meta-harness] sweep: ambiguous test 'incr_matches_model' —
+   tied stem length across fixtures: arrays, constants, demo,
+   incr_cert, no_nested_borrows`. The differential crate has one
+   such test today; it'd be resolved by either renaming the test in
+   the crate to `incr_cert_incr_matches_model` (the longer stem
+   would then win unambiguously) or by manifest mapping.
+
+Fleet-wide aggregate over the 89 in-tree fixtures (3143 total decls):
+
+| Gate   | per-decl pass | per-decl div | per-decl skip | per-decl mismatch |
+|--------|--------------:|-------------:|--------------:|------------------:|
+| g_byte |            64 |          742 |          2337 |                 0 |
+| g_rust |            40 |            0 |          3103 |                 0 |
+
+| Gate   | per-fixture pass | divergent | skip | mixed | mismatch |
+|--------|-----------------:|----------:|-----:|------:|---------:|
+| g_byte |                3 |        83 |    3 |     0 |        0 |
+| g_rust |                1 |         0 |   78 |    10 |        0 |
+
+The g_byte numbers exactly match `compare-backends.sh --sweep`. The
+g_rust passes (40 distinct decls) account for every distinct decl
+covered by a unique-owner proptest in the differential crate's 44
+tests (1 ambiguous test excluded, the rest collapsing into 40
+distinct decl owners after `_small` / `_top` / `_equal` test
+variants fold into their root decl).
+
+Exit code 0 — no mismatches anywhere in the fleet.
+
 ## Multi-fixture validation (post-Phase F)
 
 After the PoC commit, the harness was swept across every fixture

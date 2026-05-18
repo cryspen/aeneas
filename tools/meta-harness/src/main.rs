@@ -12,6 +12,7 @@ mod cert;
 mod gates;
 mod manifest;
 mod report;
+mod sweep;
 
 use cert::Cert;
 use report::Report;
@@ -29,8 +30,15 @@ struct Cli {
     llbc: Option<PathBuf>,
 
     /// Path to a pre-built .cert.json. Skips charon + emit-cert.
-    #[arg(long, conflicts_with_all = ["krate", "llbc"])]
+    #[arg(long, conflicts_with_all = ["krate", "llbc", "sweep"])]
     cert: Option<PathBuf>,
+
+    /// Sweep mode: directory of `*.cert.json` to run gates against.
+    /// Produces a fleet-wide report. With g_rust active, `cargo test`
+    /// against `--source-crate` runs once and is shared across
+    /// fixtures.
+    #[arg(long, value_name = "DIR", conflicts_with_all = ["krate", "llbc", "cert"])]
+    sweep: Option<PathBuf>,
 
     /// Optional source crate for the G_rust gate.
     #[arg(long)]
@@ -73,18 +81,11 @@ fn main() {
 
 fn run() -> Result<i32> {
     let cli = Cli::parse();
-    let cert_path = resolve_cert_input(&cli)?;
-    let cert = Cert::load(&cert_path)
-        .with_context(|| format!("loading cert {}", cert_path.display()))?;
     let manifest = manifest::load(cli.manifest.as_deref(), cli.krate.as_deref())?;
-
     let aeneas = resolve_aeneas(&cli)?;
     let aeneas_check = resolve_aeneas_check(&cli)?;
 
-    let mut report = Report::new(&cert);
-
     let mut active_gates = cli.gates.clone().unwrap_or_else(default_gates);
-    // Manifest toggle: a gate marked `"skip"` in `[gates]` is dropped.
     active_gates.retain(|g| match g.as_str() {
         "g_byte" => manifest.gates.g_byte.as_deref() != Some("skip"),
         "g_rust" => manifest.gates.g_rust.as_deref() != Some("skip"),
@@ -92,6 +93,33 @@ fn run() -> Result<i32> {
         "g_rfl" => manifest.gates.g_rfl.as_deref() != Some("skip"),
         _ => true,
     });
+
+    // Sweep mode short-circuits the single-cert pipeline.
+    if let Some(dir) = &cli.sweep {
+        let source = cli.source_crate.as_deref().or(cli.krate.as_deref());
+        let sweep_report = sweep::run_sweep(
+            dir,
+            &active_gates,
+            &manifest,
+            &aeneas,
+            &aeneas_check,
+            source,
+        )?;
+        sweep_report.write_json(&cli.report_json)?;
+        sweep_report.write_markdown(&cli.report_md)?;
+        eprintln!(
+            "[meta-harness] wrote {} and {}",
+            cli.report_json.display(),
+            cli.report_md.display()
+        );
+        return Ok(sweep_report.exit_code());
+    }
+
+    let cert_path = resolve_cert_input(&cli)?;
+    let cert = Cert::load(&cert_path)
+        .with_context(|| format!("loading cert {}", cert_path.display()))?;
+    let mut report = Report::new(&cert);
+
     eprintln!("[meta-harness] decls: {}  gates: {}", cert.decls.len(), active_gates.join(","));
 
     for gate in &active_gates {

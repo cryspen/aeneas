@@ -35,14 +35,17 @@ use crate::report::{GateOutcome, Report};
 
 const GATE: &str = "g_rust";
 
-pub fn run(
-    cert: &Cert,
-    _cert_path: &Path,
-    _aeneas_check: &Path,
-    source_crate: &Path,
-    manifest: &Manifest,
-    report: &mut Report,
-) -> Result<()> {
+/// Result of one `cargo test` invocation, ready to be shared across
+/// multiple fixtures in sweep mode.
+pub struct CargoTestRun {
+    pub results: Vec<TestResult>,
+    /// `None` if tests ran successfully; `Some(reason)` if the test
+    /// suite was empty or the build failed — applied uniformly as a
+    /// skip across every decl that would otherwise claim a test.
+    pub failure: Option<String>,
+}
+
+pub fn run_cargo_test(source_crate: &Path) -> Result<CargoTestRun> {
     let manifest_path = source_crate.join("Cargo.toml");
     if !manifest_path.is_file() {
         anyhow::bail!(
@@ -50,7 +53,6 @@ pub fn run(
             manifest_path.display()
         );
     }
-
     let output = Command::new("cargo")
         .arg("test")
         .arg("--manifest-path")
@@ -59,23 +61,63 @@ pub fn run(
         .arg("--no-fail-fast")
         .output()
         .with_context(|| format!("running cargo test for {}", manifest_path.display()))?;
-
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    let test_results = parse_test_output(&stdout);
-    if test_results.is_empty() {
-        // No tests ran — surface as a build-failure or empty-suite skip.
-        let reason = if !output.status.success() {
+    let results = parse_test_output(&stdout);
+    let failure = if results.is_empty() {
+        Some(if !output.status.success() {
             let first_err = stderr.lines().find(|l| l.contains("error")).unwrap_or("");
             format!("cargo test failed: {first_err}")
         } else {
             "source crate has no tests".to_string()
-        };
+        })
+    } else {
+        None
+    };
+    Ok(CargoTestRun { results, failure })
+}
+
+pub fn run(
+    cert: &Cert,
+    _cert_path: &Path,
+    _aeneas_check: &Path,
+    source_crate: &Path,
+    manifest: &Manifest,
+    report: &mut Report,
+) -> Result<()> {
+    let test_run = run_cargo_test(source_crate)?;
+    run_with_test_run(cert, &test_run, manifest, report)
+}
+
+pub fn run_with_test_run(
+    cert: &Cert,
+    test_run: &CargoTestRun,
+    manifest: &Manifest,
+    report: &mut Report,
+) -> Result<()> {
+    // Phase E exclusion: only consider decls in this cert.
+    let excluded: std::collections::HashSet<usize> = std::collections::HashSet::new();
+    run_with_test_run_filtered(cert, test_run, &excluded, manifest, report)
+}
+
+/// Sweep-aware variant: `excluded_tests` holds indices into
+/// `test_run.results` that have already been claimed by a more-
+/// specific decl in another fixture. The fixture only considers tests
+/// not in `excluded_tests`.
+pub fn run_with_test_run_filtered(
+    cert: &Cert,
+    test_run: &CargoTestRun,
+    excluded_tests: &std::collections::HashSet<usize>,
+    manifest: &Manifest,
+    report: &mut Report,
+) -> Result<()> {
+    if let Some(reason) = &test_run.failure {
         for decl in &cert.decls {
             report.record(&decl.path, GATE, GateOutcome::skip(reason.clone()));
         }
         return Ok(());
     }
+    let test_results: &[TestResult] = &test_run.results;
 
     // Longest-stem-wins assignment. For each test, find the decl
     // whose matching stem is longest; that decl claims the test.
@@ -86,7 +128,10 @@ pub fn run(
     let mut claims: std::collections::HashMap<usize, Vec<&TestResult>> =
         std::collections::HashMap::new();
     let decl_stems: Vec<Vec<String>> = cert.decls.iter().map(|d| test_stems_for_decl(&d.path)).collect();
-    for tr in &test_results {
+    for (test_idx, tr) in test_results.iter().enumerate() {
+        if excluded_tests.contains(&test_idx) {
+            continue;
+        }
         let mut best: Option<(usize, usize)> = None; // (decl_idx, stem_len)
         for (i, stems) in decl_stems.iter().enumerate() {
             for s in stems {
@@ -134,9 +179,9 @@ pub fn run(
 }
 
 #[derive(Debug)]
-struct TestResult {
-    name: String,
-    ok: bool,
+pub struct TestResult {
+    pub name: String,
+    pub ok: bool,
 }
 
 fn parse_test_output(stdout: &str) -> Vec<TestResult> {
@@ -194,7 +239,7 @@ fn strip_ansi(s: &str) -> String {
 /// For `incr_cert::incr` we try `["incr_cert_incr", "incr"]`. For
 /// `hashmap::{hashmap::HashMap<T>}::new` we strip the brace block
 /// and try `["hashmap_HashMap_new", "HashMap_new", "new"]`.
-fn test_stems_for_decl(path: &str) -> Vec<String> {
+pub fn test_stems_for_decl(path: &str) -> Vec<String> {
     let mut stems = Vec::new();
     // Strip `{...}` segments; they're not part of human-written test names.
     let clean: String = strip_brace_groups(path);
@@ -237,7 +282,7 @@ fn strip_brace_groups(s: &str) -> String {
     out.trim_end_matches("::").to_string()
 }
 
-fn test_matches_stem(test_name: &str, stem: &str) -> bool {
+pub fn test_matches_stem(test_name: &str, stem: &str) -> bool {
     if test_name == stem {
         return true;
     }
