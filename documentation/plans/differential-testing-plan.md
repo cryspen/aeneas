@@ -52,8 +52,8 @@ gates** and treat the implied pairs as bonus coverage if cheap.
 
 | Pair | Comparison | What it tells us | Status today |
 |---|---|---|---|
-| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 18 proptests / 7 fixtures (in `tests/lean-checker/differential/`); needs scaling |
-| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 90 vectors / 4 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
+| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 33 proptests / 9 fixtures (in `tests/lean-checker/differential/`); needs scaling |
+| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 119 vectors / 5 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
 | **G_byte** | L₀ ↔ L₁ (byte-equal) | Our Lean backend produces the same source as mainline (cheap syntactic check) | `scripts/compare-backends.sh` exists; per-fixture, opt-in; no allowed-divergence list |
 | **G_rfl** | L₀ ↔ L₁ (definitional equality, `rfl`) | Our Lean's *meaning* matches mainline's, even where syntax differs (e.g. binder order, beta-equivalence) | Does not exist; this plan adds it |
 | (implied) | R₀ ↔ L₀ | Mainline Aeneas's Lean matches developer intent | Trusted via upstream test suite; we don't add separate coverage |
@@ -131,8 +131,14 @@ if smaller). Same exclusion list as G_rust for non-testable functions.
 **Known unblockers.** Resolved on this branch:
 - `6438a751` (Phase 1A) — `RuntimeShim` gained `#isize` / `#i32` / `#i64` macros; the hand-patch in `tests/Generated/Bitwise.lean` was reverted. `bitwise.rs` is now wired into the lean-diff harness (30 vectors passing, byte-identical).
 - `ac176ee3` + `f26cc772` (Phase 1B) — `LeanEmit` now emits a type-correct zero of the field type when the root expression is a default `0#u32` placeholder and the projected field type is a literal int/bool. `unwrap_y` and `get_z1` are well-typed (`ok 0#i32` instead of `ok 0#u32.value`).
+- `f23a6175` (Phase 4a-1) — `RuntimeShim` gained `HAdd`/`HSub`/`HMul I32 I32 (Result I32)` instances; `constants::add` (`i32`) now elaborates.
+- `e03f1aa5` (Phase 4a-2) — `LeanEmit.sanitizeCallName` switched to a balanced-brace walker mirroring `RustEmit.sanitizeRustPath`; `def {constants.Wrap<T>}.new` → `def Wrap.new` and the call-site `constants.{constants.Wrap<T>}.new` → `constants.Wrap.new`. Applied symmetrically at the def-head in `Decl.toLean`.
+- `c59c91ed` (Phase 4a-3 + Phase 4a-5) — tdm-aware ADT placeholder + caller-decl topological sort. `static S3: Pair<u32, u32> = P3` now emits `ok { x := 0#u32, y := 0#u32 }` (typechecks against `Result (Pair U32 U32)` — value still placeholder); `V.LEN : Result Usize` emits `ok 0#usize` (was the U32-typed catch-all); `def Y` (line 42 source) now emits *after* its dependency `def Wrap.new` (line 55 source) via the DFS sort over caller decls.
+- `fede2492` (Phase 4a wire-in) — `constants.lean` is wired into the lean-diff harness; the runner exercises the subset of fns whose emit is non-placeholder (incr, add, mk_pair0, plus 7 nullary const/static evaluations).
 
-Remaining in `constants.lean` (filed as separate Phase 1B follow-ups, not wired into lean-diff yet): bare `(x1 + x2)` on i32 `add` (no `HAdd I32 I32 (Result I32)` shim instance); brace-decorated identifier `def {constants.Wrap<T>}.new`; `Pair`-typed record literal `ok`-applied as a scalar; `V` struct shape `Array T 0#usize` length encoding.
+Remaining for the next session (cert-walker-level, not LeanEmit):
+- The `S3`-class placeholders are syntactically valid but semantically wrong (`{ x := 0, y := 0 }` vs the source `P3 = { x: 0, y: 1 }`). The cert event walker is dropping the right-hand side; pinning it down requires a Charon-cert-event-side patch.
+- `scalars.lean` and `demo.lean` need additional shim instances (`HShiftRight U32 I32 (Result U32)`, `HShiftRight I32 I32 (Result I32)`, and a pure-bitwise-in-monadic-let elaboration adjustment) before they can be wired into the lean-diff harness. The G_rust side already covers these fixtures (33 proptests across 9 fixtures).
 
 ### G_byte — Mainline Lean ↔ Our Lean (byte diff)
 

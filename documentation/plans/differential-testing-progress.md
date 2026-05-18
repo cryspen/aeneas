@@ -1,8 +1,8 @@
-## Plan: Four-artifact differential testing rollout (Phases 0 + 1)
+## Plan: Four-artifact differential testing rollout (Phases 0 + 1 + 4a/b in-flight)
 ## Started: 2026-05-18 (Session 2)
-## Last action: Phase 0 + Phase 1A + Phase 1B + Phase 1C landed on `aeneas-lean-certificate-diff-test`. Both harnesses green: G_rust 18/18 proptests; G_lean 90 == 90 byte-identical.
-## Phase: Phases 0+1 DONE; Phases 2–5 remain.
-## Next commit: Phase 2 (G_byte sweep extension) — separate session.
+## Last action (Session 3, 2026-05-18): Phase 4a complete (4 LeanEmit/shim fixes + 1 LeanEmit topo sort), constants.lean wired into lean-diff; Phase 4b added scalars + demo fixtures to G_rust (+15 proptests). Both harnesses green: G_rust 33/33 proptests; G_lean 119 == 119 byte-identical.
+## Phase: Phases 0+1+4a (LeanEmit polish) DONE; Phase 4b partial; Phases 2/3/5 + finishing Phase 4b remain.
+## Next commit: continue Phase 4b (G_lean shim work for scalars/demo + ADT-returning constants), or jump to Phase 2 (G_byte sweep).
 
 ### Done-condition audit (Session 2 §"Done condition")
 1. ✓ Phase 0 + 1A + 1B + 1C complete; 9 new commits on `aeneas-lean-certificate-diff-test`.
@@ -86,3 +86,75 @@ These are tracked in §G_lean "Known unblockers" of the plan; resolving them is 
 - `documentation/differential-testing-plan.md` — known-unblockers updated, fixture counts bumped.
 
 **No files under `aeneas-lean-soundness/` or `aeneas-lean-checker/AeneasCheck/Theorems/` were touched.**
+
+---
+
+## Session 3 (2026-05-18) — Phase 4a + early Phase 4b
+
+### What landed (top 5 commits over `304137c5`)
+```
+a1daa9c5 Phase 4b diff: scale G_rust — add scalars + demo fixtures (15 new proptests)
+fede2492 lean-diff: wire constants.lean into the harness (Phase 4a wire-up)
+c59c91ed Phase 4a-3 + 4a-5: typed placeholder for ADT return slots + caller-decl topo sort in LeanEmit
+e03f1aa5 Phase 4a-2 LeanEmit: balanced-brace sanitisation for def + call paths
+f23a6175 Phase 4a-1 shim: add HAdd/HSub/HMul I32 (Result I32) instances
+```
+
+### Phase 4a outcome
+All four LeanEmit/shim gaps the Phase 4 prompt flagged from Session 2 are now closed:
+
+| Carry-forward (per Session 2 §"Carry-forward LeanEmit follow-ups") | Resolution |
+|---|---|
+| Bare `(x1 + x2)` on i32 `add` — no `HAdd I32 I32 (Result I32)` shim | `f23a6175` adds the instance (Add/Sub/Mul) |
+| Brace-decorated `def {constants.Wrap<T>}.new` | `e03f1aa5` rewrites `sanitizeCallName` to balanced-brace, applied to both call heads and def names |
+| `Pair`-typed record literal `ok`-applied as a scalar (S3) | `c59c91ed` adds `placeholderPExprOfWith tdm` (ADT-aware) + a body-tail post-walk substitution; S3 now emits `ok { x := 0#u32, y := 0#u32 }` (typechecks; value still placeholder pending cert-walker fix) |
+| `V` struct length `Array T 0#usize` + V.LEN body | `c59c91ed`'s body-tail typedDefault picks Usize via `localTypes[0]`; V.LEN now emits `ok 0#usize` (was `ok 0#u32`). The struct decl `structure V (T : Type) where x : Array T 0#usize` is unchanged (const-generic `N` still dropped); the cert-walker doesn't surface const-generic params today |
+
+Plus the topological-sort fix `c59c91ed` discovered along the way: the cert emits decls in source order, which put `def Y` (line 42) before `def Wrap.new` (line 55) in the emit; Lean rejected the call as an unknown constant. `topoSortCallerDecls` in `LeanEmit.lean` now DFS-emits each caller decl after its sibling-decl deps. Self-recursive defs (`partial_fixpoint`) are not treated as self-dependencies; mutual recursion is out of scope (would need `mutual` blocks — no fixture exercises it yet).
+
+constants.lean now compiles cleanly against the shim and is wired into the lean-diff harness via `LeanDiff.ConstantsRunner` (29 vectors: 9 incr + 8 add + 5 mk_pair0 + 7 nullary const/static). G_lean total: 119 / 119 byte-identical.
+
+### Phase 4b outcome (partial)
+Sweep of the 89 cert fixtures via `aeneas-check --rust-model + rustc --crate-type=lib --emit=metadata`:
+- 7 fixtures pass rustc standalone (the originally-wired set: incr_cert, compare_simple, calls, bitwise; plus `issue-815-...`, `mutually-recursive-traits`, `names`, `switch_test` — those three have empty / placeholder-only models, so they're not differential-testable).
+- 82 fixtures fail rustc standalone, mostly due to (a) emitter quirks like `u32::default` (missing parens) or `SharedWrapper<'a, T>::create` (lifetime in path) or `NumOrZero.Variant` (instead of `::Variant`), or (b) the rust-model referencing the source crate's qualified path (`<crate>::<fn>`) which doesn't resolve in the standalone differential crate.
+
+Hand-curated 15 new differential-testable functions across 2 new fixtures (`scalars` + `demo`):
+- scalars: 13 fns (wrapping_add/sub × {u32,i32}, shift_left/right × {u32,i32}, add_and, rotate_left/right × {u32,i32}). Skipped: casts, `_default`, match-on-usize, `_use_bits`.
+- demo: 2 fns (`mul2_add1`, `incr`). Skipped: closure-returning `choose`/`list_nth`, intra-fixture-call `use_*` (would need `mod demo` wrap in harness).
+
+G_rust total: 18 → 33 proptests across 9 fixtures.
+
+### Coverage matrix snapshot
+
+| Fixture | G_rust | G_lean | C_lean (against shim) |
+|---|---|---|---|
+| incr_cert | ✓ 1/1 | ✓ 16/16 | ✓ |
+| compare_simple | ✓ 3/3 | ✓ 22/22 | ✓ |
+| calls | ✓ 2/2 | ✓ 22/22 | ✓ |
+| bitwise | ✓ 5/5 | ✓ 30/30 | ✓ |
+| constants | ✓ 5/5 | ✓ 29/29 | ✓ (S3 / V.LEN compile via placeholder) |
+| aggregates_basic | ✓ 2/2 | (skip, ADT runner) | n/a |
+| reborrows | ✓ 1/1 | (skip, ADT runner) | n/a |
+| scalars | ✓ 13/13 | (skip — shim) | partial |
+| demo | ✓ 2/2 | (skip — shim) | partial |
+| **Total** | **33 proptests / 9 fixtures** | **119 vectors / 5 fixtures** | 5/89 |
+
+### Carry-forward into Session 4
+
+The two highest-leverage items (each unblocks ≥1 fixture's G_lean wire-up):
+
+1. **scalars G_lean shim work.** Add `HShiftRight U32 I32 (Result U32)` and `HShiftRight I32 I32 (Result I32)` (and the `Shl` counterparts) to RuntimeShim. The cert emits `2#i32` as the shift rhs even though Rust's `>> 2` parses as a `usize` shift (Charon's IR uses isize/i32 for the shift constant). After the shim adds, `scalars.lean` can be wired into `LeanDiff.ScalarsRunner`. Budget: ~40 LOC.
+
+2. **demo G_lean shim work.** Same pattern — the pure-bitwise `let t0 ← (x2 &&& x1)` shape in `add_and` (and elsewhere) binds a pure-typed expression via `←` against a Result-monadic let; either add a `Result`-typed shim instance for `HAnd U32 U32 (Result U32)` (would shadow the existing pure form — see the Std.lean comment block; opt for a `pure_lift` wrapper in the cert emitter instead) or relax the cert emitter to render bare `let t0 := ...` for pure binops. Decide which.
+
+Then a follow-up:
+
+3. **Cert-walker fix for `S3`-class placeholders.** The cert events for `static X = Y` (where Y is itself a static) should write `vm[0] := <Y's pure expr>`, not leave it empty / fall back to a placeholder. The right side has already been computed by the time the assignment is executed; the walker just isn't threading it through. Tracking down the Forward.lean event for "EvAssign from a global initializer" is the entry point. Budget: half a day; needs a careful look at the cert JSON for constants.
+
+4. **Continue Phase 4b sweep.** Three fixtures the standalone-rustc sweep skipped but that probably work with a small `mod <crate>` wrap in the harness: `demo::use_*`, `no_nested_borrows::cast_*`, `paper::ref_incr`. Budget: ~1 hour per fixture (model copy + per-fn proptest).
+
+### Operational notes (Session 3 specifics)
+- **No agent dispatches this session.** All work was done inline in the diff-test worktree. Worktree HEAD stayed on `aeneas-lean-certificate-diff-test`; no contamination of the parent or any of the 7 still-locked `agent-*` worktrees.
+- **`aeneas-check` rebuilt from this worktree's source** at the start of each Phase 4a sub-task. The Phase-2 lesson ("pre-built binaries can lie") was honoured — never trusted the May 18 10:02 timestamp on the worktree's `.lake/build/bin/aeneas-check`.
+- **No files under `aeneas-lean-soundness/` or `aeneas-lean-checker/AeneasCheck/Theorems/` touched.** Files modified live in `RuntimeShim/`, `Backends/{LeanEmit, Pretty}.lean`, `Translate/Forward.lean`, and the test-harness tree. The M10 agent's parent-branch work was not disturbed.
