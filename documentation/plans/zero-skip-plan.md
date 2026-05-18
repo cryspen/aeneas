@@ -225,26 +225,63 @@ trait-impl-heavy fixture (`traits`, `default`, `defaulted_method`,
 "Std.Usize.Insts.DemoCounter"`, `--skip-decl
 "Std.Usize.Insts.DemoCounter.incr"`, `--skip-decl use_counter`. Re-run.
 
-### Step 5 — Loop body emits undefined locals (Cluster: `loop_body_undefined_locals`)
+### Step 5 — Loop body emits undefined locals (Cluster: `loop_body_undefined_locals`) — PARTIAL 2026-05-18
+
+**Actual work:** ~2 hours. Wrapper-signature half of the cluster shipped;
+the loop-body half (architectural mismatch — see below) is deferred. Net:
+0 of 3 decls unlock in this commit, but the typeParams + tdm fix is
+prerequisite groundwork for the body rewrite that will unlock all 3.
 
 **Unlocks:** `demo::list_nth1`, `demo::list_nth1_loop`,
 `demo::list_nth1_loop.body`. **3 decls**, all part of one loop fn.
 
 **Symptom:** the loop-body translator references `s33` / `t3` — locals that
-were never bound. The wrapper's return type is `Result T` (the type
-variable) when it should be `Result Std.U32` (the concrete type the body
-returns).
+were never bound. The wrapper emits `(l : Std.U32)` (the catch-all
+placeholder) where the oracle has `(l : CList T)` and is missing the
+`{T : Type}` binder line entirely.
 
 **Fix surface:** `aeneas-lean-checker/AeneasCheck/Translate/Loops.lean`'s
-`buildLoopBody` and `buildTopLevelLoopFn`. Likely two bugs:
-- Stale local-index references when the walker emits names from the parent
-  scope's vm without rewriting them to the loop-body's binders.
-- Loop-state type inference picks a too-general `T` when the body's
-  state is concrete.
+`buildLoopBody`, `buildLoopWrapper`, `buildTopLevelLoopFn`, and
+`translateLoopFun`. Two independent bugs:
 
-**Estimated work: half a day.**
+1. **tdm + typeParams not threaded.** `translateLoopFun` built a local
+   `tdm := {}`, so every ADT-typed input fell through to
+   `llbcTyToPTyWithVars`'s `Std.U32` catch-all; the three Decl records
+   omitted `typeParams`, so the renderer dropped the implicit
+   `{T : Type}` binder. **Fixed in commit `a51913d6` (this commit).**
+   `tdm` now flows from `Driver.translateCrate`'s
+   `buildTypeDeclMapFromLlbc` call into `translateLoopFun`, and
+   `typeParams := lsig.generics.types` propagates into all three
+   emitted Decls.
 
-**Acceptance:** remove the three `list_nth1*` skips. Re-run.
+2. **buildLoopBody assumes the wrong body shape.** The current design
+   expects `[setup events] EvAssert(c, true) [continue body]
+   EvAssert(c, false) [break body]` — a flat conditional, modelled
+   after the M12.1 `count_to` fixture. But `list_nth1_loop`'s body is
+   match-then-branch: `[EvMatchArm CCons] [setup + asserts + recurse]
+   [EvMatchArm CNil] [EvPanic]`. The match-arm walker in
+   `Forward.lean::walkEvents` consumes the entire match before
+   `findBodyBranch` ever sees the asserts, so the cond falls back to
+   `lookupSymExpr` on a bare `SymVal 33` (renders as `s33`) and the
+   cont/done payloads default to `()` (because no state-local is
+   tracked through the arm sub-walks). **Not fixed in this commit.**
+   The repair is a buildLoopBody rewrite — likely: walk the body as a
+   normal function expression, then rewrite the recursive self-call
+   into `cont <args>` and the function's `Return v` into `done v`.
+   Out of scope here.
+
+**Scaffold:** `aeneas-lean-checker/tests/Walker/loop_body_scaffold.py`
+shipped alongside the typeParams fix. Asserts the wrapper /
+top-level signature shape (now passing) and the body's absence of
+`if s33` / `ok t3` (still failing, single remaining assertion).
+
+**Acceptance for partial:** scaffold passes 8/9; the wrapper-signature
+shape on `list_nth1` / `list_nth1_loop` / `list_nth1_loop.body` now
+matches the oracle. Skip list unchanged because the broken body
+prevents the whole 3-decl chain from elaborating.
+
+**Acceptance for full (deferred):** remove the three `list_nth1*` skips
+and re-run after the buildLoopBody rewrite.
 
 ### Step 6 — Back-closure tail position not wrapped in `ok` (Cluster: `tail_back_closure_wrap`) — PARTIAL 2026-05-18
 
