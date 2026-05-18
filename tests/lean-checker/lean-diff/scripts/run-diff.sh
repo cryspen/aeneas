@@ -14,13 +14,25 @@ repo_root="$(cd "$here/../../.." && pwd)"
 aeneas_check="$repo_root/aeneas-lean-checker/.lake/build/bin/aeneas-check"
 llbc_dir="$repo_root/tests/llbc"
 
-fixtures=(incr_cert compare_simple calls bitwise constants scalars)
+fixtures=(incr_cert compare_simple calls bitwise scalars)
 
 echo "[lean-diff] regenerating Lean fixtures via aeneas-check"
 for fx in "${fixtures[@]}"; do
   "$aeneas_check" "$llbc_dir/$fx.cert.json" --out "$here/generated/$fx.lean" \
     | tail -2
 done
+
+# Session 7 (Item 2 follow-up): `constants` regen with `use_v` skipped.
+# Item 2's generic-globals work emits `V.LEN T N`, but the shim's
+# `constants.V.LEN` is a zero-arg `Result Usize` (no type-binders),
+# so applying it to `T N` fails to elaborate. Once the shim grows
+# the typed `(T : Type) (N : Std.Usize) → Result Std.Usize` form (or
+# the emitter learns to drop generic args when calling a non-generic
+# shim binding), `use_v` can rejoin the build.
+echo "[lean-diff] regenerating constants.lean (with --skip-decl filter)"
+"$aeneas_check" "$llbc_dir/constants.cert.json" --out "$here/generated/constants.lean" \
+  --skip-decl use_v \
+  | tail -2
 
 # Session 5 (Item 2): `demo` regen with the skip list. The 11
 # skipped decls each have a documented emit-side gap (see
@@ -41,6 +53,21 @@ echo "[lean-diff] regenerating demo.lean (with --skip-decl filter)"
   --skip-decl list_nth1_loop.body \
   --skip-decl use_counter \
   --skip-decl i32_id \
+  | tail -2
+
+# Session 7 (Item 3): `paper` regen with the skip list. `ref_incr`
+# elaborates cleanly; the other decls hit open emit gaps (see
+# `LeanDiff/PaperRunner.lean`'s file-level doc).
+echo "[lean-diff] regenerating paper.lean (with --skip-decl filter)"
+"$aeneas_check" "$llbc_dir/paper.cert.json" --out "$here/generated/paper.lean" \
+  --skip-decl List \
+  --skip-decl test_incr \
+  --skip-decl choose \
+  --skip-decl test_choose \
+  --skip-decl list_nth_mut \
+  --skip-decl sum \
+  --skip-decl test_nth \
+  --skip-decl call_choose \
   | tail -2
 
 echo "[lean-diff] building Lean runner (lake build)"

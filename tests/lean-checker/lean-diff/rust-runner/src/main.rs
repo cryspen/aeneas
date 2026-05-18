@@ -144,6 +144,16 @@ mod demo {
     }
 }
 
+mod paper {
+    // Session 7 (Item 3): mirrors the well-emitted subset of
+    // tests/src/paper.rs. Only `ref_incr` is wired in — the rest of
+    // paper hits emit gaps documented in
+    // `LeanDiff/PaperRunner.lean`.
+    pub fn ref_incr(x: i32) -> i32 {
+        x.wrapping_add(1)
+    }
+}
+
 mod constants {
     // Mirrors the subset of tests/src/constants.rs that the
     // ConstantsRunner exercises. Only the scalar-returning + tuple
@@ -397,6 +407,19 @@ const DEMO_PAIRS_U32: &[(u32, u32)] = &[
     (3329, 3329),
 ];
 
+// Session 7 (Item 3): paper fixture vectors. Must agree with
+// `LeanDiff/PaperRunner.lean` order.
+const PAPER_I32: [i32; 8] = [
+    0,
+    1,
+    -1,
+    41,
+    0x7FFFFFFE,
+    0x7FFFFFFF,
+    -0x80000000,
+    -1,
+];
+
 // ---------------------------------------------------------------------------
 // main
 // ---------------------------------------------------------------------------
@@ -631,5 +654,10 @@ fn main() {
     for &(a, b) in DEMO_PAIRS_U32 {
         ok_u32("demo", "mod_add", &[a.to_string(), b.to_string()],
             demo::mod_add(a, b));
+    }
+
+    // paper (Session 7 Item 3)
+    for &x in &PAPER_I32 {
+        ok_i32("paper", "ref_incr", &[x.to_string()], paper::ref_incr(x));
     }
 }

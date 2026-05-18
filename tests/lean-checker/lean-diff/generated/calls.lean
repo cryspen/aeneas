@@ -15,30 +15,35 @@ set_option maxRecDepth 2048
 namespace calls
 
 /-- [calls::incr_inner]:
-    Source: 'tests/src/calls.rs', lines 4:0-6:1 -/
-def incr_inner (x1 : Std.U32) : Result Std.U32 := do
-  (x1 + 1#u32)
+    Source: 'tests/src/calls.rs', lines 4:0-6:1
+    Visibility: public -/
+def incr_inner (y : Std.U32) : Result Std.U32 := do
+  y + 1#u32
 
 /-- [calls::incr_via_helper]:
-    Source: 'tests/src/calls.rs', lines 8:0-10:1 -/
-def incr_via_helper (x1 : Std.U32) : Result Std.U32 := do
-  (calls.incr_inner x1)
+    Source: 'tests/src/calls.rs', lines 8:0-10:1
+    Visibility: public -/
+def incr_via_helper (x : Std.U32) : Result Std.U32 := do
+  (calls.incr_inner x)
 
 /-- [calls::choose]:
-    Source: 'tests/src/calls.rs', lines 12:0-14:1 -/
-def choose (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result (Std.U32 × (Std.U32 → (Std.U32 × Std.U32))) := do
-  if x1 then ok (x2, fun ret => (ret, x3)) else ok (x3, fun ret => (x2, ret))
+    Source: 'tests/src/calls.rs', lines 12:0-14:1
+    Visibility: public -/
+def choose (b : Bool) (x : Std.U32) (y : Std.U32) : Result (Std.U32 × (Std.U32 → (Std.U32 × Std.U32))) := do
+  if b then ok (x, fun ret => (ret, y)) else ok (y, fun ret => (x, ret))
 
 /-- [calls::use_choose]:
-    Source: 'tests/src/calls.rs', lines 16:0-19:1 -/
-def use_choose (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result (Std.U32 × Std.U32) := do
-  let (x1_post_v, x1_post_back) ← (calls.choose x1 x2 x3)
-  ok (x1_post_back 7#u32)
+    Source: 'tests/src/calls.rs', lines 16:0-19:1
+    Visibility: public -/
+def use_choose (b : Bool) (x : Std.U32) (y : Std.U32) : Result (Std.U32 × Std.U32) := do
+  let (b_post_v, b_post_back) ← (calls.choose b x y)
+  ok (b_post_back 7#u32)
 
 /-- [calls::pick]:
-    Source: 'tests/src/calls.rs', lines 27:0-35:1 -/
-def pick (x1 : Bool) (x2 : Std.U32) (x3 : Std.U32) : Result Std.U32 := do
-  let t0 ← if x1 then ok x2 else ok x3
+    Source: 'tests/src/calls.rs', lines 27:0-35:1
+    Visibility: public -/
+def pick (b : Bool) (x : Std.U32) (y : Std.U32) : Result Std.U32 := do
+  let t0 ← if b then ok x else ok y
   (core.num.U32.wrapping_add t0 1#u32)
 
 end calls

@@ -15,24 +15,28 @@ set_option maxRecDepth 2048
 namespace demo
 
 /-- [demo::mul2_add1]:
-    Source: 'tests/src/demo.rs', lines 16:0-18:1 -/
-def mul2_add1 (x1 : Std.U32) : Result Std.U32 := do
-  let t0 ← (x1 + x1)
-  (t0 + 1#u32)
+    Source: 'tests/src/demo.rs', lines 16:0-18:1
+    Visibility: public -/
+def mul2_add1 (x : Std.U32) : Result Std.U32 := do
+  let t0 ← x + x
+  t0 + 1#u32
 
 /-- [demo::use_mul2_add1]:
-    Source: 'tests/src/demo.rs', lines 20:0-22:1 -/
-def use_mul2_add1 (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
-  let x1_post ← (demo.mul2_add1 x1)
-  (x1_post + x2)
+    Source: 'tests/src/demo.rs', lines 20:0-22:1
+    Visibility: public -/
+def use_mul2_add1 (x : Std.U32) (y : Std.U32) : Result Std.U32 := do
+  let x_post ← (demo.mul2_add1 x)
+  x_post + y
 
 /-- [demo::incr]:
-    Source: 'tests/src/demo.rs', lines 24:0-26:1 -/
-def incr (x1 : Std.U32) : Result Std.U32 := do
-  (x1 + 1#u32)
+    Source: 'tests/src/demo.rs', lines 24:0-26:1
+    Visibility: public -/
+def incr (x : Std.U32) : Result Std.U32 := do
+  x + 1#u32
 
 /-- [demo::use_incr]:
-    Source: 'tests/src/demo.rs', lines 28:0-33:1 -/
+    Source: 'tests/src/demo.rs', lines 28:0-33:1
+    Visibility: public -/
 def use_incr : Result Unit := do
   let t0 ← (demo.incr 0#u32)
   let t1 ← (demo.incr 0#u32)
@@ -41,13 +45,13 @@ def use_incr : Result Unit := do
 
 /-- [demo::mod_add]:
     Source: 'tests/src/demo.rs', lines 117:0-125:1 -/
-def mod_add (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
-  let t0 := (x1 < 3329#u32)
-  let t1 := (x2 < 3329#u32)
-  let t2 ← (x1 + x2)
+def mod_add (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+  let t0 := a < 3329#u32
+  let t1 := b < 3329#u32
+  let t2 ← a + b
   let t3 ← (core.num.U32.wrapping_sub t2 3329#u32)
-  let t4 ← (t3 >>> 16#i32)
-  let t5 := (3329#u32 &&& t4)
+  let t4 ← t3 >>> 16#i32
+  let t5 := 3329#u32 &&& t4
   (core.num.U32.wrapping_add t3 t5)
 
 end demo

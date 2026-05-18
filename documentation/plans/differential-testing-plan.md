@@ -53,8 +53,8 @@ gates** and treat the implied pairs as bonus coverage if cheap.
 | Pair | Comparison | What it tells us | Status today |
 |---|---|---|---|
 | **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 44 proptests / 12 fixtures (in `tests/lean-checker/differential/`); needs scaling |
-| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 267 vectors / 7 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
-| **G_byte** | L₀ ↔ L₁ (byte-equal) | Our Lean backend produces the same source as mainline (cheap syntactic check) | `scripts/compare-backends.sh --sweep` (Session 6 Item 2); baseline 1 pass / 85 divergent / 3 skip / 89 total; allowed-divergence list at `scripts/compare-backends-known-divergent.txt` |
+| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 275 vectors / 8 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
+| **G_byte** | L₀ ↔ L₁ (byte-equal) | Our Lean backend produces the same source as mainline (cheap syntactic check) | `scripts/compare-backends.sh --sweep` (Session 6 Item 2); Session 7: 3 pass / 83 divergent / 3 skip / 89 total (up from 1 / 85); allowed-divergence list at `scripts/compare-backends-known-divergent.txt` |
 | **G_rfl** | L₀ ↔ L₁ (definitional equality, `rfl`) | Our Lean's *meaning* matches mainline's, even where syntax differs (e.g. binder order, beta-equivalence) | Does not exist; this plan adds it |
 | (implied) | R₀ ↔ L₀ | Mainline Aeneas's Lean matches developer intent | Trusted via upstream test suite; we don't add separate coverage |
 | (implied) | R₁ ↔ L₁ | Our Rust and Lean outputs agree | Falls out of G_rust + G_lean (both go through R₀) |

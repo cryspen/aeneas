@@ -15,30 +15,35 @@ set_option maxRecDepth 2048
 namespace bitwise
 
 /-- [bitwise::shift_u32]:
-    Source: 'tests/src/bitwise.rs', lines 4:0-9:1 -/
-def shift_u32 (x1 : Std.U32) : Result Std.U32 := do
-  let t0 ← (x1 >>> 16#usize)
-  (t0 <<< 16#usize)
+    Source: 'tests/src/bitwise.rs', lines 4:0-9:1
+    Visibility: public -/
+def shift_u32 (a : Std.U32) : Result Std.U32 := do
+  let t0 ← a >>> 16#usize
+  t0 <<< 16#usize
 
 /-- [bitwise::shift_i32]:
-    Source: 'tests/src/bitwise.rs', lines 11:0-16:1 -/
-def shift_i32 (x1 : Std.I32) : Result Std.I32 := do
-  let t0 ← (x1 >>> 16#isize)
-  (t0 <<< 16#isize)
+    Source: 'tests/src/bitwise.rs', lines 11:0-16:1
+    Visibility: public -/
+def shift_i32 (a : Std.I32) : Result Std.I32 := do
+  let t0 ← a >>> 16#isize
+  t0 <<< 16#isize
 
 /-- [bitwise::xor_u32]:
-    Source: 'tests/src/bitwise.rs', lines 18:0-20:1 -/
-def xor_u32 (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
-  ok (x1 ^^^ x2)
+    Source: 'tests/src/bitwise.rs', lines 18:0-20:1
+    Visibility: public -/
+def xor_u32 (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+  ok (a ^^^ b)
 
 /-- [bitwise::or_u32]:
-    Source: 'tests/src/bitwise.rs', lines 22:0-24:1 -/
-def or_u32 (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
-  ok (x1 ||| x2)
+    Source: 'tests/src/bitwise.rs', lines 22:0-24:1
+    Visibility: public -/
+def or_u32 (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+  ok (a ||| b)
 
 /-- [bitwise::and_u32]:
-    Source: 'tests/src/bitwise.rs', lines 26:0-28:1 -/
-def and_u32 (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
-  ok (x1 &&& x2)
+    Source: 'tests/src/bitwise.rs', lines 26:0-28:1
+    Visibility: public -/
+def and_u32 (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+  ok (a &&& b)
 
 end bitwise

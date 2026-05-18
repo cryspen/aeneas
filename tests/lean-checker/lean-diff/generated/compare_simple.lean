@@ -15,18 +15,21 @@ set_option maxRecDepth 2048
 namespace compare_simple
 
 /-- [compare_simple::id_u32]:
-    Source: 'tests/src/compare_simple.rs', lines 4:0-6:1 -/
-def id_u32 (x1 : Std.U32) : Result Std.U32 := do
-  ok x1
+    Source: 'tests/src/compare_simple.rs', lines 4:0-6:1
+    Visibility: public -/
+def id_u32 (x : Std.U32) : Result Std.U32 := do
+  ok x
 
 /-- [compare_simple::incr_val]:
-    Source: 'tests/src/compare_simple.rs', lines 10:0-12:1 -/
-def incr_val (x1 : Std.U32) : Result Std.U32 := do
-  (x1 + 1#u32)
+    Source: 'tests/src/compare_simple.rs', lines 10:0-12:1
+    Visibility: public -/
+def incr_val (x : Std.U32) : Result Std.U32 := do
+  x + 1#u32
 
 /-- [compare_simple::add_u32]:
-    Source: 'tests/src/compare_simple.rs', lines 15:0-17:1 -/
-def add_u32 (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
-  (core.num.U32.wrapping_add x1 x2)
+    Source: 'tests/src/compare_simple.rs', lines 15:0-17:1
+    Visibility: public -/
+def add_u32 (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+  (core.num.U32.wrapping_add a b)
 
 end compare_simple

@@ -677,3 +677,229 @@ Priority order:
 - `scripts/compare-backends-known-divergent.txt` — initial 85 entries + 7-category header.
 - `documentation/plans/differential-testing-{plan, progress}.md` — counts + Session 6 note.
 
+
+## Session 7 (2026-05-18)
+
+### Commit summary
+
+Two commits on top of `40f63888`:
+
+```
+ebccbb72 Session 7 Items 1+2: Visibility line, paren alignment, source param names, generic globals
+<TBD>     Session 7 Item 1d follow-up + Item 3: paramNameMap, paramNameByLocal, paper wire-in
+```
+
+### Per-item outcome
+
+**Item 1a (Visibility line, ~30 min):** Done. Cert `attr_info` now
+carries `{"public": bool}` (was `null`); `Pretty.lean`'s
+`{Decl, StructDecl, EnumDecl, TraitDecl, TraitImpl}.docComment`
+helpers append `\n    Visibility: public` when `isPublic`. The flag
+is plumbed through `LLBCProgram.lean::ItemMeta.isPublic`,
+`Pure/Syntax.lean` (new `isPublic` field on each Pure decl), and the
+per-decl builder sites in `Translate/Driver.lean` and
+`Translate/Forward.lean`. Sweep: 1 → still 1 pass after this fix
+alone (other categories still dominate); per-fixture diff bytes
+dropped 5–10% as the line lands.
+
+**Item 1c (Parenthesisation, ~1 hour):** Done. `Pretty.lean`'s binop
+site (line 278) no longer wraps the result in outer parens; the
+wrap moved into `parenIfNeeded` (binop-app arg case) and the `.ok
+inner` case. Matches mainline's `x + 1#u32` vs our prior `(x +
+1#u32)`. Sweep: still 1 pass after 1a + 1c.
+
+**Item 1d (Param naming, ~half day):** Done with two passes.
+  - First pass: cert serializer emits `locals_names` parallel array;
+    `LlbcFunDecl.localsNames` carries them; `translateFunWith` /
+    `translateLoopFun` use an `effectiveParamName` helper to prefer
+    the source name (`y`) over `x{N}`. Sweep moved 1 → 2 pass
+    (`incr_cert` byte-identical).
+  - Bug surfaced: the new source-named params broke G_lean's
+    `incr_cert::incr_local` and `calls::incr_via_helper` — both
+    returned the input unchanged instead of the call/binop result.
+    Root cause: `Forward.lean`'s deref-write / EvCall / EvEndAbs
+    handlers all hard-coded an `x{N}` regex check
+    (`name.length ≥ 2 && name.front == 'x' && (drop 1).toNat?`) to
+    detect "this borrow writes back into input N". With the source
+    name `x` (length 1), the check failed and the borrow propagation
+    silently dropped on the floor. Fix (follow-up commit): added
+    `WalkState.paramNameMap : String → Nat` (reverse map) and
+    `paramNameByLocal : Nat → String` (forward); the four
+    `paramNameOfPExpr` sites now consult `paramNameMap` first and
+    fall back to the legacy regex; the two `<paramName k>_post`
+    sites use `paramNameByLocal.getD k (paramName k)` to honour the
+    source name. Sweep: 2 → 3 pass (`compare_simple` not yet; the
+    `incr_local` test in `incr_cert` was the easy add). G_lean
+    fully green again.
+
+**Item 2 (Generic-aware global propagation, ~half day):** Done. Cert
+`PlaceGlobal` JSON now carries `global_generics: {types,
+const_generics}` (arrays of Charon-debug-printed strings; vars come
+through as `T@k` / `C@k`). `LlbcGlobalGenerics` + `LlbcPlace.globalGenerics`
+on the Lean side; `Forward.lean::resolveGlobalGenericArg` maps `T@k`
+back to the function's `typeNames[k]` / `constNames[k]`;
+`seedGlobalRefsFromBlock` drops the `<`-name skip and emits a typed
+seed binding `let g ← <bareName> <T> <N>` when generics are present.
+Net effect: `pub fn use_v<const N: usize, T>() -> usize { V::<N,T>::LEN }`
+now emits a body that reads `constants.V.LEN T N` (was a typed-zero
+placeholder). Constants ConstantsRunner: skipped at G_lean wire-in
+time (`use_v` needs a shim-side typed `V.LEN` binding; left for a
+follow-up). Sweep impact: same byte counts, but the placeholder
+divergence shrinks measurably on the `constants` and `traits`
+fixtures.
+
+**Item 3 (paper wire-in for G_lean, ~1 hour):** Done.
+`paper::ref_incr` is now exercised by the lean-diff harness. The
+fixture's other decls (`test_incr` / `test_choose` use
+`massert`-style side effects we collapse to inert lets;
+`choose` / `list_nth_mut` / `call_choose` use back-closures we
+can't drive cleanly from this byte-stream harness; `List + sum`
+exercise recursive enums whose match-arm scoping our walker still
+mangles) are passed to `aeneas-check`'s `--skip-decl` filter so
+the generated `.lean` file compiles. G_lean: 267 → 275 vectors,
+7 → 8 fixtures.
+
+**Plus a small `tailToResult` tweak:** also wrap `.app` heads
+containing `:` (raw Charon qualified paths) so pure-shim calls in
+tail position get the required `ok` wrap. Didn't move sweep
+counts (the assembleBody collapse rule already handles most cases)
+but it's the right shape going forward.
+
+### Bug table (Session 7)
+
+| Class | Bug / change | Fix layer |
+|---|---|---|
+| Cosmetic (visibility) | Mainline emits `Visibility: public -/` per decl; we emitted plain `-/`. | OCaml cert + Lean `ItemMeta.isPublic` + all five Pure-decl `isPublic` fields + Pretty.lean docComment helpers. |
+| Cosmetic (parens) | We wrapped every binop result in outer parens at emit time. | `Pure/Pretty.lean::PExpr.toLeanDo` + `parenIfNeeded` + `.ok` case. |
+| Cosmetic (param names) | We synthesised `x1`/`x2`/… ignoring Charon's `local.name`. | Cert `locals_names` field + `LlbcFunDecl.localsNames` + `effectiveParamName` in Forward/Loops. |
+| **Soundness regression** (caught by G_lean) | The `x{N}`-prefix check in the deref-write / EvCall / EvEndAbs handlers silently dropped borrow-propagation when the param had a source name (e.g. `x` length-1 fails the `length ≥ 2` guard). `incr_local` and `incr_via_helper` returned the input unchanged. | `WalkState.paramNameMap` + `paramNameByLocal` + four updated `paramNameOfPExpr` sites + two updated `postName` sites. |
+| Structural (generics) | We had no way to surface a global ref's generic args; `seedGlobalRefsFromBlock` skipped all `<`-bearing names. | Cert `global_generics` field + `LlbcGlobalGenerics` + `resolveGlobalGenericArg` resolver + updated `seedGlobalRefsFromBlock`. |
+| Emit (tail ok-wrap) | Pure-shim calls in tail position (e.g. `wrapping_add`) emitted bare in some paths, missing the required `ok` wrap. | `tailToResult` predicate widened to also match `head.contains ':'` (raw Charon path). |
+
+### Coverage matrix snapshot (post-Session 7)
+
+| Fixture | G_rust | G_lean | G_byte | C_lean (shim) |
+|---|---|---|---|---|
+| incr_cert | ✓ 1/1 | ✓ 16/16 | **pass** (was divergent) | ✓ |
+| compare_simple | ✓ 3/3 | ✓ 22/22 | divergent (`wrapping_add` shim vs mainline `ok` wrap mismatch) | ✓ |
+| calls | ✓ 2/2 | ✓ 22/22 | divergent | ✓ |
+| bitwise | ✓ 5/5 | ✓ 30/30 | divergent | ✓ |
+| constants | ✓ 5/5 | ✓ 37/37 | divergent (`use_v` now emits real body) | ✓ |
+| aggregates_basic | ✓ 2/2 | (skip, ADT runner) | divergent | n/a |
+| reborrows | ✓ 1/1 | (skip, ADT runner) | divergent | n/a |
+| scalars | ✓ 13/13 | ✓ 105/105 | divergent | ✓ |
+| demo | ✓ 4/4 | ✓ 35/35 | divergent (extra trait decls) | ✓ |
+| paper | — | ✓ 8/8 (ref_incr) | divergent | partial |
+| enums_basic | ✓ 1/1 | — | divergent | n/a |
+| enums_payload | ✓ 3/3 | — | divergent | n/a |
+| no_nested_borrows | ✓ 5/5 | — | divergent | n/a |
+| blanket_impl | — | — | **pass** | — |
+| traits | — | — | divergent (generic globals: smaller delta) | n/a |
+| **Total** | **44 proptests / 12 fixtures** | **275 vectors / 8 fixtures** | **3 pass / 83 div / 3 skip / 89** | 7/89 |
+
+### Carry-forward into Session 8
+
+Priority order:
+
+1. **`wrapping_add` shim convention mismatch.** Mainline emits `ok
+   (wrapping_add x y)` for `compare_simple::add_u32` / `scalars::*`;
+   we emit `wrapping_add x y` (no `ok`). Mainline assumes the
+   wrapping intrinsic returns pure `U32`; our `RuntimeShim`
+   `wrapping_add` returns `Result U32`. To match mainline's bytes
+   we'd change the shim to pure; that breaks downstream proofs. The
+   cleanest fix is OCaml-side: have the emitter not wrap when the
+   target shim is Result-typed. Currently this affects ~20 fixtures'
+   byte deltas. Defer until shim convention is settled.
+
+2. **Decl-ordering alignment** (~half day). The `adt` fixture shows
+   `Struct.impl.len` ordered differently between mainline and ours
+   (mainline interleaves impl methods between the struct decl and
+   subsequent decls; we cluster all functions after structs). This
+   is the next-biggest emit-side divergence after the cosmetic ones.
+
+3. **Constants `use_v` shim-side typed binding.** Item 2 emits
+   `constants.V.LEN T N` but the shim's `V.LEN` is `Result Usize`
+   (zero-arg). Either expand the shim to a generic binding or have
+   the emitter detect the mismatch and emit bare `V.LEN`. Currently
+   gated out of G_lean via `--skip-decl use_v`.
+
+4. **More G_lean wire-ins:** `loops-issues` (has `CARRAY` and a few
+   non-loop fns), `assert-cfg` (Session-6 SymCast events). Each
+   adds 30–50 vectors.
+
+5. **More cross-fixture proptests:** `nested_borrows::call_inner_mut`,
+   `no_nested_borrows::test2/test3`. Adds 2-5 proptests each.
+
+6. **Phase 3 (G_rfl harness):** still deferred. Now that G_byte has
+   moved (3 pass, was 1), G_rfl would catch byte-different /
+   definitionally-equal cases (e.g. the `wrapping_add` shim
+   convention mismatch above).
+
+7. **Phase 5 (CI integration):** still deferred.
+
+### Operational notes (Session 7 specifics)
+
+- **No agent dispatches.** All inline in
+  `/Users/karthik/aeneas/.claude/worktrees/diff-test`. Worktree HEAD
+  stayed on `aeneas-lean-certificate-diff-test`.
+- **OCaml + Lean rebuilt** from this worktree's source at every
+  regen point. `src/_build/default/main.exe` and
+  `aeneas-lean-checker/.lake/build/bin/aeneas-check` invoked by
+  absolute path.
+- **Parent merge:** at session start, parent had moved from
+  `78352e5b` to `33936d6a` (4 new commits: M10.x.7–10 soundness
+  work). Merged cleanly with one auto-merge in `Step.lean`. No
+  files under `aeneas-lean-soundness/` or `AeneasCheck/Theorems/`
+  touched.
+- **Cert format `fmt_version`:** stayed at 6. The new fields
+  (`attr_info.public`, `locals_names`, `global_generics`) are
+  additive and backward-compatible; old certs missing them parse
+  with sensible defaults (`isPublic := false`, `localsNames := #[]`,
+  `globalGenerics := none`).
+- **G_lean regression caught & fixed within the same session.**
+  Item 1d's first pass broke `incr_local` and `incr_via_helper`'s
+  semantics. The fix (`paramNameMap` + `paramNameByLocal`) keeps
+  the borrow-propagation machinery name-agnostic; the legacy
+  `x{N}` regex stays as a fallback so back-compat callers that
+  build a `WalkState` by hand (e.g. `translateFun`) still work.
+
+### Files touched (Session 7, high-level)
+
+- `src/cert/LlbcJson.ml` — `attr_info.public`, `locals_names`,
+  `global_generics` emit.
+- `aeneas-lean-checker/AeneasCheck/Raw/LLBCProgram.lean` —
+  `ItemMeta.isPublic`, `LlbcGlobalGenerics`, `LlbcPlace.globalGenerics`,
+  `LlbcFunDecl.localsNames`.
+- `aeneas-lean-checker/AeneasCheck/Json/Parser.lean` — parse new
+  fields.
+- `aeneas-lean-checker/AeneasCheck/Pure/Syntax.lean` — `isPublic`
+  on each of 5 Pure decls.
+- `aeneas-lean-checker/AeneasCheck/Pure/Pretty.lean` — visibility
+  line emit + binop paren rework.
+- `aeneas-lean-checker/AeneasCheck/Translate/Driver.lean` — thread
+  `isPublic` through StructDecl/EnumDecl/TraitDecl/TraitImpl
+  builders.
+- `aeneas-lean-checker/AeneasCheck/Translate/Forward.lean` —
+  `effectiveParamName`, `paramNameMap`, `paramNameByLocal`,
+  `resolveGlobalGenericArg`, `buildGlobalGenericCall`,
+  per-fn `isPublic` thread, four updated `paramNameOfPExpr`
+  sites, two updated `postName` sites, `tailToResult` `:`-check,
+  generic-aware `seedGlobalRefsFromBlock`.
+- `aeneas-lean-checker/AeneasCheck/Translate/Loops.lean` —
+  `effectiveParamName` for loop fn params; `buildLoopBody` /
+  `buildTopLevelLoopFn` honour the passed-in param names.
+- `tests/llbc/*.cert.json` — regen (all 89; new fields).
+- `tests/lean-checker/lean-diff/LeanDiff/PaperRunner.lean` — new
+  runner.
+- `tests/lean-checker/lean-diff/LeanDiff/Main.lean` — import +
+  call PaperRunner.
+- `tests/lean-checker/lean-diff/lakefile.lean` — add `paper` root
+  + `PaperRunner` module.
+- `tests/lean-checker/lean-diff/scripts/run-diff.sh` — `paper`
+  regen with `--skip-decl` list; `constants` regen with
+  `--skip-decl use_v` (Item 2 follow-up).
+- `tests/lean-checker/lean-diff/rust-runner/src/main.rs` —
+  `paper::ref_incr` Rust mirror + 8-vector loop.
+- `tests/lean-checker/lean-diff/generated/*.lean` — regen.
+- `documentation/plans/differential-testing-{plan,progress}.md` —
+  counts + this Session 7 note.

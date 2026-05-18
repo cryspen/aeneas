@@ -54,7 +54,7 @@ lean_lib «RuntimeShim» where
 lean_lib «Generated» where
   srcDir := "generated"
   roots := #[`incr_cert, `compare_simple, `calls, `bitwise, `constants,
-             `scalars, `demo]
+             `scalars, `demo, `paper]
 
 /-- Common formatting + the per-fixture runners. -/
 lean_lib «LeanDiff» where
@@ -65,7 +65,8 @@ lean_lib «LeanDiff» where
              `LeanDiff.BitwiseRunner,
              `LeanDiff.ConstantsRunner,
              `LeanDiff.ScalarsRunner,
-             `LeanDiff.DemoRunner]
+             `LeanDiff.DemoRunner,
+             `LeanDiff.PaperRunner]
 
 /-- The differential entry point. Calls each runner's `runAll` so a
     single invocation produces the full expected-line stream. -/

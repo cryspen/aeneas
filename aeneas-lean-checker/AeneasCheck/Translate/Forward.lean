@@ -697,6 +697,21 @@ structure WalkState where
       to fall back to the projection-erasing legacy behaviour
       (`lookupPlace` returns the root pure value without projecting). -/
   localTypes : Std.HashMap Nat Raw.LlbcTy := {}
+  /-- Session 7 Item 1d follow-up: reverse map from a parameter's
+      effective name back to its 1-based input-local index. Used by
+      the deref-write handler's `resolveInputRoot` so the propagation
+      target ("write through this borrow lands on the original input")
+      survives when the param uses the user's source name (`y`)
+      rather than the synthesised `x{N}` form the legacy `x`-prefix
+      check assumed. Seeded once at translateFunWith / translateLoopFun
+      from `lf.localsNames` (or the synthesised `paramName` fallback
+      when no source name is available). -/
+  paramNameMap : Std.HashMap String Nat := {}
+  /-- Session 7 Item 1d follow-up: forward map from input-local index
+      (1..numParams) to that input's effective name. Lets the EvEndAbs
+      `_post`-name synthesiser produce `<sourceName>_post` instead of
+      `<paramName k>_post` when the cert carries a source name. -/
+  paramNameByLocal : Std.HashMap Nat String := {}
   deriving Inhabited
 
 namespace WalkState
@@ -1031,11 +1046,20 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
         let resolveInputRoot : Option Nat :=
           match st.vm[d.local_]? with
           | some (.var name) =>
-            if name.length ≥ 2 && name.front == 'x' then
-              match (name.drop 1).toNat? with
-              | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
-              | none => none
-            else none
+            -- Session 7 Item 1d follow-up: consult the reverse map
+            -- (`name → 1-based input local`) so a source-named param
+            -- (`y`) resolves the same way the synthesised `x1` did.
+            -- Fall back to the legacy `x{N}` text-pattern check so
+            -- this works even when the map wasn't seeded (e.g.
+            -- back-compat callers of the no-op `translateFun`).
+            match st.paramNameMap[name]? with
+            | some n => some n
+            | none =>
+              if name.length ≥ 2 && name.front == 'x' then
+                match (name.drop 1).toNat? with
+                | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+                | none => none
+              else none
           | _ => none
         match resolveInputRoot with
         | some root =>
@@ -1117,11 +1141,15 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       let paramNameOfPExpr : PExpr → Option Nat := fun e =>
         match e with
         | .var name =>
-          if name.length ≥ 2 && name.front == 'x' then
-            match (name.drop 1).toNat? with
-            | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
-            | none => none
-          else none
+          -- Session 7 Item 1d follow-up: source-name map first.
+          match st.paramNameMap[name]? with
+          | some n => some n
+          | none =>
+            if name.length ≥ 2 && name.front == 'x' then
+              match (name.drop 1).toNat? with
+              | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+              | none => none
+            else none
         | _ => none
       let arrayRoot : Option Nat :=
         paramNameOfPExpr arrayE
@@ -1139,11 +1167,15 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       let paramNameOfPExpr : PExpr → Option Nat := fun e =>
         match e with
         | .var name =>
-          if name.length ≥ 2 && name.front == 'x' then
-            match (name.drop 1).toNat? with
-            | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
-            | none => none
-          else none
+          -- Session 7 Item 1d follow-up: source-name map first.
+          match st.paramNameMap[name]? with
+          | some n => some n
+          | none =>
+            if name.length ≥ 2 && name.front == 'x' then
+              match (name.drop 1).toNat? with
+              | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+              | none => none
+            else none
         | _ => none
       let sliceRoot : Option Nat := paramNameOfPExpr sliceE
       { st with
@@ -1195,23 +1227,32 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
     let paramNameOfPExpr : PExpr → Option Nat := fun e =>
       match e with
       | .var name =>
-        -- Match `xN` for some N in [1..numParams].
-        let parsed : Option Nat :=
-          if name.length ≥ 2 && name.front == 'x' then
-            (name.drop 1).toNat?
-          else none
-        match parsed with
-        | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
-        | none => none
+        -- Session 7 Item 1d follow-up: prefer the source-name reverse
+        -- map; fall back to the legacy `x{N}` text pattern.
+        match st.paramNameMap[name]? with
+        | some n => some n
+        | none =>
+          let parsed : Option Nat :=
+            if name.length ≥ 2 && name.front == 'x' then
+              (name.drop 1).toNat?
+            else none
+          match parsed with
+          | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+          | none => none
       | _ => none
     let inputLocalsViaExpr : Array Nat :=
       argEs.map (fun e => (paramNameOfPExpr e).getD 0)
+    -- Session 7 Item 1d follow-up: prefer the source-name suffix
+    -- (`<sourceName>_post`); fall back to the synthesised
+    -- `<paramName l>_post`.
+    let postBindName (l : Nat) : String :=
+      s!"{st.paramNameByLocal.getD l (paramName l)}_post"
     let (nm, st) :=
       match inputLocals.findSome? (fun l => if l = 0 then none else some l) with
-      | some l => (s!"{paramName l}_post", st)
+      | some l => (postBindName l, st)
       | none =>
         match inputLocalsViaExpr.findSome? (fun l => if l = 0 then none else some l) with
-        | some l => (s!"{paramName l}_post", st)
+        | some l => (postBindName l, st)
         | none => st.freshName
     let app : PExpr := .app fnName argEs
     -- M12.2a-3: when the callee has `&mut` inputs (non-empty
@@ -1366,11 +1407,17 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       let paramNameOfPExpr : PExpr → Option Nat := fun e =>
         match e with
         | .var name =>
-          let parsed : Option Nat :=
-            if name.length ≥ 2 && name.front == 'x' then (name.drop 1).toNat? else none
-          match parsed with
-          | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
-          | none => none
+          -- Session 7 Item 1d follow-up: prefer the source-name
+          -- reverse map; fall back to the legacy `x{N}` text pattern
+          -- for back-compat with unnamed test fixtures.
+          match st.paramNameMap[name]? with
+          | some n => some n
+          | none =>
+            let parsed : Option Nat :=
+              if name.length ≥ 2 && name.front == 'x' then (name.drop 1).toNat? else none
+            match parsed with
+            | some n => if 1 ≤ n ∧ n ≤ st.numParams then some n else none
+            | none => none
         | _ => none
       let inputLocalsViaExpr : Array Nat :=
         pc.argEs.map (fun e => (paramNameOfPExpr e).getD 0)
@@ -1384,7 +1431,11 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
       let st :=
         if postLocal == 0 then st
         else
-          let postName : String := s!"{paramName postLocal}_post"
+          -- Session 7 Item 1d follow-up: when a source name exists,
+          -- use `<sourceName>_post`; otherwise fall back to the
+          -- synthesised `<paramName postLocal>_post`.
+          let postName : String :=
+            s!"{st.paramNameByLocal.getD postLocal (paramName postLocal)}_post"
           { st with
             vm := st.vm.insert postLocal (.var postName)
             lastWrite := some postLocal }
@@ -2436,10 +2487,27 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- LLBC-statement order, matching Charon's pre-pass insertion order
   -- (`g<L>` for the smallest `L` first), so a later global that
   -- references an earlier one resolves in scope.
+  -- Session 7 Item 1d follow-up: reverse-map each param's effective
+  -- name back to its 1-based local index. The deref-write handler
+  -- uses this to detect "this borrow writes back into input N" when
+  -- the param uses the user's source name instead of `x{N}`. The
+  -- forward map `paramNameByLocal` is the same info indexed the
+  -- other way so the EvCall/EvEndAbs `_post`-name synthesiser can
+  -- emit `<sourceName>_post` instead of `<paramName k>_post`.
+  let paramNameMap : Std.HashMap String Nat := Id.run do
+    let mut m : Std.HashMap String Nat := {}
+    for i in [0:numParams] do
+      m := m.insert (effectiveParamName i) (i + 1)
+    return m
+  let paramNameByLocal : Std.HashMap Nat String := Id.run do
+    let mut m : Std.HashMap Nat String := {}
+    for i in [0:numParams] do
+      m := m.insert (i + 1) (effectiveParamName i)
+    return m
   let finalSt : WalkState :=
     walkEvents f.events
       { vm := initVm, numParams, tdm, localTypes := initLocalTypes,
-        binds := seedAcc.binds }
+        binds := seedAcc.binds, paramNameMap, paramNameByLocal }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
   -- M9.5i / M9.7o-E5b: thread the structured `LlbcSignature` so a
