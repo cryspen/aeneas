@@ -2,5 +2,4 @@
  Classical.choice,
  Quot.sound,
  AeneasSoundness.Soundness.CertGen_faithful.endBorrow_direct_witness,
- AeneasSoundness.Soundness.CertGen_faithful.join,
- AeneasSoundness.Soundness.CertGen_faithful.symExpandMutBorrow]
+ AeneasSoundness.Soundness.CertGen_faithful.join]

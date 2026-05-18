@@ -135,6 +135,18 @@ def clearMutLoanToken (Ω : LLBCState) (x : LocalId) : LLBCState :=
   | some (.mutLoan _) => Ω.setLocal x .bottom
   | _ => Ω
 
+/-- M10.x.8 (paper-side mirror of the replayer's `substLocalsOne`).
+    The `LStep.symExpandMutBorrow` rule's post-state folds this over
+    each `substLocals` entry: if the slot holds a `Val.sym k` token
+    with `k = svId`, overwrite to `.mutLoan bid`; otherwise unchanged.
+    `liftVal` preserves `.sym _` and `.mutLoan _` exactly, so the
+    per-step commute closes by case analysis. -/
+def substLocalOne (svId bid : SymValId) (Ω : LLBCState) (x : LocalId) :
+    LLBCState :=
+  match Ω.ctx x with
+  | some (.sym k) => if k = svId then Ω.setLocal x (.mutLoan bid) else Ω
+  | _ => Ω
+
 /-! ## Freshness -/
 
 /-- Bump `nextLoanId` past `ℓ`. Idempotent if `ℓ < nextLoanId`. -/

@@ -158,4 +158,29 @@ def loopInvRegisterLoan (st : SymState) (entry : Nat × Nat) : SymState :=
   let (b, _parentAbs) := entry
   if st.loans.contains b then st else st.addLoan b .bottom .reborrow
 
+/-- M10.x.8: one substLocals rewrite step. If `env[l] = .sym svId`,
+    overwrite to `.mutLoan bid`; otherwise unchanged. Factored out
+    of `stepSymExpandMutBorrow` for the M10.x.8 commute lemma.
+
+    The paper-side mirror is `LLBCState.substLocalOne svId bid Ω l`. -/
+def substLocalsOne (svId bid : Nat) (env : Std.HashMap Nat Val) (l : Nat) :
+    Std.HashMap Nat Val :=
+  match env[l]? with
+  | some (.sym k) => if k = svId then env.insert l (.mutLoan bid) else env
+  | _ => env
+
+/-- M10.x.8: one substLoans rewrite step. If `loans[b].given = .sym svId`,
+    overwrite to `.mutLoan bid`; otherwise unchanged. Concretise-no-op
+    because `concretise` does not read `loans`; kept symmetric to
+    `substLocalsOne` for clean factoring. -/
+def substLoansOne (svId bid : Nat) (loans : Std.HashMap Nat LoanInfo) (b : Nat) :
+    Std.HashMap Nat LoanInfo :=
+  match loans[b]? with
+  | some li =>
+    match li.given with
+    | .sym k =>
+      if k = svId then loans.insert b { li with given := .mutLoan bid } else loans
+    | _ => loans
+  | none => loans
+
 end AeneasCheck.LLBCSharp

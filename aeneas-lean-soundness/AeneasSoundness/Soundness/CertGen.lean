@@ -28,7 +28,6 @@ by one Phase-C lemma:
 
 | Extractor | Discharges (for stepX_sound) |
 |---|---|
-| `symExpandMutBorrow` | `substLocals = #[] ∧ substLoans = #[]` + `bid` freshness |
 | `endBorrow_direct_witness` | for `LoanKind ∈ {.direct, .lazyExpand}`: holder local `x` + result value `v` + `hShape` |
 | `join` | `(Ω', hChain, hConcMatch)` triple |
 | `proj` | unreachable — replayer rejects, no extractor needed |
@@ -42,6 +41,7 @@ by one Phase-C lemma:
 | `mutBorrow_inAbsReborrow` | dropped M10.x.5 — paper-side rule's `Ω.abs absId = some r` premise was vestigial (the bound `r` was not in the post-state); HWM clause replayer-discharged via M10.x.2 |
 | `endAbs` | dropped M10.x.6 — paper-side rule's `Ω.abs abs = some r` premise was vestigial; post-state strengthened with `tokenClearLocals.foldl clearMutLoanToken` so the replayer's env-clearing is mirrored honestly; the previous "ugly triple" axiom existentially bound an `stPre` that did NOT satisfy `concretise stPre = concretise st` in general |
 | `loopInv` | dropped M10.x.7 — paper-side rule's `Ω → Ω` no-op was strictly weaker than the replayer's conditional `addLoan` fold; M10.x.7 strengthened the post-state to `loanRegistry.foldl bumpLoanId Ω`, mirroring the replayer up to HwmInvariant skip-branch equivalence. The lemma now consumes `HwmInvariant st` (threaded through `stepEvent_sound`) |
+| `symExpandMutBorrow` | dropped M10.x.8 — paper-side rule's no-op-on-ctx weakening matched only 5/423 fixtures (the cert routinely populates `substLocals`). M10.x.8 strengthened the post-state to `(substLocals.foldl substLocalOne Ω).bumpLoanId bid.bumpSymValId innerSv`, mirroring the replayer's env-rewrite of `.sym svId → .mutLoan bid` per substLocals entry. `bid`-freshness clauses replayer-discharged via guard + M10.x.8 HWM reject |
 
 ## What's NOT here
 
@@ -169,21 +169,30 @@ M10.x.6 closes the gap honestly via three steps:
 With the paper rule's post-state honestly mirroring the replayer's
 behaviour, `stepEndAbs_sound` closes from `hStep` + `hRep` alone. -/
 
-/-! ### SymExpandMutBorrow — no-substitution subset + bid fresh
+/-! ### SymExpandMutBorrow — dropped (M10.x.8)
 
-C17 closes for the empty-`substLocals` / empty-`substLoans` subset;
-the substitution-bearing subset awaits a Phase-A surface
-strengthening (`SubstScope_Complete`). Cert-emission discipline is
-that the OCaml interpreter produces empty subst arrays whenever the
-ctx tracks no parameter / abstraction-bound locals that need
-rewriting — true for the M10 fixture set; cert v5 may broaden. -/
+The previous extractor promised
+`substLocals = #[] ∧ substLoans = #[] ∧ st.loans.contains bid = false ∧
+ st.loanIdHwm ≤ bid`. Pre-flight scan of `tests/llbc/*.cert.json` found
+**418/423** EvSymExpandMutBorrow events with non-empty `substLocals`
+(the OCaml emitter routinely populates this hint to track which env
+locals reference the symbolic value being expanded). The previous
+axiom was therefore **false on nearly every fixture** — the M10.0i-era
+"empty subset" restriction was a temporary M10.x scaffold.
 
-axiom symExpandMutBorrow (st st' : SymState) (svId bid innerSv : Nat)
-    (parentAbs : Option Nat) (substLocals substLoans : Array Nat)
-    (hStep : stepEvent st
-      (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans) = .ok st') :
-    substLocals = #[] ∧ substLoans = #[] ∧
-    st.loans.contains bid = false ∧ st.loanIdHwm ≤ bid
+M10.x.8 closes honestly through paper-rule strengthening (the
+M10.x.6 / M10.x.7 pattern). The paper-side `LStep.symExpandMutBorrow`
+post-state was extended from `(Ω.bumpLoanId bid).bumpSymValId innerSv`
+to `((substLocals.foldl substLocalOne Ω).bumpLoanId bid).bumpSymValId innerSv`,
+mirroring the replayer's env-rewrite of `.sym svId → .mutLoan bid`
+across each named local. `substLoans` is concretise-no-op (the
+replayer's `st.loans` is invisible to `concretise`); the fold is
+kept in the replayer body for parity but doesn't enter the paper
+post-state.
+
+The remaining clauses are replayer-discharged: `st.loans.contains bid
+= false` from the existing replayer guard; `st.loanIdHwm ≤ bid` from
+the M10.x.8 HWM reject path added in `stepSymExpandMutBorrow`. -/
 
 /-! ### LoopInv — dropped (M10.x.7)
 

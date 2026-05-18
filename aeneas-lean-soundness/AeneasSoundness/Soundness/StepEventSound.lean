@@ -23,14 +23,14 @@ each lemma's Phase-D-dischargeable hypotheses via the
 `#print axioms stepEvent_sound` reports:
 
 * `propext`, `Quot.sound`, `Classical.choice` (Lean core).
-* `CertGen_faithful.{symExpandMutBorrow, endBorrow_direct_witness,
-  join}` — the remaining OCaml-side honesty axioms after M10.x.7.
-  Plan §0.3 + `CertGen.lean`'s header note are the audit surface.
-  (Earlier-dropped extractors: `move` / `copy` in M10.x.3;
-  `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned` /
-  `reborrow` in M10.x.4; `mutBorrow_inAbsReborrow` in M10.x.5;
-  `endAbs` in M10.x.6; `loopInv` in M10.x.7; `call` /
-  `endBorrow_takeOk` / `endBorrow_reborrow_witness` /
+* `CertGen_faithful.{endBorrow_direct_witness, join}` — the remaining
+  OCaml-side honesty axioms after M10.x.8. Plan §0.3 + `CertGen.lean`'s
+  header note are the audit surface. (Earlier-dropped extractors:
+  `move` / `copy` in M10.x.3; `sharedBorrow` / `mutBorrow_direct` /
+  `mutBorrow_loopOwned` / `reborrow` in M10.x.4;
+  `mutBorrow_inAbsReborrow` in M10.x.5; `endAbs` in M10.x.6;
+  `loopInv` in M10.x.7; `symExpandMutBorrow` in M10.x.8;
+  `call` / `endBorrow_takeOk` / `endBorrow_reborrow_witness` /
   `endBorrow_shared_witness` in M10.4a-post.)
 
 No `sorryAx`. No domain `axiom` from `LLBCSharpPaper/`. The four
@@ -847,57 +847,92 @@ Phase-D-dischargeable from the cert's monotone loan-id discipline
 (plan §11.1 #11 + the M10.1g invariant `∀ b ∈ st.loans, b <
 st.loanIdHwm`). -/
 
-/-- C17 / M10.2q — `EvSymExpandMutBorrow` (paper §4.1 lazy
-    expansion). Restricted to empty `substLocals` / `substLoans`;
-    the substitution-bearing case awaits a Phase-A surface
-    strengthening on `LStep.symExpandMutBorrow` (deferred to the
-    `SubstScope_Complete` premise per the constructor's docstring). -/
+/-- M10.x.8 — `concretise` chain for the deterministic body of
+    `stepSymExpandMutBorrow` (after the two guard checks succeed).
+    The body is `addLoan bid .. .lazyExpand` applied to a record
+    update whose env-field is `substLocals.foldl substLocalsOne ...`
+    and whose loans-field is `substLoans.foldl substLoansOne ...`.
+    Chains: addLoan ↦ bumpLoanId; substLoans-fold is concretise-no-op;
+    substLocals-fold mirrors `substLocalOne` on the paper side. -/
+private theorem concretise_stepSymExpandMutBorrowBody_eq
+    (st : SymState) (svId bid innerSv : Nat)
+    (substLocals substLoans : Array Nat) :
+    let envFinal := substLocals.foldl
+      (init := st.env) (AeneasCheck.LLBCSharp.substLocalsOne svId bid)
+    let loansFinal := substLoans.foldl
+      (init := st.loans) (AeneasCheck.LLBCSharp.substLoansOne svId bid)
+    concretise ((({ st with env := envFinal, loans := loansFinal } :
+        SymState)).addLoan bid (.sym innerSv) .lazyExpand) =
+      ((substLocals.foldl (init := concretise st)
+          (LLBCSharpPaper.LLBCState.substLocalOne svId bid)).bumpLoanId bid).bumpSymValId innerSv := by
+  -- Strategy: peel off `addLoan` via `concretise_addLoan`; then split the
+  -- env-substLocals fold and loans-substLoans fold via their respective
+  -- commute lemmas.
+  intro envFinal loansFinal
+  -- Bridge the file-local abbrev `concretise` to `Concretise.concretise`
+  -- (the abbrev otherwise blocks `rw [Concretise.concretise_addLoan]`).
+  simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+             LLBCSharpPaper.LLBCState.bumpSymValId,
+             Concretise.concretise_addLoan]
+  -- Goal: (Concretise.concretise { st with env := envFinal, loans := loansFinal }).bumpLoanId bid
+  --     = (foldl substLocalOne (Concretise.concretise st) substLocals).bumpLoanId bid
+  congr 1
+  -- Loans-update is invisible to concretise.
+  have hLoansDrop :
+      Concretise.concretise ({ st with env := envFinal, loans := loansFinal } : SymState)
+        = Concretise.concretise ({ st with env := envFinal } : SymState) := by
+    unfold Concretise.concretise; rfl
+  rw [hLoansDrop]
+  -- Env-fold via M10.x.8 mirror.
+  exact Concretise.concretise_env_substLocalsOne_foldl st svId bid substLocals
+
+/-- C17 / M10.x.8 revision — `EvSymExpandMutBorrow` (paper §4.1
+    lazy expansion) with the substitution fold honestly modelled.
+    M10.x.8 dropped all four hypotheses of the previous lemma:
+    `hSubstLocalsEmpty`/`hSubstLoansEmpty` (replaced by paper-rule
+    strengthening); `hBidNotInLoans` (replayer-discharged via
+    `if st.loans.contains bid then fail`); `hBidFresh` (replayer-
+    discharged via the M10.x.8 HWM reject path). -/
 theorem stepSymExpandMutBorrow_sound
   (hRep : concretise st = Ω)
   (svId bid innerSv : Nat) (parentAbs : Option Nat)
-  (substLocals substLoans : Array Nat)
-  (hSubstLocalsEmpty : substLocals = #[])
-  (hSubstLoansEmpty : substLoans = #[])
-  (hBidNotInLoans : st.loans.contains bid = false)
-  (hBidFresh : st.loanIdHwm ≤ bid) :
+  (substLocals substLoans : Array Nat) :
   stepEvent st
     (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans) = .ok st' →
   ∃ Ω', Valid (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans) Ω ∧
         LStep Ω (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans) Ω' ∧
         concretise st' = Ω' := by
   intro hStep
-  -- Replayer: guard ; empty fors collapse to a single addLoan call.
-  simp only [stepEvent, AeneasCheck.LLBCSharp.stepSymExpandMutBorrow,
-    hSubstLocalsEmpty, hSubstLoansEmpty] at hStep
-  rw [if_neg (by simp [hBidNotInLoans])] at hStep
-  simp at hStep
-  -- After `simp`, hStep is `pure (X.addLoan ...) = .ok st'`, where X
-  -- is the η-expanded record `{ env := st.env, ... }` (definitionally
-  -- equal to `st`). Push pure→ok and η-reduce simultaneously by
-  -- asserting the record equality via `rfl`.
-  have hEtaSt : ({ env := st.env, loans := st.loans, numLocals := st.numLocals,
-                   absRegistry := st.absRegistry, loanIdHwm := st.loanIdHwm,
-                   absIdHwm := st.absIdHwm } : SymState) = st := rfl
-  rw [hEtaSt] at hStep
-  simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
-  subst hStep
-  -- Paper-side freshness witnesses.
-  have hLoanIdFresh : Ω.loanIdFresh bid := by
-    subst hRep
-    simpa [LLBCState.loanIdFresh, Concretise.concretise] using hBidFresh
-  have hSymValIdFresh : Ω.symValIdFresh innerSv := by
-    subst hRep
-    simp [LLBCState.symValIdFresh, Concretise.concretise]
-  refine ⟨(Ω.bumpLoanId bid).bumpSymValId innerSv,
-          ⟨hLoanIdFresh, hSymValIdFresh⟩,
-          LStep.symExpandMutBorrow hLoanIdFresh hSymValIdFresh,
-          ?_⟩
-  -- concretise (st.addLoan bid (.sym innerSv) .lazyExpand)
-  --   = (concretise st).bumpLoanId bid     -- M10.1h commute
-  --   = Ω.bumpLoanId bid                    -- hRep
-  --   = (Ω.bumpLoanId bid).bumpSymValId innerSv  -- bumpSymValId no-op
-  simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
-    LLBCState.bumpSymValId, Concretise.concretise_addLoan, hRep]
+  -- Replayer body inversion: guards (loans, HWM) followed by substLocals/
+  -- substLoans folds followed by addLoan.
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepSymExpandMutBorrow] at hStep
+  by_cases hC : st.loans.contains bid = true
+  · rw [if_pos hC] at hStep; cases hStep
+  · rw [if_neg hC] at hStep
+    by_cases hHwm : st.loanIdHwm > bid
+    · rw [if_pos hHwm] at hStep; cases hStep
+    · rw [if_neg hHwm] at hStep
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      have hBidFresh : st.loanIdHwm ≤ bid := Nat.not_lt.mp hHwm
+      have hLoanIdFresh : Ω.loanIdFresh bid := by
+        subst hRep
+        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hBidFresh
+      have hSymValIdFresh : Ω.symValIdFresh innerSv := by
+        subst hRep
+        simp [LLBCState.symValIdFresh, Concretise.concretise]
+      refine ⟨((substLocals.foldl (init := Ω)
+                  (LLBCSharpPaper.LLBCState.substLocalOne svId bid)).bumpLoanId bid).bumpSymValId innerSv,
+              ⟨hLoanIdFresh, hSymValIdFresh⟩,
+              LStep.symExpandMutBorrow hLoanIdFresh hSymValIdFresh,
+              ?_⟩
+      -- Chain: concretise (env-foldl, loans-foldl, addLoan) =
+      --   ((concretise st).substLocalsFold bid).bumpLoanId bid.
+      -- substLoans is concretise-no-op; substLocals has its mirror;
+      -- addLoan = bumpLoanId; bumpSymValId is no-op.
+      -- Goal needs a normalised LHS; use the `concretise_stepSymExpandMutBorrowBody_eq`
+      -- auxiliary.
+      rw [concretise_stepSymExpandMutBorrowBody_eq, ← hRep]
 
 /-! ### LoopInv (C24 / M10.3a — empty-loanRegistry subset)
 
@@ -1171,12 +1206,12 @@ theorem stepEvent_sound :
     -- sync — a cert that ever emits `EvProj` is rejected by both.)
     simp [stepEvent] at hStep
   | symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans =>
-    obtain ⟨hSubstLocalsEmpty, hSubstLoansEmpty, hBidNotInLoans, hBidFresh⟩ :=
-      CertGen_faithful.symExpandMutBorrow st st' svId bid innerSv parentAbs
-        substLocals substLoans hStep
+    -- M10.x.8: `CertGen_faithful.symExpandMutBorrow` retired. The
+    -- paper-side rule's post-state was strengthened with a substLocals
+    -- fold; hBidNotInLoans / hBidFresh are replayer-discharged via
+    -- guard + M10.x.8 HWM reject.
     exact stepSymExpandMutBorrow_sound st st' Ω hRep svId bid innerSv parentAbs
-      substLocals substLoans hSubstLocalsEmpty hSubstLoansEmpty hBidNotInLoans
-      hBidFresh hStep
+      substLocals substLoans hStep
   | join left right result witnesses =>
     obtain ⟨Ω', hChain, hConcMatch⟩ :=
       CertGen_faithful.join st st' left right result witnesses Ω hRep hStep

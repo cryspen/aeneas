@@ -326,36 +326,27 @@ def stepSymExpandMutBorrow (st : SymState) (svId bid innerSv : Nat)
     Result SymState := do
   if st.loans.contains bid then
     fail s!"E-SymExpandMutBorrow: borrow id {bid} already live"
-  -- M9.6 (Option C, plan §7.1 #23) — strict-only path: the OCaml
-  -- side enumerates the env locals and loan-given slots it
-  -- touched (commit #6 source). The M9.5r scan-env fallback is
-  -- gone — when the hint arrays are empty we do no substitution
-  -- (a legacy v1 cert that needs the rewrite is now a cert bug,
-  -- caught at the next event). The OCaml ctx tracks function-
-  -- parameter and abstraction-bound locals the Lean SymState
-  -- doesn't model, so we tolerate "unbound local" and
-  -- "unknown loan" entries in the hints silently — only env
-  -- slots / loans we already track get rewritten.
-  -- [parentAbs] is recorded by commit #19's AbsRegistry
-  -- consumer; ignored here.
-  let mut newEnv := st.env
-  for l in substLocals do
-    match newEnv[l]? with
-    | some (.sym k) =>
-      if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
-    | _ => pure ()
-  let mut newLoans := st.loans
-  for b in substLoans do
-    match newLoans[b]? with
-    | some li =>
-      match li.given with
-      | .sym k =>
-        if k = svId then
-          newLoans := newLoans.insert b { li with given := .mutLoan bid }
-      | _ => pure ()
-    | none => pure ()
-  let st := { st with env := newEnv, loans := newLoans }
-  return st.addLoan bid (.sym innerSv) .lazyExpand
+  else if st.loanIdHwm > bid then
+    -- M10.x.8: monotone-allocator strengthening, mirrors stepMutBorrow.
+    -- Discharges `CertGen_faithful.symExpandMutBorrow`'s `st.loanIdHwm ≤ bid`
+    -- clause via hStep inversion. G4 pre-flight: no fixture currently
+    -- violates this (all bid emissions are monotone-fresh).
+    fail s!"E-SymExpandMutBorrow: borrow id {bid} below HWM {st.loanIdHwm}"
+  else
+    -- M9.6 (Option C, plan §7.1 #23) — strict-only path: the OCaml
+    -- side enumerates the env locals and loan-given slots it
+    -- touched (commit #6 source). The M9.5r scan-env fallback is
+    -- gone. Unbound locals / unknown loans in the hints are tolerated
+    -- silently (only tracked slots get rewritten). [parentAbs] is
+    -- recorded by commit #19's AbsRegistry consumer; ignored here.
+    --
+    -- M10.x.8: refactored from `for + mut` to explicit `Array.foldl`
+    -- over `substLocalsOne` / `substLoansOne` so the soundness proof
+    -- can chain per-step commute lemmas.
+    let newEnv := substLocals.foldl (init := st.env) (substLocalsOne svId bid)
+    let newLoans := substLoans.foldl (init := st.loans) (substLoansOne svId bid)
+    let st := { st with env := newEnv, loans := newLoans }
+    return st.addLoan bid (.sym innerSv) .lazyExpand
 
 /-! ## E-EndAbstraction
 

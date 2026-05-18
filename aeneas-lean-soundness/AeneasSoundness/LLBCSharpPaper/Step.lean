@@ -514,19 +514,27 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
 
       Premises (baseline): `bid` and `innerSv` fresh.
 
-      Post-state: bump freshness counters past `bid`, `innerSv`.
-      The substitution itself (rewriting every `Val.sym svId` to
-      `Val.mutBorrow bid (.sym innerSv)`) is the
-      `substLocals` / `substLoans` job — modelled here as a no-op
-      on ctx pending the Phase-C `SubstScope_Complete` premise
-      (plan §3.4 risk on substitution scope). -/
+      Post-state (M10.x.8 strengthening): bump freshness counters
+      past `bid`, `innerSv`, and fold the paper-side
+      `substLocalOne svId bid` mirror over `substLocals` (rewriting
+      each `Val.sym svId` in ctx to `Val.mutLoan bid`). The
+      `substLoans` array doesn't enter the post-state because
+      `concretise` doesn't read the replayer's `loans` field
+      (loan inner values live inside `ctx`'s `mutLoan b` tokens /
+      inside abs's role lists; `loans` is replayer-only bookkeeping).
+      Pre-M10.x.8 this rule was a no-op on substitution; 418/423
+      EvSymExpandMutBorrow fixtures emit non-empty substLocals, so
+      keeping the rule a no-op required the now-retired
+      `CertGen_faithful.symExpandMutBorrow` axiom to claim
+      `substLocals = #[]` falsely. -/
   | symExpandMutBorrow {Ω : LLBCState} {svId bid innerSv : Nat}
       {parentAbs : Option AbsId} {substLocals substLoans : Array Nat} :
       Ω.loanIdFresh bid →
       Ω.symValIdFresh innerSv →
       LStep Ω
         (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans)
-        ((Ω.bumpLoanId bid).bumpSymValId innerSv)
+        (((substLocals.foldl
+              (init := Ω) (LLBCState.substLocalOne svId bid)).bumpLoanId bid).bumpSymValId innerSv)
 
   -- Fig. 11 — join rules (M10.0h) ---
 

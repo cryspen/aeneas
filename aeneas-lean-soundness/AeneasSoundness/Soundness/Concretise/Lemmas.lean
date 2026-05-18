@@ -479,4 +479,128 @@ theorem concretise_loopInvRegisterLoan_foldl {st : SymState}
         simp [Array.foldl_toList]]
   exact concretise_loopInvRegisterLoan_foldl_aux loanRegistry.toList hInv
 
+/-! ## M10.x.8 (symExpandMutBorrow substitution folds)
+
+The replayer's `stepSymExpandMutBorrow` body unconditionally folds
+`substLocalsOne svId bid` over `substLocals` (the env half) and
+`substLoansOne svId bid` over `substLoans` (the loans half), then
+calls `addLoan bid (.sym innerSv) .lazyExpand`. The substLoans
+half is concretise-no-op (`concretise` does not read `loans`);
+substLocals has a paper-side mirror via
+`LLBCState.substLocalOne`. -/
+
+/-- Per-step env-rewrite commute: the replayer's `substLocalsOne`
+    matches paper-side `substLocalOne`. Case analysis on `env[l]?`
+    runs arm-for-arm with `liftVal`'s preservation of `.sym` and
+    insertion of `.mutLoan bid`. -/
+theorem concretise_env_substLocalsOne
+    (st : SymState) (svId bid l : Nat) :
+    concretise ({ st with env :=
+      AeneasCheck.LLBCSharp.substLocalsOne svId bid st.env l } : SymState) =
+      LLBCSharpPaper.LLBCState.substLocalOne svId bid (concretise st) l := by
+  unfold AeneasCheck.LLBCSharp.substLocalsOne LLBCSharpPaper.LLBCState.substLocalOne
+  have hCtx : (concretise st).ctx l = (st.env[l]?).map liftVal := by
+    unfold concretise liftEnv; rfl
+  rw [hCtx]
+  cases hLook : st.env[l]? with
+  | none => simp
+  | some v =>
+    cases v with
+    | sym k =>
+      simp only [Option.map_some, liftVal]
+      by_cases hK : k = svId
+      · subst hK
+        simp only [if_true]
+        have hEta : ({ st with env := st.env.insert l (.mutLoan bid) } : SymState)
+            = st.setLocal l (.mutLoan bid) := rfl
+        rw [hEta, concretise_setLocal]
+        rfl
+      · simp [hK]
+    | mutLoan _ => rfl
+    | lit _ => rfl
+    | mutBorrow _ _ => rfl
+    | bottom => rfl
+
+/-- Auxiliary list-fold version of the substLocals env-rewrite commute. -/
+private theorem concretise_env_substLocalsOne_foldl_aux (st : SymState)
+    (svId bid : Nat) :
+    ∀ (xs : List Nat) (env₀ : Std.HashMap Nat AeneasCheck.LLBCSharp.Val),
+      concretise ({ st with
+        env := xs.foldl
+          (AeneasCheck.LLBCSharp.substLocalsOne svId bid) env₀ } : SymState)
+      = xs.foldl
+          (LLBCSharpPaper.LLBCState.substLocalOne svId bid)
+          (concretise ({ st with env := env₀ } : SymState))
+  | [], _ => rfl
+  | l :: rest, env₀ => by
+      simp only [List.foldl_cons]
+      have hIH := concretise_env_substLocalsOne_foldl_aux st svId bid rest
+                    (AeneasCheck.LLBCSharp.substLocalsOne svId bid env₀ l)
+      rw [hIH]
+      congr 1
+      have := concretise_env_substLocalsOne
+                ({ st with env := env₀ } : SymState) svId bid l
+      simpa using this
+
+/-- Fold-style env-rewrite commute for substLocals. -/
+theorem concretise_env_substLocalsOne_foldl (st : SymState)
+    (svId bid : Nat) (substLocals : Array Nat) :
+    let envFinal := substLocals.foldl
+      (init := st.env) (AeneasCheck.LLBCSharp.substLocalsOne svId bid)
+    concretise ({ st with env := envFinal } : SymState) =
+      substLocals.foldl (init := concretise st)
+        (LLBCSharpPaper.LLBCState.substLocalOne svId bid) := by
+  have := concretise_env_substLocalsOne_foldl_aux st svId bid
+            substLocals.toList st.env
+  simp only [Array.foldl_toList] at this
+  exact this
+
+/-- The substLoans fold is concretise-no-op: only `st.loans` changes,
+    and `concretise` doesn't read `loans`. -/
+theorem concretise_loans_substLoansOne (st : SymState) (svId bid b : Nat) :
+    concretise ({ st with loans :=
+      AeneasCheck.LLBCSharp.substLoansOne svId bid st.loans b } : SymState) =
+      concretise st := by
+  unfold AeneasCheck.LLBCSharp.substLoansOne
+  split
+  · split
+    · split
+      · rfl
+      · rfl
+    · rfl
+  · rfl
+
+/-- Auxiliary list-fold no-op (substLoans). -/
+private theorem concretise_loans_substLoansOne_foldl_aux (st : SymState)
+    (svId bid : Nat) :
+    ∀ (xs : List Nat)
+      (loans₀ : Std.HashMap Nat AeneasCheck.LLBCSharp.LoanInfo),
+      concretise ({ st with
+        loans := xs.foldl
+          (AeneasCheck.LLBCSharp.substLoansOne svId bid) loans₀ } : SymState)
+      = concretise ({ st with loans := loans₀ } : SymState)
+  | [], _ => rfl
+  | b :: rest, loans₀ => by
+      simp only [List.foldl_cons]
+      have hIH := concretise_loans_substLoansOne_foldl_aux st svId bid rest
+                    (AeneasCheck.LLBCSharp.substLoansOne svId bid loans₀ b)
+      rw [hIH]
+      -- Per-step: concretise insensitive to loans changes.
+      unfold AeneasCheck.LLBCSharp.substLoansOne
+      split <;> [(split <;> [(split <;> rfl); rfl]); rfl]
+
+/-- Fold-form of `concretise_loans_substLoansOne`. -/
+theorem concretise_loans_substLoansOne_foldl (st : SymState)
+    (svId bid : Nat) (substLoans : Array Nat) :
+    let loansFinal := substLoans.foldl
+      (init := st.loans) (AeneasCheck.LLBCSharp.substLoansOne svId bid)
+    concretise ({ st with loans := loansFinal } : SymState) =
+      concretise st := by
+  have h := concretise_loans_substLoansOne_foldl_aux st svId bid
+              substLoans.toList st.loans
+  simp only [Array.foldl_toList] at h
+  have hEta : ({ st with loans := st.loans } : SymState) = st := rfl
+  rw [hEta] at h
+  exact h
+
 end AeneasSoundness.Soundness.Concretise
