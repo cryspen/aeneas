@@ -154,16 +154,11 @@ let eval_assertion (config : config) (span : Meta.span) (assertion : assertion)
  fun ctx ->
   (* Evaluate the operand *)
   let v, ctx, cf_eval_op = eval_operand config span assertion.cond ctx in
-  (* Cert: emit EvAssert. The condition's [cert_sym_expr] is the
-     symbolic id when symbolic, the literal otherwise. *)
-  (let cond : CertEvent.cert_sym_expr =
-     match v.value with
-     | VSymbolic sv -> CertEvent.SymVal sv.sv_id
-     | VLiteral lit -> CertEvent.SymLit lit
-     | _ -> CertEvent.SymVal (Values.SymbolicValueId.of_int 0)
-   in
-   ctx_emit_event ctx
-     (CertEvent.EvAssert { cond; expected = assertion.expected }));
+  (* Cert: emit Assert. The observer extracts the cert sym-expr from
+     the condition value (symbolic id when symbolic, literal
+     otherwise, fallback 0). *)
+  Observer.notify ctx
+    (Event.Assert { cond_value = v; expected = assertion.expected });
   (* Evaluate the assertion *)
   [%sanity_check] span (v.ty = TLiteral TBool);
   let st, cf_eval_assert =
@@ -884,261 +879,20 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
               in
               let ctx, cc = comp cc (assign_to_place config st.span rv p ctx) in
               (* Cert: emit a destination-bearing event so the Lean
-                 translator can track the assign's actual `dst`. The
-                 M3-era EvCopy/EvMove events from `eval_operand`
-                 record only operand reads (with src=dst), losing the
-                 assign target; M10 closes that gap.
-
-                 * BinaryOp → EvBinop with the cert op tag
-                 * Use(op)  → EvAssign with the operand lifted to
-                              cert_sym_expr
-                 Other rvalue shapes (RvRef, Aggregate, …) keep
-                 emitting their existing milestone-specific events;
-                 EvAssign is *not* emitted for those. *)
+                 translator can track the assign's actual [dst]. The
+                 observer pattern-matches on [rvalue] to decide the
+                 right CertEvent shape (Binop / EvAssign with various
+                 SymExpr rhs). The M3-era EvCopy/EvMove events from
+                 [eval_operand] record only operand reads (with
+                 src=dst), losing the assign target; M10 closed that
+                 gap, and the observer preserves the same semantics. -*)
               (match rvalue with
-               | BinaryOp (binop, op1, op2) ->
-                   (match
-                      ( CertEvent.cert_place_of_place p,
-                        CertEvent.cert_sym_expr_of_operand op1,
-                        CertEvent.cert_sym_expr_of_operand op2 )
-                    with
-                    | Some cp, Some lhs, Some rhs ->
-                        ctx_emit_event ctx
-                          (CertEvent.EvBinop
-                             { op = CertEvent.cert_binop_string binop;
-                               lhs; rhs; dst = cp })
-                    | _ -> ())
-               | Use operand ->
-                   (match
-                      ( CertEvent.cert_place_of_place p,
-                        CertEvent.cert_sym_expr_of_operand operand )
-                    with
-                    | Some cp, Some rhs ->
-                        ctx_emit_event ctx
-                          (CertEvent.EvAssign { dst = cp; rhs })
-                    | _ -> ())
-               | Aggregate
-                   ( AggregatedAdt
-                       ( { id = TAdtId def_id; _ },
-                         Some variant_id,
-                         None ),
-                     operands ) ->
-                   (* M9.5d / M9.5f: an enum-variant ADT construction.
-                      M9.5d handled only the nullary case (operands =
-                      []); M9.5f extends this to payload-bearing
-                      variants by carrying the operands' cert-sym
-                      forms inside [SymVariant.fields].
-
-                      Emit an `EvAssign dst=p rhs=SymVariant {…; fields}`
-                      so the Lean translator can render the ctor
-                      application as `<adt_name>.<variant_name> e1 …
-                      eN`. We do not fire this for tuple / struct
-                      aggregates (those use [None] for the variant id);
-                      the M9.5b struct-update path covers struct-shape
-                      rewrites via Field projections. *)
-                   let type_decl =
-                     ctx_lookup_type_decl st.span ctx def_id
-                   in
-                   let variant_name =
-                     match type_decl.kind with
-                     | Enum variants ->
-                         (Types.VariantId.nth variants variant_id)
-                           .variant_name
-                     | _ -> "Variant"
-                   in
-                   (* Lift each operand to a [cert_sym_expr]. If any
-                      operand fails to lift (e.g. references a global),
-                      we conservatively skip the whole event — the
-                      translator will fall through to the trace's other
-                      EvCopy/EvAssign events. *)
-                   let fields_opt =
-                     List.fold_right
-                       (fun op acc ->
-                         match acc with
-                         | None -> None
-                         | Some xs ->
-                             (match CertEvent.cert_sym_expr_of_operand op with
-                              | Some e -> Some (e :: xs)
-                              | None -> None))
-                       operands (Some [])
-                   in
-                   (match
-                      ( CertEvent.cert_place_of_place p,
-                        fields_opt )
-                    with
-                    | Some cp, Some fields ->
-                        ctx_emit_event ctx
-                          (CertEvent.EvAssign
-                             { dst = cp
-                             ; rhs =
-                                 CertEvent.SymVariant
-                                   { adt_id = Types.TypeDeclId.to_int def_id
-                                   ; variant_id =
-                                       Types.VariantId.to_int variant_id
-                                   ; variant_name
-                                   ; fields }
-                             })
-                    | _ -> ())
-               | Aggregate
-                   ( AggregatedAdt
-                       ( { id = TTuple; _ }, None, None ),
-                     operands ) ->
-                   (* M9.5p: a tuple aggregate `(x, y, ...)`. Emit an
-                      `EvAssign dst=p rhs=SymTuple [e1; …; eN]` so the
-                      Lean translator can render the tail as
-                      `ok (e1, …, eN)` instead of falling through to
-                      the M9.5o unit-fallback. *)
-                   let fields_opt =
-                     List.fold_right
-                       (fun op acc ->
-                         match acc with
-                         | None -> None
-                         | Some xs ->
-                             (match CertEvent.cert_sym_expr_of_operand op with
-                              | Some e -> Some (e :: xs)
-                              | None -> None))
-                       operands (Some [])
-                   in
-                   (match
-                      ( CertEvent.cert_place_of_place p,
-                        fields_opt )
-                    with
-                    | Some cp, Some fields ->
-                        ctx_emit_event ctx
-                          (CertEvent.EvAssign
-                             { dst = cp; rhs = CertEvent.SymTuple fields })
-                    | _ -> ())
-               | Aggregate
-                   ( AggregatedAdt
-                       ( { id = TAdtId def_id; _ }, None, None ),
-                     operands ) ->
-                   (* M9.5p: a named-field struct aggregate
-                      `Pair { x, y }`. Look the struct decl up to recover
-                      each field's surface name; emit
-                      `EvAssign dst=p rhs=SymRecord {adt_id; fields=[(n1,e1);…]}`
-                      so the Lean translator can render the tail as
-                      `ok { x := e1, y := e2 }`. For tuple-style structs
-                      (positional fields, no surface names) we fall back
-                      to `field<K>` as the field name; the Lean side will
-                      have the same name in its type-decl map and the
-                      record literal still type-checks. *)
-                   let type_decl =
-                     ctx_lookup_type_decl st.span ctx def_id
-                   in
-                   let field_names : string list =
-                     match type_decl.kind with
-                     | Struct fields ->
-                         List.mapi
-                           (fun i (f : Types.field) ->
-                             match f.field_name with
-                             | Some n -> n
-                             | None -> "field" ^ string_of_int i)
-                           fields
-                     | _ ->
-                         List.mapi
-                           (fun i _ -> "field" ^ string_of_int i)
-                           operands
-                   in
-                   let fields_opt =
-                     let rec pair_up names ops =
-                       match names, ops with
-                       | [], [] -> Some []
-                       | n :: ns, op :: rest ->
-                           (match
-                              CertEvent.cert_sym_expr_of_operand op
-                            with
-                            | None -> None
-                            | Some e ->
-                                (match pair_up ns rest with
-                                 | None -> None
-                                 | Some xs -> Some ((n, e) :: xs)))
-                       | _, _ -> None
-                     in
-                     pair_up field_names operands
-                   in
-                   (match
-                      ( CertEvent.cert_place_of_place p,
-                        fields_opt )
-                    with
-                    | Some cp, Some fields ->
-                        ctx_emit_event ctx
-                          (CertEvent.EvAssign
-                             { dst = cp
-                             ; rhs =
-                                 CertEvent.SymRecord
-                                   { adt_id = Types.TypeDeclId.to_int def_id
-                                   ; fields }
-                             })
-                    | _ -> ())
-               | UnaryOp (Cast (CastScalar (_src_ty, dst_ty)), operand) ->
-                   (* Session 6 Item 1: an `as`-cast at the rvalue level
-                      (Charon's [Rvalue.UnaryOp (Cast (CastScalar _), op)]).
-                      The OCaml interp would otherwise drop the cast on
-                      the floor — the event stream then has no record of
-                      the type conversion, and the Lean cert walker
-                      emits the inner operand bare (e.g. `def cast_u32_to_i32
-                      (x : U32) : Result I32 := do ok x`, which is
-                      ill-typed in both Lean and Rust).
-                      We emit [EvAssign { dst; rhs: SymCast { target_ty;
-                      inner } }] so the Lean walker can wrap the operand
-                      in an explicit cast.
-                      Other cast kinds (CastRawPtr / CastFnPtr / CastUnsize
-                      / CastTransmute / CastConcretize) are out of scope
-                      for the differential testing harness; they fall
-                      through to the [_ -> ()] catch-all below. *)
-                   let target_ty : string = match dst_ty with
-                     | TInt Isize -> "isize"
-                     | TInt I8 -> "i8"
-                     | TInt I16 -> "i16"
-                     | TInt I32 -> "i32"
-                     | TInt I64 -> "i64"
-                     | TInt I128 -> "i128"
-                     | TUInt Usize -> "usize"
-                     | TUInt U8 -> "u8"
-                     | TUInt U16 -> "u16"
-                     | TUInt U32 -> "u32"
-                     | TUInt U64 -> "u64"
-                     | TUInt U128 -> "u128"
-                     | TBool -> "bool"
-                     | TChar -> "char"
-                     | TFloat _ -> "float"
-                   in
-                   (match
-                      ( CertEvent.cert_place_of_place p,
-                        CertEvent.cert_sym_expr_of_operand operand )
-                    with
-                    | Some cp, Some inner ->
-                        ctx_emit_event ctx
-                          (CertEvent.EvAssign
-                             { dst = cp
-                             ; rhs =
-                                 CertEvent.SymCast
-                                   { target_ty; inner } })
-                    | _ -> ())
-               | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
-                   (* M12.2a: a reborrow assignment `v@N := &mut *(local)`
-                      previously emitted only an `EvMutBorrow` /
-                      `EvReborrow` event with the *borrowed* place — the
-                      *destination* local (N) was lost. Without it the
-                      forward translator can't link the temp `v@N` back
-                      to the caller's input borrow, and `lookupPlace`
-                      collapses to a wrong fallback.
-                      Emit an additional `EvAssign dst=p rhs=SymCopy(rp)`
-                      so the walker's `vm` learns `vm[N] := lookup(rp)`.
-                      For the forward direction a `&mut p` carries the
-                      same symbolic value as `p`, so SymCopy is the
-                      right RHS — backward functions are reconstructed
-                      separately from the EvEndAbs trace. *)
-                   (match
-                      ( CertEvent.cert_place_of_place p,
-                        CertEvent.cert_place_of_place rp )
-                    with
-                    | Some cp, Some crp ->
-                        ctx_emit_event ctx
-                          (CertEvent.EvAssign
-                             { dst = cp; rhs = CertEvent.SymCopy crp })
-                    | _ -> ())
-               | _ -> ());
+               | BinaryOp (op, lhs, rhs) ->
+                   Observer.notify ctx
+                     (Event.Binop { op; lhs; rhs; dst = p; result = rv })
+               | _ ->
+                   Observer.notify ctx
+                     (Event.Assign { dst = p; rvalue; value = rv }));
               ((ctx, Unit), cc)
         in
         let cc = cc_comp cc cf_assign in
@@ -1166,14 +920,14 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
       ([ (ctx, res) ], cc_singleton __FILE__ __LINE__ st.span cc)
   | Call call -> eval_function_call config st.span call ctx
   | Abort _ ->
-      ctx_emit_event ctx CertEvent.EvPanic;
+      Observer.notify ctx Event.Panic;
       (* Evaluate to a panic only if the execution is concrete, otherwise we stop
          evaluating there and synthesize a [panic] node in the symbolic AST. *)
       if config.mode = ConcreteMode then
         ([ (ctx, Panic) ], cf_singleton __FILE__ __LINE__ st.span)
       else ([], cf_empty __FILE__ __LINE__ st.span SA.Panic)
   | Return ->
-      ctx_emit_event ctx CertEvent.EvReturn;
+      Observer.notify ctx Event.Return;
       ([ (ctx, Return) ], cf_singleton __FILE__ __LINE__ st.span)
   | Break i -> ([ (ctx, Break i) ], cf_singleton __FILE__ __LINE__ st.span)
   | Continue i -> ([ (ctx, Continue i) ], cf_singleton __FILE__ __LINE__ st.span)
@@ -1280,21 +1034,22 @@ and eval_switch_raw (config : config) (span : Meta.span) (switch : switch) :
                translator can split the flat event log into per-branch
                sub-walks at translation time.
 
-               We reuse [EvAssert] as the marker — its existing shape
-               [{ cond; expected }] already carries everything we need:
-               the symbolic boolean and which branch follows. Real
-               [assert!] statements emit a single [EvAssert] (no
-               surrounding [EvJoin]); the [if] / [SwitchInt] cases
-               always emit a pair, with an [EvJoin] closing them out.
-               The Lean walker disambiguates by lookahead. *)
-            let cond_se : CertEvent.cert_sym_expr =
-              CertEvent.SymVal sv.sv_id
+               We reuse [Event.Assert] as the marker — its shape
+               carries the symbolic boolean and which branch follows.
+               Real [assert!] statements emit a single [Assert] (no
+               surrounding [Join]); the [if] / [SwitchInt] cases
+               always emit a pair, with a [Join] closing them out.
+               The Lean walker disambiguates by lookahead. We pass
+               the symbolic value as a [tvalue] (the observer extracts
+               the sym-expr); type is [TLiteral TBool]. *)
+            let cond_tv : tvalue =
+              { value = VSymbolic sv; ty = TLiteral TBool }
             in
-            ctx_emit_event true_ctx
-              (CertEvent.EvAssert { cond = cond_se; expected = true });
+            Observer.notify true_ctx
+              (Event.Assert { cond_value = cond_tv; expected = true });
             let resl_true = eval_block config true_block true_ctx in
-            ctx_emit_event false_ctx
-              (CertEvent.EvAssert { cond = cond_se; expected = false });
+            Observer.notify false_ctx
+              (Event.Assert { cond_value = cond_tv; expected = false });
             let resl_false = eval_block config false_block false_ctx in
             let ctx_resl, cf_branches =
               comp_seqs __FILE__ __LINE__ span [ resl_true; resl_false ]
@@ -1471,12 +1226,14 @@ and eval_switch_raw (config : config) (span : Meta.span) (switch : switch) :
                     try (Types.VariantId.nth vs vid).variant_name
                     with _ -> "Variant"
                   in
-                  ctx_emit_event c
-                    (CertEvent.EvMatchArm
-                       { scrutinee = CertEvent.SymVal sv.sv_id
-                       ; adt_id = Types.TypeDeclId.to_int def_id
-                       ; variant_id = Types.VariantId.to_int vid
-                       ; variant_name })
+                  let scrutinee : tvalue =
+                    { value = VSymbolic sv; ty = sv.sv_ty }
+                  in
+                  Observer.notify c
+                    (Event.MatchArm {
+                      scrutinee; adt_id = def_id; variant_id = vid;
+                      variant_name;
+                    })
               | _ -> ()
             in
             (* Re-evaluate the switch - the value is not symbolic anymore,

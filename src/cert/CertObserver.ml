@@ -1,6 +1,151 @@
+open Types
 open Values
 open Expressions
 open Contexts
+
+(** Translate the rvalue half of an [Event.Assign]. Mirrors the
+    inline cert-side dispatch the original
+    [InterpStatements.eval_statement_raw Assign] arm did. Returns
+    [None] when the rvalue shape doesn't map to a cert payload (e.g.
+    operands that don't lift, raw pointers, …). -*)
+let assign_to_cert (ctx : eval_ctx) (dst : place) (rvalue : rvalue)
+    : CertEvent.event option =
+  let mk_evassign rhs : CertEvent.event option =
+    match CertEvent.cert_place_of_place dst with
+    | Some cp -> Some (CertEvent.EvAssign { dst = cp; rhs })
+    | None -> None
+  in
+  match rvalue with
+  | Use operand ->
+      (match CertEvent.cert_sym_expr_of_operand operand with
+       | Some rhs -> mk_evassign rhs
+       | None -> None)
+  | Aggregate
+      ( AggregatedAdt
+          ( { id = TAdtId def_id; _ }, Some variant_id, None ),
+        operands ) ->
+      (* M9.5d / M9.5f: enum-variant ADT construction. *)
+      let variant_name =
+        match TypeDeclId.Map.find_opt def_id ctx.crate.type_decls with
+        | Some td ->
+            (match td.kind with
+             | Enum variants ->
+                 (VariantId.nth variants variant_id).variant_name
+             | _ -> "Variant")
+        | None -> "Variant"
+      in
+      let fields_opt =
+        List.fold_right
+          (fun op acc ->
+            match acc with
+            | None -> None
+            | Some xs ->
+                (match CertEvent.cert_sym_expr_of_operand op with
+                 | Some e -> Some (e :: xs)
+                 | None -> None))
+          operands (Some [])
+      in
+      (match fields_opt with
+       | Some fields ->
+           mk_evassign
+             (CertEvent.SymVariant {
+               adt_id = TypeDeclId.to_int def_id;
+               variant_id = VariantId.to_int variant_id;
+               variant_name; fields;
+             })
+       | None -> None)
+  | Aggregate
+      ( AggregatedAdt
+          ( { id = TTuple; _ }, None, None ),
+        operands ) ->
+      (* M9.5p: tuple aggregate `(x, y, ...)`. *)
+      let fields_opt =
+        List.fold_right
+          (fun op acc ->
+            match acc with
+            | None -> None
+            | Some xs ->
+                (match CertEvent.cert_sym_expr_of_operand op with
+                 | Some e -> Some (e :: xs)
+                 | None -> None))
+          operands (Some [])
+      in
+      (match fields_opt with
+       | Some fields -> mk_evassign (CertEvent.SymTuple fields)
+       | None -> None)
+  | Aggregate
+      ( AggregatedAdt
+          ( { id = TAdtId def_id; _ }, None, None ),
+        operands ) ->
+      (* M9.5p: named-field struct aggregate `Pair { x, y }`. *)
+      let field_names : string list =
+        match TypeDeclId.Map.find_opt def_id ctx.crate.type_decls with
+        | Some td -> (
+            match td.kind with
+            | Struct fields ->
+                List.mapi
+                  (fun i (f : field) ->
+                    match f.field_name with
+                    | Some n -> n
+                    | None -> "field" ^ string_of_int i)
+                  fields
+            | _ ->
+                List.mapi (fun i _ -> "field" ^ string_of_int i) operands)
+        | None ->
+            List.mapi (fun i _ -> "field" ^ string_of_int i) operands
+      in
+      let fields_opt =
+        let rec pair_up names ops =
+          match names, ops with
+          | [], [] -> Some []
+          | n :: ns, op :: rest ->
+              (match CertEvent.cert_sym_expr_of_operand op with
+               | None -> None
+               | Some e ->
+                   (match pair_up ns rest with
+                    | None -> None
+                    | Some xs -> Some ((n, e) :: xs)))
+          | _, _ -> None
+        in
+        pair_up field_names operands
+      in
+      (match fields_opt with
+       | Some fields ->
+           mk_evassign
+             (CertEvent.SymRecord {
+               adt_id = TypeDeclId.to_int def_id; fields;
+             })
+       | None -> None)
+  | UnaryOp (Cast (CastScalar (_src_ty, dst_ty)), operand) ->
+      (* Session 6 Item 1: `as`-cast at the rvalue level. *)
+      let target_ty : string = match dst_ty with
+        | TInt Isize -> "isize"
+        | TInt I8 -> "i8"
+        | TInt I16 -> "i16"
+        | TInt I32 -> "i32"
+        | TInt I64 -> "i64"
+        | TInt I128 -> "i128"
+        | TUInt Usize -> "usize"
+        | TUInt U8 -> "u8"
+        | TUInt U16 -> "u16"
+        | TUInt U32 -> "u32"
+        | TUInt U64 -> "u64"
+        | TUInt U128 -> "u128"
+        | TBool -> "bool"
+        | TChar -> "char"
+        | TFloat _ -> "float"
+      in
+      (match CertEvent.cert_sym_expr_of_operand operand with
+       | Some inner ->
+           mk_evassign (CertEvent.SymCast { target_ty; inner })
+       | None -> None)
+  | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
+      (* M12.2a: reborrow assignment carries the dst place so the
+         walker's `vm` learns vm[N] := lookup(rp). *)
+      (match CertEvent.cert_place_of_place rp with
+       | Some crp -> mk_evassign (CertEvent.SymCopy crp)
+       | None -> None)
+  | _ -> None
 
 (** Translate an interpreter-native [Event.t] into the corresponding
     [CertEvent.event]. Returns [None] when:
@@ -141,6 +286,42 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
         released_loans = cert_released_loans;
         token_clear_locals = cert_token_clear_locals;
       })
+  | Event.Assert { cond_value; expected } ->
+      let cond : CertEvent.cert_sym_expr =
+        match cond_value.value with
+        | VSymbolic sv -> CertEvent.SymVal sv.sv_id
+        | VLiteral lit -> CertEvent.SymLit lit
+        | _ -> CertEvent.SymVal (SymbolicValueId.of_int 0)
+      in
+      Some (CertEvent.EvAssert { cond; expected })
+  | Event.Panic -> Some CertEvent.EvPanic
+  | Event.Return -> Some CertEvent.EvReturn
+  | Event.MatchArm { scrutinee; adt_id; variant_id; variant_name } ->
+      let scrutinee_se : CertEvent.cert_sym_expr =
+        match scrutinee.value with
+        | VSymbolic sv -> CertEvent.SymVal sv.sv_id
+        | _ -> CertEvent.SymVal (SymbolicValueId.of_int 0)
+      in
+      Some (CertEvent.EvMatchArm {
+        scrutinee = scrutinee_se;
+        adt_id = TypeDeclId.to_int adt_id;
+        variant_id = VariantId.to_int variant_id;
+        variant_name;
+      })
+  | Event.Binop { op; lhs; rhs; dst; result = _ } ->
+      (match
+         ( CertEvent.cert_place_of_place dst,
+           CertEvent.cert_sym_expr_of_operand lhs,
+           CertEvent.cert_sym_expr_of_operand rhs )
+       with
+       | Some cp, Some lhs_se, Some rhs_se ->
+           Some (CertEvent.EvBinop {
+             op = CertEvent.cert_binop_string op;
+             lhs = lhs_se; rhs = rhs_se; dst = cp;
+           })
+       | _ -> None)
+  | Event.Assign { dst; rvalue; value = _ } ->
+      assign_to_cert ctx dst rvalue
   | Event.LoopInv { loop_id; fp_env; input_abs_list } ->
       (* M9.6 (Option C): collect [(borrow_id, parent_abs_id)] pairs
          for every loop-introduced loan visible in the input abs
