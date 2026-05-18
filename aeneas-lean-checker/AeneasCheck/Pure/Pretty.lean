@@ -263,7 +263,27 @@ partial def PExpr.toLeanDo : PExpr → String
   | .letIn name _ e1 e2 =>
     -- Inner expressions in a monadic let bind a Result-valued
     -- computation; emit a `let … ←` form. Tail position is e2.
-    s!"let {name} ← {e1.toLeanDo}\n  {e2.toLeanDo}"
+    -- Session 4: bitwise binops (`^^^`/`&&&`/`|||`) on `U32` resolve
+    -- to Lean's pure `HXor`/`HAnd`/`HOr` instances (`UInt32 → UInt32
+    -- → UInt32`), not the Result-typed shim instances we use for
+    -- arithmetic and shifts. When the cert walker emits `let t ←
+    -- (x &&& y)` for these, the bind RHS is pure `U32`, not `Result
+    -- U32`, and the `←` fails to elaborate against the shim. Detect
+    -- the pure-binop heads at the bind site and emit a non-monadic
+    -- `let t := …` so the do-block stays type-correct. This is the
+    -- emit-side complement of the M9.5h shim choice that left pure
+    -- bitwise unshimmed (see the comment block in `RuntimeShim/
+    -- Aeneas/Std.lean`).
+    let isPureBinopApp : PExpr → Bool
+      | .app h _ => match h with
+        | "BitXor" | "BitAnd" | "BitOr"
+        | "Eq" | "Ne" | "Lt" | "Le" | "Gt" | "Ge" => true
+        | _ => false
+      | _ => false
+    if isPureBinopApp e1 then
+      s!"let {name} := {e1.toLeanDo}\n  {e2.toLeanDo}"
+    else
+      s!"let {name} ← {e1.toLeanDo}\n  {e2.toLeanDo}"
   | .ok inner =>
     let s := match inner with
       | .var _ | .lit _ => PExpr.toLeanDo inner

@@ -217,6 +217,23 @@ instance : HShiftLeft I32 Isize (Result I32) :=
 instance : HShiftRight I32 Isize (Result I32) :=
   ⟨fun a n => .ok (Int32.shiftRight a (Int32.ofInt n.toInt))⟩
 
+-- Session 4 (scalars fixture): the cert types small-integer shift
+-- rhs values as `i32` (the `Charon` shift-rhs IR isn't always `usize`;
+-- for short literal amounts the type-checker keeps them at their
+-- source type). `(x >>> 2#i32)` on a `U32` or `I32` operand needs
+-- `HShift{L,R} U32 I32` and `HShift{L,R} I32 I32` instances.
+-- For `U32 ⊕ I32`: convert the I32 to a non-negative shift width via
+-- `Int → Nat → UInt32`. The shim is permissive — negative shift
+-- amounts (which would panic in real Rust) wrap to 0 here.
+instance : HShiftLeft U32 I32 (Result U32) :=
+  ⟨fun a n => .ok (UInt32.shiftLeft a (UInt32.ofNat n.toInt.toNat))⟩
+instance : HShiftRight U32 I32 (Result U32) :=
+  ⟨fun a n => .ok (UInt32.shiftRight a (UInt32.ofNat n.toInt.toNat))⟩
+instance : HShiftLeft I32 I32 (Result I32) :=
+  ⟨fun a n => .ok (Int32.shiftLeft a (Int32.ofInt n.toInt))⟩
+instance : HShiftRight I32 I32 (Result I32) :=
+  ⟨fun a n => .ok (Int32.shiftRight a (Int32.ofInt n.toInt))⟩
+
 -- M9.5h: pure bitwise ops (`HXor` / `HAnd` / `HOr`) on `U32` are NOT
 -- shimmed here. The standard Aeneas backend treats bit ops as pure
 -- functions returning the operand type directly (`U32 → U32 → U32`);
@@ -246,6 +263,16 @@ instance : HSub I32 I32 (Result I32) :=
   ⟨liftRes2 (Int32.sub : Int32 → Int32 → Int32)⟩
 instance : HMul I32 I32 (Result I32) :=
   ⟨liftRes2 (Int32.mul : Int32 → Int32 → Int32)⟩
+
+-- Session 4 (scalars `match_isize`): the emitter renders `(x1 +
+-- 1#isize)` for the `usize`/`isize` arithmetic that flows out of
+-- match arms. Add the pointer-sized signed arithmetic instances.
+instance : HAdd Isize Isize (Result Isize) :=
+  ⟨liftRes2 (ISize.add : ISize → ISize → ISize)⟩
+instance : HSub Isize Isize (Result Isize) :=
+  ⟨liftRes2 (ISize.sub : ISize → ISize → ISize)⟩
+instance : HMul Isize Isize (Result Isize) :=
+  ⟨liftRes2 (ISize.mul : ISize → ISize → ISize)⟩
 
 -- M12.1: comparison instances. Generated Lean from the loop
 -- translation uses `if i < n then ...` directly (bool-returning LT),
@@ -392,7 +419,41 @@ namespace U32
   .ok (UInt32.sub a b)
 @[inline] def wrapping_mul (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
   .ok (UInt32.mul a b)
+-- Session 4 (scalars fixture): `core::num::{u32}::rotate_{left,right}`.
+-- Lean's `UInt32.rotateLeft`/`rotateRight` take a `UInt32` rotation
+-- amount and return a `UInt32`; the shim wraps in `Result.ok`.
+-- Charon emits the rotation amount as `2#u32` (a `U32`), matching
+-- Lean's signature.
+@[inline] def rotate_left (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
+  .ok (UInt32.shiftLeft a b ||| UInt32.shiftRight a (UInt32.sub (UInt32.ofNat 32) b))
+@[inline] def rotate_right (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
+  .ok (UInt32.shiftRight a b ||| UInt32.shiftLeft a (UInt32.sub (UInt32.ofNat 32) b))
 end U32
+
+-- Session 4 (scalars fixture): signed-integer wrapping + rotate
+-- helpers. Mirror the U32 set so cert emit of `i32_use_wrapping_add`
+-- (call: `core.num.I32.wrapping_add`) resolves.
+namespace I32
+@[inline] def wrapping_add (a b : Aeneas.Std.I32) : Aeneas.Std.Result Aeneas.Std.I32 :=
+  .ok (Int32.add a b)
+@[inline] def wrapping_sub (a b : Aeneas.Std.I32) : Aeneas.Std.Result Aeneas.Std.I32 :=
+  .ok (Int32.sub a b)
+@[inline] def wrapping_mul (a b : Aeneas.Std.I32) : Aeneas.Std.Result Aeneas.Std.I32 :=
+  .ok (Int32.mul a b)
+-- Signed rotate: the cert emits a `U32` rotation amount (cast at the
+-- Charon layer), so the second arg is `U32`, not `I32`. We reinterpret
+-- the operand bits as `UInt32`, rotate, and reinterpret back.
+@[inline] def rotate_left (a : Aeneas.Std.I32) (b : Aeneas.Std.U32) :
+    Aeneas.Std.Result Aeneas.Std.I32 :=
+  let u : UInt32 := a.toUInt32
+  let r := UInt32.shiftLeft u b ||| UInt32.shiftRight u (UInt32.sub (UInt32.ofNat 32) b)
+  .ok (Int32.ofBitVec r.toBitVec)
+@[inline] def rotate_right (a : Aeneas.Std.I32) (b : Aeneas.Std.U32) :
+    Aeneas.Std.Result Aeneas.Std.I32 :=
+  let u : UInt32 := a.toUInt32
+  let r := UInt32.shiftRight u b ||| UInt32.shiftLeft u (UInt32.sub (UInt32.ofNat 32) b)
+  .ok (Int32.ofBitVec r.toBitVec)
+end I32
 
 namespace U64
 @[inline] def wrapping_add (a b : Aeneas.Std.U64) : Aeneas.Std.Result Aeneas.Std.U64 :=
@@ -404,4 +465,46 @@ namespace U64
 end U64
 
 end num
+
+-- Session 4 (scalars fixture, `u32_default` + `i32_default`): the
+-- cert emits `core::default::Default::default::<u32>` lowered as the
+-- call `core.default.U32.default`. The standard backend resolves this
+-- via the `Default` trait; the shim provides a flat namespace shim
+-- returning `Result.ok 0` so the file typechecks. Functions calling
+-- these are NOT exercised by the diff runner — the emit's chosen
+-- value (0) is correct by happenstance for `<u32>::default()`, but
+-- the test surface for `Default` is wider than this single point.
+namespace default
+namespace U32
+@[inline] def default : Aeneas.Std.Result Aeneas.Std.U32 := .ok 0
+end U32
+namespace I32
+@[inline] def default : Aeneas.Std.Result Aeneas.Std.I32 := .ok 0
+end I32
+end default
+
 end core
+
+/-! ## Cast coercion shims (Session 4, scalars fixture)
+
+The cert walker currently lowers Rust's `as` casts to a bare value
+without an explicit conversion (`u32_as_u16` emits `ok x1` where the
+return type is `Result U16`). Until the emitter gap is filled, we add
+the smallest possible `CoeHead` instances so `scalars.lean` typechecks
+against the shim. The semantics here match Rust's `as`:
+- narrowing: truncate (`UInt32.toUInt16`).
+- widening unsigned → unsigned: zero-extend (`UInt16.toUInt32`).
+- signed/unsigned crossings: bit-reinterpret, then truncate/sign-extend.
+
+The diff runner does **not** exercise these cast functions: the
+emitter is dropping the cast op, so the resulting value would not
+match the source Rust unless the cast was a no-op. Listed here purely
+to make the import compile.
+-/
+
+instance : CoeHead Aeneas.Std.U32 Aeneas.Std.U16 := ⟨UInt32.toUInt16⟩
+instance : CoeHead Aeneas.Std.U16 Aeneas.Std.U32 := ⟨UInt16.toUInt32⟩
+instance : CoeHead Aeneas.Std.U32 Aeneas.Std.I16 :=
+  ⟨fun x => Int16.ofBitVec (x.toBitVec.truncate 16)⟩
+instance : CoeHead Aeneas.Std.I16 Aeneas.Std.U32 :=
+  ⟨fun x => UInt32.ofBitVec (x.toBitVec.signExtend 32)⟩

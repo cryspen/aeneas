@@ -79,6 +79,35 @@ mod bitwise {
     pub fn and_u32(a: u32, b: u32) -> u32 { a & b }
 }
 
+mod scalars {
+    // Mirrors the differential-testable subset of tests/src/scalars.rs.
+    // The skipped fns (casts, defaults, `_use_bits`, `match_*`) are
+    // documented in the Lean-side ScalarsRunner doc comment.
+    pub fn u32_use_wrapping_add(x: u32, y: u32) -> u32 { x.wrapping_add(y) }
+    pub fn i32_use_wrapping_add(x: i32, y: i32) -> i32 { x.wrapping_add(y) }
+    pub fn u32_use_wrapping_sub(x: u32, y: u32) -> u32 { x.wrapping_sub(y) }
+    pub fn i32_use_wrapping_sub(x: i32, y: i32) -> i32 { x.wrapping_sub(y) }
+
+    // The shim's shift instances use `wrapping_shr` / `wrapping_shl`
+    // semantics (same as bitwise.rs). The source `>> 2` / `<< 2`
+    // never panics on these inputs (rhs is a constant 2), so the
+    // wrapping vs panicking choice doesn't matter here, but we use
+    // wrapping_* for consistency.
+    pub fn u32_use_shift_right(x: u32) -> u32 { x.wrapping_shr(2) }
+    pub fn i32_use_shift_right(x: i32) -> i32 { x.wrapping_shr(2) }
+    pub fn u32_use_shift_left(x: u32) -> u32 { x.wrapping_shl(2) }
+    pub fn i32_use_shift_left(x: i32) -> i32 { x.wrapping_shl(2) }
+
+    pub fn add_and(a: u32, b: u32) -> u32 {
+        (b & a).wrapping_add(b & a)
+    }
+
+    pub fn u32_use_rotate_right(x: u32) -> u32 { x.rotate_right(2) }
+    pub fn i32_use_rotate_right(x: i32) -> i32 { x.rotate_right(2) }
+    pub fn u32_use_rotate_left(x: u32) -> u32 { x.rotate_left(2) }
+    pub fn i32_use_rotate_left(x: i32) -> i32 { x.rotate_left(2) }
+}
+
 mod constants {
     // Mirrors the subset of tests/src/constants.rs that the
     // ConstantsRunner exercises. Only the scalar-returning + tuple
@@ -237,6 +266,51 @@ const BITWISE_PAIRS_U32: &[(u32, u32)] = &[
     (0x12345678, 0x87654321),
 ];
 
+// Scalars fixture vectors. Must agree with ScalarsRunner.lean.
+const SCALARS_U32: [u32; 9] = [
+    0,
+    1,
+    2,
+    41,
+    0xDEADBEEF,
+    0xFFFFFFFE,
+    0xFFFFFFFF,
+    0x7FFFFFFF,
+    0x80000000,
+];
+
+const SCALARS_I32: [i32; 8] = [
+    0,
+    1,
+    -1,
+    42,
+    -42,
+    0x7FFFFFFF,
+    -0x80000000,
+    0xDEADBEEFu32 as i32,
+];
+
+const SCALARS_PAIRS_U32: &[(u32, u32)] = &[
+    (0, 0),
+    (1, 2),
+    (0xFFFFFFFF, 1),
+    (0xFFFFFFFE, 1),
+    (0xFFFFFFFF, 0xFFFFFFFF),
+    (0x80000000, 0x80000000),
+    (0xDEADBEEF, 0xCAFEBABE),
+];
+
+const SCALARS_PAIRS_I32: &[(i32, i32)] = &[
+    (0, 0),
+    (1, 1),
+    (1, -1),
+    (-1, 1),
+    (0x7FFFFFFF, 1),
+    (-0x80000000, -1),
+    (100, 200),
+    (-100, -200),
+];
+
 // ---------------------------------------------------------------------------
 // main
 // ---------------------------------------------------------------------------
@@ -381,4 +455,63 @@ fn main() {
     ok_i32("constants", "Q1", &[], constants::Q1);
     ok_tuple_u32("constants", "P0", &[], constants::P0);
     ok_tuple_u32("constants", "P2", &[], constants::P2);
+
+    // scalars
+    for &(a, b) in SCALARS_PAIRS_U32 {
+        ok_u32("scalars", "u32_use_wrapping_add",
+            &[a.to_string(), b.to_string()],
+            scalars::u32_use_wrapping_add(a, b));
+    }
+    for &(a, b) in SCALARS_PAIRS_I32 {
+        ok_i32("scalars", "i32_use_wrapping_add",
+            &[a.to_string(), b.to_string()],
+            scalars::i32_use_wrapping_add(a, b));
+    }
+    for &(a, b) in SCALARS_PAIRS_U32 {
+        ok_u32("scalars", "u32_use_wrapping_sub",
+            &[a.to_string(), b.to_string()],
+            scalars::u32_use_wrapping_sub(a, b));
+    }
+    for &(a, b) in SCALARS_PAIRS_I32 {
+        ok_i32("scalars", "i32_use_wrapping_sub",
+            &[a.to_string(), b.to_string()],
+            scalars::i32_use_wrapping_sub(a, b));
+    }
+    for &x in &SCALARS_U32 {
+        ok_u32("scalars", "u32_use_shift_right", &[x.to_string()],
+            scalars::u32_use_shift_right(x));
+    }
+    for &x in &SCALARS_I32 {
+        ok_i32("scalars", "i32_use_shift_right", &[x.to_string()],
+            scalars::i32_use_shift_right(x));
+    }
+    for &x in &SCALARS_U32 {
+        ok_u32("scalars", "u32_use_shift_left", &[x.to_string()],
+            scalars::u32_use_shift_left(x));
+    }
+    for &x in &SCALARS_I32 {
+        ok_i32("scalars", "i32_use_shift_left", &[x.to_string()],
+            scalars::i32_use_shift_left(x));
+    }
+    for &(a, b) in SCALARS_PAIRS_U32 {
+        ok_u32("scalars", "add_and",
+            &[a.to_string(), b.to_string()],
+            scalars::add_and(a, b));
+    }
+    for &x in &SCALARS_U32 {
+        ok_u32("scalars", "u32_use_rotate_right", &[x.to_string()],
+            scalars::u32_use_rotate_right(x));
+    }
+    for &x in &SCALARS_I32 {
+        ok_i32("scalars", "i32_use_rotate_right", &[x.to_string()],
+            scalars::i32_use_rotate_right(x));
+    }
+    for &x in &SCALARS_U32 {
+        ok_u32("scalars", "u32_use_rotate_left", &[x.to_string()],
+            scalars::u32_use_rotate_left(x));
+    }
+    for &x in &SCALARS_I32 {
+        ok_i32("scalars", "i32_use_rotate_left", &[x.to_string()],
+            scalars::i32_use_rotate_left(x));
+    }
 }
