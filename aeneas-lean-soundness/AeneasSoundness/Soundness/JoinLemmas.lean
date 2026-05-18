@@ -66,11 +66,10 @@ theorem joinSame_step (Ω : LLBCState) (localId : LocalId)
     existential supplies; `bumpSymValId` is the no-op `concretise`
     matches (`State.lean:144`). -/
 theorem joinSymbolic_step (Ω : LLBCState) (localId : LocalId)
-    (freshSv : SymValId) (delta : JoinEntryDelta)
-    (hFresh : Ω.symValIdFresh freshSv) :
+    (freshSv : SymValId) (delta : JoinEntryDelta) :
     JoinEntryStep Ω ⟨localId, .joinSymbolic freshSv, delta⟩
-      ((Ω.setLocal localId (.sym freshSv)).bumpSymValId freshSv) :=
-  JoinEntryStep.symbolic hFresh
+      (Ω.setLocal localId (.sym freshSv)) :=
+  JoinEntryStep.symbolic
 
 /-- C20 / M10.2r — `Collapse-Dup-MutBorrow` + `Join-MutBorrows`
     (Fig. 11). Both branches held `&mut` with different loan ids; the
@@ -94,8 +93,7 @@ theorem joinMutBorrows_step (Ω : LLBCState) (localId : LocalId)
     (hLoanFresh : Ω.loanIdFresh l_fresh)
     (hAbsFresh : Ω.absIdFresh abs.absId) :
     JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs, delta⟩
-      (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs.absId
-        |>.setAbs abs.absId (liftAbsShape abs)) :=
+      ((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).setAbs abs.absId (liftAbsShape abs)) :=
   JoinEntryStep.mutBorrows hLoanFresh hAbsFresh
 
 /-- C21 / M10.2r — `Join-Var` (Fig. 11). A whole region abstraction

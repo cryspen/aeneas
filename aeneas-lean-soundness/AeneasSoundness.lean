@@ -9,6 +9,7 @@ import AeneasSoundness.Soundness.Concretise.Lemmas
 import AeneasSoundness.Soundness.Invariants.HWM
 import AeneasSoundness.Soundness.Invariants.AbsRegistry
 import AeneasSoundness.Soundness.JoinLemmas
+import AeneasSoundness.Soundness.JoinChainFold
 import AeneasSoundness.Soundness.StepEventSound
 import AeneasSoundness.Soundness.InitialFinal
 

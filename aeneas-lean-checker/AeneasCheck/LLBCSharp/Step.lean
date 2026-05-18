@@ -565,24 +565,21 @@ def joinChainFoldStep (st : SymState) (entry : JoinEntry) :
     else
       return st
 
-def stepJoin (st : SymState) (left right result : StateSummary)
-    (witnesses : Array JoinEntry := #[])
-    (strict : Bool := false) :
-    Result SymState := do
-  -- Build per-side hash maps from the env arrays for O(1) lookup.
+/-- M10.x.10: strict-validation phase of `stepJoin`. Pure side check
+    over witnesses (per-entry rule check + rule/delta cross-check);
+    returns `.ok ()` if all pass and `.error _` on the first failure.
+    Factored out of `stepJoin` so the soundness-side inversion of
+    `hStep` can ignore it (passing the strict check has no state
+    effect; the chain-fold + loans-wrap body is what produces the
+    post-state). -/
+def stepJoinStrictCheck (left right result : StateSummary)
+    (witnesses : Array JoinEntry) : Result Unit := do
   let leftMap : Std.HashMap Nat SymExpr :=
     left.env.foldl (init := {}) fun m (l, v) => m.insert l v
   let rightMap : Std.HashMap Nat SymExpr :=
     right.env.foldl (init := {}) fun m (l, v) => m.insert l v
   let resultMap : Std.HashMap Nat SymExpr :=
     result.env.foldl (init := {}) fun m (l, v) => m.insert l v
-  -- M9.6 (Option C, plan §7.1 #22): strict mode is now the only
-  -- mode. When [witnesses] is non-empty (every v2 cert) the
-  -- per-entry rule check runs; when [witnesses] is empty (legacy
-  -- v1 cert that pre-dated the witnesses field) the join is
-  -- accepted without per-entry validation. The [strict] flag is
-  -- retained for now; commit #23 removes it altogether.
-  let _ := strict
   if !witnesses.isEmpty then
     for entry in witnesses do
       match joinEntryStrictOk leftMap rightMap resultMap entry with
@@ -598,14 +595,21 @@ def stepJoin (st : SymState) (left right result : StateSummary)
       | .joinBottomOther _, .bottomOther _ => pure ()
       | .joinOtherBottom _, .otherBottom _ => pure ()
       | _, _ => fail s!"E-Join v6: rule {repr entry.rule} and delta {repr entry.delta} name different constructors for local {entry.localId}"
+
+/-- M10.x.10: body of `stepJoin` once strict validation is past.
+    Runs the chain-fold and the (concretise-no-op) loans handling.
+    Soundness proves `stepJoinBody`'s post-state via the
+    paper-side chain reconstruction. -/
+def stepJoinBody (st : SymState) (result : StateSummary)
+    (witnesses : Array JoinEntry) : Result SymState := do
   -- M10.x.10: chain-fold over witnesses (replaces the prior
   -- `addAbsShape` fold + wholesale `result.env.foldl` env-override).
   -- Each step matches `JoinEntryStep.<rule>` and updates env /
-  -- absRegistry / HWMs accordingly. Locals not named by any witness
-  -- keep their pre-join `st.env` value. The pre-flight scan of all
-  -- 89 fixtures (30 joins) confirmed that `result.env` keys are
-  -- exactly the witnessed localIds — no information loss from
-  -- dropping the wholesale override.
+  -- absRegistry. Locals not named by any witness keep their
+  -- pre-join `st.env` value. The pre-flight scan of all 89 fixtures
+  -- (30 joins) confirmed that `result.env` keys are exactly the
+  -- witnessed localIds — no information loss from dropping the
+  -- wholesale override.
   let st ← witnesses.foldlM (init := st) joinChainFoldStep
   -- Rebuild loans: keep direct kinds we already had, add any new
   -- ids the join's liveLoans list reports. `concretise` does not
@@ -623,5 +627,13 @@ def stepJoin (st : SymState) (left right result : StateSummary)
       else if li.kind == .direct then m.insert b li
       else m
   return { st with loans := prunedLoans }
+
+def stepJoin (st : SymState) (left right result : StateSummary)
+    (witnesses : Array JoinEntry := #[])
+    (strict : Bool := false) :
+    Result SymState := do
+  let _ := strict
+  stepJoinStrictCheck left right result witnesses
+  stepJoinBody st result witnesses
 
 end AeneasCheck.LLBCSharp
