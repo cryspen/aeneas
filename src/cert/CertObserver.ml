@@ -322,6 +322,103 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
        | _ -> None)
   | Event.Assign { dst; rvalue; value = _ } ->
       assign_to_cert ctx dst rvalue
+  | Event.Call { fn; fn_name; call_id; args; arg_values; dst; region_abs } ->
+      (* Translate operands / dest to cert payloads. Elide the event
+         if any operand or the dest place doesn't lift — the
+         original site did the same so the trace stays internally
+         consistent. -*)
+      let cert_args : CertEvent.cert_sym_expr list option =
+        let xs = List.map CertEvent.cert_sym_expr_of_operand args in
+        if List.for_all Option.is_some xs then Some (List.map Option.get xs)
+        else None
+      in
+      let cert_dst : CertEvent.cert_place option =
+        CertEvent.cert_place_of_place dst
+      in
+      (match cert_args, cert_dst with
+       | Some args_e, Some dst_e ->
+           (* M9.6 (Option C): build the per-abstraction abs_sig
+              from the just-pushed abstractions visible in
+              [ctx.env]. For each abs in [region_abs], walk its
+              avalues and classify each aborrow/aloan content into
+              an ArMutBorrow / ArMutLoan / ArSharedBorrow entry.
+              [as_parent_abs] is the abs's ancestor set. -*)
+           let arg_idx_of_loan : (BorrowId.id, int) Hashtbl.t =
+             Hashtbl.create 8
+           in
+           List.iteri
+             (fun i (arg : tvalue) ->
+               let v = object
+                 inherit [_] iter_tvalue as super
+                 method! visit_VMutBorrow env bid mv =
+                   if not (Hashtbl.mem arg_idx_of_loan bid) then
+                     Hashtbl.add arg_idx_of_loan bid i;
+                   super#visit_VMutBorrow env bid mv
+                 method! visit_VSharedBorrow env bid sid =
+                   if not (Hashtbl.mem arg_idx_of_loan bid) then
+                     Hashtbl.add arg_idx_of_loan bid i;
+                   super#visit_VSharedBorrow env bid sid
+                 method! visit_VReservedMutBorrow env bid sid =
+                   if not (Hashtbl.mem arg_idx_of_loan bid) then
+                     Hashtbl.add arg_idx_of_loan bid i;
+                   super#visit_VReservedMutBorrow env bid sid
+               end in
+               v#visit_tvalue () arg)
+             arg_values;
+           let abs_sig : CertEvent.cert_abs_shape list =
+             List.filter_map
+               (fun aid ->
+                 match
+                   List.find_opt
+                     (fun e ->
+                       match e with
+                       | EAbs a when a.abs_id = aid -> true
+                       | _ -> false)
+                     ctx.env
+                 with
+                 | Some (EAbs abs) ->
+                     let roles : CertEvent.cert_abs_role list ref = ref [] in
+                     let v = object
+                       inherit [_] iter_tavalue as super
+                       method! visit_AMutBorrow env pm bid child =
+                         let arg_idx =
+                           try Hashtbl.find arg_idx_of_loan bid
+                           with Not_found -> -1
+                         in
+                         roles :=
+                           CertEvent.ArMutBorrow { arg_idx; loan = bid } :: !roles;
+                         super#visit_AMutBorrow env pm bid child
+                       method! visit_AMutLoan env pm lid child =
+                         roles := CertEvent.ArMutLoan { loan = lid } :: !roles;
+                         super#visit_AMutLoan env pm lid child
+                       method! visit_ASharedBorrow env pm bid sid =
+                         let arg_idx =
+                           try Hashtbl.find arg_idx_of_loan bid
+                           with Not_found -> -1
+                         in
+                         roles :=
+                           CertEvent.ArSharedBorrow
+                             { arg_idx; sb_id = sid }
+                           :: !roles;
+                         super#visit_ASharedBorrow env pm bid sid
+                     end in
+                     List.iter (fun av -> v#visit_tavalue () av) abs.avalues;
+                     Some {
+                       CertEvent.as_abs_id = aid;
+                       as_parent_abs = AbsId.Set.elements abs.parents;
+                       as_roles = List.rev !roles;
+                     }
+                 | _ -> None)
+               region_abs
+           in
+           Some (CertEvent.EvCall {
+             fn; fn_name; call_id;
+             args = args_e;
+             dst = dst_e;
+             region_abs;
+             abs_sig;
+           })
+       | _ -> None)
   | Event.LoopInv { loop_id; fp_env; input_abs_list } ->
       (* M9.6 (Option C): collect [(borrow_id, parent_abs_id)] pairs
          for every loop-introduced loan visible in the input abs

@@ -51,7 +51,6 @@ type t =
       arg_values : tvalue list;
       dst : place;
       region_abs : abs_id list;
-      freshened_abs : abs list;
     }
   | EndAbs of {
       abs_id : abs_id;

@@ -74,9 +74,9 @@ type t =
       arg_values : tvalue list;
       dst : place;
       region_abs : abs_id list;
-      freshened_abs : abs list;
-          (** The abstractions freshly minted by this call. Observers
-              walk these to derive cert-side role / shape data. -*)
+          (** Observers look up the freshly-pushed abstractions in
+              [ctx.env] by id; the abs were created just before the
+              event fires, so [ctx.env] is the right source. -*)
     }
   | EndAbs of {
       abs_id : abs_id;
