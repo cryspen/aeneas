@@ -184,29 +184,58 @@ let j_projection_elem (pe : projection_elem) : Yojson.Basic.t =
             "to", `Assoc [ "kind", tagged "Opaque" `Null ];
             "from_end", `Bool from_end ])
 
+(** Look up a global's qualified name from a [global_decl_ref].
+    Falls back to a synthetic `global#<id>` token when the lookup
+    fails (defensive — Charon shouldn't emit dangling refs). *)
+let global_decl_ref_name (crate : crate) (gref : global_decl_ref) : string =
+  match GlobalDeclId.Map.find_opt gref.id crate.global_decls with
+  | Some def ->
+      let env = Print.crate_to_fmt_env crate in
+      Print.name_to_string env def.item_meta.name
+  | None -> Printf.sprintf "global#%d" (GlobalDeclId.to_int gref.id)
+
 (** Walk a Charon nested [place] into the Lean parser's flat shape
-    [{local, projection, ty}]. We collect projections right-to-left;
-    [PlaceGlobal] is opaque (cert-v3 doesn't model globals yet). *)
-let j_place (p : place) : Yojson.Basic.t =
+    [{local, projection, ty, global?}]. We collect projections
+    right-to-left.
+
+    [PlaceGlobal] is rendered as a [local: 0] sentinel with the
+    qualified global name attached via an extra [global] field;
+    Lean's [parseLlbcPlace] reads this back into
+    [LlbcPlace.globalName : Option String]. Forward.lean uses it to
+    pre-seed the var-map for global-initializer bodies (post-pre-pass
+    LLBC encodes `&PlaceGlobal(g)` as a fresh local L bound to
+    `RvRef(PlaceGlobal g)`; without preserving [g] here, the cert
+    walker has no way to recover the source global, and emits typed
+    placeholders for `static S3 = P3` and friends). *)
+let j_place (crate : crate) (p : place) : Yojson.Basic.t =
+  let global_name = ref None in
   let rec walk (p : place) (acc : projection_elem list)
       : int * projection_elem list * ty =
     match p.kind with
     | PlaceLocal lid -> LocalId.to_int lid, acc, p.ty
     | PlaceProjection (sub, pe) -> walk sub (pe :: acc)
-    | PlaceGlobal _ -> 0, acc, p.ty
+    | PlaceGlobal gref ->
+        global_name := Some (global_decl_ref_name crate gref);
+        0, acc, p.ty
   in
   let (local, proj, ty) = walk p [] in
-  `Assoc
+  let base =
     [ "local", `Int local;
       "projection", `List (List.map j_projection_elem proj);
       "ty", j_ty ty ]
+  in
+  let fields = match !global_name with
+    | None -> base
+    | Some n -> base @ [ "global", `String n ]
+  in
+  `Assoc fields
 
 (* ---------- Operands ---------- *)
 
-let j_operand (op : operand) : Yojson.Basic.t =
+let j_operand (crate : crate) (op : operand) : Yojson.Basic.t =
   match op with
-  | Copy p -> tagged "Copy" (j_place p)
-  | Move p -> tagged "Move" (j_place p)
+  | Copy p -> tagged "Copy" (j_place crate p)
+  | Move p -> tagged "Move" (j_place crate p)
   | Constant ce ->
       (* Lean parser expects `{kind: {Literal: <literal>}, ty}` and
          falls back to `constOpaque "const:<tag>"` for non-literal
@@ -263,36 +292,36 @@ let j_aggregate_kind (ak : aggregate_kind) : Yojson.Basic.t =
   | AggregatedRawPtr (ty, k) ->
       tagged "RawPtr" (`List [ j_ty ty; j_ref_kind k ])
 
-let j_rvalue (rv : rvalue) : Yojson.Basic.t =
+let j_rvalue (crate : crate) (rv : rvalue) : Yojson.Basic.t =
   match rv with
-  | Use op -> tagged "Use" (j_operand op)
+  | Use op -> tagged "Use" (j_operand crate op)
   | RvRef (place, kind, _ptr_meta) ->
       tagged "Ref"
         (`Assoc
-          [ "place", j_place place;
+          [ "place", j_place crate place;
             "kind", j_borrow_kind kind;
             "ptr_metadata", `Null ])
   | RawPtr (place, kind, _ptr_meta) ->
       tagged "RawPtr"
         (`Assoc
-          [ "place", j_place place;
+          [ "place", j_place crate place;
             "kind", j_ref_kind kind;
             "ptr_metadata", `Null ])
   | BinaryOp (bop, l, r) ->
       tagged "BinaryOp"
-        (`List [ j_binop bop; j_operand l; j_operand r ])
+        (`List [ j_binop bop; j_operand crate l; j_operand crate r ])
   | UnaryOp (uop, o) ->
-      tagged "UnaryOp" (`List [ j_unop uop; j_operand o ])
+      tagged "UnaryOp" (`List [ j_unop uop; j_operand crate o ])
   | NullaryOp _ -> tagged "Opaque" (`String "NullaryOp")
-  | Discriminant p -> tagged "Discriminant" (j_place p)
+  | Discriminant p -> tagged "Discriminant" (j_place crate p)
   | Aggregate (ak, ops) ->
       tagged "Aggregate"
-        (`List [ j_aggregate_kind ak; `List (List.map j_operand ops) ])
+        (`List [ j_aggregate_kind ak; `List (List.map (j_operand crate) ops) ])
   | Len _ -> tagged "Opaque" (`String "Len")
   | Repeat (op, ty, _ce) ->
       tagged "Repeat"
         (`List
-          [ j_operand op; j_ty ty;
+          [ j_operand crate op; j_ty ty;
             `Assoc [ "kind", tagged "Opaque" (`String "count") ] ])
   | ShallowInitBox _ -> tagged "Opaque" (`String "ShallowInitBox")
 
@@ -350,12 +379,12 @@ let j_call (crate : crate) (c : call) : Yojson.Basic.t =
         in
         tagged "Regular"
           (`Assoc [ "kind", kind_json; "generics", `Null ])
-    | FnOpDynamic op -> tagged "Dynamic" (j_operand op)
+    | FnOpDynamic op -> tagged "Dynamic" (j_operand crate op)
   in
   `Assoc
     [ "func", func_json;
-      "args", `List (List.map j_operand c.args);
-      "dest", j_place c.dest ]
+      "args", `List (List.map (j_operand crate) c.args);
+      "dest", j_place crate c.dest ]
 
 (* ---------- Statements / blocks / switches ---------- *)
 
@@ -372,22 +401,22 @@ and j_statement (crate : crate) (s : statement) : Yojson.Basic.t =
 
 and j_statement_kind (crate : crate) (k : statement_kind) : Yojson.Basic.t =
   match k with
-  | Assign (p, rv) -> tagged "Assign" (`List [ j_place p; j_rvalue rv ])
+  | Assign (p, rv) -> tagged "Assign" (`List [ j_place crate p; j_rvalue crate rv ])
   | SetDiscriminant (p, vid) ->
-      tagged "SetDiscriminant" (`List [ j_place p; j_variant_id vid ])
+      tagged "SetDiscriminant" (`List [ j_place crate p; j_variant_id vid ])
   | CopyNonOverlapping _ -> tagged "Opaque" (`String "CopyNonOverlapping")
   | StorageLive lid -> tagged "StorageLive" (j_local_id lid)
   | StorageDead lid -> tagged "StorageDead" (j_local_id lid)
   | PlaceMention _ -> tagged "Opaque" (`String "PlaceMention")
   | Drop (p, _tref, _dk) ->
       (* Lean reads `[place, fn_ptr, drop_kind]` but only uses the place. *)
-      tagged "Drop" (`List [ j_place p; `Null; `Null ])
+      tagged "Drop" (`List [ j_place crate p; `Null; `Null ])
   | Assert (asrt, _ak) ->
       tagged "Assert"
         (`Assoc
           [ "assert",
             `Assoc
-              [ "cond", j_operand asrt.cond;
+              [ "cond", j_operand crate asrt.cond;
                 "expected", `Bool asrt.expected ];
             "on_failure", `Null ])
   | Call c -> tagged "Call" (j_call crate c)
@@ -405,7 +434,7 @@ and j_switch (crate : crate) (sw : switch) : Yojson.Basic.t =
   | If (op, t_blk, e_blk) ->
       tagged "If"
         (`List
-          [ j_operand op; j_block crate t_blk; j_block crate e_blk ])
+          [ j_operand crate op; j_block crate t_blk; j_block crate e_blk ])
   | SwitchInt (op, lty, arms, dflt) ->
       let arms_json : Yojson.Basic.t =
         `List
@@ -418,7 +447,7 @@ and j_switch (crate : crate) (sw : switch) : Yojson.Basic.t =
       in
       tagged "SwitchInt"
         (`List
-          [ j_operand op; j_literal_type lty;
+          [ j_operand crate op; j_literal_type lty;
             arms_json; j_block crate dflt ])
   | Match (place, arms, dflt_opt) ->
       let arms_json : Yojson.Basic.t =
@@ -434,7 +463,7 @@ and j_switch (crate : crate) (sw : switch) : Yojson.Basic.t =
         | None -> `Null
         | Some b -> j_block crate b
       in
-      tagged "Match" (`List [ j_place place; arms_json; dflt_json ])
+      tagged "Match" (`List [ j_place crate place; arms_json; dflt_json ])
 
 (* ---------- ItemMeta ---------- *)
 
