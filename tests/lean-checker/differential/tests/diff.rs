@@ -10,7 +10,7 @@
 //! `tests/llbc/*.cert.json`. Regenerate models with
 //! `./scripts/regen-diff-models.sh`.
 
-use aeneas_cert_differential::{incr_model, incr_ref, model, ref_impl};
+use aeneas_cert_differential::{model, ref_impl};
 use aeneas_cert_differential::aggregates_basic::{
     mk_pair_model, mk_pair_ref, mk_tuple_model, mk_tuple_ref,
 };
