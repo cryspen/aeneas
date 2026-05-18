@@ -148,4 +148,14 @@ def tokenClearOne (env : Std.HashMap Nat Val) (l : Nat) :
   | some (.mutLoan _) => env.insert l .bottom
   | _ => env
 
+/-- M10.x.7: register one `(loan_id, parent_abs)` entry from
+    `EvLoopInv.loanRegistry`. Skips if the loan is already live
+    (matches the OCaml interp's loop-fixpoint replay discipline:
+    re-entering a loop body should be a no-op on already-tracked
+    loans). The `_parentAbs` is recorded only by `Typecheck/
+    Consistency.lean`'s `seenAbs`; the replayer ignores it here. -/
+def loopInvRegisterLoan (st : SymState) (entry : Nat × Nat) : SymState :=
+  let (b, _parentAbs) := entry
+  if st.loans.contains b then st else st.addLoan b .bottom .reborrow
+
 end AeneasCheck.LLBCSharp

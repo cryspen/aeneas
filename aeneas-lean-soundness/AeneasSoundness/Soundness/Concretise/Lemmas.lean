@@ -1,4 +1,5 @@
 import AeneasSoundness.Soundness.Concretise.Defn
+import AeneasSoundness.Soundness.Invariants.HWM
 
 /-!
 # Concretise lemmas: inversion + commute
@@ -28,6 +29,7 @@ namespace AeneasSoundness.Soundness.Concretise
 open AeneasCheck.LLBCSharp
 open AeneasCheck.Raw (AbsShape)
 open AeneasSoundness.LLBCSharpPaper (LLBCState NonceCounters liftAbsShape)
+open AeneasSoundness.Soundness.Invariants (HwmInvariant)
 
 /-! ## Inversion lemmas (M10.1d) -/
 
@@ -389,5 +391,92 @@ theorem foldl_clearMutLoanToken_removeAbs_commute (Ω : LLBCSharpPaper.LLBCState
   | cons l rest ih =>
     simp only [List.foldl_cons]
     rw [ih (Ω.clearMutLoanToken l), clearMutLoanToken_removeAbs_commute]
+
+/-! ## M10.x.7 (loopInv loanRegistry fold)
+
+The replayer's `stepLoopInv` runs
+`loanRegistry.foldl loopInvRegisterLoan st` — conditionally
+adding a `.reborrow` loan when `entry.1 ∉ st.loans`. The paper-side
+`LStep.loopInv` post-state mirrors with an unconditional
+`bumpLoanId entry.1` fold. The two coincide at the `concretise`
+level under the `HwmInvariant` assumption: when the replayer's
+skip-branch fires (`b ∈ st.loans`), the invariant says
+`b < st.loanIdHwm`, so `(concretise st).bumpLoanId b` is idempotent
+(`max nextLoanId (b+1) = nextLoanId`). The paper-side unconditional
+bump therefore matches the replayer's skip-branch as well as its
+add-branch. -/
+
+/-- Per-entry commute for `loopInv` (under `HwmInvariant`):
+    registering one entry on the replayer side is `bumpLoanId entry.1`
+    on the paper side. The add-branch closes via `concretise_addLoan`;
+    the skip-branch closes via the HwmInvariant's `loanBound` (the
+    skipped `b` is `< st.loanIdHwm`, so the paper-side `bumpLoanId b`
+    is a no-op on `nextLoanId`). -/
+theorem concretise_loopInvRegisterLoan {st : SymState}
+    (hInv : HwmInvariant st) (entry : Nat × Nat) :
+    concretise (AeneasCheck.LLBCSharp.loopInvRegisterLoan st entry) =
+      (concretise st).bumpLoanId entry.1 := by
+  unfold AeneasCheck.LLBCSharp.loopInvRegisterLoan
+  obtain ⟨b, _parentAbs⟩ := entry
+  by_cases hC : st.loans.contains b = true
+  · -- skip-branch.
+    simp only [hC, if_true]
+    -- Goal: concretise st = (concretise st).bumpLoanId b.
+    -- Paper `bumpLoanId b` is `nextLoanId := max nextLoanId (b+1)`.
+    -- `concretise st.nextLoanId = st.loanIdHwm`. By `hInv.loanBound`,
+    -- `b < st.loanIdHwm`, hence `max st.loanIdHwm (b+1) = st.loanIdHwm`.
+    unfold concretise LLBCSharpPaper.LLBCState.bumpLoanId
+    have hBound : b < st.loanIdHwm := hInv.loanBound b hC
+    refine LLBCSharpPaper.LLBCState.mk.injEq .. |>.mpr ⟨rfl, rfl, ?_⟩
+    refine LLBCSharpPaper.NonceCounters.mk.injEq .. |>.mpr ⟨?_, rfl, rfl⟩
+    -- nextLoanId.new = max st.loanIdHwm (b+1) = st.loanIdHwm.
+    exact (Nat.max_eq_left hBound).symm
+  · -- add-branch.
+    simp only [hC, if_false]
+    exact concretise_addLoan st b .bottom .reborrow
+
+/-- Auxiliary fold-style commute (HwmInvariant-threaded over the list). -/
+private theorem concretise_loopInvRegisterLoan_foldl_aux
+    : ∀ (xs : List (Nat × Nat)) {st : SymState},
+      HwmInvariant st →
+        concretise (xs.foldl AeneasCheck.LLBCSharp.loopInvRegisterLoan st)
+        = xs.foldl
+            (fun Ω' entry => Ω'.bumpLoanId entry.1)
+            (concretise st)
+  | [], _, _ => rfl
+  | entry :: rest, st, hInv => by
+    simp only [List.foldl_cons]
+    -- HwmInvariant is preserved by `loopInvRegisterLoan`.
+    have hInv' : HwmInvariant
+        (AeneasCheck.LLBCSharp.loopInvRegisterLoan st entry) := by
+      unfold AeneasCheck.LLBCSharp.loopInvRegisterLoan
+      obtain ⟨b, _⟩ := entry
+      by_cases hC : st.loans.contains b = true
+      · simp only [hC, if_true]; exact hInv
+      · simp only [hC, if_false]; exact hInv.preserve_addLoan b .bottom .reborrow
+    have hIH := concretise_loopInvRegisterLoan_foldl_aux rest hInv'
+    rw [hIH, concretise_loopInvRegisterLoan hInv entry]
+
+/-- Fold commute for `loopInv`: under `HwmInvariant`, the replayer's
+    `loanRegistry.foldl loopInvRegisterLoan` matches the paper-side
+    fold of unconditional `bumpLoanId`. -/
+theorem concretise_loopInvRegisterLoan_foldl {st : SymState}
+    (hInv : HwmInvariant st) (loanRegistry : Array (Nat × Nat)) :
+    concretise
+        (loanRegistry.foldl (init := st)
+          AeneasCheck.LLBCSharp.loopInvRegisterLoan) =
+      loanRegistry.foldl (init := concretise st)
+        (fun Ω' entry => Ω'.bumpLoanId entry.1) := by
+  rw [show loanRegistry.foldl (init := st)
+              AeneasCheck.LLBCSharp.loopInvRegisterLoan
+          = loanRegistry.toList.foldl
+              AeneasCheck.LLBCSharp.loopInvRegisterLoan st from by
+        simp [Array.foldl_toList],
+      show loanRegistry.foldl (init := concretise st)
+              (fun Ω' entry => Ω'.bumpLoanId entry.1)
+          = loanRegistry.toList.foldl
+              (fun Ω' entry => Ω'.bumpLoanId entry.1) (concretise st) from by
+        simp [Array.foldl_toList]]
+  exact concretise_loopInvRegisterLoan_foldl_aux loanRegistry.toList hInv
 
 end AeneasSoundness.Soundness.Concretise

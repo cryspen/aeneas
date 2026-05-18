@@ -29,7 +29,6 @@ by one Phase-C lemma:
 | Extractor | Discharges (for stepX_sound) |
 |---|---|
 | `symExpandMutBorrow` | `substLocals = #[] ∧ substLoans = #[]` + `bid` freshness |
-| `loopInv` | `loanRegistry = #[]` (paper LStep.loopInv is a no-op) |
 | `endBorrow_direct_witness` | for `LoanKind ∈ {.direct, .lazyExpand}`: holder local `x` + result value `v` + `hShape` |
 | `join` | `(Ω', hChain, hConcMatch)` triple |
 | `proj` | unreachable — replayer rejects, no extractor needed |
@@ -42,6 +41,7 @@ by one Phase-C lemma:
 | `reborrow` | dropped M10.x.4 — paper-side rule split into `LStep.reborrow` (tracked-parent) + `LStep.reborrow_untracked` (untracked-parent pre-add), mirroring the replayer's two-branch shape; `hChildFresh` is replayer-discharged via M10.x.2 |
 | `mutBorrow_inAbsReborrow` | dropped M10.x.5 — paper-side rule's `Ω.abs absId = some r` premise was vestigial (the bound `r` was not in the post-state); HWM clause replayer-discharged via M10.x.2 |
 | `endAbs` | dropped M10.x.6 — paper-side rule's `Ω.abs abs = some r` premise was vestigial; post-state strengthened with `tokenClearLocals.foldl clearMutLoanToken` so the replayer's env-clearing is mirrored honestly; the previous "ugly triple" axiom existentially bound an `stPre` that did NOT satisfy `concretise stPre = concretise st` in general |
+| `loopInv` | dropped M10.x.7 — paper-side rule's `Ω → Ω` no-op was strictly weaker than the replayer's conditional `addLoan` fold; M10.x.7 strengthened the post-state to `loanRegistry.foldl bumpLoanId Ω`, mirroring the replayer up to HwmInvariant skip-branch equivalence. The lemma now consumes `HwmInvariant st` (threaded through `stepEvent_sound`) |
 
 ## What's NOT here
 
@@ -185,18 +185,21 @@ axiom symExpandMutBorrow (st st' : SymState) (svId bid innerSv : Nat)
     substLocals = #[] ∧ substLoans = #[] ∧
     st.loans.contains bid = false ∧ st.loanIdHwm ≤ bid
 
-/-! ### LoopInv — empty-loanRegistry subset
+/-! ### LoopInv — dropped (M10.x.7)
 
-The replayer's `stepLoopInv` adds `.reborrow` loans for each
-`loanRegistry` entry whose id isn't already in `st.loans`. The paper
-side's `LStep.loopInv` is `Ω → Ω` (no state change). The two coincide
-iff the cert's `loanRegistry` is empty, i.e. the loop's input
-abstractions were already registered by prior `stepCall`s. -/
+The previous extractor promised `loanRegistry = #[]`. M10.x.7 pre-flight
+scan of `tests/llbc/*.cert.json` found 32/170 EvLoopInv events with
+non-empty `loanRegistry` (function-input borrows the loop body
+re-derives). Strengthening the replayer to reject non-empty would have
+regressed G4 by 32 fixtures.
 
-axiom loopInv (st st' : SymState) (loopId : Nat) (invariant : StateSummary)
-    (loanRegistry : Array (Nat × Nat))
-    (hStep : stepEvent st (.loopInv loopId invariant loanRegistry) = .ok st') :
-    loanRegistry = #[]
+M10.x.7 closes the gap honestly via paper-rule strengthening (same
+shape as M10.x.6's endAbs): `LStep.loopInv`'s post-state was extended
+from `Ω → Ω` to `loanRegistry.foldl (fun Ω' (b, _) => Ω'.bumpLoanId b) Ω`,
+mirroring the replayer's conditional-`addLoan` fold up to the
+HwmInvariant skip-branch equivalence. The per-event lemma threads
+`HwmInvariant st` through the dispatcher; the M10.x.1 invariants
+infrastructure was scaffolded for exactly this. -/
 
 /-! ### EndBorrow — `.direct`/`.lazyExpand` result-shape witness
 

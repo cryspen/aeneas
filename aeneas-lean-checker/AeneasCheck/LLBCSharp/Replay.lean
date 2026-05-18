@@ -53,19 +53,13 @@ def stepEvent (st : SymState) (ev : Event) (strictJoin : Bool := true) :
   | .join l r res witnesses =>
     stepJoin st l r res (witnesses := witnesses) (strict := strictJoin)
   | .loopInv _ invariant loanRegistry =>
-    -- M12.0/M12.1: structural no-op. The OCaml side emits an
-    -- EvLoopInv at the start of each loop's canonical synthesized
-    -- body, paired with an EvLoopEnd at the end (see InterpLoops.ml).
-    -- M9.6 (Option C, plan §7.1 #23) — strict-only path: register
-    -- exactly the loans the OCaml side identified in the loop's
-    -- input abstractions ((borrowId, parentAbsId) pairs from
-    -- commit #9). The M9.5z env-scan fallback is gone. (M9.5aa
-    -- loopDepth bump removed in commit #21.)
-    let mut st := st
-    for (b, _parentAbs) in loanRegistry do
-      if !st.loans.contains b then
-        st := st.addLoan b .bottom .reborrow
-    return st
+    -- M12.0/M12.1 / M10.x.7: register the loans the OCaml side
+    -- identified in the loop's input abstractions ((borrowId,
+    -- parentAbsId) pairs from commit #9). The M9.5z env-scan
+    -- fallback is gone. M10.x.7 refactored `for + mut` to an
+    -- explicit `Array.foldl` over `loopInvRegisterLoan` so the
+    -- soundness proof can chain a per-entry commute.
+    return loanRegistry.foldl (init := st) loopInvRegisterLoan
   | .loopEnd _ =>
     -- M9.5aa loopDepth tracking retired in commit #21.
     return st

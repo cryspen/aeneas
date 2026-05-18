@@ -23,15 +23,15 @@ each lemma's Phase-D-dischargeable hypotheses via the
 `#print axioms stepEvent_sound` reports:
 
 * `propext`, `Quot.sound`, `Classical.choice` (Lean core).
-* `CertGen_faithful.{symExpandMutBorrow, loopInv,
-  endBorrow_direct_witness, join}` — the remaining OCaml-side honesty
-  axioms after M10.x.6. Plan §0.3 + `CertGen.lean`'s header note are
-  the audit surface. (Earlier-dropped extractors: `move` / `copy` in
-  M10.x.3; `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned`
-  / `reborrow` in M10.x.4; `mutBorrow_inAbsReborrow` in M10.x.5;
-  `endAbs` in M10.x.6; `call` / `endBorrow_takeOk` /
-  `endBorrow_reborrow_witness` / `endBorrow_shared_witness` in
-  M10.4a-post.)
+* `CertGen_faithful.{symExpandMutBorrow, endBorrow_direct_witness,
+  join}` — the remaining OCaml-side honesty axioms after M10.x.7.
+  Plan §0.3 + `CertGen.lean`'s header note are the audit surface.
+  (Earlier-dropped extractors: `move` / `copy` in M10.x.3;
+  `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned` /
+  `reborrow` in M10.x.4; `mutBorrow_inAbsReborrow` in M10.x.5;
+  `endAbs` in M10.x.6; `loopInv` in M10.x.7; `call` /
+  `endBorrow_takeOk` / `endBorrow_reborrow_witness` /
+  `endBorrow_shared_witness` in M10.4a-post.)
 
 No `sorryAx`. No domain `axiom` from `LLBCSharpPaper/`. The four
 `paper_thm_*` axioms (Phase G placeholders) are not consumed by
@@ -920,29 +920,36 @@ fixture set is empty-only. The full case awaits an M9.8-style
 schema follow-up (extend `LStep.loopInv` to allow `.reborrow`-only
 loan additions, or split into a `loopRegisterLoan` event). -/
 
-/-- C24 / M10.3a — `EvLoopInv loopId invariant loanRegistry` (paper
-    §5.2 fixpoint snapshot). The `hLoanRegistryEmpty` hypothesis is
-    Phase-D-dischargeable from `CertGen_faithful.loopInv`. With it,
-    the replayer's for-loop body never fires and the post-state is
-    `st`, matching the paper's no-op. -/
+/-- C24 / M10.3a (M10.x.7 revision) — `EvLoopInv loopId invariant
+    loanRegistry` (paper §5.2 fixpoint snapshot). M10.x.7 dropped
+    `CertGen_faithful.loopInv`'s `loanRegistry = #[]` hypothesis;
+    instead the paper-side `LStep.loopInv` post-state was
+    strengthened to a `loanRegistry.foldl bumpLoanId` (which the
+    M10.x.7 commute lemma matches against the replayer's
+    conditional `addLoan` fold). The lemma takes `HwmInvariant st`
+    as an extra hypothesis (the skip-branch in the commute requires
+    `b ∈ st.loans → b < st.loanIdHwm`). -/
 theorem stepLoopInv_sound
   (hRep : concretise st = Ω)
+  (hInv : Invariants.HwmInvariant st)
   (loopId : Nat) (invariant : StateSummary)
-  (loanRegistry : Array (Nat × Nat))
-  (hLoanRegistryEmpty : loanRegistry = #[]) :
+  (loanRegistry : Array (Nat × Nat)) :
   stepEvent st (.loopInv loopId invariant loanRegistry) = .ok st' →
   ∃ Ω', Valid (.loopInv loopId invariant loanRegistry) Ω ∧
         LStep Ω (.loopInv loopId invariant loanRegistry) Ω' ∧
         concretise st' = Ω' := by
   intro hStep
-  subst hLoanRegistryEmpty
-  -- The replayer's for-loop over #[] is a no-op; the body reduces
-  -- to `return st`, i.e. `pure st = .ok st'`. `simp [stepEvent]`
-  -- handles both the unfold and the for-loop reduction; the
-  -- residual `pure` is then unwrapped via the `Except` injection.
-  simp [stepEvent, bind, Except.bind, Pure.pure, Except.pure] at hStep
+  -- Replayer body: `return loanRegistry.foldl loopInvRegisterLoan st`.
+  simp only [stepEvent, Pure.pure, Except.pure, Except.ok.injEq] at hStep
   subst hStep
-  exact ⟨Ω, trivial, LStep.loopInv, hRep⟩
+  refine ⟨loanRegistry.foldl (init := Ω)
+            (fun Ω' entry => Ω'.bumpLoanId entry.1),
+          trivial,
+          LStep.loopInv,
+          ?_⟩
+  have := Concretise.concretise_loopInvRegisterLoan_foldl hInv loanRegistry
+  rw [← hRep]
+  exact this
 
 /-! ### Join (C23, general case — M10.2t)
 
@@ -1044,9 +1051,10 @@ the per-event lemmas added across Phase C). -/
 theorem stepEvent_sound :
     ∀ (ev : Event) (st st' : SymState) (Ω : LLBCState),
       concretise st = Ω →
+      Invariants.HwmInvariant st →
       stepEvent st ev = .ok st' →
       ∃ Ω', Valid ev Ω ∧ LStep Ω ev Ω' ∧ concretise st' = Ω' := by
-  intro ev st st' Ω hRep hStep
+  intro ev st st' Ω hRep hInv hStep
   cases ev with
   | mutBorrow loan place symval kindHint =>
     cases kindHint with
@@ -1175,10 +1183,11 @@ theorem stepEvent_sound :
     exact stepJoin_witnessed_sound st st' Ω left right result witnesses hRep Ω'
       hChain hConcMatch hStep
   | loopInv loopId invariant loanRegistry =>
-    have hLoanRegistryEmpty :=
-      CertGen_faithful.loopInv st st' loopId invariant loanRegistry hStep
-    exact stepLoopInv_sound st st' Ω hRep loopId invariant loanRegistry
-      hLoanRegistryEmpty hStep
+    -- M10.x.7: `CertGen_faithful.loopInv` retired. The paper-side
+    -- `LStep.loopInv` post-state was strengthened to a
+    -- `loanRegistry.foldl bumpLoanId`; the per-event lemma now
+    -- consumes the M10.x.1 `HwmInvariant` plumbing.
+    exact stepLoopInv_sound st st' Ω hRep hInv loopId invariant loanRegistry hStep
   | loopEnd loopId =>
     exact stepLoopEnd_sound st st' Ω hRep loopId hStep
   | matchArm scrutinee adtId variantId variantName =>

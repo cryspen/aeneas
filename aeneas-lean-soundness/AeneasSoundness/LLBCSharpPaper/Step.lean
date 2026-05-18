@@ -550,13 +550,27 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       side has computed the loop-region-abstraction's content from
       its loanRegistry and is asserting the snapshot `invariant`.
 
-      Premises (baseline): trivial (the loanRegistry-to-abs
-      consistency is Phase-C C17 territory). State unchanged at
-      this layer; the actual region-abstraction installation
-      surfaces via the subsequent `EvMutBorrow … MbkLoopOwned`
-      / `EvEndAbs` pair. -/
+      Premises (M10.x.7, post-strengthening): none. The previous
+      cert-emission premise (loanRegistry-to-abs consistency) was
+      tracked at the Typecheck layer (`Consistency.lean`'s
+      `seenAbs`); the per-step rule doesn't need to re-check.
+
+      Post-state (M10.x.7 strengthening): for each `(b, _) ∈
+      loanRegistry`, `bumpLoanId b` (unconditional). The replayer
+      conditionally `addLoan b .bottom .reborrow`-s (skipping if
+      `b` is already in `st.loans`), but on the paper side both
+      arms collapse to `bumpLoanId b` modulo the HwmInvariant —
+      the skip arm is `Ω.bumpLoanId b = Ω` when `b < nextLoanId`,
+      and `concretise` is loans-insensitive (loans live inside
+      `ctx` as `mutLoan` tokens / inside `abs`'s role lists, not
+      in a separate field). The previous `Ω → Ω` no-op rule was
+      strictly weaker than the replayer's behavior; it required a
+      `loanRegistry = #[]` premise via `CertGen_faithful.loopInv`
+      to close, which M10.x.7 retires. -/
   | loopInv {Ω : LLBCState} {loopId : Nat} {invariant : StateSummary}
       {loanRegistry : Array (Nat × Nat)} :
-      LStep Ω (.loopInv loopId invariant loanRegistry) Ω
+      LStep Ω (.loopInv loopId invariant loanRegistry)
+        (loanRegistry.foldl (init := Ω)
+          (fun Ω' entry => Ω'.bumpLoanId entry.1))
 
 end AeneasSoundness.LLBCSharpPaper
