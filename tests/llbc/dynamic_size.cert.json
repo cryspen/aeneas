@@ -245,7 +245,7 @@
         "id": 0,
         "item_meta": {
           "name": "dynamic_size::Wrapper",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Wrapper<T: ?Sized> {\n    data: T,\n}",
           "lang_item": null,
           "span": {
@@ -283,7 +283,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -314,7 +314,7 @@
         "id": 0,
         "item_meta": {
           "name": "dynamic_size::alloc_slice",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn alloc_slice<const N: usize>() -> Box<[u8]> {\n    Box::new([0; N])\n}",
           "lang_item": null,
           "span": {
@@ -595,6 +595,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -602,7 +603,7 @@
         "id": 1,
         "item_meta": {
           "name": "dynamic_size::alloc_wrapper",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn alloc_wrapper<const N: usize>() -> Box<Wrapper<[u8]>> {\n    Box::new(Wrapper { data: [0; N] })\n}",
           "lang_item": null,
           "span": {
@@ -1057,6 +1058,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       }

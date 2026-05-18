@@ -129,7 +129,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_194_recursive_struct_projector::AVLNode",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct AVLNode<T> {\n    value: T,\n    left: AVLTree<T>,\n    right: AVLTree<T>,\n}",
           "lang_item": null,
           "span": {
@@ -229,7 +229,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -282,7 +282,7 @@
         "id": 3,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -313,7 +313,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_194_recursive_struct_projector::get_val",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_val<T>(x: AVLNode<T>) -> T {\n    x.value\n}",
           "lang_item": null,
           "span": {
@@ -435,6 +435,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -442,7 +443,7 @@
         "id": 1,
         "item_meta": {
           "name": "issue_194_recursive_struct_projector::get_left",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_left<T>(x: AVLNode<T>) -> AVLTree<T> {\n    x.left\n}",
           "lang_item": null,
           "span": {
@@ -641,6 +642,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       }

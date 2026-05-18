@@ -793,7 +793,33 @@ def parseLlbcPlace (j : Json) : Result LlbcPlace := do
       | .str s => pure (some s)
       | _ => pure none
     | none => pure none) <|> pure none
-  return { local_, projection, ty, globalName }
+  -- Session 7 Item 2: parse the optional `global_generics` blob
+  -- emitted by `LlbcJson.j_place`. Returns `none` when the field is
+  -- absent (non-global place or generic-less global) so the
+  -- downstream seed pass can fall through to the plain `<bareName>`
+  -- shape.
+  let globalGenerics : Option LlbcGlobalGenerics ← (do
+    match fieldOpt j "global_generics" with
+    | some gj =>
+      let tysArr : Array String ← (do
+        match fieldOpt gj "types" with
+        | some tj =>
+          let arr ← asArr tj
+          arr.mapM fun s => match s with
+            | .str s => pure s
+            | _ => pure ""
+        | none => pure #[]) <|> pure #[]
+      let cgsArr : Array String ← (do
+        match fieldOpt gj "const_generics" with
+        | some cj =>
+          let arr ← asArr cj
+          arr.mapM fun s => match s with
+            | .str s => pure s
+            | _ => pure ""
+        | none => pure #[]) <|> pure #[]
+      pure (some { types := tysArr, constGenerics := cgsArr })
+    | none => pure none) <|> pure none
+  return { local_, projection, ty, globalName, globalGenerics }
 
 /-- M9.7b: parse a `Lit` payload as a literal-value sub-tree. Reuses
     `parseLiteral` to interpret a Serde-tagged `Scalar`/`Bool`/`Char`/
@@ -1363,6 +1389,18 @@ def parseLlbcFunDecl (j : Json) : Result LlbcFunDecl := do
           match fieldOpt ej "ty" with
           | some tj => parseLlbcTy tj
           | none => pure (.tOpaque "")) <|> pure #[]
+  -- Session 7 Item 1d: per-local source names. Parallel array to
+  -- [localsTypes]; each entry is either `Json.str <name>` or
+  -- `Json.null`. Tolerate the field being missing entirely (older
+  -- certs predate the field).
+  let localsNames : Array (Option String) ← (do
+    match fieldOpt j "locals_names" with
+    | some lnj =>
+      let arr ← asArr lnj
+      arr.mapM fun nj => match nj with
+        | .str s => pure (some s)
+        | _ => pure none
+    | none => pure #[]) <|> pure #[]
   let isGlobalInitializer : Bool ← (do
     match fieldOpt j "is_global_initializer" with
     | some bj => match bj with
@@ -1371,7 +1409,7 @@ def parseLlbcFunDecl (j : Json) : Result LlbcFunDecl := do
       | _ => pure true   -- a non-null `Some <id>` ⇒ initializer
     | none => pure false) <|> pure false
   let src := fieldOpaque j "src"
-  return { id, itemMeta, signature, body, localsTypes,
+  return { id, itemMeta, signature, body, localsTypes, localsNames,
            isGlobalInitializer, src }
 
 /-- M9.7b: parse `LlbcTraitMethod`. -/

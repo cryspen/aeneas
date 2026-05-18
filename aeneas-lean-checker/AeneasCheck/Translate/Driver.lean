@@ -112,7 +112,8 @@ def structDeclOfLlbcTypeDecl (tdm : TypeDeclMap) (crateName : String)
         fields := pureFields
         typeParams := typeParams
         isTupleStruct := td.isTupleStruct
-        sourceSpan := td.itemMeta.span }
+        sourceSpan := td.itemMeta.span
+        isPublic := td.itemMeta.isPublic }
   | .enum _ | .union _ | .tAlias _ | .opaque => none
 
 /-- M9.7k: structured-source twin of [enumDeclOfTypeDecl]. -/
@@ -136,7 +137,8 @@ def enumDeclOfLlbcTypeDecl (tdm : TypeDeclMap) (crateName : String)
         qualifiedName := s!"{crateName}::{bareName}"
         variants := pureVariants
         typeParams := typeParams
-        sourceSpan := td.itemMeta.span }
+        sourceSpan := td.itemMeta.span
+        isPublic := td.itemMeta.isPublic }
   | .struct _ | .union _ | .tAlias _ | .opaque => none
 
 /-- M9.5o: given a per-clause obligation `(traitQualifiedName,
@@ -192,7 +194,8 @@ def traitDeclOfLlbcTraitDecl (tdm : TypeDeclMap) (_crateName : String)
   { name := bareName
     qualifiedName := td.itemMeta.name
     methods
-    sourceSpan := td.itemMeta.span }
+    sourceSpan := td.itemMeta.span
+    isPublic := td.itemMeta.isPublic }
 
 /-- M9.7l: capitalise the first character of a string (ASCII).
     Helper for the standard-backend impl-pretty-name shape. -/
@@ -286,7 +289,8 @@ def traitImplOfLlbcTraitImpl (tdm : TypeDeclMap)
     methods
     sourceSpan := ti.itemMeta.span
     typeParams := ti.generics.types
-    traitBoundParams }
+    traitBoundParams
+    isPublic := ti.itemMeta.isPublic }
 
 /-- M9.5l: traverse a `PExpr` and replace every `.app head args`
     whose `head` matches a key in `pretty` with the corresponding

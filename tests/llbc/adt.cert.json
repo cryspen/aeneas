@@ -119,7 +119,7 @@
         "id": 0,
         "item_meta": {
           "name": "adt::Struct",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Struct {\n    len: usize,\n}",
           "lang_item": null,
           "span": {
@@ -157,7 +157,7 @@
         "id": 1,
         "item_meta": {
           "name": "adt::BigStructName",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct BigStructName();",
           "lang_item": null,
           "span": {
@@ -186,7 +186,7 @@
         "id": 2,
         "item_meta": {
           "name": "adt::BigStruct",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct BigStruct(\n    BigStructName,\n    BigStructName,\n    BigStructName,\n    BigStructName,\n    BigStructName,\n    BigStructName,\n);",
           "lang_item": null,
           "span": {
@@ -268,7 +268,7 @@
         "id": 0,
         "item_meta": {
           "name": "adt::{adt::Struct}::len",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn len(&self) -> usize {\n        self.len\n    }",
           "lang_item": null,
           "span": {
@@ -371,6 +371,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -378,7 +379,7 @@
         "id": 1,
         "item_meta": {
           "name": "adt::{adt::Struct}::f",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn f() {}",
           "lang_item": null,
           "span": {
@@ -488,6 +489,7 @@
         "locals_types": [
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       }

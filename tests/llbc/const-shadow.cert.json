@@ -289,7 +289,7 @@
         "id": 0,
         "item_meta": {
           "name": "const_shadow::Foo",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Foo;",
           "lang_item": null,
           "span": {
@@ -320,7 +320,7 @@
         "id": 0,
         "item_meta": {
           "name": "const_shadow::use_has_const",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_has_const<const N: usize, T: HasConst<N>>(x: &T) -> ([u8; N], usize) {\n    let arr = x.get();\n    let n = T::N;\n    (arr, n)\n}",
           "lang_item": null,
           "span": {
@@ -698,6 +698,7 @@
           },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [ null, "x", "arr", null, "n", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -705,7 +706,7 @@
         "id": 1,
         "item_meta": {
           "name": "const_shadow::HasConst::get",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get(&self) -> [u8; N];",
           "lang_item": null,
           "span": {
@@ -738,6 +739,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -745,7 +747,7 @@
         "id": 2,
         "item_meta": {
           "name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}::get",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get(&self) -> [u8; 4] {\n        [0; 4]\n    }",
           "lang_item": null,
           "span": {
@@ -873,6 +875,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -880,7 +883,7 @@
         "id": 3,
         "item_meta": {
           "name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}::N",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const N: usize = 42;",
           "lang_item": null,
           "span": {
@@ -954,6 +957,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       }
@@ -963,7 +967,7 @@
         "id": 0,
         "item_meta": {
           "name": "const_shadow::HasConst",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait HasConst<const N: usize> {\n    const N: usize;\n\n    fn get(&self) -> [u8; N];\n}",
           "lang_item": null,
           "span": {
@@ -1018,7 +1022,7 @@
         "id": 0,
         "item_meta": {
           "name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl HasConst<4> for Foo {\n    const N: usize = 42;\n\n    fn get(&self) -> [u8; 4] {\n        [0; 4]\n    }\n}",
           "lang_item": null,
           "span": {

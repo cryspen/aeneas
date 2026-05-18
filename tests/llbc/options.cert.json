@@ -362,7 +362,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -417,7 +417,7 @@
         "id": 0,
         "item_meta": {
           "name": "options::test_unwrap_or",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn test_unwrap_or<T>(x: Option<T>, default: T) -> T {\n    x.unwrap_or(default)\n}",
           "lang_item": null,
           "span": {
@@ -667,6 +667,7 @@
           },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "x", "default", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -674,7 +675,7 @@
         "id": 1,
         "item_meta": {
           "name": "options::test_expect",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn test_expect<T>(x: Option<T>, msg: &str) -> T {\n    x.expect(msg)\n}",
           "lang_item": null,
           "span": {
@@ -972,6 +973,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", "msg", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -979,7 +981,7 @@
         "id": 2,
         "item_meta": {
           "name": "options::test_is_some",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn test_is_some<T>(x: Option<T>) -> bool {\n    x.is_some()\n}",
           "lang_item": null,
           "span": {
@@ -1182,6 +1184,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1189,7 +1192,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::option::{core::option::Option<T>}::unwrap_or",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1221,6 +1224,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1228,7 +1232,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::option::{core::option::Option<T>}::expect",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "option_expect",
           "span": {
@@ -1271,6 +1275,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1278,7 +1283,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::option::{core::option::Option<T>}::is_some",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1315,6 +1320,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

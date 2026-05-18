@@ -4090,7 +4090,7 @@
         "id": 0,
         "item_meta": {
           "name": "demo::CList",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum CList<T> {\n    CCons(T, Box<CList<T>>),\n    CNil,\n}",
           "lang_item": null,
           "span": {
@@ -4165,7 +4165,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -4196,7 +4196,7 @@
         "id": 0,
         "item_meta": {
           "name": "demo::choose",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {\n    if b {\n        x\n    } else {\n        y\n    }\n}",
           "lang_item": null,
           "span": {
@@ -4677,6 +4677,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "b", "x", "y", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4684,7 +4685,7 @@
         "id": 1,
         "item_meta": {
           "name": "demo::mul2_add1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn mul2_add1(x: u32) -> u32 {\n    (x + x) + 1\n}",
           "lang_item": null,
           "span": {
@@ -4951,6 +4952,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4958,7 +4960,7 @@
         "id": 2,
         "item_meta": {
           "name": "demo::use_mul2_add1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_mul2_add1(x: u32, y: u32) -> u32 {\n    mul2_add1(x) + y\n}",
           "lang_item": null,
           "span": {
@@ -5194,6 +5196,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5201,7 +5204,7 @@
         "id": 3,
         "item_meta": {
           "name": "demo::incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr<'a>(x: &'a mut u32) {\n    *x += 1;\n}",
           "lang_item": null,
           "span": {
@@ -5388,6 +5391,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5395,7 +5399,7 @@
         "id": 4,
         "item_meta": {
           "name": "demo::use_incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_incr() {\n    let mut x = 0;\n    incr(&mut x);\n    incr(&mut x);\n    incr(&mut x);\n}",
           "lang_item": null,
           "span": {
@@ -5960,6 +5964,9 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "x", null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5967,7 +5974,7 @@
         "id": 5,
         "item_meta": {
           "name": "demo::list_nth",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth<'a, T>(l: &'a CList<T>, i: u32) -> &'a T {\n    match l {\n        CList::CCons(x, tl) => {\n            if i == 0 {\n                x\n            } else {\n                list_nth(tl, i - 1)\n            }\n        }\n        CList::CNil => {\n            panic!()\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -6815,6 +6822,9 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "l", "i", "x", "tl", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6822,7 +6832,7 @@
         "id": 6,
         "item_meta": {
           "name": "demo::list_nth1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth1<'a, T>(mut l: &'a CList<T>, mut i: u32) -> &'a T {\n    while let CList::CCons(x, tl) = l {\n        if i == 0 {\n            return x;\n        }\n        i -= 1;\n        l = tl;\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -7707,6 +7717,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "l", "i", "x", "tl", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7714,7 +7725,7 @@
         "id": 7,
         "item_meta": {
           "name": "demo::list_nth_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut<'a, T>(mut l: &'a mut CList<T>, mut i: u32) -> &'a mut T {\n    match l {\n        CList::CCons(x, tl) => {\n            if i == 0 {\n                x\n            } else {\n                list_nth_mut(tl, i - 1)\n            }\n        }\n        CList::CNil => {\n            panic!()\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -9008,6 +9019,10 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "l", "i", null, null, "x", "tl", null, null, null, null,
+          null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9015,7 +9030,7 @@
         "id": 8,
         "item_meta": {
           "name": "demo::i32_id",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn i32_id(i: i32) -> i32 {\n    if i == 0 {\n        0\n    } else {\n        i32_id(i - 1) + 1\n    }\n}",
           "lang_item": null,
           "span": {
@@ -9490,6 +9505,9 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "i", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9497,7 +9515,7 @@
         "id": 9,
         "item_meta": {
           "name": "demo::list_tail",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_tail<'a, T>(l: &'a mut CList<T>) -> &'a mut CList<T> {\n    match l {\n        CList::CCons(_, tl) => list_tail(tl),\n        CList::CNil => l,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -10403,6 +10421,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "l", null, null, "tl", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10410,7 +10429,7 @@
         "id": 10,
         "item_meta": {
           "name": "demo::use_counter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_counter<'a, T: Counter>(cnt: &'a mut T) -> usize {\n    cnt.incr()\n}",
           "lang_item": null,
           "span": {
@@ -10538,6 +10557,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "cnt", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10545,7 +10565,7 @@
         "id": 11,
         "item_meta": {
           "name": "demo::mod_add",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn mod_add(a: u32, b: u32) -> u32 {\n    assert!(a < 3329);\n    assert!(b < 3329);\n    let sum = a + b; // 0 <= a + b <= 2 * 3329\n    let res = sum.wrapping_sub(3329);\n    let mask = res >> 16; // mask = 0xffff if a + b < 3329, mask = 0 otherwise\n    let q = 3329 & mask; // q = 3329 if a + b < 3329, q = 0 otherwise\n    res.wrapping_add(q)\n}",
           "lang_item": null,
           "span": {
@@ -11438,6 +11458,10 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "a", "b", null, null, null, null, "sum", null, null, null,
+          "res", null, "mask", null, "q", null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11445,7 +11469,7 @@
         "id": 12,
         "item_meta": {
           "name": "demo::Counter::incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn incr(&mut self) -> usize;",
           "lang_item": null,
           "span": {
@@ -11471,6 +11495,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11478,7 +11503,7 @@
         "id": 13,
         "item_meta": {
           "name": "demo::{demo::Counter for usize}::incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn incr(&mut self) -> usize {\n        let x = *self;\n        *self += 1;\n        x\n    }",
           "lang_item": null,
           "span": {
@@ -11670,6 +11695,7 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [ null, "self", "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11677,7 +11703,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_sub",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11704,6 +11730,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11711,7 +11738,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11738,6 +11765,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -11747,7 +11775,7 @@
         "id": 0,
         "item_meta": {
           "name": "demo::Counter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait Counter {\n    fn incr(&mut self) -> usize;\n}",
           "lang_item": null,
           "span": {
@@ -11797,7 +11825,7 @@
         "id": 0,
         "item_meta": {
           "name": "demo::{demo::Counter for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl Counter for usize {\n    fn incr(&mut self) -> usize {\n        let x = *self;\n        *self += 1;\n        x\n    }\n}",
           "lang_item": null,
           "span": {

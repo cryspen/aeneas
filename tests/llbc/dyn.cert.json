@@ -1205,7 +1205,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -1234,7 +1234,7 @@
         "id": 4,
         "item_meta": {
           "name": "dyn::dyn_closure::closure",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|x: u32| -> u32 { x }",
           "lang_item": null,
           "span": {
@@ -1265,7 +1265,7 @@
         "id": 0,
         "item_meta": {
           "name": "dyn::bool_to_trait",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn bool_to_trait(b: bool) -> impl Trait {\n    b\n}",
           "lang_item": null,
           "span": {
@@ -1336,6 +1336,7 @@
           ]
         },
         "locals_types": [ { "Literal": "Bool" }, { "Literal": "Bool" } ],
+        "locals_names": [ null, "b" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1343,7 +1344,7 @@
         "id": 1,
         "item_meta": {
           "name": "dyn::mk_trait",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn mk_trait(b: bool) -> Box<dyn Trait> {\n    if b {\n        Box::new(b)\n    } else {\n        Box::new(0)\n    }\n}",
           "lang_item": null,
           "span": {
@@ -2042,6 +2043,9 @@
             }
           }
         ],
+        "locals_names": [
+          null, "b", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2049,7 +2053,7 @@
         "id": 2,
         "item_meta": {
           "name": "dyn::mk_into",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn mk_into<U, V, T: Into<V> + 'static, W: Into<V> + 'static>(\n    b: bool,\n    x: T,\n    y: W,\n) -> Box<dyn Into<V>> {\n    if b {\n        Box::new(x)\n    } else {\n        Box::new(y)\n    }\n}",
           "lang_item": null,
           "span": {
@@ -2837,6 +2841,9 @@
           },
           { "TypeVar": { "Free": 3 } }
         ],
+        "locals_names": [
+          null, "b", "x", "y", null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2844,7 +2851,7 @@
         "id": 3,
         "item_meta": {
           "name": "dyn::dyn_closure",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn dyn_closure(_: impl Trivial) {\n    let f = |x: u32| -> u32 { x };\n}",
           "lang_item": null,
           "span": {
@@ -3033,6 +3040,7 @@
             }
           }
         ],
+        "locals_names": [ null, null, "f" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3040,7 +3048,7 @@
         "id": 4,
         "item_meta": {
           "name": "dyn::Trait::get",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get(&self) -> u32;",
           "lang_item": null,
           "span": {
@@ -3066,6 +3074,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3073,7 +3082,7 @@
         "id": 5,
         "item_meta": {
           "name": "dyn::{dyn::Trait for u32}::get",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get(&self) -> u32 {\n        *self\n    }",
           "lang_item": null,
           "span": {
@@ -3153,6 +3162,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3160,7 +3170,7 @@
         "id": 6,
         "item_meta": {
           "name": "dyn::{dyn::Trait for bool}::get",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get(&self) -> u32 {\n        *self as u32\n    }",
           "lang_item": null,
           "span": {
@@ -3277,6 +3287,7 @@
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3284,7 +3295,7 @@
         "id": 8,
         "item_meta": {
           "name": "dyn::Into::into",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn into(self) -> T;",
           "lang_item": null,
           "span": {
@@ -3308,6 +3319,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3315,7 +3327,7 @@
         "id": 12,
         "item_meta": {
           "name": "dyn::dyn_closure::{core::ops::function::FnOnce<(u32), u32> for dyn::dyn_closure::closure<T0>}::call_once",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|x: u32| -> u32 { x }",
           "lang_item": null,
           "span": {
@@ -3534,6 +3546,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3541,7 +3554,7 @@
         "id": 13,
         "item_meta": {
           "name": "dyn::dyn_closure::{core::ops::function::FnMut<(u32), u32> for dyn::dyn_closure::closure<T0>}::call_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|x: u32| -> u32 { x }",
           "lang_item": null,
           "span": {
@@ -3751,6 +3764,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "state", "args", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3758,7 +3772,7 @@
         "id": 14,
         "item_meta": {
           "name": "dyn::dyn_closure::{core::ops::function::Fn<(u32), u32> for dyn::dyn_closure::closure<T0>}::call",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|x: u32| -> u32 { x }",
           "lang_item": null,
           "span": {
@@ -3903,6 +3917,7 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, null, "tupled_args", "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3910,7 +3925,7 @@
         "id": 19,
         "item_meta": {
           "name": "core::ops::function::FnOnce::call_once",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3942,6 +3957,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3949,7 +3965,7 @@
         "id": 20,
         "item_meta": {
           "name": "core::ops::function::FnMut::call_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3982,6 +3998,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3989,7 +4006,7 @@
         "id": 21,
         "item_meta": {
           "name": "core::ops::function::Fn::call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4022,6 +4039,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -4031,7 +4049,7 @@
         "id": 0,
         "item_meta": {
           "name": "dyn::Trait",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Trait {\n    fn get(&self) -> u32;\n}",
           "lang_item": null,
           "span": {
@@ -4079,7 +4097,7 @@
         "id": 1,
         "item_meta": {
           "name": "dyn::Into",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Into<T> {\n    fn into(self) -> T;\n}",
           "lang_item": null,
           "span": {
@@ -4125,7 +4143,7 @@
         "id": 2,
         "item_meta": {
           "name": "dyn::Trivial",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Trivial {}",
           "lang_item": null,
           "span": {
@@ -4153,7 +4171,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::ops::function::FnOnce",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_once",
           "span": {
@@ -4207,7 +4225,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::ops::function::FnMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_mut",
           "span": {
@@ -4264,7 +4282,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::ops::function::Fn",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn",
           "span": {
@@ -4323,7 +4341,7 @@
         "id": 0,
         "item_meta": {
           "name": "dyn::{dyn::Trait for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl Trait for u32 {\n    fn get(&self) -> u32 {\n        *self\n    }\n}",
           "lang_item": null,
           "span": {
@@ -4355,7 +4373,7 @@
         "id": 1,
         "item_meta": {
           "name": "dyn::{dyn::Trait for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl Trait for bool {\n    fn get(&self) -> u32 {\n        *self as u32\n    }\n}",
           "lang_item": null,
           "span": {
@@ -4387,7 +4405,7 @@
         "id": 3,
         "item_meta": {
           "name": "dyn::dyn_closure::{core::ops::function::FnOnce<(u32), u32> for dyn::dyn_closure::closure<T0>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|x: u32| -> u32 { x }",
           "lang_item": null,
           "span": {
@@ -4424,7 +4442,7 @@
         "id": 4,
         "item_meta": {
           "name": "dyn::dyn_closure::{core::ops::function::FnMut<(u32), u32> for dyn::dyn_closure::closure<T0>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|x: u32| -> u32 { x }",
           "lang_item": null,
           "span": {
@@ -4461,7 +4479,7 @@
         "id": 5,
         "item_meta": {
           "name": "dyn::dyn_closure::{core::ops::function::Fn<(u32), u32> for dyn::dyn_closure::closure<T0>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|x: u32| -> u32 { x }",
           "lang_item": null,
           "span": {

@@ -163,12 +163,17 @@ def buildLoopBody (fnName : String)
   let stateParams : Array Param :=
     stateNames.zip stateTys |>.map fun (n, t) => { name := n, ty := t }
   let bodyParams : Array Param := forwarded ++ stateParams
-  -- Initial vm for the body walk: input local k ↦ paramName k
-  -- (forwarded), state local ↦ its dedicated state-var name.
+  -- Initial vm for the body walk: input local k ↦ forwarded[k]!.name
+  -- (Session 7 Item 1d: read source name from the param record we were
+  -- given instead of resynthesising via paramName), state local ↦ its
+  -- dedicated state-var name.
   let initVm : VarMap := Id.run do
     let mut m : VarMap := {}
     for i in [0:numParams] do
-      m := m.insert (i + 1) (.var (paramName (i + 1)))
+      let nm := match forwarded[i]? with
+        | some p => p.name
+        | none => paramName (i + 1)
+      m := m.insert (i + 1) (.var nm)
     for i in [0:stateLocals.size] do
       m := m.insert stateLocals[i]! (.var stateNames[i]!)
     return m
@@ -313,7 +318,14 @@ def buildTopLevelLoopFn (fnName : String)
   let initVm : VarMap := Id.run do
     let mut m : VarMap := {}
     for i in [0:numParams] do
-      m := m.insert (i + 1) (.var (paramName (i + 1)))
+      -- Session 7 Item 1d: prefer the source name from `params`
+      -- (which now flows through Forward.translateLoopFun's
+      -- effectiveParamName) so the pre-loop walk's local refs match
+      -- the user's identifiers.
+      let nm := match params[i]? with
+        | some p => p.name
+        | none => paramName (i + 1)
+      m := m.insert (i + 1) (.var nm)
     return m
   let preSt : WalkState :=
     walkEvents preLoopEvs { vm := initVm, numParams }
@@ -344,12 +356,17 @@ def translateLoopFun (f : Raw.FunCert) (lf : Raw.LlbcFunDecl) :
   let typeParams := lsig.generics.types
   let tdm : TypeDeclMap := {}
   let numParams := lsig.inputs.size
+  -- Session 7 Item 1d: mirror translateFunWith's effectiveParamName.
+  let effectiveParamName (i : Nat) : String :=
+    match lf.localsNames[i + 1]? with
+    | some (some n) => n
+    | _ => paramName (i + 1)
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
       let ty := match lsig.inputs[i]? with
         | some t => llbcTyToPTyWithVars tdm typeParams t
         | none => placeholderTy
-      { name := paramName (i + 1), ty }
+      { name := effectiveParamName i, ty }
   let retTy : PTy := llbcTyToPTyWithVars tdm typeParams lsig.output
   let stateLocals := inferStateLocals numParams inv
   let bodyEvs := f.events.extract (invIdx + 1) endIdx

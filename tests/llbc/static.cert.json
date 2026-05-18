@@ -290,7 +290,7 @@
         "id": 0,
         "item_meta": {
           "name": "static::read",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn read<S: WithSlice>(_: S, i: usize) -> u16 {\n    S::SLICE[i]\n}",
           "lang_item": null,
           "span": {
@@ -581,6 +581,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U16" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null, "i", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -588,7 +589,7 @@
         "id": 1,
         "item_meta": {
           "name": "static::use_static",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_static() {\n    const PREFIX: &[u8; 1] = &[0];\n    let _ = PREFIX;\n}",
           "lang_item": null,
           "span": {
@@ -893,6 +894,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -900,7 +902,7 @@
         "id": 3,
         "item_meta": {
           "name": "static::use_static::PREFIX",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const PREFIX: &[u8; 1] = &[0];",
           "lang_item": null,
           "span": {
@@ -1355,6 +1357,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null, null, null ],
         "is_global_initializer": true,
         "src": null
       }
@@ -1364,7 +1367,7 @@
         "id": 0,
         "item_meta": {
           "name": "static::WithSlice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait WithSlice {\n    const SLICE: &'static [u16];\n}",
           "lang_item": null,
           "span": {

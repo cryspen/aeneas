@@ -6789,7 +6789,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::ops::range::Range",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Range",
           "span": {
@@ -6833,7 +6833,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -6886,7 +6886,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::result::Result",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Result",
           "span": {
@@ -6946,7 +6946,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::array::iter::IntoIter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ArrayIntoIter",
           "span": {
@@ -6975,7 +6975,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::num::nonzero::NonZero",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "NonZero",
           "span": {
@@ -7004,7 +7004,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::iter::adapters::step_by::StepBy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7033,7 +7033,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::iter::adapters::chain::Chain",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7062,7 +7062,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::iter::adapters::zip::Zip",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7091,7 +7091,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::iter::adapters::intersperse::Intersperse",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7120,7 +7120,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::iter::adapters::intersperse::IntersperseWith",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7151,7 +7151,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::iter::adapters::map::Map",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7180,7 +7180,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::iter::adapters::filter::Filter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7209,7 +7209,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::iter::adapters::filter_map::FilterMap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7238,7 +7238,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::iter::adapters::enumerate::Enumerate",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Enumerate",
           "span": {
@@ -7267,7 +7267,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::iter::adapters::peekable::Peekable",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "IterPeekable",
           "span": {
@@ -7296,7 +7296,7 @@
         "id": 16,
         "item_meta": {
           "name": "core::iter::adapters::skip_while::SkipWhile",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7325,7 +7325,7 @@
         "id": 17,
         "item_meta": {
           "name": "core::iter::adapters::take_while::TakeWhile",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7354,7 +7354,7 @@
         "id": 18,
         "item_meta": {
           "name": "core::iter::adapters::map_while::MapWhile",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7383,7 +7383,7 @@
         "id": 19,
         "item_meta": {
           "name": "core::iter::adapters::skip::Skip",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7412,7 +7412,7 @@
         "id": 20,
         "item_meta": {
           "name": "core::iter::adapters::take::Take",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7441,7 +7441,7 @@
         "id": 21,
         "item_meta": {
           "name": "core::iter::adapters::scan::Scan",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7470,7 +7470,7 @@
         "id": 22,
         "item_meta": {
           "name": "core::iter::adapters::flatten::FlatMap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7505,7 +7505,7 @@
         "id": 23,
         "item_meta": {
           "name": "core::iter::adapters::flatten::Flatten",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7539,7 +7539,7 @@
         "id": 24,
         "item_meta": {
           "name": "core::iter::adapters::map_windows::MapWindows",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7570,7 +7570,7 @@
         "id": 25,
         "item_meta": {
           "name": "core::iter::adapters::fuse::Fuse",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7599,7 +7599,7 @@
         "id": 26,
         "item_meta": {
           "name": "core::iter::adapters::inspect::Inspect",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7628,7 +7628,7 @@
         "id": 27,
         "item_meta": {
           "name": "core::cmp::Ordering",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ordering",
           "span": {
@@ -7681,7 +7681,7 @@
         "id": 28,
         "item_meta": {
           "name": "core::iter::adapters::rev::Rev",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7710,7 +7710,7 @@
         "id": 29,
         "item_meta": {
           "name": "core::iter::adapters::copied::Copied",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7739,7 +7739,7 @@
         "id": 30,
         "item_meta": {
           "name": "core::iter::adapters::cloned::Cloned",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7768,7 +7768,7 @@
         "id": 31,
         "item_meta": {
           "name": "core::iter::adapters::cycle::Cycle",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7797,7 +7797,7 @@
         "id": 32,
         "item_meta": {
           "name": "core::iter::adapters::array_chunks::ArrayChunks",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7826,7 +7826,7 @@
         "id": 34,
         "item_meta": {
           "name": "core::num::niche_types::NonZeroUsizeInner",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -7855,7 +7855,7 @@
         "id": 37,
         "item_meta": {
           "name": "core::ops::control_flow::ControlFlow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ControlFlow",
           "span": {
@@ -7917,7 +7917,7 @@
         "id": 0,
         "item_meta": {
           "name": "assert_cfg::get_b0",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_b0() -> bool {\n    true\n}",
           "lang_item": null,
           "span": {
@@ -7987,6 +7987,7 @@
           ]
         },
         "locals_types": [ { "Literal": "Bool" } ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7994,7 +7995,7 @@
         "id": 1,
         "item_meta": {
           "name": "assert_cfg::get_b1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_b1() -> bool {\n    true\n}",
           "lang_item": null,
           "span": {
@@ -8064,6 +8065,7 @@
           ]
         },
         "locals_types": [ { "Literal": "Bool" } ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8071,7 +8073,7 @@
         "id": 2,
         "item_meta": {
           "name": "assert_cfg::f",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn f() {}",
           "lang_item": null,
           "span": {
@@ -8181,6 +8183,7 @@
         "locals_types": [
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8188,7 +8191,7 @@
         "id": 3,
         "item_meta": {
           "name": "assert_cfg::assert_or",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_or(b0: bool, b1: bool) {\n    assert!(b0 || b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -8481,6 +8484,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8488,7 +8492,7 @@
         "id": 4,
         "item_meta": {
           "name": "assert_cfg::assert_and",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_and(b0: bool, b1: bool) {\n    assert!(b0 && b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -8762,6 +8766,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8769,7 +8774,7 @@
         "id": 5,
         "item_meta": {
           "name": "assert_cfg::assert_not_or",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_or(b0: bool, b1: bool) {\n    assert!(!(b0 || b1));\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -9043,6 +9048,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9050,7 +9056,7 @@
         "id": 6,
         "item_meta": {
           "name": "assert_cfg::assert_not_and",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_and(b0: bool, b1: bool) {\n    assert!(!(b0 && b1));\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -9343,6 +9349,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9350,7 +9357,7 @@
         "id": 7,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_or_b1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_or_b1(b0: bool, b1: bool) {\n    assert!(!b0 || b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -9643,6 +9650,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9650,7 +9658,7 @@
         "id": 8,
         "item_meta": {
           "name": "assert_cfg::assert_b0_or_not_b1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_b0_or_not_b1(b0: bool, b1: bool) {\n    assert!(b0 || !b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -9943,6 +9951,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9950,7 +9959,7 @@
         "id": 9,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_or_not_b1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_or_not_b1(b0: bool, b1: bool) {\n    assert!(!b0 || !b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -10243,6 +10252,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10250,7 +10260,7 @@
         "id": 10,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_and_b1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_and_b1(b0: bool, b1: bool) {\n    assert!(!b0 && b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -10524,6 +10534,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10531,7 +10542,7 @@
         "id": 11,
         "item_meta": {
           "name": "assert_cfg::assert_b0_and_not_b1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_b0_and_not_b1(b0: bool, b1: bool) {\n    assert!(b0 && !b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -10805,6 +10816,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10812,7 +10824,7 @@
         "id": 12,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_and_not_b1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_and_not_b1(b0: bool, b1: bool) {\n    assert!(!b0 && !b1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -11086,6 +11098,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "b0", "b1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11093,7 +11106,7 @@
         "id": 13,
         "item_meta": {
           "name": "assert_cfg::assert_or_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_or_call() {\n    assert!(get_b0() || get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -11380,6 +11393,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11387,7 +11401,7 @@
         "id": 14,
         "item_meta": {
           "name": "assert_cfg::assert_and_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_and_call() {\n    assert!(get_b0() && get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -11655,6 +11669,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11662,7 +11677,7 @@
         "id": 15,
         "item_meta": {
           "name": "assert_cfg::assert_not_or_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_or_call() {\n    assert!(!(get_b0() || get_b1()));\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -11930,6 +11945,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11937,7 +11953,7 @@
         "id": 16,
         "item_meta": {
           "name": "assert_cfg::assert_not_and_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_and_call() {\n    assert!(!(get_b0() && get_b1()));\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -12224,6 +12240,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12231,7 +12248,7 @@
         "id": 17,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_or_b1_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_or_b1_call() {\n    assert!(!get_b0() || get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -12518,6 +12535,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12525,7 +12543,7 @@
         "id": 18,
         "item_meta": {
           "name": "assert_cfg::assert_b0_or_not_b1_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_b0_or_not_b1_call() {\n    assert!(get_b0() || !get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -12812,6 +12830,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12819,7 +12838,7 @@
         "id": 19,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_or_not_b1_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_or_not_b1_call() {\n    assert!(!get_b0() || !get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -13106,6 +13125,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13113,7 +13133,7 @@
         "id": 20,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_and_b1_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_and_b1_call() {\n    assert!(!get_b0() && get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -13381,6 +13401,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13388,7 +13409,7 @@
         "id": 21,
         "item_meta": {
           "name": "assert_cfg::assert_b0_and_not_b1_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_b0_and_not_b1_call() {\n    assert!(get_b0() && !get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -13656,6 +13677,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13663,7 +13685,7 @@
         "id": 22,
         "item_meta": {
           "name": "assert_cfg::assert_not_b0_and_not_b1_call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_not_b0_and_not_b1_call() {\n    assert!(!get_b0() && !get_b1());\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -13931,6 +13953,7 @@
           { "Literal": "Bool" },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13938,7 +13961,7 @@
         "id": 23,
         "item_meta": {
           "name": "assert_cfg::assert_lt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_lt(x: u32) {\n    assert!(x < 10);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -14239,6 +14262,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14246,7 +14270,7 @@
         "id": 24,
         "item_meta": {
           "name": "assert_cfg::assert_le",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_le(x: u32) {\n    assert!(x <= 3494);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -14547,6 +14571,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14554,7 +14579,7 @@
         "id": 25,
         "item_meta": {
           "name": "assert_cfg::assert_gt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_gt(x: u32) {\n    assert!(x > 0);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -14855,6 +14880,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14862,7 +14888,7 @@
         "id": 26,
         "item_meta": {
           "name": "assert_cfg::assert_ge",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_ge(x: u32) {\n    assert!(x >= 1);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -15163,6 +15189,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15170,7 +15197,7 @@
         "id": 27,
         "item_meta": {
           "name": "assert_cfg::assert_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_eq(x: u32) {\n    assert!(x == 42);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -15471,6 +15498,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15478,7 +15506,7 @@
         "id": 28,
         "item_meta": {
           "name": "assert_cfg::assert_ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_ne(x: u32) {\n    assert!(x != 0);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -15779,6 +15807,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15786,7 +15815,7 @@
         "id": 29,
         "item_meta": {
           "name": "assert_cfg::assert_arith",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn assert_arith(x: u32, y: u32) {\n    assert!(x + y < 100);\n    f();\n}",
           "lang_item": null,
           "span": {
@@ -16205,6 +16234,9 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [
+          null, "x", "y", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16212,7 +16244,7 @@
         "id": 30,
         "item_meta": {
           "name": "assert_cfg::assert_in_loop",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn assert_in_loop(a: &[u32; 10]) {\n    for i in 0usize..10 {\n        let x = a[i];\n        assert!(x < 100);\n    }\n}",
           "lang_item": null,
           "span": {
@@ -17345,6 +17377,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "a", null, null, "iter", null, null, null, "i", "x", null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17352,7 +17388,7 @@
         "id": 31,
         "item_meta": {
           "name": "assert_cfg::assert_or_in_loop",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn assert_or_in_loop(a: &mut [u32; 10]) {\n    for i in 0usize..10 {\n        let mut c: u32 = a[i];\n        assert!(c < 100);\n        // wrapping_sub followed by OR assert: the typical constant-time\n        // range reduction pattern from crypto code\n        c = c.wrapping_sub(200);\n        assert!((c >= ((-200i32) as u32)) || (c < 100));\n        c = c.wrapping_add(100 & (c >> 16));\n        assert!((c >= ((-100i32) as u32)) || (c < 100));\n        c = c.wrapping_add(100 & (c >> 16));\n        assert!(c < 100);\n        a[i] = c;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -20253,6 +20289,12 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "a", null, null, "iter", null, null, null, "i", "c", null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -20260,7 +20302,7 @@
         "id": 32,
         "item_meta": {
           "name": "core::iter::traits::collect::{core::iter::traits::collect::IntoIterator<Clause0_Item, I> for I}::into_iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20289,6 +20331,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20296,7 +20339,7 @@
         "id": 33,
         "item_meta": {
           "name": "core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}::next",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20340,6 +20383,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20347,7 +20391,7 @@
         "id": 34,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_sub",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20374,6 +20418,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20381,7 +20426,7 @@
         "id": 35,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20408,6 +20453,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20415,7 +20461,7 @@
         "id": 36,
         "item_meta": {
           "name": "core::iter::traits::iterator::Iterator::next",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "next",
           "span": {
@@ -20449,6 +20495,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20456,7 +20503,7 @@
         "id": 189,
         "item_meta": {
           "name": "core::iter::range::Step::steps_between",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20502,6 +20549,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20509,7 +20557,7 @@
         "id": 190,
         "item_meta": {
           "name": "core::iter::range::Step::forward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20542,6 +20590,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20549,7 +20598,7 @@
         "id": 193,
         "item_meta": {
           "name": "core::iter::range::Step::backward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20582,6 +20631,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20589,7 +20639,7 @@
         "id": 196,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for usize}::steps_between",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20633,6 +20683,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20640,7 +20691,7 @@
         "id": 197,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for usize}::forward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20672,6 +20723,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20679,7 +20731,7 @@
         "id": 200,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for usize}::backward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20711,6 +20763,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20718,7 +20771,7 @@
         "id": 203,
         "item_meta": {
           "name": "core::iter::traits::collect::IntoIterator::into_iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "into_iter",
           "span": {
@@ -20751,6 +20804,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20758,7 +20812,7 @@
         "id": 204,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -20786,6 +20840,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20793,7 +20848,7 @@
         "id": 206,
         "item_meta": {
           "name": "core::ops::function::FnMut::call_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20826,6 +20881,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20833,7 +20889,7 @@
         "id": 207,
         "item_meta": {
           "name": "core::ops::function::FnOnce::call_once",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -20865,6 +20921,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20872,7 +20929,7 @@
         "id": 208,
         "item_meta": {
           "name": "core::iter::traits::collect::FromIterator::from_iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "from_iter_fn",
           "span": {
@@ -20910,6 +20967,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20917,7 +20975,7 @@
         "id": 209,
         "item_meta": {
           "name": "core::ops::try_trait::Try::from_output",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "from_output",
           "span": {
@@ -20947,6 +21005,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -20954,7 +21013,7 @@
         "id": 210,
         "item_meta": {
           "name": "core::ops::try_trait::Try::branch",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "branch",
           "span": {
@@ -20993,6 +21052,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21000,7 +21060,7 @@
         "id": 211,
         "item_meta": {
           "name": "core::iter::traits::collect::Extend::extend",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21041,6 +21101,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21048,7 +21109,7 @@
         "id": 215,
         "item_meta": {
           "name": "core::default::Default::default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "default_fn",
           "span": {
@@ -21074,6 +21135,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21081,7 +21143,7 @@
         "id": 216,
         "item_meta": {
           "name": "core::iter::traits::double_ended::DoubleEndedIterator::next_back",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21117,6 +21179,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21124,7 +21187,7 @@
         "id": 224,
         "item_meta": {
           "name": "core::cmp::Ord::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ord_cmp_method",
           "span": {
@@ -21155,6 +21218,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21162,7 +21226,7 @@
         "id": 228,
         "item_meta": {
           "name": "core::iter::traits::accum::Sum::sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21192,6 +21256,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21199,7 +21264,7 @@
         "id": 229,
         "item_meta": {
           "name": "core::iter::traits::accum::Product::product",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21232,6 +21297,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21239,7 +21305,7 @@
         "id": 230,
         "item_meta": {
           "name": "core::cmp::PartialOrd::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialord_cmp",
           "span": {
@@ -21282,6 +21348,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21289,7 +21356,7 @@
         "id": 239,
         "item_meta": {
           "name": "core::cmp::PartialEq::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_eq",
           "span": {
@@ -21318,6 +21385,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21325,7 +21393,7 @@
         "id": 242,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for usize}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21351,6 +21419,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21358,7 +21427,7 @@
         "id": 244,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<usize> for usize}::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21399,6 +21468,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21406,7 +21476,7 @@
         "id": 253,
         "item_meta": {
           "name": "core::ops::try_trait::FromResidual::from_residual",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "from_residual",
           "span": {
@@ -21435,6 +21505,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21442,7 +21513,7 @@
         "id": 255,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<usize> for usize}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21469,6 +21540,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21476,7 +21548,7 @@
         "id": 257,
         "item_meta": {
           "name": "core::num::niche_types::{core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21512,6 +21584,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -21521,7 +21594,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::iter::traits::iterator::Iterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "iterator",
           "span": {
@@ -21577,7 +21650,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::iter::range::Step",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "range_step",
           "span": {
@@ -21693,7 +21766,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::iter::traits::collect::IntoIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "IntoIterator",
           "span": {
@@ -21750,7 +21823,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::num::nonzero::ZeroablePrimitive",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21778,7 +21851,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -21826,7 +21899,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::ops::function::FnMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_mut",
           "span": {
@@ -21883,7 +21956,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::ops::function::FnOnce",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_once",
           "span": {
@@ -21937,7 +22010,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::iter::traits::collect::FromIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "FromIterator",
           "span": {
@@ -21995,7 +22068,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::ops::try_trait::Try",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Try",
           "span": {
@@ -22080,7 +22153,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::ops::try_trait::Residual",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22110,7 +22183,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::iter::traits::collect::Extend",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22173,7 +22246,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::default::Default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Default",
           "span": {
@@ -22219,7 +22292,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::iter::traits::double_ended::DoubleEndedIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "DoubleEndedIterator",
           "span": {
@@ -22277,7 +22350,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::iter::traits::exact_size::ExactSizeIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22305,7 +22378,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::cmp::Ord",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ord",
           "span": {
@@ -22356,7 +22429,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -22384,7 +22457,7 @@
         "id": 16,
         "item_meta": {
           "name": "core::iter::traits::accum::Sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22439,7 +22512,7 @@
         "id": 17,
         "item_meta": {
           "name": "core::iter::traits::accum::Product",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22494,7 +22567,7 @@
         "id": 18,
         "item_meta": {
           "name": "core::cmp::PartialOrd",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "partial_ord",
           "span": {
@@ -22557,7 +22630,7 @@
         "id": 19,
         "item_meta": {
           "name": "core::cmp::PartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "eq",
           "span": {
@@ -22606,7 +22679,7 @@
         "id": 20,
         "item_meta": {
           "name": "core::iter::adapters::zip::TrustedRandomAccessNoCoerce",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22634,7 +22707,7 @@
         "id": 21,
         "item_meta": {
           "name": "core::num::nonzero::private::Sealed",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22662,7 +22735,7 @@
         "id": 22,
         "item_meta": {
           "name": "core::ops::try_trait::FromResidual",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "FromResidual",
           "span": {
@@ -22711,7 +22784,7 @@
         "id": 23,
         "item_meta": {
           "name": "core::cmp::Eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Eq",
           "span": {
@@ -22741,7 +22814,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::iter::traits::collect::{core::iter::traits::collect::IntoIterator<Clause0_Item, I> for I}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22778,7 +22851,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22817,7 +22890,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22853,7 +22926,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::num::nonzero::{core::num::nonzero::ZeroablePrimitive<core::num::niche_types::NonZeroUsizeInner> for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22885,7 +22958,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22917,7 +22990,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<usize> for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22949,7 +23022,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::marker::{core::marker::Copy for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22981,7 +23054,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::num::nonzero::{core::num::nonzero::private::Sealed for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -23013,7 +23086,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::num::niche_types::{core::marker::Copy for core::num::niche_types::NonZeroUsizeInner}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -23047,7 +23120,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<usize> for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -23079,7 +23152,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::num::niche_types::{core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

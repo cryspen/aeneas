@@ -209,6 +209,12 @@ let global_decl_ref_name (crate : crate) (gref : global_decl_ref) : string =
     placeholders for `static S3 = P3` and friends). *)
 let j_place (crate : crate) (p : place) : Yojson.Basic.t =
   let global_name = ref None in
+  (* Session 7 Item 2: surface the global's generic instantiation
+     (types + const_generics) alongside the qualified name so the
+     Lean Forward translator can emit a typed call like
+     `let g ← constants.V.LEN T N` for `V::<N, T>::LEN`. *)
+  let global_generics = ref None in
+  let env = Print.crate_to_fmt_env crate in
   let rec walk (p : place) (acc : projection_elem list)
       : int * projection_elem list * ty =
     match p.kind with
@@ -216,6 +222,12 @@ let j_place (crate : crate) (p : place) : Yojson.Basic.t =
     | PlaceProjection (sub, pe) -> walk sub (pe :: acc)
     | PlaceGlobal gref ->
         global_name := Some (global_decl_ref_name crate gref);
+        let gs = gref.generics in
+        let tys = List.map (Print.ty_to_string env) gs.types in
+        let cgs =
+          List.map (Print.constant_expr_to_string env) gs.const_generics
+        in
+        global_generics := Some (tys, cgs);
         0, acc, p.ty
   in
   let (local, proj, ty) = walk p [] in
@@ -226,7 +238,19 @@ let j_place (crate : crate) (p : place) : Yojson.Basic.t =
   in
   let fields = match !global_name with
     | None -> base
-    | Some n -> base @ [ "global", `String n ]
+    | Some n ->
+      let g_fields = [ "global", `String n ] in
+      let gg_fields = match !global_generics with
+        | Some (tys, cgs)
+          when not (List.is_empty tys && List.is_empty cgs) ->
+            [ "global_generics",
+              `Assoc
+                [ "types", `List (List.map (fun s -> `String s) tys);
+                  "const_generics",
+                  `List (List.map (fun s -> `String s) cgs) ] ]
+        | _ -> []
+      in
+      base @ g_fields @ gg_fields
   in
   `Assoc fields
 
@@ -475,9 +499,15 @@ and j_switch (crate : crate) (sw : switch) : Yojson.Basic.t =
 *)
 let j_item_meta (env : Print.fmt_env) (im : item_meta) : Yojson.Basic.t =
   let name = Print.name_to_string env im.name in
+  (* Session 7 Item 1a: expose [public] so the Lean side can emit the
+     `Visibility: public` docstring line, matching mainline's
+     [extract_comment_with_span ~public]. *)
+  let attr_info_json : Yojson.Basic.t =
+    `Assoc [ "public", `Bool im.attr_info.public ]
+  in
   `Assoc
     [ "name", `String name;
-      "attr_info", `Null;
+      "attr_info", attr_info_json;
       "source_text", json_opt json_string im.source_text;
       "lang_item", json_opt json_string im.lang_item;
       "span", j_span im.span;
@@ -591,12 +621,22 @@ let j_type_decl (env : Print.fmt_env) (crate : crate)
 
 let j_fun_decl (env : Print.fmt_env) (crate : crate)
     (fd : fun_decl) : Yojson.Basic.t =
-  let body_json, locals_json = match fd.body with
+  (* Session 7 Item 1d: emit per-local source names alongside the
+     existing types-only array so the Lean side can preserve the
+     user's `x` / `y` instead of synthesising `x1` / `x2`. Index 0 is
+     the return slot (typically unnamed); 1..arg_count are the
+     params; the rest are locals introduced during MIR lowering. *)
+  let body_json, locals_types_json, locals_names_json = match fd.body with
     | StructuredBody body ->
         (j_block crate body.body,
          `List (List.map (fun (l : local) -> j_ty l.local_ty)
+                  body.locals.locals),
+         `List (List.map (fun (l : local) ->
+                  match l.name with
+                  | Some s -> `String s
+                  | None -> `Null)
                   body.locals.locals))
-    | _ -> `Null, `List []
+    | _ -> `Null, `List [], `List []
   in
   let is_global_init = match fd.is_global_initializer with
     | None -> `Bool false
@@ -607,7 +647,8 @@ let j_fun_decl (env : Print.fmt_env) (crate : crate)
       "item_meta", j_item_meta env fd.item_meta;
       "signature", j_fun_sig env crate fd.generics fd.signature;
       "body", body_json;
-      "locals_types", locals_json;
+      "locals_types", locals_types_json;
+      "locals_names", locals_names_json;
       "is_global_initializer", is_global_init;
       "src", `Null ]
 

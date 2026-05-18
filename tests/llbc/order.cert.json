@@ -930,7 +930,7 @@
         "id": 0,
         "item_meta": {
           "name": "order::Wrap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Wrap(u64);",
           "lang_item": null,
           "span": {
@@ -968,7 +968,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::cmp::Ordering",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ordering",
           "span": {
@@ -1021,7 +1021,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -1074,7 +1074,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::ops::control_flow::ControlFlow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ControlFlow",
           "span": {
@@ -1136,7 +1136,7 @@
         "id": 0,
         "item_meta": {
           "name": "order::compare",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn compare<T: Ord>(x: &T, y: &T) -> Ordering {\n    x.cmp(y)\n}",
           "lang_item": null,
           "span": {
@@ -1336,6 +1336,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1343,7 +1344,7 @@
         "id": 1,
         "item_meta": {
           "name": "order::u32_compare",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn u32_compare(x: u32, y: u32) -> Ordering {\n    x.cmp(&y)\n}",
           "lang_item": null,
           "span": {
@@ -1585,6 +1586,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1592,7 +1594,7 @@
         "id": 2,
         "item_meta": {
           "name": "order::u64_partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn u64_partial_cmp(x: u64, y: u64) -> Option<Ordering> {\n    x.partial_cmp(&y)\n}",
           "lang_item": null,
           "span": {
@@ -1869,6 +1871,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1876,7 +1879,7 @@
         "id": 3,
         "item_meta": {
           "name": "order::wrap_partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn wrap_partial_cmp(x: &Wrap, y: &Wrap) -> Option<Ordering> {\n    x.partial_cmp(y)\n}",
           "lang_item": null,
           "span": {
@@ -2195,6 +2198,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2202,7 +2206,7 @@
         "id": 4,
         "item_meta": {
           "name": "order::wrap_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn wrap_cmp(x: &Wrap, y: &Wrap) -> Ordering {\n    x.cmp(y)\n}",
           "lang_item": null,
           "span": {
@@ -2486,6 +2490,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2493,7 +2498,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::cmp::Ord::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ord_cmp_method",
           "span": {
@@ -2524,6 +2529,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2531,7 +2537,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for u32}::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2560,6 +2566,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2567,7 +2574,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<u64> for u64}::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2608,6 +2615,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2615,7 +2623,7 @@
         "id": 8,
         "item_meta": {
           "name": "order::{core::cmp::PartialEq<order::Wrap> for order::Wrap}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2833,6 +2841,7 @@
           { "Literal": { "UInt": "U64" } },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "self", "other", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2840,7 +2849,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::cmp::PartialEq::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_eq",
           "span": {
@@ -2869,6 +2878,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2876,7 +2886,7 @@
         "id": 12,
         "item_meta": {
           "name": "order::{core::cmp::Eq for order::Wrap}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3003,6 +3013,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3010,7 +3021,7 @@
         "id": 13,
         "item_meta": {
           "name": "order::{core::cmp::PartialOrd<order::Wrap> for order::Wrap}::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3389,6 +3400,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self", "other", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3396,7 +3408,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::cmp::PartialOrd::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialord_cmp",
           "span": {
@@ -3439,6 +3451,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3446,7 +3459,7 @@
         "id": 31,
         "item_meta": {
           "name": "order::{core::cmp::Ord for order::Wrap}::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3790,6 +3803,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self", "other", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3797,7 +3811,7 @@
         "id": 49,
         "item_meta": {
           "name": "core::cmp::Eq::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3825,6 +3839,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3832,7 +3847,7 @@
         "id": 50,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for u64}::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3861,6 +3876,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3868,7 +3884,7 @@
         "id": 51,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Eq for u32}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3894,6 +3910,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3901,7 +3918,7 @@
         "id": 52,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<u32> for u32}::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3942,6 +3959,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3949,7 +3967,7 @@
         "id": 61,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<u64> for u64}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3976,6 +3994,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3983,7 +4002,7 @@
         "id": 66,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<u32> for u32}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4010,6 +4029,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -4017,7 +4037,7 @@
         "id": 68,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Eq for u64}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4043,6 +4063,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -4052,7 +4073,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::cmp::Ord",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ord",
           "span": {
@@ -4103,7 +4124,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::marker::StructuralPartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "structural_peq",
           "span": {
@@ -4131,7 +4152,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::cmp::PartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "eq",
           "span": {
@@ -4180,7 +4201,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::cmp::Eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Eq",
           "span": {
@@ -4230,7 +4251,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::cmp::PartialOrd",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "partial_ord",
           "span": {
@@ -4295,7 +4316,7 @@
         "id": 0,
         "item_meta": {
           "name": "order::{core::marker::StructuralPartialEq for order::Wrap}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4329,7 +4350,7 @@
         "id": 1,
         "item_meta": {
           "name": "order::{core::cmp::PartialEq<order::Wrap> for order::Wrap}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4363,7 +4384,7 @@
         "id": 2,
         "item_meta": {
           "name": "order::{core::cmp::Eq for order::Wrap}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4397,7 +4418,7 @@
         "id": 3,
         "item_meta": {
           "name": "order::{core::cmp::PartialOrd<order::Wrap> for order::Wrap}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4431,7 +4452,7 @@
         "id": 4,
         "item_meta": {
           "name": "order::{core::cmp::Ord for order::Wrap}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4465,7 +4486,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4497,7 +4518,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<u64> for u64}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4529,7 +4550,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Eq for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4561,7 +4582,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<u32> for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4593,7 +4614,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<u64> for u64}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4625,7 +4646,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for u64}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4657,7 +4678,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<u32> for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -4689,7 +4710,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Eq for u64}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

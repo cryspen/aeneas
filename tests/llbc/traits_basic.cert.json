@@ -133,7 +133,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits_basic::Tag",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Tag;",
           "lang_item": null,
           "span": {
@@ -164,7 +164,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits_basic::use_numeric",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_numeric(t: Tag) -> u32 {\n    t.value()\n}",
           "lang_item": null,
           "span": {
@@ -319,6 +319,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "t", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -326,7 +327,7 @@
         "id": 1,
         "item_meta": {
           "name": "traits_basic::Numeric::value",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn value(&self) -> u32;",
           "lang_item": null,
           "span": {
@@ -354,6 +355,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -361,7 +363,7 @@
         "id": 2,
         "item_meta": {
           "name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}::value",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn value(&self) -> u32 {\n        42\n    }",
           "lang_item": null,
           "span": {
@@ -454,6 +456,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       }
@@ -463,7 +466,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits_basic::Numeric",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait Numeric {\n    fn value(&self) -> u32;\n}",
           "lang_item": null,
           "span": {
@@ -513,7 +516,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl Numeric for Tag {\n    fn value(&self) -> u32 {\n        42\n    }\n}",
           "lang_item": null,
           "span": {

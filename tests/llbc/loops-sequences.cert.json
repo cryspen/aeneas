@@ -2903,7 +2903,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops_sequences::Key",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Key {\n    seed: [u8; 32],\n    t: [u16; 32],\n}",
           "lang_item": null,
           "span": {
@@ -2971,7 +2971,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops_sequences::shake_init",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn shake_init(_state: &mut HashState) {}",
           "lang_item": null,
           "span": {
@@ -3118,6 +3118,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "_state" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3125,7 +3126,7 @@
         "id": 1,
         "item_meta": {
           "name": "loops_sequences::shake_append",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn shake_append(_state: &mut HashState, _data: &[u8]) {}",
           "lang_item": null,
           "span": {
@@ -3282,6 +3283,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "_state", "_data" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3289,7 +3291,7 @@
         "id": 2,
         "item_meta": {
           "name": "loops_sequences::shake_state_copy",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn shake_state_copy(_src: &HashState, _dst: &mut HashState) {}",
           "lang_item": null,
           "span": {
@@ -3472,6 +3474,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "_src", "_dst" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3479,7 +3482,7 @@
         "id": 3,
         "item_meta": {
           "name": "loops_sequences::shake_extract",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn shake_extract(_src: &HashState, _dst: &mut [u8]) {}",
           "lang_item": null,
           "span": {
@@ -3634,6 +3637,7 @@
             "Ref": [ 0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Mut" ]
           }
         ],
+        "locals_names": [ null, "_src", "_dst" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3641,7 +3645,7 @@
         "id": 4,
         "item_meta": {
           "name": "loops_sequences::sample_cbd",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn sample_cbd(_src: &[u8], _dst: &mut [u16; 32]) {}",
           "lang_item": null,
           "span": {
@@ -3798,6 +3802,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "_src", "_dst" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3805,7 +3810,7 @@
         "id": 5,
         "item_meta": {
           "name": "loops_sequences::key_expand",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn key_expand(key: &mut Key, state_base: &mut HashState, state_work: &mut HashState) {\n    shake_init(state_base);\n    shake_append(state_base, &key.seed);\n\n    let mut sample_buffer: [u8; 1] = [0];\n    let mut i = 0;\n    while i < 32 {\n        sample_buffer[0] = i as u8;\n        shake_state_copy(state_base, state_work);\n        shake_append(state_work, &sample_buffer);\n        shake_extract(state_work, &mut sample_buffer);\n        sample_cbd(state_work, key.t_mut());\n        i += 1;\n    }\n\n    let mut i = 0;\n    while i < 32 {\n        sample_buffer[0] = i as u8;\n        shake_state_copy(state_base, state_work);\n        shake_append(state_work, &sample_buffer);\n        shake_extract(state_work, &mut sample_buffer);\n        sample_cbd(state_work, key.t_mut());\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -9547,6 +9552,15 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "key", "state_base", "state_work", null, null, null, null,
+          null, null, null, "sample_buffer", "i", null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, "i", null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9554,7 +9568,7 @@
         "id": 6,
         "item_meta": {
           "name": "loops_sequences::{loops_sequences::Key}::t_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn t_mut(&mut self) -> &mut [u16; 32] {\n        &mut self.t\n    }",
           "lang_item": null,
           "span": {
@@ -9896,6 +9910,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self", null, null ],
         "is_global_initializer": false,
         "src": null
       }

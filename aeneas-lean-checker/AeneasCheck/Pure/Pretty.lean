@@ -223,7 +223,11 @@ def sanitizeCallName (n : String) : String := Id.run do
     needs to render with surrounding parens when its Lean form would
     otherwise be parsed as a multi-token construct (lambda, if/else,
     let, …). We pre-parenthesise such forms so `app head [arg1, …]`
-    can space-join its args safely. -/
+    can space-join its args safely.
+
+    Session 7 Item 1c: also wraps a binop application (`.app head
+    [lhs, rhs]` with `binopInfix head = some _`) because the binop
+    site no longer adds outer parens itself — see [PExpr.toLeanDo]. -/
 private partial def parenIfNeeded (s : String) (e : PExpr) : String :=
   match e with
   | .lam _ _ | .ifThenElse _ _ _ | .letIn _ _ _ _
@@ -235,6 +239,13 @@ private partial def parenIfNeeded (s : String) (e : PExpr) : String :=
   -- M9.5d: a `match … with …` token chain similarly spans multiple
   -- arms; wrap it when used as an `app` arg.
   | .matchE _ _ => "(" ++ s ++ ")"
+  -- Session 7 Item 1c: binop app — the outer-paren-free
+  -- [PExpr.toLeanDo] form needs wrapping when used as a function-app
+  -- arg so `f (x + y) z` doesn't parse as `f x + y z`.
+  | .app head _ =>
+    match binopInfix head with
+    | some _ => "(" ++ s ++ ")"
+    | none => s
   | _ => s
 
 /-- Expression form used inside a `do`-block: tail `.ok` becomes a
@@ -275,7 +286,13 @@ partial def PExpr.toLeanDo : PExpr → String
     else
     match binopInfix head, args.toList with
     | some op, [lhs, rhs] =>
-      "(" ++ lhs.toLeanDo ++ " " ++ op ++ " " ++ rhs.toLeanDo ++ ")"
+      -- Session 7 Item 1c: drop outer parens on the binop site to
+      -- match mainline's `x + y` shape. Sub-binops on either side
+      -- are wrapped explicitly via [parenIfNeeded] so we don't
+      -- introduce precedence ambiguity in nested forms
+      -- (`(x * 2) + y`).
+      parenIfNeeded lhs.toLeanDo lhs ++ " " ++ op ++ " " ++
+        parenIfNeeded rhs.toLeanDo rhs
     | _, _ =>
       -- Function-call head: try the wrapping-shortcut map first
       -- (`AddWrap → wrapping_add`), then fall back to sanitising a
@@ -317,9 +334,14 @@ partial def PExpr.toLeanDo : PExpr → String
       | .var _ | .lit _ => PExpr.toLeanDo inner
       -- Tuple already self-parenthesises; don't add another pair.
       | .tuple _ => PExpr.toLeanDo inner
-      -- `.app` also self-parenthesises (`(head a b)`), so skip
-      -- adding another pair — `ok (head a b)` not `ok ((head a b))`.
-      | .app _ _ => PExpr.toLeanDo inner
+      -- `.app` of a non-infix head self-parenthesises (`(head a b)`),
+      -- so skip adding another pair — `ok (head a b)` not `ok ((head a b))`.
+      -- Session 7 Item 1c: binop apps no longer self-parenthesise;
+      -- wrap them so `ok x + y` doesn't reparse as `(ok x) + y`.
+      | .app head _ =>
+        match binopInfix head with
+        | some _ => "(" ++ PExpr.toLeanDo inner ++ ")"
+        | none => PExpr.toLeanDo inner
       -- M9.5b: `{ base with f := v }` self-delimits via braces, so
       -- skip parens — `ok { p with fst := v }` not `ok ({ … })`.
       | .structUpdate _ _ _ _ => PExpr.toLeanDo inner
@@ -541,14 +563,19 @@ partial def PExpr.calledNames : PExpr → Array String
     fields.foldl (init := #[]) fun s (_, v) => s ++ PExpr.calledNames v
 
 /-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
-    `def`. Empty when no `sourceSpan` is attached. -/
+    `def`. Empty when no `sourceSpan` is attached.
+
+    Session 7 Item 1a: appends a `Visibility: public` line when the
+    underlying Charon item is public, matching mainline's
+    `extract_comment_with_span ~public:true`. -/
 def Decl.docComment (d : Decl) : String :=
   match d.sourceSpan with
   | none => ""
   | some sp =>
     let loc :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
-    s!"/-- [{d.qualifiedName}]:\n    Source: '{sp.file}', lines {loc} -/\n"
+    let vis : String := if d.isPublic then "\n    Visibility: public" else ""
+    s!"/-- [{d.qualifiedName}]:\n    Source: '{sp.file}', lines {loc}{vis} -/\n"
 
 /-- Build the `/- TRANSLATOR NOTE: … -/` block emitted *before*
     `docComment` when the translator attached a `note`. M12.0 uses
@@ -642,18 +669,20 @@ def StructDecl.docComment (sd : StructDecl) : String :=
   | some sp =>
     let loc :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
-    s!"/-- [{sd.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+    let vis : String := if sd.isPublic then "\n    Visibility: public" else ""
+    s!"/-- [{sd.qualifiedName}]\n    Source: '{sp.file}', lines {loc}{vis} -/\n"
 
-/-- M9.5l: docstring for a unit-struct alias. The standard Aeneas
-    backend adds a `Visibility: public` line that we elide (we
-    universally elide it across all decls — known cosmetic drift). -/
+/-- M9.5l: docstring for a unit-struct alias. Session 7 Item 1a:
+    appends `Visibility: public` when the underlying Charon item is
+    public, matching mainline's `extract_comment_with_span ~public:true`. -/
 private def StructDecl.unitAliasDocComment (sd : StructDecl) : String :=
   match sd.sourceSpan with
   | none => ""
   | some sp =>
     let loc :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
-    s!"/-- [{sd.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+    let vis : String := if sd.isPublic then "\n    Visibility: public" else ""
+    s!"/-- [{sd.qualifiedName}]\n    Source: '{sp.file}', lines {loc}{vis} -/\n"
 
 /-- M9.5b: render a `structure Foo where …` block. Each field becomes
     one `  name : ty` line. Empty-field structs still emit the
@@ -696,7 +725,8 @@ def EnumDecl.docComment (ed : EnumDecl) : String :=
   | some sp =>
     let loc :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
-    s!"/-- [{ed.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+    let vis : String := if ed.isPublic then "\n    Visibility: public" else ""
+    s!"/-- [{ed.qualifiedName}]\n    Source: '{sp.file}', lines {loc}{vis} -/\n"
 
 /-- M9.5d / M9.5e: render an `inductive Foo where …` block. Each
     variant becomes one line: `| Variant : Foo` for a nullary variant,
@@ -745,7 +775,8 @@ def TraitDecl.docComment (td : TraitDecl) : String :=
   | some sp =>
     let loc :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
-    s!"/-- Trait declaration: [{td.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+    let vis : String := if td.isPublic then "\n    Visibility: public" else ""
+    s!"/-- Trait declaration: [{td.qualifiedName}]\n    Source: '{sp.file}', lines {loc}{vis} -/\n"
 
 /-- M9.5l: render a method type at the trait-method-row top level —
     i.e. strip the outer `( … )` that `PTy.toLean` would add around an
@@ -774,7 +805,8 @@ def TraitImpl.docComment (ti : TraitImpl) : String :=
   | some sp =>
     let loc :=
       s!"{sp.begLine}:{sp.begCol}-{sp.endLine}:{sp.endCol}"
-    s!"/-- Trait implementation: [{ti.qualifiedName}]\n    Source: '{sp.file}', lines {loc} -/\n"
+    let vis : String := if ti.isPublic then "\n    Visibility: public" else ""
+    s!"/-- Trait implementation: [{ti.qualifiedName}]\n    Source: '{sp.file}', lines {loc}{vis} -/\n"
 
 /-- M9.5l: render an `@[reducible] def <Name> : <TraitName> <SelfTy>
     := { … }` block. The instance literal binds each method to its

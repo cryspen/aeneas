@@ -888,7 +888,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_789_loop_ctx_match::S",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct S {\n    x: u8,\n    y: [u8; 4],\n}",
           "lang_item": null,
           "span": {
@@ -943,7 +943,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::ops::range::RangeFrom",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "RangeFrom",
           "span": {
@@ -981,7 +981,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -1036,7 +1036,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_789_loop_ctx_match::f",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f(_r: &mut u8, _a: &[u8], _b: &mut [u8]) -> (bool, usize) {\n    (true, 0)\n}",
           "lang_item": null,
           "span": {
@@ -1178,6 +1178,7 @@
             "Ref": [ 0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Mut" ]
           }
         ],
+        "locals_names": [ null, "_r", "_a", "_b" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1185,7 +1186,7 @@
         "id": 1,
         "item_meta": {
           "name": "issue_789_loop_ctx_match::the_loop",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn the_loop(s: &mut S, next_in: &mut &[u8]) -> bool {\n    loop {\n        let result = f(&mut s.x, *next_in, &mut s.y);\n        let n = result.1;\n        let done = result.0;\n        *next_in = &next_in[n..];\n        if done || next_in.is_empty() {\n            return done;\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -2710,6 +2711,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "s", "next_in", "result", null, null, null, null, null, null,
+          "n", "done", null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2717,7 +2722,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::slice::index::{core::ops::index::Index<I, Clause0_Output> for [T]}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2752,6 +2757,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2759,7 +2765,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::slice::{[T]}::is_empty",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2789,6 +2795,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2796,7 +2803,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2838,6 +2845,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2845,7 +2853,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2887,6 +2895,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2894,7 +2903,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2927,6 +2936,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2934,7 +2944,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2967,6 +2977,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2974,7 +2985,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3007,6 +3018,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3014,7 +3026,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3047,6 +3059,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3054,7 +3067,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFrom<usize>}::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3105,6 +3118,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3112,7 +3126,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFrom<usize>}::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3161,6 +3175,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3168,7 +3183,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFrom<usize>}::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3208,6 +3223,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3215,7 +3231,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFrom<usize>}::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3253,6 +3269,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3260,7 +3277,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFrom<usize>}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3300,6 +3317,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3307,7 +3325,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFrom<usize>}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3345,6 +3363,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3352,7 +3371,7 @@
         "id": 16,
         "item_meta": {
           "name": "core::ops::index::Index::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3385,6 +3404,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -3394,7 +3414,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::slice::index::SliceIndex",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "SliceIndex",
           "span": {
@@ -3611,7 +3631,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::ops::index::Index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index",
           "span": {
@@ -3668,7 +3688,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::Sealed",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3698,7 +3718,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::slice::index::{core::ops::index::Index<I, Clause0_Output> for [T]}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3734,7 +3754,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::RangeFrom<usize>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3778,7 +3798,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::{core::slice::index::private_slice_index::Sealed for core::ops::range::RangeFrom<usize>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

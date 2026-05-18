@@ -449,7 +449,7 @@
         "id": 0,
         "item_meta": {
           "name": "multi_region::swap_pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn swap_pair<'a, 'b>(x: &'a mut u32, y: &'b mut u32) -> (&'a mut u32, &'b mut u32) {\n    (x, y)\n}",
           "lang_item": null,
           "span": {
@@ -683,6 +683,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -690,7 +691,7 @@
         "id": 1,
         "item_meta": {
           "name": "multi_region::use_swap_pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_swap_pair(x: &mut u32, y: &mut u32) {\n    let (rx, ry) = swap_pair(x, y);\n    *rx = 7;\n    *ry = 9;\n}",
           "lang_item": null,
           "span": {
@@ -1172,6 +1173,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", "y", "rx", "ry", null, null, null ],
         "is_global_initializer": false,
         "src": null
       }

@@ -6373,7 +6373,7 @@
         "id": 0,
         "item_meta": {
           "name": "adt_borrows::SharedWrapper",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct SharedWrapper<'a, T>(&'a T);",
           "lang_item": null,
           "span": {
@@ -6411,7 +6411,7 @@
         "id": 1,
         "item_meta": {
           "name": "adt_borrows::SharedWrapper1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct SharedWrapper1<'a, T> {\n    x: &'a T,\n}",
           "lang_item": null,
           "span": {
@@ -6449,7 +6449,7 @@
         "id": 2,
         "item_meta": {
           "name": "adt_borrows::SharedWrapper2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct SharedWrapper2<'a, 'b, T> {\n    x: &'a T,\n    y: &'b T,\n}",
           "lang_item": null,
           "span": {
@@ -6493,7 +6493,7 @@
         "id": 3,
         "item_meta": {
           "name": "adt_borrows::MutWrapper",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct MutWrapper<'a, T>(&'a mut T);",
           "lang_item": null,
           "span": {
@@ -6531,7 +6531,7 @@
         "id": 4,
         "item_meta": {
           "name": "adt_borrows::MutWrapper1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct MutWrapper1<'a, T> {\n    x: &'a mut T,\n}",
           "lang_item": null,
           "span": {
@@ -6569,7 +6569,7 @@
         "id": 5,
         "item_meta": {
           "name": "adt_borrows::MutWrapper2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct MutWrapper2<'a, 'b, T> {\n    x: &'a mut T,\n    y: &'b mut T,\n}",
           "lang_item": null,
           "span": {
@@ -6613,7 +6613,7 @@
         "id": 6,
         "item_meta": {
           "name": "adt_borrows::SharedList",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum SharedList<'a, T> {\n    Nil,\n    Cons(&'a T, Box<SharedList<'a, T>>),\n}",
           "lang_item": null,
           "span": {
@@ -6690,7 +6690,7 @@
         "id": 7,
         "item_meta": {
           "name": "adt_borrows::MutList",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum MutList<'a, T> {\n    Nil,\n    Cons(&'a mut T, Box<MutList<'a, T>>),\n}",
           "lang_item": null,
           "span": {
@@ -6765,7 +6765,7 @@
         "id": 8,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -6794,7 +6794,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -6849,7 +6849,7 @@
         "id": 0,
         "item_meta": {
           "name": "adt_borrows::use_shared_wrapper",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_shared_wrapper() {\n    let x: i32 = 0;\n    let w = SharedWrapper::create(&x);\n    let p = w.unwrap();\n    assert!(x == *p);\n}",
           "lang_item": null,
           "span": {
@@ -7466,6 +7466,9 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "w", null, null, "p", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7473,7 +7476,7 @@
         "id": 1,
         "item_meta": {
           "name": "adt_borrows::use_shared_wrapper1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_shared_wrapper1() {\n    let x: i32 = 0;\n    let w = SharedWrapper1::create(&x);\n    let p = w.unwrap();\n    assert!(x == *p);\n}",
           "lang_item": null,
           "span": {
@@ -8090,6 +8093,9 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "w", null, null, "p", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8097,7 +8103,7 @@
         "id": 2,
         "item_meta": {
           "name": "adt_borrows::use_shared_wrapper2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_shared_wrapper2() {\n    let x: i32 = 0;\n    let y: i32 = 1;\n    let w = SharedWrapper2::create(&x, &y);\n    let (px, py) = w.unwrap();\n    assert!(x == *px);\n    assert!(y == *py);\n}",
           "lang_item": null,
           "span": {
@@ -9205,6 +9211,10 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "y", "w", null, null, null, null, "px", "py", null,
+          null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9212,7 +9222,7 @@
         "id": 3,
         "item_meta": {
           "name": "adt_borrows::use_mut_wrapper",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_wrapper() {\n    let mut x: i32 = 0;\n    let w = MutWrapper::create(&mut x);\n    let p = w.unwrap();\n    *p += 1;\n    assert!(x == 1);\n}",
           "lang_item": null,
           "span": {
@@ -9854,6 +9864,9 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "w", null, null, "p", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9861,7 +9874,7 @@
         "id": 4,
         "item_meta": {
           "name": "adt_borrows::use_mut_wrapper_id",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_wrapper_id<'a, T>(x: MutWrapper<'a, T>) -> MutWrapper<'a, T> {\n    x.id()\n}",
           "lang_item": null,
           "span": {
@@ -10034,6 +10047,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10041,7 +10055,7 @@
         "id": 5,
         "item_meta": {
           "name": "adt_borrows::use_mut_wrapper1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_wrapper1() {\n    let mut x: i32 = 0;\n    let w = MutWrapper1::create(&mut x);\n    let p = w.unwrap();\n    *p += 1;\n    assert!(x == 1);\n}",
           "lang_item": null,
           "span": {
@@ -10683,6 +10697,9 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "w", null, null, "p", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10690,7 +10707,7 @@
         "id": 6,
         "item_meta": {
           "name": "adt_borrows::use_mut_wrapper1_id",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_wrapper1_id<'a, T>(x: MutWrapper1<'a, T>) -> MutWrapper1<'a, T> {\n    x.id()\n}",
           "lang_item": null,
           "span": {
@@ -10863,6 +10880,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10870,7 +10888,7 @@
         "id": 7,
         "item_meta": {
           "name": "adt_borrows::use_mut_wrapper2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_wrapper2() {\n    let mut x: i32 = 0;\n    let mut y: i32 = 10;\n    let w = MutWrapper2::create(&mut x, &mut y);\n    let (px, py) = w.unwrap();\n    *px += 1;\n    *py += 1;\n    assert!(x == 1);\n    assert!(y == 11);\n}",
           "lang_item": null,
           "span": {
@@ -12020,6 +12038,10 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "y", "w", null, null, null, null, "px", "py", null,
+          null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12027,7 +12049,7 @@
         "id": 8,
         "item_meta": {
           "name": "adt_borrows::use_mut_wrapper2_id",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_wrapper2_id<'a, 'b, T>(x: MutWrapper2<'a, 'b, T>) -> MutWrapper2<'a, 'b, T> {\n    x.id()\n}",
           "lang_item": null,
           "span": {
@@ -12200,6 +12222,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12207,7 +12230,7 @@
         "id": 9,
         "item_meta": {
           "name": "adt_borrows::array_shared_borrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn array_shared_borrow<'a, const N: usize>(x: [&'a u32; N]) -> [&'a u32; N] {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -12321,6 +12344,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12328,7 +12352,7 @@
         "id": 10,
         "item_meta": {
           "name": "adt_borrows::array_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn array_mut_borrow<'a, const N: usize>(x: [&'a mut u32; N]) -> [&'a mut u32; N] {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -12442,6 +12466,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12449,7 +12474,7 @@
         "id": 11,
         "item_meta": {
           "name": "adt_borrows::use_array_mut_borrow1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_array_mut_borrow1<'a, const N: usize>(x: [&'a mut u32; N]) -> [&'a mut u32; N] {\n    array_mut_borrow(x)\n}",
           "lang_item": null,
           "span": {
@@ -12630,6 +12655,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12637,7 +12663,7 @@
         "id": 12,
         "item_meta": {
           "name": "adt_borrows::use_array_mut_borrow2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_array_mut_borrow2<'a, const N: usize>(x: [&'a mut u32; N]) -> [&'a mut u32; N] {\n    let x = array_mut_borrow(x);\n    array_mut_borrow(x)\n}",
           "lang_item": null,
           "span": {
@@ -12946,6 +12972,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", "x", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12953,7 +12980,7 @@
         "id": 13,
         "item_meta": {
           "name": "adt_borrows::boxed_slice_shared_borrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn boxed_slice_shared_borrow(x: Box<[&u32]>) -> Box<[&u32]> {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -13160,6 +13187,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13167,7 +13195,7 @@
         "id": 14,
         "item_meta": {
           "name": "adt_borrows::boxed_slice_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn boxed_slice_mut_borrow(x: Box<[&mut u32]>) -> Box<[&mut u32]> {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -13362,6 +13390,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13369,7 +13398,7 @@
         "id": 15,
         "item_meta": {
           "name": "adt_borrows::use_boxed_slice_mut_borrow1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_boxed_slice_mut_borrow1(x: Box<[&mut u32]>) -> Box<[&mut u32]> {\n    boxed_slice_mut_borrow(x)\n}",
           "lang_item": null,
           "span": {
@@ -13653,6 +13682,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13660,7 +13690,7 @@
         "id": 16,
         "item_meta": {
           "name": "adt_borrows::use_boxed_slice_mut_borrow2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_boxed_slice_mut_borrow2(x: Box<[&mut u32]>) -> Box<[&mut u32]> {\n    let x = boxed_slice_mut_borrow(x);\n    boxed_slice_mut_borrow(x)\n}",
           "lang_item": null,
           "span": {
@@ -14151,6 +14181,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", "x", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14158,7 +14189,7 @@
         "id": 17,
         "item_meta": {
           "name": "adt_borrows::wrap_shared_in_option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn wrap_shared_in_option<'a, T>(x: &'a T) -> Option<&'a T> {\n    Option::Some(x)\n}",
           "lang_item": null,
           "span": {
@@ -14337,6 +14368,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14344,7 +14376,7 @@
         "id": 18,
         "item_meta": {
           "name": "adt_borrows::wrap_mut_in_option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn wrap_mut_in_option<'a, T>(x: &'a mut T) -> Option<&'a mut T> {\n    Option::Some(x)\n}",
           "lang_item": null,
           "span": {
@@ -14519,6 +14551,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14526,7 +14559,7 @@
         "id": 19,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedWrapper<'a, T>}::create",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn create(x: &'a T) -> Self {\n        SharedWrapper(x)\n    }",
           "lang_item": null,
           "span": {
@@ -14685,6 +14718,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14692,7 +14726,7 @@
         "id": 20,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedWrapper<'a, T>}::unwrap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn unwrap(self: Self) -> &'a T {\n        self.0\n    }",
           "lang_item": null,
           "span": {
@@ -14789,6 +14823,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14796,7 +14831,7 @@
         "id": 21,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedWrapper1<'a, T>}::create",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn create(x: &'a T) -> Self {\n        SharedWrapper1 { x }\n    }",
           "lang_item": null,
           "span": {
@@ -14955,6 +14990,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14962,7 +14998,7 @@
         "id": 22,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedWrapper1<'a, T>}::unwrap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn unwrap(self: Self) -> &'a T {\n        self.x\n    }",
           "lang_item": null,
           "span": {
@@ -15059,6 +15095,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15066,7 +15103,7 @@
         "id": 23,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedWrapper2<'a, 'b, T>}::create",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn create(x: &'a T, y: &'b T) -> Self {\n        SharedWrapper2 { x, y }\n    }",
           "lang_item": null,
           "span": {
@@ -15284,6 +15321,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15291,7 +15329,7 @@
         "id": 24,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedWrapper2<'a, 'b, T>}::unwrap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn unwrap(self: Self) -> (&'a T, &'b T) {\n        (self.x, self.y)\n    }",
           "lang_item": null,
           "span": {
@@ -15539,6 +15577,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15546,7 +15585,7 @@
         "id": 25,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper<'a, T>}::create",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn create(x: &'a mut T) -> Self {\n        MutWrapper(x)\n    }",
           "lang_item": null,
           "span": {
@@ -15701,6 +15740,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15708,7 +15748,7 @@
         "id": 26,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper<'a, T>}::unwrap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn unwrap(self: Self) -> &'a mut T {\n        self.0\n    }",
           "lang_item": null,
           "span": {
@@ -15851,6 +15891,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15858,7 +15899,7 @@
         "id": 27,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper<'a, T>}::id",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn id(self) -> Self {\n        self\n    }",
           "lang_item": null,
           "span": {
@@ -15968,6 +16009,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15975,7 +16017,7 @@
         "id": 28,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper1<'a, T>}::create",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn create(x: &'a mut T) -> Self {\n        MutWrapper1 { x }\n    }",
           "lang_item": null,
           "span": {
@@ -16130,6 +16172,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16137,7 +16180,7 @@
         "id": 29,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper1<'a, T>}::unwrap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn unwrap(self: Self) -> &'a mut T {\n        self.x\n    }",
           "lang_item": null,
           "span": {
@@ -16280,6 +16323,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16287,7 +16331,7 @@
         "id": 30,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper1<'a, T>}::id",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn id(self) -> Self {\n        self\n    }",
           "lang_item": null,
           "span": {
@@ -16397,6 +16441,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16404,7 +16449,7 @@
         "id": 31,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper2<'a, 'b, T>}::create",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn create(x: &'a mut T, y: &'b mut T) -> Self {\n        MutWrapper2 { x, y }\n    }",
           "lang_item": null,
           "span": {
@@ -16618,6 +16663,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16625,7 +16671,7 @@
         "id": 32,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper2<'a, 'b, T>}::unwrap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn unwrap(self: Self) -> (&'a mut T, &'b mut T) {\n        (self.x, self.y)\n    }",
           "lang_item": null,
           "span": {
@@ -16877,6 +16923,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "self", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16884,7 +16931,7 @@
         "id": 33,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutWrapper2<'a, 'b, T>}::id",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn id(self) -> Self {\n        self\n    }",
           "lang_item": null,
           "span": {
@@ -16994,6 +17041,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17001,7 +17049,7 @@
         "id": 35,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedList<'a, T>}::push",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn push(self, x: &'a T) -> Self {\n        SharedList::Cons(x, Box::new(self))\n    }",
           "lang_item": null,
           "span": {
@@ -17400,6 +17448,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self", "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17407,7 +17456,7 @@
         "id": 36,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::SharedList<'a, T>}::pop",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn pop(self) -> (&'a T, Self) {\n        use SharedList::*;\n        match self {\n            Nil => panic!(),\n            Cons(hd, tl) => (hd, *tl),\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -18040,6 +18089,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self", "hd", "tl", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18047,7 +18097,7 @@
         "id": 37,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutList<'a, T>}::push",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn push(self, x: &'a mut T) -> Self {\n        MutList::Cons(x, Box::new(self))\n    }",
           "lang_item": null,
           "span": {
@@ -18444,6 +18494,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self", "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18451,7 +18502,7 @@
         "id": 38,
         "item_meta": {
           "name": "adt_borrows::{adt_borrows::MutList<'a, T>}::pop",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn pop(self) -> (&'a mut T, Self) {\n        use MutList::*;\n        match self {\n            Nil => panic!(),\n            Cons(hd, tl) => (hd, *tl),\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -19084,6 +19135,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self", "hd", "tl", null, null ],
         "is_global_initializer": false,
         "src": null
       }

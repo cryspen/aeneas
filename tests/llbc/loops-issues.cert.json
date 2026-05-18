@@ -2789,7 +2789,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops_issues::WrapperU32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct WrapperU32 {\n    pub x: u32,\n}",
           "lang_item": null,
           "span": {
@@ -2827,7 +2827,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::ops::range::Range",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Range",
           "span": {
@@ -2871,7 +2871,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -2924,7 +2924,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::result::Result",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Result",
           "span": {
@@ -2984,7 +2984,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::array::iter::IntoIter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ArrayIntoIter",
           "span": {
@@ -3013,7 +3013,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::num::nonzero::NonZero",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "NonZero",
           "span": {
@@ -3042,7 +3042,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::iter::adapters::step_by::StepBy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3071,7 +3071,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::iter::adapters::chain::Chain",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3100,7 +3100,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::iter::adapters::zip::Zip",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3129,7 +3129,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::iter::adapters::intersperse::Intersperse",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3158,7 +3158,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::iter::adapters::intersperse::IntersperseWith",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3189,7 +3189,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::iter::adapters::map::Map",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3218,7 +3218,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::iter::adapters::filter::Filter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3247,7 +3247,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::iter::adapters::filter_map::FilterMap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3276,7 +3276,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::iter::adapters::enumerate::Enumerate",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Enumerate",
           "span": {
@@ -3305,7 +3305,7 @@
         "id": 16,
         "item_meta": {
           "name": "core::iter::adapters::peekable::Peekable",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "IterPeekable",
           "span": {
@@ -3334,7 +3334,7 @@
         "id": 17,
         "item_meta": {
           "name": "core::iter::adapters::skip_while::SkipWhile",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3363,7 +3363,7 @@
         "id": 18,
         "item_meta": {
           "name": "core::iter::adapters::take_while::TakeWhile",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3392,7 +3392,7 @@
         "id": 19,
         "item_meta": {
           "name": "core::iter::adapters::map_while::MapWhile",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3421,7 +3421,7 @@
         "id": 20,
         "item_meta": {
           "name": "core::iter::adapters::skip::Skip",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3450,7 +3450,7 @@
         "id": 21,
         "item_meta": {
           "name": "core::iter::adapters::take::Take",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3479,7 +3479,7 @@
         "id": 22,
         "item_meta": {
           "name": "core::iter::adapters::scan::Scan",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3508,7 +3508,7 @@
         "id": 23,
         "item_meta": {
           "name": "core::iter::adapters::flatten::FlatMap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3543,7 +3543,7 @@
         "id": 24,
         "item_meta": {
           "name": "core::iter::adapters::flatten::Flatten",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3577,7 +3577,7 @@
         "id": 25,
         "item_meta": {
           "name": "core::iter::adapters::map_windows::MapWindows",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3608,7 +3608,7 @@
         "id": 26,
         "item_meta": {
           "name": "core::iter::adapters::fuse::Fuse",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3637,7 +3637,7 @@
         "id": 27,
         "item_meta": {
           "name": "core::iter::adapters::inspect::Inspect",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3666,7 +3666,7 @@
         "id": 28,
         "item_meta": {
           "name": "core::cmp::Ordering",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ordering",
           "span": {
@@ -3719,7 +3719,7 @@
         "id": 29,
         "item_meta": {
           "name": "core::iter::adapters::rev::Rev",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3748,7 +3748,7 @@
         "id": 30,
         "item_meta": {
           "name": "core::iter::adapters::copied::Copied",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3777,7 +3777,7 @@
         "id": 31,
         "item_meta": {
           "name": "core::iter::adapters::cloned::Cloned",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3806,7 +3806,7 @@
         "id": 32,
         "item_meta": {
           "name": "core::iter::adapters::cycle::Cycle",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3835,7 +3835,7 @@
         "id": 33,
         "item_meta": {
           "name": "core::iter::adapters::array_chunks::ArrayChunks",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3864,7 +3864,7 @@
         "id": 35,
         "item_meta": {
           "name": "core::num::niche_types::NonZeroUsizeInner",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3893,7 +3893,7 @@
         "id": 38,
         "item_meta": {
           "name": "core::ops::control_flow::ControlFlow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ControlFlow",
           "span": {
@@ -3955,7 +3955,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops_issues::write",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn write(_: &mut [u8; 4]) {}",
           "lang_item": null,
           "span": {
@@ -4102,6 +4102,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4109,7 +4110,7 @@
         "id": 1,
         "item_meta": {
           "name": "loops_issues::read",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn read(_: &[u8; 4]) {}",
           "lang_item": null,
           "span": {
@@ -4256,6 +4257,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4263,7 +4265,7 @@
         "id": 2,
         "item_meta": {
           "name": "loops_issues::loop_access_array",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn loop_access_array(k: usize) {\n    let mut start = 0usize;\n    while start < 4 {\n        let _: u16 = CARRAY[k];\n        start += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -5096,6 +5098,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "k", "start", null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5103,7 +5108,7 @@
         "id": 3,
         "item_meta": {
           "name": "loops_issues::loop_array_len",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn loop_array_len(b: bool) {\n    let buf = [0u8; 4];\n    let _: usize = buf.len();\n\n    while b {\n        let _ = buf.len();\n    }\n}",
           "lang_item": null,
           "span": {
@@ -5865,6 +5870,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "b", "buf", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5872,7 +5880,7 @@
         "id": 4,
         "item_meta": {
           "name": "loops_issues::loop_array_len_write",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn loop_array_len_write(b0: bool, b1: bool) {\n    let mut buf = [0u8; 4];\n    let _: usize = buf.len();\n\n    while b0 {\n        if b1 {\n            write(&mut buf);\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -6800,6 +6808,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "b0", "b1", "buf", null, null, null, null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6807,7 +6819,7 @@
         "id": 5,
         "item_meta": {
           "name": "loops_issues::read_global_loop",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn read_global_loop(b: bool, n_rows: usize) {\n    debug_assert!(n_rows <= MAX_NROWS);\n    while b {}\n}",
           "lang_item": null,
           "span": {
@@ -7330,6 +7342,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "b", "n_rows", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7337,7 +7350,7 @@
         "id": 6,
         "item_meta": {
           "name": "loops_issues::mut_loop_len",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn mut_loop_len(_: &mut u32, b: bool) {\n    let buf = [0u8; 4];\n\n    while b {\n        debug_assert!(0 <= buf.len());\n    }\n}",
           "lang_item": null,
           "span": {
@@ -8167,6 +8180,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, null, "b", "buf", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8174,7 +8190,7 @@
         "id": 7,
         "item_meta": {
           "name": "loops_issues::test",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn test(b0: bool, b1: bool) {\n    let mut buf = [0u8; 4];\n    let _ = buf.len();\n\n    while b0 {\n        if b1 {\n            write(&mut buf);\n        }\n\n        let _ = read(&buf);\n    }\n}",
           "lang_item": null,
           "span": {
@@ -9347,6 +9363,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "b0", "b1", "buf", null, null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9354,7 +9374,7 @@
         "id": 8,
         "item_meta": {
           "name": "loops_issues::consume_u32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn consume_u32(eta: u32) {}",
           "lang_item": null,
           "span": {
@@ -9465,6 +9485,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "eta" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9472,7 +9493,7 @@
         "id": 9,
         "item_meta": {
           "name": "loops_issues::loop_consume_u32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn loop_consume_u32(params: &WrapperU32) {\n    let x = params.x;\n\n    for i in 0..32 {\n        consume_u32(x);\n    }\n}",
           "lang_item": null,
           "span": {
@@ -10333,6 +10354,10 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "params", "x", null, null, "iter", null, null, null, "i",
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10340,7 +10365,7 @@
         "id": 10,
         "item_meta": {
           "name": "loops_issues::CARRAY",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const CARRAY: [u16; 4] = [0, 0, 0, 0];",
           "lang_item": null,
           "span": {
@@ -10451,6 +10476,7 @@
             ]
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -10458,7 +10484,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::slice::{[T]}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "slice_len_fn",
           "span": {
@@ -10488,6 +10514,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10495,7 +10522,7 @@
         "id": 12,
         "item_meta": {
           "name": "loops_issues::MAX_NROWS",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const MAX_NROWS: usize = 4;",
           "lang_item": null,
           "span": {
@@ -10569,6 +10596,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -10576,7 +10604,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::iter::traits::collect::{core::iter::traits::collect::IntoIterator<Clause0_Item, I> for I}::into_iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10605,6 +10633,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10612,7 +10641,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}::next",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10656,6 +10685,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10663,7 +10693,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::iter::traits::iterator::Iterator::next",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "next",
           "span": {
@@ -10697,6 +10727,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10704,7 +10735,7 @@
         "id": 168,
         "item_meta": {
           "name": "core::iter::range::Step::steps_between",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10750,6 +10781,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10757,7 +10789,7 @@
         "id": 169,
         "item_meta": {
           "name": "core::iter::range::Step::forward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10790,6 +10822,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10797,7 +10830,7 @@
         "id": 172,
         "item_meta": {
           "name": "core::iter::range::Step::backward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10830,6 +10863,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10837,7 +10871,7 @@
         "id": 175,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for i32}::steps_between",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10881,6 +10915,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10888,7 +10923,7 @@
         "id": 176,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for i32}::forward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10920,6 +10955,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10927,7 +10963,7 @@
         "id": 179,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for i32}::backward_checked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -10959,6 +10995,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10966,7 +11003,7 @@
         "id": 182,
         "item_meta": {
           "name": "core::iter::traits::collect::IntoIterator::into_iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "into_iter",
           "span": {
@@ -10999,6 +11036,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11006,7 +11044,7 @@
         "id": 183,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -11034,6 +11072,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11041,7 +11080,7 @@
         "id": 185,
         "item_meta": {
           "name": "core::ops::function::FnMut::call_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11074,6 +11113,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11081,7 +11121,7 @@
         "id": 186,
         "item_meta": {
           "name": "core::ops::function::FnOnce::call_once",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11113,6 +11153,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11120,7 +11161,7 @@
         "id": 187,
         "item_meta": {
           "name": "core::iter::traits::collect::FromIterator::from_iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "from_iter_fn",
           "span": {
@@ -11158,6 +11199,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11165,7 +11207,7 @@
         "id": 188,
         "item_meta": {
           "name": "core::ops::try_trait::Try::from_output",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "from_output",
           "span": {
@@ -11195,6 +11237,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11202,7 +11245,7 @@
         "id": 189,
         "item_meta": {
           "name": "core::ops::try_trait::Try::branch",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "branch",
           "span": {
@@ -11241,6 +11284,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11248,7 +11292,7 @@
         "id": 190,
         "item_meta": {
           "name": "core::iter::traits::collect::Extend::extend",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11289,6 +11333,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11296,7 +11341,7 @@
         "id": 194,
         "item_meta": {
           "name": "core::default::Default::default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "default_fn",
           "span": {
@@ -11322,6 +11367,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11329,7 +11375,7 @@
         "id": 195,
         "item_meta": {
           "name": "core::iter::traits::double_ended::DoubleEndedIterator::next_back",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11365,6 +11411,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11372,7 +11419,7 @@
         "id": 203,
         "item_meta": {
           "name": "core::cmp::Ord::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ord_cmp_method",
           "span": {
@@ -11403,6 +11450,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11410,7 +11458,7 @@
         "id": 207,
         "item_meta": {
           "name": "core::iter::traits::accum::Sum::sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11440,6 +11488,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11447,7 +11496,7 @@
         "id": 208,
         "item_meta": {
           "name": "core::iter::traits::accum::Product::product",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11480,6 +11529,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11487,7 +11537,7 @@
         "id": 209,
         "item_meta": {
           "name": "core::cmp::PartialOrd::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialord_cmp",
           "span": {
@@ -11530,6 +11580,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11537,7 +11588,7 @@
         "id": 218,
         "item_meta": {
           "name": "core::cmp::PartialEq::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_eq",
           "span": {
@@ -11566,6 +11617,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11573,7 +11625,7 @@
         "id": 221,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for i32}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11599,6 +11651,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11606,7 +11659,7 @@
         "id": 223,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<i32> for i32}::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11647,6 +11700,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11654,7 +11708,7 @@
         "id": 232,
         "item_meta": {
           "name": "core::ops::try_trait::FromResidual::from_residual",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "from_residual",
           "span": {
@@ -11683,6 +11737,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11690,7 +11745,7 @@
         "id": 234,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<i32> for i32}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11717,6 +11772,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11724,7 +11780,7 @@
         "id": 236,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for usize}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11750,6 +11806,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -11757,7 +11814,7 @@
         "id": 238,
         "item_meta": {
           "name": "core::num::niche_types::{core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -11793,6 +11850,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -11802,7 +11860,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::iter::traits::iterator::Iterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "iterator",
           "span": {
@@ -11858,7 +11916,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::iter::range::Step",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "range_step",
           "span": {
@@ -11974,7 +12032,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::iter::traits::collect::IntoIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "IntoIterator",
           "span": {
@@ -12031,7 +12089,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::num::nonzero::ZeroablePrimitive",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12059,7 +12117,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -12107,7 +12165,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::ops::function::FnMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_mut",
           "span": {
@@ -12164,7 +12222,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::ops::function::FnOnce",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_once",
           "span": {
@@ -12218,7 +12276,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::iter::traits::collect::FromIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "FromIterator",
           "span": {
@@ -12276,7 +12334,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::ops::try_trait::Try",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Try",
           "span": {
@@ -12361,7 +12419,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::ops::try_trait::Residual",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12391,7 +12449,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::iter::traits::collect::Extend",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12454,7 +12512,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::default::Default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Default",
           "span": {
@@ -12500,7 +12558,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::iter::traits::double_ended::DoubleEndedIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "DoubleEndedIterator",
           "span": {
@@ -12558,7 +12616,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::iter::traits::exact_size::ExactSizeIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12586,7 +12644,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::cmp::Ord",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ord",
           "span": {
@@ -12637,7 +12695,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -12665,7 +12723,7 @@
         "id": 16,
         "item_meta": {
           "name": "core::iter::traits::accum::Sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12720,7 +12778,7 @@
         "id": 17,
         "item_meta": {
           "name": "core::iter::traits::accum::Product",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12775,7 +12833,7 @@
         "id": 18,
         "item_meta": {
           "name": "core::cmp::PartialOrd",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "partial_ord",
           "span": {
@@ -12838,7 +12896,7 @@
         "id": 19,
         "item_meta": {
           "name": "core::cmp::PartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "eq",
           "span": {
@@ -12887,7 +12945,7 @@
         "id": 20,
         "item_meta": {
           "name": "core::iter::adapters::zip::TrustedRandomAccessNoCoerce",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12915,7 +12973,7 @@
         "id": 21,
         "item_meta": {
           "name": "core::num::nonzero::private::Sealed",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12943,7 +13001,7 @@
         "id": 22,
         "item_meta": {
           "name": "core::ops::try_trait::FromResidual",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "FromResidual",
           "span": {
@@ -12992,7 +13050,7 @@
         "id": 23,
         "item_meta": {
           "name": "core::cmp::Eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Eq",
           "span": {
@@ -13022,7 +13080,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::iter::traits::collect::{core::iter::traits::collect::IntoIterator<Clause0_Item, I> for I}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13059,7 +13117,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13098,7 +13156,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::iter::range::{core::iter::range::Step for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13134,7 +13192,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::num::nonzero::{core::num::nonzero::ZeroablePrimitive<core::num::niche_types::NonZeroUsizeInner> for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13166,7 +13224,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13198,7 +13256,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<i32> for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13230,7 +13288,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::marker::{core::marker::Copy for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13262,7 +13320,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::num::nonzero::{core::num::nonzero::private::Sealed for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13294,7 +13352,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::num::niche_types::{core::marker::Copy for core::num::niche_types::NonZeroUsizeInner}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13328,7 +13386,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<i32> for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13360,7 +13418,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13392,7 +13450,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::num::niche_types::{core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

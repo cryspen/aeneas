@@ -64,6 +64,16 @@ structure ItemMeta where
   extra : Json := .null
   deriving Repr, Inhabited
 
+/-- Session 7 Item 1a: extract Charon's `attr_info.public` from the
+    opaque `attrInfo` blob. The cert serializer emits
+    `attr_info = {"public": <bool>}`; falls back to `false` when the
+    field is missing (older certs / non-objects). Mainline emits the
+    `Visibility: public` docstring line iff this is true. -/
+def ItemMeta.isPublic (im : ItemMeta) : Bool :=
+  match im.attrInfo.getObjValAs? Bool "public" with
+  | .ok b => b
+  | .error _ => false
+
 /-! ## LLBC types -/
 
 /-- M9.7a: structured replacement for `Raw.RawTy`'s opaque-string
@@ -122,6 +132,17 @@ inductive LlbcProjElem
   | subslice (from_ to_ : Option Nat) (fromEnd : Bool)
   deriving Repr, Inhabited
 
+/-- Session 7 Item 2: structured global-generic instantiation
+    captured at a `PlaceGlobal` root. The cert serializer renders each
+    Charon type / const-generic via its debug printer, so vars come
+    through as `T@k` / `C@k` (de-Bruijn-like) — Forward.lean's
+    [resolveGlobalGenericArg] maps those back to the surrounding
+    function's signature names (`T`, `N`). -/
+structure LlbcGlobalGenerics where
+  types : Array String := #[]
+  constGenerics : Array String := #[]
+  deriving Repr, Inhabited
+
 /-- M9.7a: a place — `local + projection*` with the place's static
     type. Mirrors `Generated_Expressions.ml`'s `place`.
 
@@ -130,12 +151,17 @@ inductive LlbcProjElem
     `static`/`const` initializer that reads another global or a
     primitive `T::MAX`-style builtin). When `some`, the projection
     list is applied *to the global*, not the otherwise-uninitialized
-    `local_ = 0` placeholder Charon's pre-pass produces. -/
+    `local_ = 0` placeholder Charon's pre-pass produces.
+
+    Session 7 Item 2: `globalGenerics` carries the type + const-generic
+    args bound on the global ref. `none` for non-global places or
+    generic-less globals. -/
 structure LlbcPlace where
   local_ : Nat
   projection : Array LlbcProjElem
   ty : LlbcTy
   globalName : Option String := none
+  globalGenerics : Option LlbcGlobalGenerics := none
   deriving Repr, Inhabited
 
 /-- M9.7a: an operand. Mirrors `Generated_Expressions.ml:174`. -/
@@ -442,6 +468,13 @@ structure LlbcFunDecl where
   /-- Types of every local in the body, in declaration order. Empty
       when `body = none`. -/
   localsTypes : Array LlbcTy := #[]
+  /-- Session 7 Item 1d: per-local source name (`Charon.local.name`),
+      in the same declaration order as `localsTypes`. `none` for
+      desugaring-introduced locals (return slot, MIR temporaries).
+      Empty when `body = none`. The Lean translator threads these
+      into `Decl.params` / the var-map so emitted code uses the
+      user's identifier (`y`) instead of the synthesised `x1`. -/
+  localsNames : Array (Option String) := #[]
   isGlobalInitializer : Bool := false
   src : Json := .null
   deriving Repr, Inhabited

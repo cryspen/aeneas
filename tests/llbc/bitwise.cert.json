@@ -974,7 +974,7 @@
         "id": 0,
         "item_meta": {
           "name": "bitwise::shift_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn shift_u32(a: u32) -> u32 {\n    let i: usize = 16;\n    let mut t = a >> i;\n    t <<= i;\n    t\n}",
           "lang_item": null,
           "span": {
@@ -1288,6 +1288,7 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [ null, "a", "i", "t", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1295,7 +1296,7 @@
         "id": 1,
         "item_meta": {
           "name": "bitwise::shift_i32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn shift_i32(a: i32) -> i32 {\n    let i: isize = 16;\n    let mut t = a >> i;\n    t <<= i;\n    t\n}",
           "lang_item": null,
           "span": {
@@ -1609,6 +1610,7 @@
           { "Literal": { "Int": "Isize" } },
           { "Literal": { "Int": "Isize" } }
         ],
+        "locals_names": [ null, "a", "i", "t", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1616,7 +1618,7 @@
         "id": 2,
         "item_meta": {
           "name": "bitwise::xor_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn xor_u32(a: u32, b: u32) -> u32 {\n    a ^ b\n}",
           "lang_item": null,
           "span": {
@@ -1780,6 +1782,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1787,7 +1790,7 @@
         "id": 3,
         "item_meta": {
           "name": "bitwise::or_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn or_u32(a: u32, b: u32) -> u32 {\n    a | b\n}",
           "lang_item": null,
           "span": {
@@ -1951,6 +1954,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1958,7 +1962,7 @@
         "id": 4,
         "item_meta": {
           "name": "bitwise::and_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn and_u32(a: u32, b: u32) -> u32 {\n    a & b\n}",
           "lang_item": null,
           "span": {
@@ -2122,6 +2126,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       }

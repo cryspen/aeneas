@@ -1346,7 +1346,7 @@
         "id": 0,
         "item_meta": {
           "name": "drop_bug::Inner",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Inner {\n    buf: [u8; 4],\n}",
           "lang_item": null,
           "span": {
@@ -1395,7 +1395,7 @@
         "id": 1,
         "item_meta": {
           "name": "drop_bug::Outer",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Outer {\n    inner: Inner,\n    block_size: u32,\n    pad_value: u8,\n}",
           "lang_item": null,
           "span": {
@@ -1447,7 +1447,7 @@
         "id": 2,
         "item_meta": {
           "name": "drop_bug::InnerNoDrop",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct InnerNoDrop {\n    buf: [u8; 4],\n}",
           "lang_item": null,
           "span": {
@@ -1496,7 +1496,7 @@
         "id": 3,
         "item_meta": {
           "name": "drop_bug::OuterNoDrop",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct OuterNoDrop {\n    inner: InnerNoDrop,\n    block_size: u32,\n    pad_value: u8,\n}",
           "lang_item": null,
           "span": {
@@ -1550,7 +1550,7 @@
         "id": 0,
         "item_meta": {
           "name": "drop_bug::wipe_slice",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn wipe_slice<T>(s: &mut [T]) {\n    // Opaque to the analyzer (via charon --opaque flag).\n    // Mimics the real wipe_slice which uses raw pointers internally.\n    let _len = s.len();\n}",
           "lang_item": null,
           "span": {
@@ -1769,6 +1769,7 @@
             "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
           }
         ],
+        "locals_names": [ null, "s", "_len", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1776,7 +1777,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::slice::{[T]}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "slice_len_fn",
           "span": {
@@ -1806,6 +1807,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1813,7 +1815,7 @@
         "id": 3,
         "item_meta": {
           "name": "drop_bug::{drop_bug::Inner}::init",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn init(&mut self, block_size: u32, pad_value: u8) {\n        wipe_slice(&mut self.buf);\n    }",
           "lang_item": null,
           "span": {
@@ -2247,6 +2249,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "block_size", "pad_value", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2254,7 +2259,7 @@
         "id": 4,
         "item_meta": {
           "name": "drop_bug::{drop_bug::Outer}::get_block_size",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_block_size(&self) -> u32 {\n        self.block_size\n    }",
           "lang_item": null,
           "span": {
@@ -2357,6 +2362,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2364,7 +2370,7 @@
         "id": 5,
         "item_meta": {
           "name": "drop_bug::{drop_bug::Outer}::get_pad_value",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_pad_value(&self) -> u8 {\n        self.pad_value\n    }",
           "lang_item": null,
           "span": {
@@ -2467,6 +2473,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2474,7 +2481,7 @@
         "id": 6,
         "item_meta": {
           "name": "drop_bug::{drop_bug::Outer}::init",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn init(&mut self) {\n        self.inner.init(self.get_block_size(), self.get_pad_value());\n    }",
           "lang_item": null,
           "span": {
@@ -2988,6 +2995,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self", null, null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2995,7 +3003,7 @@
         "id": 7,
         "item_meta": {
           "name": "drop_bug::{drop_bug::InnerNoDrop}::init",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn init(&mut self, block_size: u32, pad_value: u8) {\n        wipe_slice(&mut self.buf);\n    }",
           "lang_item": null,
           "span": {
@@ -3429,6 +3437,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "block_size", "pad_value", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3436,7 +3447,7 @@
         "id": 8,
         "item_meta": {
           "name": "drop_bug::{drop_bug::OuterNoDrop}::get_block_size",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_block_size(&self) -> u32 {\n        self.block_size\n    }",
           "lang_item": null,
           "span": {
@@ -3539,6 +3550,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3546,7 +3558,7 @@
         "id": 9,
         "item_meta": {
           "name": "drop_bug::{drop_bug::OuterNoDrop}::get_pad_value",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_pad_value(&self) -> u8 {\n        self.pad_value\n    }",
           "lang_item": null,
           "span": {
@@ -3649,6 +3661,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3656,7 +3669,7 @@
         "id": 10,
         "item_meta": {
           "name": "drop_bug::{drop_bug::OuterNoDrop}::init",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn init(&mut self) {\n        self.inner.init(self.get_block_size(), self.get_pad_value());\n    }",
           "lang_item": null,
           "span": {
@@ -4170,6 +4183,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self", null, null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       }

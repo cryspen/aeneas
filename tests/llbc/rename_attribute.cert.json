@@ -1388,7 +1388,7 @@
         "id": 1,
         "item_meta": {
           "name": "rename_attribute::SimpleEnum",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum SimpleEnum {\n    #[charon::rename(\"Variant1\")]\n    FirstVariant,\n    SecondVariant,\n    ThirdVariant,\n}",
           "lang_item": null,
           "span": {
@@ -1441,7 +1441,7 @@
         "id": 2,
         "item_meta": {
           "name": "rename_attribute::Foo",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Foo {\n    #[charon::rename(\"FieldTest\")]\n    field1: u32,\n}",
           "lang_item": null,
           "span": {
@@ -1481,7 +1481,7 @@
         "id": 0,
         "item_meta": {
           "name": "rename_attribute::test_bool_trait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_bool_trait<T>(x: bool) -> bool {\n    x.get_bool() && x.ret_true()\n}",
           "lang_item": null,
           "span": {
@@ -1795,6 +1795,7 @@
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1802,7 +1803,7 @@
         "id": 1,
         "item_meta": {
           "name": "rename_attribute::factorial",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn factorial(n: u64) -> u64 {\n    if n <= 1 {\n        1\n    } else {\n        return n * factorial(n - 1);\n    }\n}",
           "lang_item": null,
           "span": {
@@ -2310,6 +2311,9 @@
           { "Literal": { "UInt": "U64" } },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [
+          null, "n", null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2317,7 +2321,7 @@
         "id": 2,
         "item_meta": {
           "name": "rename_attribute::sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum(max: u32) -> u32 {\n    let mut i = 0;\n    let mut s = 0;\n    while i < max {\n        s += i;\n        i += 1;\n    }\n\n    s *= 2;\n    s\n}",
           "lang_item": null,
           "span": {
@@ -2980,6 +2984,9 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "max", "i", "s", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2987,7 +2994,7 @@
         "id": 3,
         "item_meta": {
           "name": "rename_attribute::BoolTrait::get_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_bool(&self) -> bool;",
           "lang_item": null,
           "span": {
@@ -3015,6 +3022,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -3022,7 +3030,7 @@
         "id": 4,
         "item_meta": {
           "name": "rename_attribute::BoolTrait::ret_true",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn ret_true(&self) -> bool {\n        true\n    }",
           "lang_item": null,
           "span": {
@@ -3097,6 +3105,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3104,7 +3113,7 @@
         "id": 5,
         "item_meta": {
           "name": "rename_attribute::{rename_attribute::BoolTrait for bool}::get_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_bool(&self) -> bool {\n        *self\n    }",
           "lang_item": null,
           "span": {
@@ -3180,6 +3189,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3187,7 +3197,7 @@
         "id": 6,
         "item_meta": {
           "name": "rename_attribute::{rename_attribute::BoolTrait for bool}::ret_true",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn ret_true(&self) -> bool {\n        true\n    }",
           "lang_item": null,
           "span": {
@@ -3260,6 +3270,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3267,7 +3278,7 @@
         "id": 7,
         "item_meta": {
           "name": "rename_attribute::C",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const C: u32 = 100 + 10 + 1;",
           "lang_item": null,
           "span": {
@@ -3463,6 +3474,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -3470,7 +3482,7 @@
         "id": 8,
         "item_meta": {
           "name": "rename_attribute::CA",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const CA: u32 = 10 + 1;",
           "lang_item": null,
           "span": {
@@ -3586,6 +3598,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       }
@@ -3595,7 +3608,7 @@
         "id": 0,
         "item_meta": {
           "name": "rename_attribute::BoolTrait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait BoolTrait {\n    // Required method\n    #[charon::rename(\"getTest\")]\n    fn get_bool(&self) -> bool;\n\n    // Provided method\n    #[charon::rename(\"retTest\")]\n    fn ret_true(&self) -> bool {\n        true\n    }\n}",
           "lang_item": null,
           "span": {
@@ -3662,7 +3675,7 @@
         "id": 0,
         "item_meta": {
           "name": "rename_attribute::{rename_attribute::BoolTrait for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl BoolTrait for bool {\n    fn get_bool(&self) -> bool {\n        *self\n    }\n}",
           "lang_item": null,
           "span": {

@@ -11810,7 +11810,7 @@
         "id": 0,
         "item_meta": {
           "name": "no_nested_borrows::Pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Pair<T1, T2> {\n    pub x: T1,\n    pub y: T2,\n}",
           "lang_item": null,
           "span": {
@@ -11854,7 +11854,7 @@
         "id": 1,
         "item_meta": {
           "name": "no_nested_borrows::List",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum List<T> {\n    Cons(T, Box<List<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -11929,7 +11929,7 @@
         "id": 2,
         "item_meta": {
           "name": "no_nested_borrows::One",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum One<T1> {\n    One(T1),\n}",
           "lang_item": null,
           "span": {
@@ -11975,7 +11975,7 @@
         "id": 3,
         "item_meta": {
           "name": "no_nested_borrows::EmptyEnum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum EmptyEnum {\n    Empty,\n}",
           "lang_item": null,
           "span": {
@@ -12014,7 +12014,7 @@
         "id": 4,
         "item_meta": {
           "name": "no_nested_borrows::Enum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum Enum {\n    Variant1,\n    Variant2,\n}",
           "lang_item": null,
           "span": {
@@ -12060,7 +12060,7 @@
         "id": 5,
         "item_meta": {
           "name": "no_nested_borrows::EmptyStruct",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct EmptyStruct {}",
           "lang_item": null,
           "span": {
@@ -12089,7 +12089,7 @@
         "id": 6,
         "item_meta": {
           "name": "no_nested_borrows::Sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum Sum<T1, T2> {\n    Left(T1),\n    Right(T2),\n}",
           "lang_item": null,
           "span": {
@@ -12149,7 +12149,7 @@
         "id": 7,
         "item_meta": {
           "name": "no_nested_borrows::Tree",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum Tree<T> {\n    Leaf(T),\n    Node(T, NodeElem<T>, Box<Tree<T>>),\n}",
           "lang_item": null,
           "span": {
@@ -12244,7 +12244,7 @@
         "id": 8,
         "item_meta": {
           "name": "no_nested_borrows::NodeElem",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum NodeElem<T> {\n    Cons(Box<Tree<T>>, Box<NodeElem<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -12335,7 +12335,7 @@
         "id": 9,
         "item_meta": {
           "name": "no_nested_borrows::StructWithTuple",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct StructWithTuple<T1, T2> {\n    p: (T1, T2),\n}",
           "lang_item": null,
           "span": {
@@ -12383,7 +12383,7 @@
         "id": 10,
         "item_meta": {
           "name": "no_nested_borrows::StructWithPair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct StructWithPair<T1, T2> {\n    p: Pair<T1, T2>,\n}",
           "lang_item": null,
           "span": {
@@ -12431,7 +12431,7 @@
         "id": 11,
         "item_meta": {
           "name": "no_nested_borrows::Tuple",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Tuple<T1, T2>(T1, T2);",
           "lang_item": null,
           "span": {
@@ -12475,7 +12475,7 @@
         "id": 12,
         "item_meta": {
           "name": "no_nested_borrows::IdType",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct IdType<T>(T);",
           "lang_item": null,
           "span": {
@@ -12513,7 +12513,7 @@
         "id": 13,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -12542,7 +12542,7 @@
         "id": 14,
         "item_meta": {
           "name": "no_nested_borrows::ExpandSimpliy::Wrapper",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Wrapper<T>(T, T);",
           "lang_item": null,
           "span": {
@@ -12586,7 +12586,7 @@
         "id": 15,
         "item_meta": {
           "name": "no_nested_borrows::ExpandSimpliy::Wrapper2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Wrapper2 {\n        b: bool,\n        x: u32,\n    }",
           "lang_item": null,
           "span": {
@@ -12632,7 +12632,7 @@
         "id": 0,
         "item_meta": {
           "name": "no_nested_borrows::cast_u32_to_i32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn cast_u32_to_i32(x: u32) -> i32 {\n    x as i32\n}",
           "lang_item": null,
           "span": {
@@ -12747,6 +12747,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12754,7 +12755,7 @@
         "id": 1,
         "item_meta": {
           "name": "no_nested_borrows::cast_bool_to_i32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn cast_bool_to_i32(x: bool) -> i32 {\n    x as i32\n}",
           "lang_item": null,
           "span": {
@@ -12869,6 +12870,7 @@
           { "Literal": "Bool" },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12876,7 +12878,7 @@
         "id": 2,
         "item_meta": {
           "name": "no_nested_borrows::cast_bool_to_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn cast_bool_to_bool(x: bool) -> bool {\n    x as bool\n}",
           "lang_item": null,
           "span": {
@@ -12947,6 +12949,7 @@
           ]
         },
         "locals_types": [ { "Literal": "Bool" }, { "Literal": "Bool" } ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12954,7 +12957,7 @@
         "id": 3,
         "item_meta": {
           "name": "no_nested_borrows::test2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test2() {\n    let x: u32 = 23;\n    let y: u32 = 44;\n    let z = x + y;\n    let p: Pair<u32, u32> = Pair { x, y: z };\n    let s: Sum<u32, bool> = Sum::Right(true);\n    let o: One<u64> = One::One(3);\n    let e0 = EmptyEnum::Empty;\n    let e1 = e0;\n    let enum0 = Enum::Variant1;\n}",
           "lang_item": null,
           "span": {
@@ -13742,6 +13745,10 @@
           { "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } } },
           { "Adt": { "id": { "Adt": 4 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, "p", null, null, "s", "o",
+          "e0", "e1", "enum0"
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13749,7 +13756,7 @@
         "id": 4,
         "item_meta": {
           "name": "no_nested_borrows::get_max",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get_max(x: u32, y: u32) -> u32 {\n    if x >= y {\n        x\n    } else {\n        y\n    }\n}",
           "lang_item": null,
           "span": {
@@ -14062,6 +14069,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14069,7 +14077,7 @@
         "id": 5,
         "item_meta": {
           "name": "no_nested_borrows::test3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test3() {\n    let x = get_max(4, 3);\n    let y = get_max(10, 11);\n    let z = x + y;\n    assert!(z == 15);\n}",
           "lang_item": null,
           "span": {
@@ -14604,6 +14612,7 @@
           { "Literal": "Bool" },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", "z", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14611,7 +14620,7 @@
         "id": 6,
         "item_meta": {
           "name": "no_nested_borrows::test_neg1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_neg1() {\n    let x: i32 = 3;\n    let y = -x;\n    assert!(y == -3);\n}",
           "lang_item": null,
           "span": {
@@ -15000,6 +15009,7 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15007,7 +15017,7 @@
         "id": 7,
         "item_meta": {
           "name": "no_nested_borrows::refs_test1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn refs_test1() {\n    let mut x = 0;\n    let mut px = &mut x;\n    let ppx = &mut px;\n    **ppx = 1;\n    // The interesting thing happening here is that the borrow of x is inside\n    // the borrow of px: ending the borrow of x requires ending the borrow of\n    // px first.\n    assert!(x == 1);\n}",
           "lang_item": null,
           "span": {
@@ -15459,6 +15469,7 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", "px", "ppx", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15466,7 +15477,7 @@
         "id": 8,
         "item_meta": {
           "name": "no_nested_borrows::refs_test2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn refs_test2() {\n    let mut x = 0;\n    let mut y = 1;\n    let mut px = &mut x;\n    let py = &mut y;\n    let ppx = &mut px;\n    *ppx = py;\n    **ppx = 2;\n    assert!(*px == 2);\n    assert!(x == 0);\n    assert!(*py == 2);\n    assert!(y == 2);\n}",
           "lang_item": null,
           "span": {
@@ -16552,6 +16563,10 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "y", "px", "py", "ppx", null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16559,7 +16574,7 @@
         "id": 9,
         "item_meta": {
           "name": "no_nested_borrows::test_list1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_list1() {\n    let l: List<i32> = List::Cons(0, Box::new(List::Nil));\n}",
           "lang_item": null,
           "span": {
@@ -16971,6 +16986,7 @@
             }
           }
         ],
+        "locals_names": [ null, "l", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16978,7 +16994,7 @@
         "id": 10,
         "item_meta": {
           "name": "no_nested_borrows::copy_int",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn copy_int(x: i32) -> i32 {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -17051,6 +17067,7 @@
         "locals_types": [
           { "Literal": { "Int": "I32" } }, { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17058,7 +17075,7 @@
         "id": 11,
         "item_meta": {
           "name": "no_nested_borrows::test_unreachable",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_unreachable(b: bool) {\n    if b {\n        unreachable!();\n    }\n}",
           "lang_item": null,
           "span": {
@@ -17231,6 +17248,7 @@
           { "Literal": "Bool" },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "b", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17238,7 +17256,7 @@
         "id": 12,
         "item_meta": {
           "name": "no_nested_borrows::test_panic",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_panic(b: bool) {\n    if b {\n        panic!();\n    }\n}",
           "lang_item": null,
           "span": {
@@ -17411,6 +17429,7 @@
           { "Literal": "Bool" },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "b", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17418,7 +17437,7 @@
         "id": 13,
         "item_meta": {
           "name": "no_nested_borrows::test_panic_msg",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_panic_msg(b: bool) {\n    if b {\n        panic!(\"Panicked!\");\n    }\n}",
           "lang_item": null,
           "span": {
@@ -17591,6 +17610,7 @@
           { "Literal": "Bool" },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "b", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17598,7 +17618,7 @@
         "id": 14,
         "item_meta": {
           "name": "no_nested_borrows::test_copy_int",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_copy_int() {\n    let x = 0;\n    let px = &x;\n    let y = copy_int(x);\n    assert!(*px == y);\n}",
           "lang_item": null,
           "span": {
@@ -18081,6 +18101,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", "px", "y", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18088,7 +18109,7 @@
         "id": 15,
         "item_meta": {
           "name": "no_nested_borrows::is_cons",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn is_cons<T>(l: &List<T>) -> bool {\n    match l {\n        List::Cons(_, _) => true,\n        List::Nil => false,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -18289,6 +18310,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "l" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18296,7 +18318,7 @@
         "id": 16,
         "item_meta": {
           "name": "no_nested_borrows::test_is_cons",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_is_cons() {\n    let l: List<i32> = List::Cons(0, Box::new(List::Nil));\n\n    assert!(is_cons(&l));\n}",
           "lang_item": null,
           "span": {
@@ -19003,6 +19025,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "l", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19010,7 +19033,7 @@
         "id": 17,
         "item_meta": {
           "name": "no_nested_borrows::split_list",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn split_list<T>(l: List<T>) -> (T, List<T>) {\n    match l {\n        List::Cons(hd, tl) => (hd, *tl),\n        _ => panic!(),\n    }\n}",
           "lang_item": null,
           "span": {
@@ -19649,6 +19672,7 @@
             }
           }
         ],
+        "locals_names": [ null, "l", "hd", "tl", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19656,7 +19680,7 @@
         "id": 18,
         "item_meta": {
           "name": "no_nested_borrows::test_split_list",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_split_list() {\n    let l: List<i32> = List::Cons(0, Box::new(List::Nil));\n\n    let (hd, tl) = split_list(l);\n    assert!(hd == 0);\n}",
           "lang_item": null,
           "span": {
@@ -20567,6 +20591,9 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "l", null, null, "hd", "tl", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -20574,7 +20601,7 @@
         "id": 19,
         "item_meta": {
           "name": "no_nested_borrows::choose",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {\n    if b {\n        x\n    } else {\n        y\n    }\n}",
           "lang_item": null,
           "span": {
@@ -21055,6 +21082,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "b", "x", "y", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21062,7 +21090,7 @@
         "id": 20,
         "item_meta": {
           "name": "no_nested_borrows::choose_test",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn choose_test() {\n    let mut x = 0;\n    let mut y = 0;\n    let z = choose(true, &mut x, &mut y);\n    *z += 1;\n    assert!(*z == 1);\n    // drop(z)\n    assert!(x == 1);\n    assert!(y == 0);\n}",
           "lang_item": null,
           "span": {
@@ -22038,6 +22066,10 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22045,7 +22077,7 @@
         "id": 21,
         "item_meta": {
           "name": "no_nested_borrows::test_char",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_char() -> char {\n    'a'\n}",
           "lang_item": null,
           "span": {
@@ -22115,6 +22147,7 @@
           ]
         },
         "locals_types": [ { "Literal": "Char" } ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22122,7 +22155,7 @@
         "id": 22,
         "item_meta": {
           "name": "no_nested_borrows::panic_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn panic_mut_borrow(_: &mut u32) {\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -22203,6 +22236,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22210,7 +22244,7 @@
         "id": 23,
         "item_meta": {
           "name": "no_nested_borrows::list_length",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_length<'a, T>(l: &'a List<T>) -> u32 {\n    match l {\n        List::Nil => 0,\n        List::Cons(_, l1) => 1 + list_length(l1),\n    }\n}",
           "lang_item": null,
           "span": {
@@ -22702,6 +22736,7 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "l", "l1", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22709,7 +22744,7 @@
         "id": 24,
         "item_meta": {
           "name": "no_nested_borrows::list_nth_shared",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_shared<'a, T>(l: &'a List<T>, i: u32) -> &'a T {\n    match l {\n        List::Nil => {\n            panic!()\n        }\n        List::Cons(x, tl) => {\n            if i == 0 {\n                x\n            } else {\n                list_nth_shared(tl, i - 1)\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -23557,6 +23592,9 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "l", "i", "x", "tl", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -23564,7 +23602,7 @@
         "id": 25,
         "item_meta": {
           "name": "no_nested_borrows::list_nth_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {\n    match l {\n        List::Nil => {\n            panic!()\n        }\n        List::Cons(x, tl) => {\n            if i == 0 {\n                x\n            } else {\n                list_nth_mut(tl, i - 1)\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -24759,6 +24797,10 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "l", "i", null, null, "x", "tl", null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -24766,7 +24808,7 @@
         "id": 26,
         "item_meta": {
           "name": "no_nested_borrows::list_rev_aux",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_rev_aux<T>(li: List<T>, mut lo: List<T>) -> List<T> {\n    match li {\n        List::Nil => lo,\n        List::Cons(hd, mut tl) => {\n            let next = *tl;\n            *tl = lo;\n            lo = List::Cons(hd, tl);\n            list_rev_aux(next, lo)\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -26166,6 +26208,10 @@
             }
           }
         ],
+        "locals_names": [
+          null, "li", "lo", "hd", "tl", "next", null, null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -26173,7 +26219,7 @@
         "id": 27,
         "item_meta": {
           "name": "no_nested_borrows::list_rev",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_rev<'a, T>(l: &'a mut List<T>) {\n    let li = std::mem::replace(l, List::Nil);\n    *l = list_rev_aux(li, List::Nil);\n}",
           "lang_item": null,
           "span": {
@@ -26852,6 +26898,7 @@
             }
           }
         ],
+        "locals_names": [ null, "l", "li", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -26859,7 +26906,7 @@
         "id": 28,
         "item_meta": {
           "name": "no_nested_borrows::test_list_functions",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_list_functions() {\n    let mut ls = List::Cons(\n        0,\n        Box::new(List::Cons(1, Box::new(List::Cons(2, Box::new(List::Nil))))),\n    );\n    assert!(list_length(&ls) == 3);\n    assert!(*list_nth_shared(&ls, 0) == 0);\n    assert!(*list_nth_shared(&ls, 1) == 1);\n    assert!(*list_nth_shared(&ls, 2) == 2);\n    let x = list_nth_mut(&mut ls, 1);\n    *x = 3;\n    assert!(*list_nth_shared(&ls, 0) == 0);\n    assert!(*list_nth_shared(&ls, 1) == 3); // Updated\n    assert!(*list_nth_shared(&ls, 2) == 2);\n}",
           "lang_item": null,
           "span": {
@@ -30714,6 +30761,13 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "ls", null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, "x", null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -30721,7 +30775,7 @@
         "id": 29,
         "item_meta": {
           "name": "no_nested_borrows::id_mut_pair1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn id_mut_pair1<'a, T1, T2>(x: &'a mut T1, y: &'a mut T2) -> (&'a mut T1, &'a mut T2) {\n    (x, y)\n}",
           "lang_item": null,
           "span": {
@@ -30951,6 +31005,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -30958,7 +31013,7 @@
         "id": 30,
         "item_meta": {
           "name": "no_nested_borrows::id_mut_pair2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn id_mut_pair2<'a, T1, T2>(p: (&'a mut T1, &'a mut T2)) -> (&'a mut T1, &'a mut T2) {\n    p\n}",
           "lang_item": null,
           "span": {
@@ -31110,6 +31165,7 @@
             }
           }
         ],
+        "locals_names": [ null, "p" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -31117,7 +31173,7 @@
         "id": 31,
         "item_meta": {
           "name": "no_nested_borrows::id_mut_pair3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn id_mut_pair3<'a, 'b, T1, T2>(x: &'a mut T1, y: &'b mut T2) -> (&'a mut T1, &'b mut T2) {\n    (x, y)\n}",
           "lang_item": null,
           "span": {
@@ -31347,6 +31403,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -31354,7 +31411,7 @@
         "id": 32,
         "item_meta": {
           "name": "no_nested_borrows::id_mut_pair4",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn id_mut_pair4<'a, 'b, T1, T2>(p: (&'a mut T1, &'b mut T2)) -> (&'a mut T1, &'b mut T2) {\n    p\n}",
           "lang_item": null,
           "span": {
@@ -31506,6 +31563,7 @@
             }
           }
         ],
+        "locals_names": [ null, "p" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -31513,7 +31571,7 @@
         "id": 33,
         "item_meta": {
           "name": "no_nested_borrows::new_tuple1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn new_tuple1() -> StructWithTuple<u32, u32> {\n    StructWithTuple { p: (1, 2) }\n}",
           "lang_item": null,
           "span": {
@@ -31727,6 +31785,7 @@
             }
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -31734,7 +31793,7 @@
         "id": 34,
         "item_meta": {
           "name": "no_nested_borrows::new_tuple2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn new_tuple2() -> StructWithTuple<i16, i16> {\n    StructWithTuple { p: (1, 2) }\n}",
           "lang_item": null,
           "span": {
@@ -31948,6 +32007,7 @@
             }
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -31955,7 +32015,7 @@
         "id": 35,
         "item_meta": {
           "name": "no_nested_borrows::new_tuple3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn new_tuple3() -> StructWithTuple<u64, i64> {\n    StructWithTuple { p: (1, 2) }\n}",
           "lang_item": null,
           "span": {
@@ -32169,6 +32229,7 @@
             }
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -32176,7 +32237,7 @@
         "id": 36,
         "item_meta": {
           "name": "no_nested_borrows::new_pair1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn new_pair1() -> StructWithPair<u32, u32> {\n    // This actually doesn't make rustc generate a constant...\n    // I guess it only happens for tuples.\n    StructWithPair {\n        p: Pair { x: 1, y: 2 },\n    }\n}",
           "lang_item": null,
           "span": {
@@ -32398,6 +32459,7 @@
             }
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -32405,7 +32467,7 @@
         "id": 37,
         "item_meta": {
           "name": "no_nested_borrows::test_constants",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_constants() {\n    assert!(new_tuple1().p.0 == 1);\n    assert!(new_tuple2().p.0 == 1);\n    assert!(new_tuple3().p.0 == 1);\n    assert!(new_pair1().p.x == 1);\n}",
           "lang_item": null,
           "span": {
@@ -33446,6 +33508,10 @@
             }
           }
         ],
+        "locals_names": [
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -33453,7 +33519,7 @@
         "id": 38,
         "item_meta": {
           "name": "no_nested_borrows::test_weird_borrows1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_weird_borrows1() {\n    let mut x = 0;\n    let mut px = &mut x;\n    // Context:\n    // x -> [l0]\n    // px -> &mut l0 (0:i32)\n\n    px = &mut (*px);\n}",
           "lang_item": null,
           "span": {
@@ -33771,6 +33837,7 @@
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Mut" ] },
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", "px", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -33778,7 +33845,7 @@
         "id": 39,
         "item_meta": {
           "name": "no_nested_borrows::test_mem_replace",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_mem_replace(px: &mut u32) {\n    let y = std::mem::replace(px, 1);\n    assert!(y == 0);\n    *px = 2;\n}",
           "lang_item": null,
           "span": {
@@ -34192,6 +34259,7 @@
           { "Literal": "Bool" },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "px", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -34199,7 +34267,7 @@
         "id": 40,
         "item_meta": {
           "name": "no_nested_borrows::test_shared_borrow_bool1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_shared_borrow_bool1(b: bool) -> u32 {\n    // Create a shared borrow of b\n    let _pb = &b;\n    // Match on b\n    if b {\n        0\n    } else {\n        1\n    }\n}",
           "lang_item": null,
           "span": {
@@ -34462,6 +34530,7 @@
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "b", "_pb", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -34469,7 +34538,7 @@
         "id": 41,
         "item_meta": {
           "name": "no_nested_borrows::test_shared_borrow_bool2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_shared_borrow_bool2() -> u32 {\n    let b = true;\n    // Create a shared borrow of b\n    let _pb = &b;\n    // Match on b\n    if b {\n        0\n    } else {\n        1\n    }\n}",
           "lang_item": null,
           "span": {
@@ -34778,6 +34847,7 @@
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "b", "_pb", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -34785,7 +34855,7 @@
         "id": 42,
         "item_meta": {
           "name": "no_nested_borrows::test_shared_borrow_enum1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_shared_borrow_enum1(l: List<u32>) -> u32 {\n    // Create a shared borrow of l\n    let _pl = &l;\n    // Match on l - must ignore the shared loan\n    match l {\n        List::Nil => 0,\n        List::Cons(_, _) => 1,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -35121,6 +35191,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "l", "_pl" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -35128,7 +35199,7 @@
         "id": 43,
         "item_meta": {
           "name": "no_nested_borrows::test_shared_borrow_enum2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_shared_borrow_enum2() -> u32 {\n    let l: List<u32> = List::Nil;\n    // Create a shared borrow of l\n    let _pl = &l;\n    // Match on l - must ignore the shared loan\n    match l {\n        List::Nil => 0,\n        List::Cons(_, _) => 1,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -35519,6 +35590,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "l", "_pl" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -35526,7 +35598,7 @@
         "id": 44,
         "item_meta": {
           "name": "no_nested_borrows::incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr(x: &mut u32) {\n    *x += 1;\n}",
           "lang_item": null,
           "span": {
@@ -35713,6 +35785,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -35720,7 +35793,7 @@
         "id": 45,
         "item_meta": {
           "name": "no_nested_borrows::call_incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn call_incr(mut x: u32) -> u32 {\n    incr(&mut x);\n    x\n}",
           "lang_item": null,
           "span": {
@@ -35932,6 +36005,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -35939,7 +36013,7 @@
         "id": 46,
         "item_meta": {
           "name": "no_nested_borrows::read_then_incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn read_then_incr(x: &mut u32) -> u32 {\n    let r = *x;\n    *x += 1;\n    r\n}",
           "lang_item": null,
           "span": {
@@ -36131,6 +36205,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "r", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36138,7 +36213,7 @@
         "id": 47,
         "item_meta": {
           "name": "no_nested_borrows::read_tuple",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn read_tuple(x: &(u32, u32)) -> u32 {\n    x.0\n}",
           "lang_item": null,
           "span": {
@@ -36264,6 +36339,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36271,7 +36347,7 @@
         "id": 48,
         "item_meta": {
           "name": "no_nested_borrows::update_tuple",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_tuple(x: &mut (u32, u32)) {\n    x.0 = 1;\n}",
           "lang_item": null,
           "span": {
@@ -36464,6 +36540,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36471,7 +36548,7 @@
         "id": 49,
         "item_meta": {
           "name": "no_nested_borrows::read_tuple_struct",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn read_tuple_struct(x: &Tuple<u32, u32>) -> u32 {\n    x.0\n}",
           "lang_item": null,
           "span": {
@@ -36598,6 +36675,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36605,7 +36683,7 @@
         "id": 50,
         "item_meta": {
           "name": "no_nested_borrows::update_tuple_struct",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_tuple_struct(x: &mut Tuple<u32, u32>) {\n    x.0 = 1;\n}",
           "lang_item": null,
           "span": {
@@ -36798,6 +36876,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36805,7 +36884,7 @@
         "id": 51,
         "item_meta": {
           "name": "no_nested_borrows::create_tuple_struct",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn create_tuple_struct(x: u32, y: u64) -> Tuple<u32, u64> {\n    Tuple(x, y)\n}",
           "lang_item": null,
           "span": {
@@ -37015,6 +37094,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37022,7 +37102,7 @@
         "id": 52,
         "item_meta": {
           "name": "no_nested_borrows::use_id_type",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_id_type<T>(x: IdType<T>) -> T {\n    x.0\n}",
           "lang_item": null,
           "span": {
@@ -37144,6 +37224,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37151,7 +37232,7 @@
         "id": 53,
         "item_meta": {
           "name": "no_nested_borrows::create_id_type",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn create_id_type<T>(x: T) -> IdType<T> {\n    IdType(x)\n}",
           "lang_item": null,
           "span": {
@@ -37336,6 +37417,7 @@
           { "TypeVar": { "Free": 0 } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37343,7 +37425,7 @@
         "id": 54,
         "item_meta": {
           "name": "no_nested_borrows::not_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn not_bool(x: bool) -> bool {\n    !x\n}",
           "lang_item": null,
           "span": {
@@ -37456,6 +37538,7 @@
         "locals_types": [
           { "Literal": "Bool" }, { "Literal": "Bool" }, { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37463,7 +37546,7 @@
         "id": 55,
         "item_meta": {
           "name": "no_nested_borrows::not_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn not_u32(x: u32) -> u32 {\n    !x\n}",
           "lang_item": null,
           "span": {
@@ -37578,6 +37661,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37585,7 +37669,7 @@
         "id": 56,
         "item_meta": {
           "name": "no_nested_borrows::not_i32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn not_i32(x: i32) -> i32 {\n    !x\n}",
           "lang_item": null,
           "span": {
@@ -37700,6 +37784,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37707,7 +37792,7 @@
         "id": 57,
         "item_meta": {
           "name": "no_nested_borrows::borrow_mut_tuple",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn borrow_mut_tuple<T, U>(x: &mut (T, U)) -> &mut (T, U) {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -37969,6 +38054,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37976,7 +38062,7 @@
         "id": 59,
         "item_meta": {
           "name": "core::mem::replace",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "mem_replace",
           "span": {
@@ -38003,6 +38089,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -38010,7 +38097,7 @@
         "id": 60,
         "item_meta": {
           "name": "no_nested_borrows::ExpandSimpliy::check_expand_simplify_symb1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn check_expand_simplify_symb1(x: Wrapper<bool>) -> Wrapper<bool> {\n        if x.0 {\n            x\n        } else {\n            x\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -38272,6 +38359,7 @@
           },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -38279,7 +38367,7 @@
         "id": 61,
         "item_meta": {
           "name": "no_nested_borrows::ExpandSimpliy::check_expand_simplify_symb2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn check_expand_simplify_symb2(x: Wrapper2) -> Wrapper2 {\n        if x.b {\n            x\n        } else {\n            x\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -38513,6 +38601,7 @@
           { "Adt": { "id": { "Adt": 15 }, "generics": { "types": [] } } },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       }

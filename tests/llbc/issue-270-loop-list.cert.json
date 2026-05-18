@@ -164,7 +164,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_270_loop_list::List",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum List<T> {\n    Cons(T, Box<List<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -239,7 +239,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -270,7 +270,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_270_loop_list::foo",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn foo(v: &List<List<u8>>) {\n    if let List::Cons(_, t) = v {\n        let mut t = &**t;\n        while let List::Cons(_, tt) = t {\n            t = &**tt;\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -1418,6 +1418,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "v", "t", "t", "tt", null, null ],
         "is_global_initializer": false,
         "src": null
       }

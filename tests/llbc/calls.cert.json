@@ -1137,7 +1137,7 @@
         "id": 0,
         "item_meta": {
           "name": "calls::incr_inner",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr_inner(y: &mut u32) {\n    *y += 1;\n}",
           "lang_item": null,
           "span": {
@@ -1324,6 +1324,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "y", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1331,7 +1332,7 @@
         "id": 1,
         "item_meta": {
           "name": "calls::incr_via_helper",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr_via_helper(x: &mut u32) {\n    incr_inner(x);\n}",
           "lang_item": null,
           "span": {
@@ -1540,6 +1541,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1547,7 +1549,7 @@
         "id": 2,
         "item_meta": {
           "name": "calls::choose",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn choose<'a>(b: bool, x: &'a mut u32, y: &'a mut u32) -> &'a mut u32 {\n    if b { x } else { y }\n}",
           "lang_item": null,
           "span": {
@@ -2042,6 +2044,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "b", "x", "y", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2049,7 +2052,7 @@
         "id": 3,
         "item_meta": {
           "name": "calls::use_choose",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_choose(b: bool, x: &mut u32, y: &mut u32) {\n    let r = choose(b, x, y);\n    *r = 7;\n}",
           "lang_item": null,
           "span": {
@@ -2396,6 +2399,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "b", "x", "y", "r", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2403,7 +2407,7 @@
         "id": 4,
         "item_meta": {
           "name": "calls::pick",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn pick(b: bool, x: u32, y: u32) -> u32 {\n    let mut r = 0u32;\n    if b {\n        r = x;\n    } else {\n        r = y;\n    }\n    r.wrapping_add(1)\n}",
           "lang_item": null,
           "span": {
@@ -2790,6 +2794,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "b", "x", "y", "r", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2797,7 +2802,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2824,6 +2829,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

@@ -407,7 +407,7 @@
         "id": 0,
         "item_meta": {
           "name": "alloc::vec::Vec",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Vec",
           "span": {
@@ -436,7 +436,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -467,7 +467,7 @@
         "id": 0,
         "item_meta": {
           "name": "vec::use_extend_from_slice",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_extend_from_slice<T: Clone>(v: &mut Vec<T>, s: &[T]) {\n    v.extend_from_slice(s)\n}",
           "lang_item": null,
           "span": {
@@ -772,6 +772,7 @@
             "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
           }
         ],
+        "locals_names": [ null, "v", "s", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -779,7 +780,7 @@
         "id": 1,
         "item_meta": {
           "name": "vec::use_alloc_with_capacity",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_alloc_with_capacity<T>(n: usize) -> Vec<T> {\n    Vec::with_capacity(n)\n}",
           "lang_item": null,
           "span": {
@@ -914,6 +915,7 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [ null, "n", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -921,7 +923,7 @@
         "id": 2,
         "item_meta": {
           "name": "vec::from_elem",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn from_elem<T: Clone>(x: T, n: usize) -> Vec<T> {\n    std::vec::from_elem(x, n)\n}",
           "lang_item": null,
           "span": {
@@ -1126,6 +1128,7 @@
           { "TypeVar": { "Free": 0 } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [ null, "x", "n", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1133,7 +1136,7 @@
         "id": 3,
         "item_meta": {
           "name": "alloc::vec::{alloc::vec::Vec<T>}::extend_from_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1177,6 +1180,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1184,7 +1188,7 @@
         "id": 4,
         "item_meta": {
           "name": "alloc::vec::{alloc::vec::Vec<T>}::with_capacity",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "vec_with_capacity",
           "span": {
@@ -1213,6 +1217,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1220,7 +1225,7 @@
         "id": 5,
         "item_meta": {
           "name": "alloc::vec::from_elem",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "vec_from_elem",
           "span": {
@@ -1253,6 +1258,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1260,7 +1266,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -1288,6 +1294,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -1297,7 +1304,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {

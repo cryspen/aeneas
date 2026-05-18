@@ -2697,7 +2697,7 @@
         "id": 0,
         "item_meta": {
           "name": "scalars::u32_use_wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_use_wrapping_add(x: u32, y: u32) -> u32 {\n    x.wrapping_add(y)\n}",
           "lang_item": null,
           "span": {
@@ -2864,6 +2864,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2871,7 +2872,7 @@
         "id": 1,
         "item_meta": {
           "name": "scalars::i32_use_wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i32_use_wrapping_add(x: i32, y: i32) -> i32 {\n    x.wrapping_add(y)\n}",
           "lang_item": null,
           "span": {
@@ -3037,6 +3038,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3044,7 +3046,7 @@
         "id": 2,
         "item_meta": {
           "name": "scalars::u32_use_wrapping_sub",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_use_wrapping_sub(x: u32, y: u32) -> u32 {\n    x.wrapping_sub(y)\n}",
           "lang_item": null,
           "span": {
@@ -3211,6 +3213,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3218,7 +3221,7 @@
         "id": 3,
         "item_meta": {
           "name": "scalars::i32_use_wrapping_sub",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i32_use_wrapping_sub(x: i32, y: i32) -> i32 {\n    x.wrapping_sub(y)\n}",
           "lang_item": null,
           "span": {
@@ -3384,6 +3387,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3391,7 +3395,7 @@
         "id": 4,
         "item_meta": {
           "name": "scalars::u32_use_shift_right",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_use_shift_right(x: u32) -> u32 {\n    x >> 2\n}",
           "lang_item": null,
           "span": {
@@ -3516,6 +3520,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3523,7 +3528,7 @@
         "id": 5,
         "item_meta": {
           "name": "scalars::i32_use_shift_right",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i32_use_shift_right(x: i32) -> i32 {\n    x >> 2\n}",
           "lang_item": null,
           "span": {
@@ -3648,6 +3653,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3655,7 +3661,7 @@
         "id": 6,
         "item_meta": {
           "name": "scalars::u32_use_shift_left",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_use_shift_left(x: u32) -> u32 {\n    x << 2\n}",
           "lang_item": null,
           "span": {
@@ -3780,6 +3786,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3787,7 +3794,7 @@
         "id": 7,
         "item_meta": {
           "name": "scalars::i32_use_shift_left",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i32_use_shift_left(x: i32) -> i32 {\n    x << 2\n}",
           "lang_item": null,
           "span": {
@@ -3912,6 +3919,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3919,7 +3927,7 @@
         "id": 8,
         "item_meta": {
           "name": "scalars::add_and",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn add_and(a: u32, b: u32) -> u32 {\n    (b & a) + (b & a)\n}",
           "lang_item": null,
           "span": {
@@ -4283,6 +4291,9 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "a", "b", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4290,7 +4301,7 @@
         "id": 9,
         "item_meta": {
           "name": "scalars::u32_use_rotate_right",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_use_rotate_right(x: u32) -> u32 {\n    x.rotate_right(2)\n}",
           "lang_item": null,
           "span": {
@@ -4418,6 +4429,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4425,7 +4437,7 @@
         "id": 10,
         "item_meta": {
           "name": "scalars::i32_use_rotate_right",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i32_use_rotate_right(x: i32) -> i32 {\n    x.rotate_right(2)\n}",
           "lang_item": null,
           "span": {
@@ -4553,6 +4565,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4560,7 +4573,7 @@
         "id": 11,
         "item_meta": {
           "name": "scalars::u32_use_rotate_left",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_use_rotate_left(x: u32) -> u32 {\n    x.rotate_left(2)\n}",
           "lang_item": null,
           "span": {
@@ -4688,6 +4701,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4695,7 +4709,7 @@
         "id": 12,
         "item_meta": {
           "name": "scalars::i32_use_rotate_left",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i32_use_rotate_left(x: i32) -> i32 {\n    x.rotate_left(2)\n}",
           "lang_item": null,
           "span": {
@@ -4823,6 +4837,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4830,7 +4845,7 @@
         "id": 13,
         "item_meta": {
           "name": "scalars::u32_default",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_default() -> u32 {\n    Default::default()\n}",
           "lang_item": null,
           "span": {
@@ -4899,6 +4914,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "U32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4906,7 +4922,7 @@
         "id": 14,
         "item_meta": {
           "name": "scalars::i32_default",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i32_default() -> i32 {\n    Default::default()\n}",
           "lang_item": null,
           "span": {
@@ -4975,6 +4991,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "Int": "I32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4982,7 +4999,7 @@
         "id": 15,
         "item_meta": {
           "name": "scalars::match_usize",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn match_usize(x: usize) -> bool {\n    match x {\n        0 | 1 | 2 => true,\n        x => false,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -5185,6 +5202,7 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [ null, "x", "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5192,7 +5210,7 @@
         "id": 16,
         "item_meta": {
           "name": "scalars::match_isize",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn match_isize(x: isize) -> isize {\n    match x {\n        0 | -1 | 2 => 0,\n        y => y + 1,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -5483,6 +5501,7 @@
           { "Literal": { "Int": "Isize" } },
           { "Literal": { "Int": "Isize" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5490,7 +5509,7 @@
         "id": 17,
         "item_meta": {
           "name": "scalars::u32_as_u16",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_as_u16(x: u32) -> u16 {\n    x as u16\n}",
           "lang_item": null,
           "span": {
@@ -5605,6 +5624,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5612,7 +5632,7 @@
         "id": 18,
         "item_meta": {
           "name": "scalars::u16_as_u32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u16_as_u32(x: u16) -> u32 {\n    x as u32\n}",
           "lang_item": null,
           "span": {
@@ -5727,6 +5747,7 @@
           { "Literal": { "UInt": "U16" } },
           { "Literal": { "UInt": "U16" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5734,7 +5755,7 @@
         "id": 19,
         "item_meta": {
           "name": "scalars::u32_as_i16",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_as_i16(x: u32) -> i16 {\n    x as i16\n}",
           "lang_item": null,
           "span": {
@@ -5849,6 +5870,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5856,7 +5878,7 @@
         "id": 20,
         "item_meta": {
           "name": "scalars::i16_as_u32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn i16_as_u32(x: i16) -> u32 {\n    x as u32\n}",
           "lang_item": null,
           "span": {
@@ -5971,6 +5993,7 @@
           { "Literal": { "Int": "I16" } },
           { "Literal": { "Int": "I16" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5978,7 +6001,7 @@
         "id": 21,
         "item_meta": {
           "name": "scalars::u32_use_bits",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn u32_use_bits() -> u32 {\n    u32::BITS\n}",
           "lang_item": null,
           "span": {
@@ -6090,6 +6113,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6097,7 +6121,7 @@
         "id": 22,
         "item_meta": {
           "name": "scalars::i32_use_bits",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn i32_use_bits() -> u32 {\n    i32::BITS\n}",
           "lang_item": null,
           "span": {
@@ -6209,6 +6233,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6216,7 +6241,7 @@
         "id": 23,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6243,6 +6268,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6250,7 +6276,7 @@
         "id": 24,
         "item_meta": {
           "name": "core::num::{i32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6276,6 +6302,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6283,7 +6310,7 @@
         "id": 25,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_sub",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6310,6 +6337,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6317,7 +6345,7 @@
         "id": 26,
         "item_meta": {
           "name": "core::num::{i32}::wrapping_sub",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6343,6 +6371,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6350,7 +6379,7 @@
         "id": 27,
         "item_meta": {
           "name": "core::num::{u32}::rotate_right",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6377,6 +6406,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6384,7 +6414,7 @@
         "id": 28,
         "item_meta": {
           "name": "core::num::{i32}::rotate_right",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6410,6 +6440,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6417,7 +6448,7 @@
         "id": 29,
         "item_meta": {
           "name": "core::num::{u32}::rotate_left",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6444,6 +6475,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6451,7 +6483,7 @@
         "id": 30,
         "item_meta": {
           "name": "core::num::{i32}::rotate_left",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6477,6 +6509,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6484,7 +6517,7 @@
         "id": 31,
         "item_meta": {
           "name": "core::default::{core::default::Default for u32}::default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6508,6 +6541,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6515,7 +6549,7 @@
         "id": 32,
         "item_meta": {
           "name": "core::default::{core::default::Default for i32}::default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6539,6 +6573,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6546,7 +6581,7 @@
         "id": 33,
         "item_meta": {
           "name": "core::num::{u32}::BITS",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6570,6 +6605,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": true,
         "src": null
       },
@@ -6577,7 +6613,7 @@
         "id": 34,
         "item_meta": {
           "name": "core::num::{i32}::BITS",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6601,6 +6637,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": true,
         "src": null
       },
@@ -6608,7 +6645,7 @@
         "id": 35,
         "item_meta": {
           "name": "core::default::Default::default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "default_fn",
           "span": {
@@ -6634,6 +6671,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -6643,7 +6681,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::default::Default",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Default",
           "span": {
@@ -6691,7 +6729,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::default::{core::default::Default for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6723,7 +6761,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::default::{core::default::Default for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

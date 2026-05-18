@@ -2096,7 +2096,7 @@
         "id": 0,
         "item_meta": {
           "name": "constants::Pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Pair<T1, T2> {\n    pub x: T1,\n    pub y: T2,\n}",
           "lang_item": null,
           "span": {
@@ -2140,7 +2140,7 @@
         "id": 1,
         "item_meta": {
           "name": "constants::Wrap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Wrap<T> {\n    value: T,\n}",
           "lang_item": null,
           "span": {
@@ -2178,7 +2178,7 @@
         "id": 2,
         "item_meta": {
           "name": "constants::V",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct V<const N: usize, T> {\n    pub x: [T; N],\n}",
           "lang_item": null,
           "span": {
@@ -2223,7 +2223,7 @@
         "id": 0,
         "item_meta": {
           "name": "constants::incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn incr(n: u32) -> u32 {\n    n + 1\n}",
           "lang_item": null,
           "span": {
@@ -2376,6 +2376,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "n", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2383,7 +2384,7 @@
         "id": 1,
         "item_meta": {
           "name": "constants::mk_pair0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn mk_pair0(x: u32, y: u32) -> (u32, u32) {\n    (x, y)\n}",
           "lang_item": null,
           "span": {
@@ -2585,6 +2586,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2592,7 +2594,7 @@
         "id": 2,
         "item_meta": {
           "name": "constants::mk_pair1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn mk_pair1(x: u32, y: u32) -> Pair<u32, u32> {\n    Pair { x, y }\n}",
           "lang_item": null,
           "span": {
@@ -2802,6 +2804,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2809,7 +2812,7 @@
         "id": 3,
         "item_meta": {
           "name": "constants::unwrap_y",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn unwrap_y() -> i32 {\n    Y.value\n}",
           "lang_item": null,
           "span": {
@@ -3020,6 +3023,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3027,7 +3031,7 @@
         "id": 4,
         "item_meta": {
           "name": "constants::get_z1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn get_z1() -> i32 {\n    const Z1: i32 = 3;\n    Z1\n}",
           "lang_item": null,
           "span": {
@@ -3137,6 +3141,7 @@
           { "Literal": { "Int": "I32" } },
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3144,7 +3149,7 @@
         "id": 5,
         "item_meta": {
           "name": "constants::add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn add(a: i32, b: i32) -> i32 {\n    a + b\n}",
           "lang_item": null,
           "span": {
@@ -3335,6 +3340,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "a", "b", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3342,7 +3348,7 @@
         "id": 6,
         "item_meta": {
           "name": "constants::get_z2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn get_z2() -> i32 {\n    add(Q1, add(get_z1(), Q3))\n}",
           "lang_item": null,
           "span": {
@@ -3589,6 +3595,7 @@
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3596,7 +3603,7 @@
         "id": 7,
         "item_meta": {
           "name": "constants::use_v",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_v<const N: usize, T>() -> usize {\n    V::<N, T>::LEN\n}",
           "lang_item": null,
           "span": {
@@ -3652,7 +3659,11 @@
                         "local": 0,
                         "projection": [],
                         "ty": { "Literal": { "UInt": "Usize" } },
-                        "global": "constants::{constants::V<T, N>}::LEN"
+                        "global": "constants::{constants::V<T, N>}::LEN",
+                        "global_generics": {
+                          "types": [ "T@0" ],
+                          "const_generics": [ "C@0" ]
+                        }
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -3708,6 +3719,7 @@
           { "Literal": { "UInt": "Usize" } },
           { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3715,7 +3727,7 @@
         "id": 8,
         "item_meta": {
           "name": "constants::X0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const X0: u32 = 0;",
           "lang_item": null,
           "span": {
@@ -3789,6 +3801,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "U32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -3796,7 +3809,7 @@
         "id": 9,
         "item_meta": {
           "name": "constants::X1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const X1: u32 = u32::MAX;",
           "lang_item": null,
           "span": {
@@ -3908,6 +3921,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -3915,7 +3929,7 @@
         "id": 10,
         "item_meta": {
           "name": "constants::X2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const X2: u32 = {\n    let x = 3;\n    x\n};",
           "lang_item": null,
           "span": {
@@ -4028,6 +4042,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4035,7 +4050,7 @@
         "id": 11,
         "item_meta": {
           "name": "constants::X3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const X3: u32 = incr(32);",
           "lang_item": null,
           "span": {
@@ -4115,6 +4130,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "U32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4122,7 +4138,7 @@
         "id": 12,
         "item_meta": {
           "name": "constants::P0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const P0: (u32, u32) = mk_pair0(0, 1);",
           "lang_item": null,
           "span": {
@@ -4244,6 +4260,7 @@
             }
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4251,7 +4268,7 @@
         "id": 13,
         "item_meta": {
           "name": "constants::P1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const P1: Pair<u32, u32> = mk_pair1(0, 1);",
           "lang_item": null,
           "span": {
@@ -4373,6 +4390,7 @@
             }
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4380,7 +4398,7 @@
         "id": 14,
         "item_meta": {
           "name": "constants::P2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const P2: (u32, u32) = (0, 1);",
           "lang_item": null,
           "span": {
@@ -4507,6 +4525,7 @@
             }
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4514,7 +4533,7 @@
         "id": 15,
         "item_meta": {
           "name": "constants::P3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const P3: Pair<u32, u32> = Pair { x: 0, y: 1 };",
           "lang_item": null,
           "span": {
@@ -4649,6 +4668,7 @@
             }
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4656,7 +4676,7 @@
         "id": 16,
         "item_meta": {
           "name": "constants::Y",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const Y: Wrap<i32> = Wrap::new(2);",
           "lang_item": null,
           "span": {
@@ -4755,6 +4775,7 @@
             }
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4762,7 +4783,7 @@
         "id": 17,
         "item_meta": {
           "name": "constants::YVAL",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const YVAL: i32 = unwrap_y();",
           "lang_item": null,
           "span": {
@@ -4831,6 +4852,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "Int": "I32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -4838,7 +4860,7 @@
         "id": 18,
         "item_meta": {
           "name": "constants::{constants::Wrap<T>}::new",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const fn new(value: T) -> Wrap<T> {\n        Wrap { value }\n    }",
           "lang_item": null,
           "span": {
@@ -4983,6 +5005,7 @@
           { "TypeVar": { "Free": 0 } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "value", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4990,7 +5013,7 @@
         "id": 19,
         "item_meta": {
           "name": "constants::Q1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const Q1: i32 = 5;",
           "lang_item": null,
           "span": {
@@ -5064,6 +5087,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "Int": "I32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -5071,7 +5095,7 @@
         "id": 20,
         "item_meta": {
           "name": "constants::Q2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const Q2: i32 = Q1;",
           "lang_item": null,
           "span": {
@@ -5181,6 +5205,7 @@
           { "Literal": { "Int": "I32" } },
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -5188,7 +5213,7 @@
         "id": 21,
         "item_meta": {
           "name": "constants::Q3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const Q3: i32 = add(Q2, 3);",
           "lang_item": null,
           "span": {
@@ -5314,6 +5339,7 @@
           { "Literal": { "Int": "I32" } },
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -5321,7 +5347,7 @@
         "id": 22,
         "item_meta": {
           "name": "constants::S1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub static S1: u32 = 6;",
           "lang_item": null,
           "span": {
@@ -5395,6 +5421,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "U32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -5402,7 +5429,7 @@
         "id": 23,
         "item_meta": {
           "name": "constants::S2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub static S2: u32 = incr(S1);",
           "lang_item": null,
           "span": {
@@ -5642,6 +5669,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null, null, null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -5649,7 +5677,7 @@
         "id": 24,
         "item_meta": {
           "name": "constants::S3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub static S3: Pair<u32, u32> = P3;",
           "lang_item": null,
           "span": {
@@ -5841,6 +5869,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -5848,7 +5877,7 @@
         "id": 25,
         "item_meta": {
           "name": "constants::S4",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub static S4: Pair<u32, u32> = mk_pair1(7, 8);",
           "lang_item": null,
           "span": {
@@ -5970,6 +5999,7 @@
             }
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -5977,7 +6007,7 @@
         "id": 26,
         "item_meta": {
           "name": "constants::get_z1::Z1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const Z1: i32 = 3;",
           "lang_item": null,
           "span": {
@@ -6051,6 +6081,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "Int": "I32" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -6058,7 +6089,7 @@
         "id": 27,
         "item_meta": {
           "name": "constants::{constants::V<T, N>}::LEN",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const LEN: usize = N;",
           "lang_item": null,
           "span": {
@@ -6128,6 +6159,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -6135,7 +6167,7 @@
         "id": 28,
         "item_meta": {
           "name": "core::num::{u32}::MAX",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6159,6 +6191,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": true,
         "src": null
       }

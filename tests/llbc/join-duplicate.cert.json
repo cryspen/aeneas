@@ -313,7 +313,7 @@
         "id": 0,
         "item_meta": {
           "name": "join_duplicate::join_nested_shared",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn join_nested_shared(b: bool) {\n    let x = 1;\n    let y = 2;\n    let px = &x;\n    let py = &y;\n    let p = if b { &px } else { &py };\n    assert!(**p > 0);\n}",
           "lang_item": null,
           "span": {
@@ -1021,6 +1021,9 @@
           },
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
+        ],
+        "locals_names": [
+          null, "b", "x", "y", "px", "py", "p", null, null, null, null
         ],
         "is_global_initializer": false,
         "src": null

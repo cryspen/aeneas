@@ -286,7 +286,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_440_type_error::PeanoNum",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum PeanoNum {\n    Zero,\n    Succ(Box<PeanoNum>),\n}",
           "lang_item": null,
           "span": {
@@ -353,7 +353,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -384,7 +384,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_440_type_error::f",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn f(x: &mut PeanoNum, value: isize) {\n    match x {\n        PeanoNum::Zero => {\n            std::mem::replace(x, PeanoNum::Succ(Box::new(PeanoNum::Zero)));\n        }\n        PeanoNum::Succ { .. } => {}\n    }\n}",
           "lang_item": null,
           "span": {
@@ -1012,6 +1012,7 @@
           },
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", "value", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1019,7 +1020,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::mem::replace",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "mem_replace",
           "span": {
@@ -1046,6 +1047,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

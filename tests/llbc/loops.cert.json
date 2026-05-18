@@ -17547,7 +17547,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops::List",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum List<T> {\n    Cons(T, Box<List<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -17622,7 +17622,7 @@
         "id": 1,
         "item_meta": {
           "name": "loops::AList",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum AList<T> {\n    Cons(usize, T, Box<AList<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -17703,7 +17703,7 @@
         "id": 2,
         "item_meta": {
           "name": "alloc::vec::Vec",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Vec",
           "span": {
@@ -17732,7 +17732,7 @@
         "id": 3,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -17761,7 +17761,7 @@
         "id": 4,
         "item_meta": {
           "name": "loops::issue500_2::A",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct A([bool; 1]);",
           "lang_item": null,
           "span": {
@@ -17810,7 +17810,7 @@
         "id": 5,
         "item_meta": {
           "name": "loops::issue500_3::A",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct A([bool; 1]);",
           "lang_item": null,
           "span": {
@@ -17859,7 +17859,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -17914,7 +17914,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops::iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn iter(max: u32) -> u32 {\n    let mut i = 0;\n    while i < max {\n        i += 1;\n    }\n\n    i\n}",
           "lang_item": null,
           "span": {
@@ -18351,6 +18351,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "max", "i", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18358,7 +18359,7 @@
         "id": 1,
         "item_meta": {
           "name": "loops::sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum(max: u32) -> u32 {\n    let mut i = 0;\n    let mut s = 0;\n    while i < max {\n        s += i;\n        i += 1;\n    }\n\n    s *= 2;\n    s\n}",
           "lang_item": null,
           "span": {
@@ -19021,6 +19022,9 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "max", "i", "s", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19028,7 +19032,7 @@
         "id": 2,
         "item_meta": {
           "name": "loops::sum_with_mut_borrows",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum_with_mut_borrows(max: u32) -> u32 {\n    let mut i = 0;\n    let mut s = 0;\n    while i < max {\n        let ms = &mut s;\n        *ms += i;\n        let mi = &mut i;\n        *mi += 1;\n    }\n\n    s *= 2;\n    s\n}",
           "lang_item": null,
           "span": {
@@ -19811,6 +19815,10 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "max", "i", "s", null, null, null, "ms", null, null, "mi",
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19818,7 +19826,7 @@
         "id": 3,
         "item_meta": {
           "name": "loops::sum_with_shared_borrows",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum_with_shared_borrows(max: u32) -> u32 {\n    let mut i = 0;\n    let mut s = 0;\n    while i < max {\n        i += 1;\n        // We changed the order compared to [sum_with_mut_borrows]:\n        // we want to have a shared borrow surviving until the end\n        // of the iteration.\n        let mi = &i;\n        s += *mi;\n    }\n\n    s *= 2;\n    s\n}",
           "lang_item": null,
           "span": {
@@ -20537,6 +20545,10 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "max", "i", "s", null, null, null, null, "mi", null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -20544,7 +20556,7 @@
         "id": 4,
         "item_meta": {
           "name": "loops::sum_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum_array<const N: usize>(a: [u32; N]) -> u32 {\n    let mut i = 0;\n    let mut s = 0;\n    while i < N {\n        s += a[i];\n        i += 1;\n    }\n    s\n}",
           "lang_item": null,
           "span": {
@@ -21295,6 +21307,9 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "a", "i", "s", null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21302,7 +21317,7 @@
         "id": 5,
         "item_meta": {
           "name": "loops::clear",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn clear(v: &mut Vec<u32>) {\n    let mut i = 0;\n    while i < v.len() {\n        v[i] = 0;\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -22120,6 +22135,9 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "v", "i", null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22127,7 +22145,7 @@
         "id": 6,
         "item_meta": {
           "name": "loops::list_mem",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_mem(x: &u32, mut ls: &List<u32>) -> bool {\n    while let List::Cons(y, tl) = ls {\n        if *y == *x {\n            return true;\n        } else {\n            ls = tl;\n        }\n    }\n    false\n}",
           "lang_item": null,
           "span": {
@@ -23026,6 +23044,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "x", "ls", "y", "tl", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -23033,7 +23054,7 @@
         "id": 7,
         "item_meta": {
           "name": "loops::list_nth_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut<T>(mut ls: &mut List<T>, mut i: u32) -> &mut T {\n    while let List::Cons(x, tl) = ls {\n        if i == 0 {\n            return x;\n        } else {\n            ls = tl;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -23918,6 +23939,9 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls", "i", "x", "tl", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -23925,7 +23949,7 @@
         "id": 8,
         "item_meta": {
           "name": "loops::list_nth_shared",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_shared<T>(mut ls: &List<T>, mut i: u32) -> &T {\n    while let List::Cons(x, tl) = ls {\n        if i == 0 {\n            return x;\n        } else {\n            ls = tl;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -24810,6 +24834,9 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls", "i", "x", "tl", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -24817,7 +24844,7 @@
         "id": 9,
         "item_meta": {
           "name": "loops::get_elem_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get_elem_mut(slots: &mut Vec<List<usize>>, x: usize) -> &mut usize {\n    let mut ls = &mut slots[0];\n    loop {\n        match ls {\n            List::Nil => panic!(),\n            List::Cons(y, tl) => {\n                if *y == x {\n                    return y;\n                } else {\n                    ls = tl;\n                }\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -26026,6 +26053,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "slots", "x", "ls", null, null, "y", "tl", null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -26033,7 +26064,7 @@
         "id": 10,
         "item_meta": {
           "name": "loops::get_elem_shared",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get_elem_shared(slots: &Vec<List<usize>>, x: usize) -> &usize {\n    let mut ls = &slots[0];\n    loop {\n        match ls {\n            List::Nil => panic!(),\n            List::Cons(y, tl) => {\n                if *y == x {\n                    return y;\n                } else {\n                    ls = tl;\n                }\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -27242,6 +27273,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "slots", "x", "ls", null, null, "y", "tl", null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27249,7 +27284,7 @@
         "id": 11,
         "item_meta": {
           "name": "loops::id_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn id_mut<T>(ls: &mut List<T>) -> &mut List<T> {\n    ls\n}",
           "lang_item": null,
           "span": {
@@ -27474,6 +27509,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "ls", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27481,7 +27517,7 @@
         "id": 12,
         "item_meta": {
           "name": "loops::id_shared",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn id_shared<T>(ls: &List<T>) -> &List<T> {\n    ls\n}",
           "lang_item": null,
           "span": {
@@ -27627,6 +27663,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "ls" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27634,7 +27671,7 @@
         "id": 13,
         "item_meta": {
           "name": "loops::list_nth_mut_with_id",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut_with_id<T>(ls: &mut List<T>, mut i: u32) -> &mut T {\n    let mut ls = id_mut(ls);\n    while let List::Cons(x, tl) = ls {\n        if i == 0 {\n            return x;\n        } else {\n            ls = tl;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -28679,6 +28716,9 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls", "i", "ls", null, "x", "tl", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -28686,7 +28726,7 @@
         "id": 14,
         "item_meta": {
           "name": "loops::list_nth_shared_with_id",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_shared_with_id<T>(ls: &List<T>, mut i: u32) -> &T {\n    let mut ls = id_shared(ls);\n    while let List::Cons(x, tl) = ls {\n        if i == 0 {\n            return x;\n        } else {\n            ls = tl;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -29731,6 +29771,9 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls", "i", "ls", null, "x", "tl", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -29738,7 +29781,7 @@
         "id": 15,
         "item_meta": {
           "name": "loops::list_nth_mut_pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut_pair<'a, 'b, T>(\n    mut ls0: &'a mut List<T>,\n    mut ls1: &'b mut List<T>,\n    mut i: u32,\n) -> (&'a mut T, &'b mut T) {\n    loop {\n        match (ls0, ls1) {\n            (List::Nil, _) | (_, List::Nil) => {\n                panic!()\n            }\n            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {\n                if i == 0 {\n                    return (x0, x1);\n                } else {\n                    ls0 = tl0;\n                    ls1 = tl1;\n                    i -= 1;\n                }\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -31931,6 +31974,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -31938,7 +31985,7 @@
         "id": 16,
         "item_meta": {
           "name": "loops::list_nth_shared_pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_shared_pair<'a, 'b, T>(\n    mut ls0: &'a List<T>,\n    mut ls1: &'b List<T>,\n    mut i: u32,\n) -> (&'a T, &'b T) {\n    loop {\n        match (ls0, ls1) {\n            (List::Nil, _) | (_, List::Nil) => {\n                panic!()\n            }\n            (List::Cons(x0, tl0), List::Cons(x1, tl1)) => {\n                if i == 0 {\n                    return (x0, x1);\n                } else {\n                    ls0 = tl0;\n                    ls1 = tl1;\n                    i -= 1;\n                }\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -34131,6 +34178,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -34138,7 +34189,7 @@
         "id": 17,
         "item_meta": {
           "name": "loops::list_nth_mut_pair_merge",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut_pair_merge<'a, T>(\n    mut ls0: &'a mut List<T>,\n    mut ls1: &'a mut List<T>,\n    mut i: u32,\n) -> (&'a mut T, &'a mut T) {\n    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {\n        if i == 0 {\n            return (x0, x1);\n        } else {\n            ls0 = tl0;\n            ls1 = tl1;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -36284,6 +36335,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36291,7 +36346,7 @@
         "id": 18,
         "item_meta": {
           "name": "loops::list_nth_shared_pair_merge",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_shared_pair_merge<'a, T>(\n    mut ls0: &'a List<T>,\n    mut ls1: &'a List<T>,\n    mut i: u32,\n) -> (&'a T, &'a T) {\n    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {\n        if i == 0 {\n            return (x0, x1);\n        } else {\n            ls0 = tl0;\n            ls1 = tl1;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -38437,6 +38492,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -38444,7 +38503,7 @@
         "id": 19,
         "item_meta": {
           "name": "loops::list_nth_mut_shared_pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut_shared_pair<'a, 'b, T>(\n    mut ls0: &'a mut List<T>,\n    mut ls1: &'b List<T>,\n    mut i: u32,\n) -> (&'a mut T, &'b T) {\n    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {\n        if i == 0 {\n            return (x0, x1);\n        } else {\n            ls0 = tl0;\n            ls1 = tl1;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -40590,6 +40649,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -40597,7 +40660,7 @@
         "id": 20,
         "item_meta": {
           "name": "loops::list_nth_mut_shared_pair_merge",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut_shared_pair_merge<'a, T>(\n    mut ls0: &'a mut List<T>,\n    mut ls1: &'a List<T>,\n    mut i: u32,\n) -> (&'a mut T, &'a T) {\n    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {\n        if i == 0 {\n            return (x0, x1);\n        } else {\n            ls0 = tl0;\n            ls1 = tl1;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -42743,6 +42806,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -42750,7 +42817,7 @@
         "id": 21,
         "item_meta": {
           "name": "loops::list_nth_shared_mut_pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_shared_mut_pair<'a, 'b, T>(\n    mut ls0: &'a List<T>,\n    mut ls1: &'b mut List<T>,\n    mut i: u32,\n) -> (&'a T, &'b mut T) {\n    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {\n        if i == 0 {\n            return (x0, x1);\n        } else {\n            ls0 = tl0;\n            ls1 = tl1;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -44896,6 +44963,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -44903,7 +44974,7 @@
         "id": 22,
         "item_meta": {
           "name": "loops::list_nth_shared_mut_pair_merge",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_shared_mut_pair_merge<'a, T>(\n    mut ls0: &'a List<T>,\n    mut ls1: &'a mut List<T>,\n    mut i: u32,\n) -> (&'a T, &'a mut T) {\n    while let (List::Cons(x0, tl0), List::Cons(x1, tl1)) = (ls0, ls1) {\n        if i == 0 {\n            return (x0, x1);\n        } else {\n            ls0 = tl0;\n            ls1 = tl1;\n            i -= 1;\n        }\n    }\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -47049,6 +47120,10 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls0", "ls1", "i", null, null, null, "x0", "tl0", "x1",
+          "tl1", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -47056,7 +47131,7 @@
         "id": 23,
         "item_meta": {
           "name": "loops::ignore_input_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn ignore_input_mut_borrow(_a: &mut u32, mut i: u32) {\n    while i > 0 {\n        i -= 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -47450,6 +47525,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "_a", "i", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -47457,7 +47533,7 @@
         "id": 24,
         "item_meta": {
           "name": "loops::incr_ignore_input_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr_ignore_input_mut_borrow(a: &mut u32, mut i: u32) {\n    *a += 1;\n    while i > 0 {\n        i -= 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -47925,6 +48001,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "a", "i", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -47932,7 +48009,7 @@
         "id": 25,
         "item_meta": {
           "name": "loops::ignore_input_shared_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn ignore_input_shared_borrow(_a: &mut u32, mut i: u32) {\n    while i > 0 {\n        i -= 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -48326,6 +48403,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "_a", "i", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -48333,7 +48411,7 @@
         "id": 26,
         "item_meta": {
           "name": "loops::issue500_1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn issue500_1(s: &mut bool) {\n    fn bar(_a: &mut bool) {}\n\n    let mut a = *s;\n    while 0 < 0 {\n        bar(&mut a);\n    }\n    *s = a;\n}",
           "lang_item": null,
           "span": {
@@ -48848,6 +48926,7 @@
           { "Ref": [ 0, { "Literal": "Bool" }, "Mut" ] },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "s", "a", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -48855,7 +48934,7 @@
         "id": 27,
         "item_meta": {
           "name": "loops::issue500_2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn issue500_2(s: &mut [bool; 1]) {\n    struct A([bool; 1]);\n    fn bar(_a: &mut [bool; 1]) {}\n\n    let mut a = A(*s);\n    while false {\n        bar(&mut a.0);\n    }\n    *s = a.0;\n}",
           "lang_item": null,
           "span": {
@@ -49659,6 +49738,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "s", "a", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -49666,7 +49748,7 @@
         "id": 28,
         "item_meta": {
           "name": "loops::issue500_3",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn issue500_3(s: &mut [bool; 1]) {\n    struct A([bool; 1]);\n    let mut a = A(*s);\n    while 0 < 0 {}\n    *s = a.0;\n}",
           "lang_item": null,
           "span": {
@@ -50227,6 +50309,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "s", "a", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -50234,7 +50317,7 @@
         "id": 29,
         "item_meta": {
           "name": "loops::issue351",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn issue351<'a>(h: &'a u8, mut t: &'a List<u8>) -> &'a u8 {\n    let mut last = h;\n    while let List::Cons(ht, tt) = t {\n        last = ht;\n        t = &*tt;\n    }\n    return last;\n}",
           "lang_item": null,
           "span": {
@@ -51090,6 +51173,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "h", "t", "last", "ht", "tt", null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -51097,7 +51183,7 @@
         "id": 30,
         "item_meta": {
           "name": "loops::issue270",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn issue270(v: &List<List<u8>>) -> Option<&List<u8>> {\n    fn box_get_borrow<'a, T>(x: &Box<T>) -> &T {\n        &*x\n    }\n    if let List::Cons(h, t) = v {\n        let mut t = box_get_borrow(t);\n        let mut last = h;\n        while let List::Cons(ht, tt) = t {\n            last = ht;\n            t = box_get_borrow(tt);\n        }\n        Some(last)\n    } else {\n        None\n    }\n}",
           "lang_item": null,
           "span": {
@@ -53199,6 +53285,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "v", "h", "t", "t", null, "last", "ht", "tt", null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -53206,7 +53296,7 @@
         "id": 31,
         "item_meta": {
           "name": "loops::issue400_1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn issue400_1(a: &mut i32, b: &mut i32, cond: bool) {\n    let mut y = &mut *a;\n    let mut i = 0;\n    while i < 32 {\n        if cond {\n            y = &mut *a;\n        } else {\n            y = &mut *b;\n        }\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -54105,6 +54195,10 @@
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Mut" ] },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "a", "b", "cond", "y", "i", null, null, null, null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -54112,7 +54206,7 @@
         "id": 32,
         "item_meta": {
           "name": "loops::issue400_2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn issue400_2(a: &mut i32, b: &mut i32, c: &mut i32, conds: &[bool]) {\n    let mut y = &mut *a;\n    let mut z = &mut *b;\n    let mut i = 0;\n    while i < conds.len() {\n        if conds[i] {\n            y = &mut *a;\n            z = &mut *b;\n        } else {\n            y = &mut *b;\n            z = &mut *c;\n        }\n        i += 1;\n    }\n    *y += 3;\n    *z += 5;\n}",
           "lang_item": null,
           "span": {
@@ -55708,6 +55802,11 @@
           { "Ref": [ 0, { "Slice": { "Literal": "Bool" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "a", "b", "c", "conds", "y", "z", "i", null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -55715,7 +55814,7 @@
         "id": 33,
         "item_meta": {
           "name": "loops::copy_carray",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn copy_carray(a: &mut [u32; 2]) {\n    const CARRAY: [u32; 2] = [0, 1];\n    let mut i = 0;\n    while i < 2 {\n        a[i] = CARRAY[i];\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -56874,6 +56973,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "a", "i", null, null, null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -56881,7 +56984,7 @@
         "id": 34,
         "item_meta": {
           "name": "loops::iter_local_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn iter_local_mut_borrow() {\n    let mut x = 0;\n    let mut p = &mut x;\n    loop {\n        p = &mut (*p);\n        *p += 1;\n\n        if *p == 10 {\n            break;\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -57482,6 +57585,7 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", "p", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -57489,7 +57593,7 @@
         "id": 35,
         "item_meta": {
           "name": "loops::iter_local_shared_borrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn iter_local_shared_borrow() {\n    let mut x = 0;\n    let mut p = &x;\n    loop {\n        p = &(*p);\n\n        if x == 0 {\n            break;\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -58014,6 +58118,7 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", "p", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -58021,7 +58126,7 @@
         "id": 36,
         "item_meta": {
           "name": "loops::insert_in_list",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn insert_in_list<T>(key: usize, value: T, mut ls: &mut AList<T>) -> bool {\n    loop {\n        match ls {\n            AList::Nil => {\n                *ls = AList::Cons(key, value, Box::new(AList::Nil));\n                return true;\n            }\n            AList::Cons(ckey, cvalue, tl) => {\n                if *ckey == key {\n                    *cvalue = value;\n                    return false;\n                } else {\n                    ls = tl;\n                }\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -59741,6 +59846,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "key", "value", "ls", null, null, null, null, null, "ckey",
+          "cvalue", "tl", null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -59748,7 +59857,7 @@
         "id": 37,
         "item_meta": {
           "name": "loops::reborrow_const",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn reborrow_const() {\n    fn reborrow(x: &u64) -> u64 {\n        {\n            *x\n        }\n    }\n    let i = 0;\n    while i < 5 {\n        let x = reborrow(&0);\n    }\n}",
           "lang_item": null,
           "span": {
@@ -60383,6 +60492,9 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [
+          null, "i", null, null, "x", null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -60390,7 +60502,7 @@
         "id": 38,
         "item_meta": {
           "name": "loops::decode",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn decode(pe_dst: &mut [u8]) -> bool {\n    let mut cb_src_read: usize = 0;\n\n    let mut i = 0;\n    while i < 128 {\n        let dst_coeff = &mut pe_dst[i];\n        while *dst_coeff > 32 {}\n\n        if *dst_coeff > 32 {\n            return true;\n        }\n\n        *dst_coeff = 0;\n        i += 1;\n    }\n\n    false\n}",
           "lang_item": null,
           "span": {
@@ -61570,6 +61682,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "pe_dst", "cb_src_read", "i", null, null, "dst_coeff", null,
+          null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -61577,7 +61693,7 @@
         "id": 39,
         "item_meta": {
           "name": "loops::as_radix_minimized",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn as_radix_minimized() {\n    let mut scalar = [0u64; 4];\n    let mut i = 0;\n    while i < 4 {\n        let _: u64 = if i == 0 {\n            scalar[i] >> 1\n        } else {\n            scalar[i] >> 1 | (scalar[i] << 63)\n        };\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -63321,6 +63437,11 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "scalar", "i", null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -63328,7 +63449,7 @@
         "id": 40,
         "item_meta": {
           "name": "alloc::vec::{alloc::vec::Vec<T>}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -63365,6 +63486,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -63372,7 +63494,7 @@
         "id": 41,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::IndexMut<I, Clause0_Output> for alloc::vec::Vec<T>}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -63417,6 +63539,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -63424,7 +63547,7 @@
         "id": 42,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::Index<I, Clause0_Output> for alloc::vec::Vec<T>}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -63469,6 +63592,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -63476,7 +63600,7 @@
         "id": 43,
         "item_meta": {
           "name": "loops::issue500_1::bar",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn bar(_a: &mut bool) {}",
           "lang_item": null,
           "span": {
@@ -63587,6 +63711,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Ref": [ 0, { "Literal": "Bool" }, "Mut" ] }
         ],
+        "locals_names": [ null, "_a" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -63594,7 +63719,7 @@
         "id": 44,
         "item_meta": {
           "name": "loops::issue500_2::bar",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn bar(_a: &mut [bool; 1]) {}",
           "lang_item": null,
           "span": {
@@ -63741,6 +63866,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "_a" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -63748,7 +63874,7 @@
         "id": 45,
         "item_meta": {
           "name": "loops::issue270::box_get_borrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn box_get_borrow<'a, T>(x: &Box<T>) -> &T {\n        &*x\n    }",
           "lang_item": null,
           "span": {
@@ -63940,6 +64066,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -63947,7 +64074,7 @@
         "id": 46,
         "item_meta": {
           "name": "core::slice::{[T]}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "slice_len_fn",
           "span": {
@@ -63977,6 +64104,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -63984,7 +64112,7 @@
         "id": 48,
         "item_meta": {
           "name": "loops::reborrow_const::reborrow",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn reborrow(x: &u64) -> u64 {\n        {\n            *x\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -64064,6 +64192,7 @@
           { "Literal": { "UInt": "U64" } },
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -64071,7 +64200,7 @@
         "id": 49,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64113,6 +64242,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64120,7 +64250,7 @@
         "id": 50,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64162,6 +64292,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64169,7 +64300,7 @@
         "id": 51,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64202,6 +64333,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64209,7 +64341,7 @@
         "id": 52,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64242,6 +64374,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64249,7 +64382,7 @@
         "id": 53,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64282,6 +64415,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64289,7 +64423,7 @@
         "id": 54,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64322,6 +64456,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64329,7 +64464,7 @@
         "id": 55,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64369,6 +64504,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64376,7 +64512,7 @@
         "id": 56,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64414,6 +64550,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64421,7 +64558,7 @@
         "id": 57,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64452,6 +64589,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64459,7 +64597,7 @@
         "id": 58,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64488,6 +64626,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64495,7 +64634,7 @@
         "id": 59,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64526,6 +64665,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64533,7 +64673,7 @@
         "id": 60,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64562,6 +64702,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64569,7 +64710,7 @@
         "id": 61,
         "item_meta": {
           "name": "loops::copy_carray::CARRAY",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const CARRAY: [u32; 2] = [0, 1];",
           "lang_item": null,
           "span": {
@@ -64694,6 +64835,7 @@
             ]
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -64701,7 +64843,7 @@
         "id": 65,
         "item_meta": {
           "name": "core::ops::index::IndexMut::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64734,6 +64876,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -64741,7 +64884,7 @@
         "id": 66,
         "item_meta": {
           "name": "core::ops::index::Index::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -64774,6 +64917,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -64783,7 +64927,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::slice::index::SliceIndex",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "SliceIndex",
           "span": {
@@ -65000,7 +65144,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::ops::index::IndexMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index_mut",
           "span": {
@@ -65057,7 +65201,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::ops::index::Index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index",
           "span": {
@@ -65114,7 +65258,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::Sealed",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -65144,7 +65288,7 @@
         "id": 0,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::IndexMut<I, Clause0_Output> for alloc::vec::Vec<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -65188,7 +65332,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -65227,7 +65371,7 @@
         "id": 2,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::Index<I, Clause0_Output> for alloc::vec::Vec<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -65271,7 +65415,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::{core::slice::index::private_slice_index::Sealed for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

@@ -295,7 +295,7 @@
         "id": 0,
         "item_meta": {
           "name": "discriminant::EmptyEnum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum EmptyEnum {}",
           "lang_item": null,
           "span": {
@@ -324,7 +324,7 @@
         "id": 1,
         "item_meta": {
           "name": "discriminant::AlertLevel",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum AlertLevel {\n    Warning,\n    Fatal,\n}",
           "lang_item": null,
           "span": {
@@ -370,7 +370,7 @@
         "id": 2,
         "item_meta": {
           "name": "discriminant::AlertLevelU8",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum AlertLevelU8 {\n    Warning = 1,\n    Fatal = 2,\n}",
           "lang_item": null,
           "span": {
@@ -416,7 +416,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::fmt::Formatter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Formatter",
           "span": {
@@ -445,7 +445,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::result::Result",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Result",
           "span": {
@@ -505,7 +505,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::fmt::Error",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -536,7 +536,7 @@
         "id": 0,
         "item_meta": {
           "name": "discriminant::{core::cmp::PartialEq<discriminant::AlertLevel> for discriminant::AlertLevel}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -958,6 +958,10 @@
           { "Literal": { "Int": "Isize" } },
           { "Literal": { "Int": "Isize" } }
         ],
+        "locals_names": [
+          null, "self", "other", "__self_discr", null, "__arg1_discr", null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -965,7 +969,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::cmp::PartialEq::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_eq",
           "span": {
@@ -994,6 +998,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1001,7 +1006,7 @@
         "id": 4,
         "item_meta": {
           "name": "discriminant::{core::cmp::PartialEq<discriminant::AlertLevelU8> for discriminant::AlertLevelU8}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1423,6 +1428,10 @@
           { "Literal": { "UInt": "U8" } },
           { "Literal": { "UInt": "U8" } }
         ],
+        "locals_names": [
+          null, "self", "other", "__self_discr", null, "__arg1_discr", null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1430,7 +1439,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::intrinsics::discriminant_value",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1456,6 +1465,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1463,7 +1473,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -1491,6 +1501,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1498,7 +1509,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::fmt::Debug::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1550,6 +1561,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1557,7 +1569,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::hash::Hash::hash",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1587,6 +1599,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1594,7 +1607,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::hash::Hasher::finish",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1622,6 +1635,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1629,7 +1643,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::hash::Hasher::write",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1662,6 +1676,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -1671,7 +1686,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::marker::StructuralPartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "structural_peq",
           "span": {
@@ -1699,7 +1714,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::cmp::PartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "eq",
           "span": {
@@ -1748,7 +1763,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::marker::DiscriminantKind",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "discriminant_kind",
           "span": {
@@ -1776,7 +1791,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -1824,7 +1839,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -1852,7 +1867,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::fmt::Debug",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Debug",
           "span": {
@@ -1929,7 +1944,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::cmp::Eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Eq",
           "span": {
@@ -1957,7 +1972,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::hash::Hash",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Hash",
           "span": {
@@ -2009,7 +2024,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::hash::Hasher",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2085,7 +2100,7 @@
         "id": 0,
         "item_meta": {
           "name": "discriminant::{core::marker::StructuralPartialEq for discriminant::AlertLevel}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2119,7 +2134,7 @@
         "id": 1,
         "item_meta": {
           "name": "discriminant::{core::cmp::PartialEq<discriminant::AlertLevel> for discriminant::AlertLevel}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2153,7 +2168,7 @@
         "id": 2,
         "item_meta": {
           "name": "discriminant::{core::marker::StructuralPartialEq for discriminant::AlertLevelU8}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2187,7 +2202,7 @@
         "id": 3,
         "item_meta": {
           "name": "discriminant::{core::cmp::PartialEq<discriminant::AlertLevelU8> for discriminant::AlertLevelU8}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

@@ -142,7 +142,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_815_global_referencing_fallible_global::INNER",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const INNER: u32 = 1 + 1;",
           "lang_item": null,
           "span": {
@@ -258,6 +258,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -265,7 +266,7 @@
         "id": 1,
         "item_meta": {
           "name": "issue_815_global_referencing_fallible_global::OUTER",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const OUTER: u32 = INNER;",
           "lang_item": null,
           "span": {
@@ -377,6 +378,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       }

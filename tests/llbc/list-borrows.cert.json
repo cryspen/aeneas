@@ -518,7 +518,7 @@
         "id": 0,
         "item_meta": {
           "name": "list_borrows::LCell",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct LCell<'a> {\n    value: &'a mut i32,\n    next: List<'a>,\n}",
           "lang_item": null,
           "span": {
@@ -564,7 +564,7 @@
         "id": 1,
         "item_meta": {
           "name": "list_borrows::List",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum List<'a> {\n    Nil,\n    Cons(Box<LCell<'a>>),\n}",
           "lang_item": null,
           "span": {
@@ -631,7 +631,7 @@
         "id": 2,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -662,7 +662,7 @@
         "id": 0,
         "item_meta": {
           "name": "list_borrows::cons",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn cons<'a>(value: &'a mut i32, next: List<'a>) -> List<'a> {\n    Cons(Box::new(LCell { value, next }))\n}",
           "lang_item": null,
           "span": {
@@ -1097,6 +1097,7 @@
           { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Mut" ] },
           { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "value", "next", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1104,7 +1105,7 @@
         "id": 1,
         "item_meta": {
           "name": "list_borrows::increment_list",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn increment_list<'a>(mut l: List<'a>) {\n    while let Cons(b) = l {\n        *b.value += 1;\n        l = (*b).next;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -1748,6 +1749,7 @@
           { "Literal": { "Int": "I32" } },
           { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "l", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       }

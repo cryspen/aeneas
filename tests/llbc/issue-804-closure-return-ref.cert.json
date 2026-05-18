@@ -439,7 +439,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_804_closure_return_ref::each_ref::closure",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|i| &s[i]",
           "lang_item": null,
           "span": {
@@ -502,7 +502,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_804_closure_return_ref::each_ref",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn each_ref(s: &[u8; 10]) -> [&u8; 10] {\n    std::array::from_fn(|i| &s[i])\n}",
           "lang_item": null,
           "span": {
@@ -842,6 +842,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "s", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -849,7 +850,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::array::from_fn",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -879,6 +880,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -886,7 +888,7 @@
         "id": 2,
         "item_meta": {
           "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnOnce<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}::call_once",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|i| &s[i]",
           "lang_item": null,
           "span": {
@@ -1088,6 +1090,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1095,7 +1098,7 @@
         "id": 3,
         "item_meta": {
           "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnMut<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}::call_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|i| &s[i]",
           "lang_item": null,
           "span": {
@@ -1426,6 +1429,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null, "tupled_args", "i", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1433,7 +1437,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::ops::function::FnMut::call_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1466,6 +1470,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1473,7 +1478,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::ops::function::FnOnce::call_once",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1505,6 +1510,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -1514,7 +1520,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::ops::function::FnMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_mut",
           "span": {
@@ -1571,7 +1577,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::ops::function::FnOnce",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "fn_once",
           "span": {
@@ -1627,7 +1633,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnOnce<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|i| &s[i]",
           "lang_item": null,
           "span": {
@@ -1661,7 +1667,7 @@
         "id": 1,
         "item_meta": {
           "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnMut<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "|i| &s[i]",
           "lang_item": null,
           "span": {

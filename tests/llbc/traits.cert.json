@@ -3424,7 +3424,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits::Wrapper",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Wrapper<T> {\n    x: T,\n}",
           "lang_item": null,
           "span": {
@@ -3462,7 +3462,7 @@
         "id": 1,
         "item_meta": {
           "name": "traits::TestType",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct TestType<T>(T);",
           "lang_item": null,
           "span": {
@@ -3500,7 +3500,7 @@
         "id": 2,
         "item_meta": {
           "name": "traits::BoolWrapper",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct BoolWrapper(pub bool);",
           "lang_item": null,
           "span": {
@@ -3538,7 +3538,7 @@
         "id": 3,
         "item_meta": {
           "name": "traits::Foo",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Foo<T, U> {\n    pub x: T,\n    pub y: U,\n}",
           "lang_item": null,
           "span": {
@@ -3582,7 +3582,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -3635,7 +3635,7 @@
         "id": 10,
         "item_meta": {
           "name": "alloc::string::String",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "String",
           "span": {
@@ -3664,7 +3664,7 @@
         "id": 23,
         "item_meta": {
           "name": "core::result::Result",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Result",
           "span": {
@@ -3724,7 +3724,7 @@
         "id": 24,
         "item_meta": {
           "name": "traits::{traits::TestType<T>}::test::TestType1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct TestType1(u64);",
           "lang_item": null,
           "span": {
@@ -3764,7 +3764,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits::test_bool_trait_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_bool_trait_bool(x: bool) -> bool {\n    x.get_bool() && x.ret_true()\n}",
           "lang_item": null,
           "span": {
@@ -4078,6 +4078,7 @@
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4085,7 +4086,7 @@
         "id": 1,
         "item_meta": {
           "name": "traits::test_bool_trait_option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_bool_trait_option<T>(x: Option<T>) -> bool {\n    x.get_bool() && x.ret_true()\n}",
           "lang_item": null,
           "span": {
@@ -4553,6 +4554,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4560,7 +4562,7 @@
         "id": 2,
         "item_meta": {
           "name": "traits::test_bool_trait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_bool_trait<T: BoolTrait>(x: T) -> bool {\n    x.get_bool()\n}",
           "lang_item": null,
           "span": {
@@ -4708,6 +4710,7 @@
           { "TypeVar": { "Free": 0 } },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4715,7 +4718,7 @@
         "id": 3,
         "item_meta": {
           "name": "traits::f",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f<T: ToU64>(x: (T, T)) -> u64 {\n    x.to_u64()\n}",
           "lang_item": null,
           "span": {
@@ -4925,6 +4928,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4932,7 +4936,7 @@
         "id": 4,
         "item_meta": {
           "name": "traits::g",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn g<T>(x: (T, T)) -> u64\nwhere\n    (T, T): ToU64,\n{\n    x.to_u64()\n}",
           "lang_item": null,
           "span": {
@@ -5142,6 +5146,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5149,7 +5154,7 @@
         "id": 5,
         "item_meta": {
           "name": "traits::h0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn h0(x: u64) -> u64 {\n    x.to_u64()\n}",
           "lang_item": null,
           "span": {
@@ -5267,6 +5272,7 @@
           { "Literal": { "UInt": "U64" } },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5274,7 +5280,7 @@
         "id": 6,
         "item_meta": {
           "name": "traits::h1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn h1(x: Wrapper<u64>) -> u64 {\n    x.to_u64()\n}",
           "lang_item": null,
           "span": {
@@ -5430,6 +5436,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5437,7 +5444,7 @@
         "id": 7,
         "item_meta": {
           "name": "traits::h2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn h2<T: ToU64>(x: Wrapper<T>) -> u64 {\n    x.to_u64()\n}",
           "lang_item": null,
           "span": {
@@ -5622,6 +5629,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5629,7 +5637,7 @@
         "id": 8,
         "item_meta": {
           "name": "traits::h3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn h3<T1: OfType, T2: ToType<T1>>(y: T2) -> T1 {\n    T1::of_type(y)\n}",
           "lang_item": null,
           "span": {
@@ -5770,6 +5778,7 @@
           { "TypeVar": { "Free": 1 } },
           { "TypeVar": { "Free": 1 } }
         ],
+        "locals_names": [ null, "y", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5777,7 +5786,7 @@
         "id": 9,
         "item_meta": {
           "name": "traits::h4",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn h4<T1: OfTypeBis<T2>, T2: ToType<T1>>(y: T2) -> T1 {\n    T1::of_type(y)\n}",
           "lang_item": null,
           "span": {
@@ -5918,6 +5927,7 @@
           { "TypeVar": { "Free": 1 } },
           { "TypeVar": { "Free": 1 } }
         ],
+        "locals_names": [ null, "y", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5925,7 +5935,7 @@
         "id": 10,
         "item_meta": {
           "name": "traits::use_with_const_ty1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_with_const_ty1<const LEN: usize, H: WithConstTy<LEN>>() -> usize {\n    H::LEN1\n}",
           "lang_item": null,
           "span": {
@@ -6001,6 +6011,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6008,7 +6019,7 @@
         "id": 11,
         "item_meta": {
           "name": "traits::use_with_const_ty2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_with_const_ty2<const LEN: usize, H: WithConstTy<LEN>>(_: H::W) {}",
           "lang_item": null,
           "span": {
@@ -6145,6 +6156,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "TypeVar": { "Free": 2 } }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6152,7 +6164,7 @@
         "id": 12,
         "item_meta": {
           "name": "traits::use_with_const_ty3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_with_const_ty3<const LEN: usize, H: WithConstTy<LEN>>(x: H::W) -> u64 {\n    x.to_u64()\n}",
           "lang_item": null,
           "span": {
@@ -6296,6 +6308,7 @@
           { "TypeVar": { "Free": 2 } },
           { "TypeVar": { "Free": 2 } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6303,7 +6316,7 @@
         "id": 13,
         "item_meta": {
           "name": "traits::test_where1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_where1<'a, T: 'a>(_x: &'a T) {}",
           "lang_item": null,
           "span": {
@@ -6416,6 +6429,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "_x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6423,7 +6437,7 @@
         "id": 14,
         "item_meta": {
           "name": "traits::test_where2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_where2<T: WithConstTy<32, V = u32>>(_x: T::V) {}",
           "lang_item": null,
           "span": {
@@ -6536,6 +6550,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "_x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6543,7 +6558,7 @@
         "id": 15,
         "item_meta": {
           "name": "traits::test_child_trait1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_child_trait1<T: ChildTrait>(x: &T) -> String {\n    x.get_name()\n}",
           "lang_item": null,
           "span": {
@@ -6684,6 +6699,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6691,7 +6707,7 @@
         "id": 16,
         "item_meta": {
           "name": "traits::test_child_trait2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_child_trait2<T: ChildTrait>(x: &T) -> T::W {\n    x.get_w()\n}",
           "lang_item": null,
           "span": {
@@ -6825,6 +6841,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6832,7 +6849,7 @@
         "id": 17,
         "item_meta": {
           "name": "traits::order1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn order1<T: ParentTrait0<W = U::W>, U: ParentTrait0>() {}",
           "lang_item": null,
           "span": {
@@ -6947,6 +6964,7 @@
         "locals_types": [
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6954,7 +6972,7 @@
         "id": 18,
         "item_meta": {
           "name": "traits::test_get_trait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_get_trait<T: GetTrait>(x: &T) -> T::W {\n    x.get_w()\n}",
           "lang_item": null,
           "span": {
@@ -7088,6 +7106,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7095,7 +7114,7 @@
         "id": 19,
         "item_meta": {
           "name": "traits::use_wrapper_len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_wrapper_len<T: Trait>() -> usize {\n    Wrapper::<T>::LEN\n}",
           "lang_item": null,
           "span": {
@@ -7153,7 +7172,11 @@
                         "local": 0,
                         "projection": [],
                         "ty": { "Literal": { "UInt": "Usize" } },
-                        "global": "traits::{traits::Trait for traits::Wrapper<T>}::LEN"
+                        "global": "traits::{traits::Trait for traits::Wrapper<T>}::LEN",
+                        "global_generics": {
+                          "types": [ "T@0" ],
+                          "const_generics": []
+                        }
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -7209,6 +7232,7 @@
           { "Literal": { "UInt": "Usize" } },
           { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7216,7 +7240,7 @@
         "id": 20,
         "item_meta": {
           "name": "traits::use_foo1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_foo1<T: Trait, U>() -> Result<T, i32> {\n    Foo::<T, U>::FOO\n}",
           "lang_item": null,
           "span": {
@@ -7306,7 +7330,11 @@
                             }
                           }
                         },
-                        "global": "traits::{traits::Foo<T, U>}::FOO"
+                        "global": "traits::{traits::Foo<T, U>}::FOO",
+                        "global_generics": {
+                          "types": [ "T@0", "T@1" ],
+                          "const_generics": []
+                        }
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -7410,6 +7438,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7417,7 +7446,7 @@
         "id": 21,
         "item_meta": {
           "name": "traits::use_foo2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn use_foo2<T, U: Trait>() -> Result<U, i32> {\n    Foo::<U, T>::FOO\n}",
           "lang_item": null,
           "span": {
@@ -7507,7 +7536,11 @@
                             }
                           }
                         },
-                        "global": "traits::{traits::Foo<T, U>}::FOO"
+                        "global": "traits::{traits::Foo<T, U>}::FOO",
+                        "global_generics": {
+                          "types": [ "T@1", "T@0" ],
+                          "const_generics": []
+                        }
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -7611,6 +7644,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7618,7 +7652,7 @@
         "id": 22,
         "item_meta": {
           "name": "traits::BoolTrait::get_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_bool(&self) -> bool;",
           "lang_item": null,
           "span": {
@@ -7646,6 +7680,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -7653,7 +7688,7 @@
         "id": 23,
         "item_meta": {
           "name": "traits::BoolTrait::ret_true",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn ret_true(&self) -> bool {\n        true\n    }",
           "lang_item": null,
           "span": {
@@ -7728,6 +7763,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7735,7 +7771,7 @@
         "id": 24,
         "item_meta": {
           "name": "traits::{traits::BoolTrait for bool}::get_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_bool(&self) -> bool {\n        *self\n    }",
           "lang_item": null,
           "span": {
@@ -7811,6 +7847,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7818,7 +7855,7 @@
         "id": 25,
         "item_meta": {
           "name": "traits::{traits::BoolTrait for bool}::ret_true",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn ret_true(&self) -> bool {\n        true\n    }",
           "lang_item": null,
           "span": {
@@ -7891,6 +7928,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7898,7 +7936,7 @@
         "id": 26,
         "item_meta": {
           "name": "traits::{traits::BoolTrait for core::option::Option<T>}::get_bool",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_bool(&self) -> bool {\n        match self {\n            Option::Some(_) => true,\n            Option::None => false,\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -8099,6 +8137,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8106,7 +8145,7 @@
         "id": 27,
         "item_meta": {
           "name": "traits::{traits::BoolTrait for core::option::Option<T>}::ret_true",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn ret_true(&self) -> bool {\n        true\n    }",
           "lang_item": null,
           "span": {
@@ -8203,6 +8242,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8210,7 +8250,7 @@
         "id": 29,
         "item_meta": {
           "name": "traits::ToU64::to_u64",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn to_u64(self) -> u64;",
           "lang_item": null,
           "span": {
@@ -8236,6 +8276,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -8243,7 +8284,7 @@
         "id": 30,
         "item_meta": {
           "name": "traits::{traits::ToU64 for u64}::to_u64",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn to_u64(self) -> u64 {\n        self\n    }",
           "lang_item": null,
           "span": {
@@ -8316,6 +8357,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U64" } }, { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8323,7 +8365,7 @@
         "id": 31,
         "item_meta": {
           "name": "traits::{traits::ToU64 for (A, A)}::to_u64",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn to_u64(self) -> u64 {\n        self.0.to_u64() + self.1.to_u64()\n    }",
           "lang_item": null,
           "span": {
@@ -8672,6 +8714,7 @@
           { "TypeVar": { "Free": 0 } },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "self", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8679,7 +8722,7 @@
         "id": 32,
         "item_meta": {
           "name": "traits::{traits::ToU64 for traits::Wrapper<T>}::to_u64",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn to_u64(self) -> u64 {\n        self.x.to_u64()\n    }",
           "lang_item": null,
           "span": {
@@ -8847,6 +8890,7 @@
           },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8854,7 +8898,7 @@
         "id": 33,
         "item_meta": {
           "name": "traits::ToType::to_type",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn to_type(self) -> T;",
           "lang_item": null,
           "span": {
@@ -8880,6 +8924,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -8887,7 +8932,7 @@
         "id": 34,
         "item_meta": {
           "name": "traits::{traits::ToType<bool> for u64}::to_type",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn to_type(self) -> bool {\n        self > 0\n    }",
           "lang_item": null,
           "span": {
@@ -9012,6 +9057,7 @@
           { "Literal": { "UInt": "U64" } },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9019,7 +9065,7 @@
         "id": 35,
         "item_meta": {
           "name": "traits::OfType::of_type",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn of_type<T: ToType<Self>>(x: T) -> Self\n    where\n        Self: std::marker::Sized;",
           "lang_item": null,
           "span": {
@@ -9046,6 +9092,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -9053,7 +9100,7 @@
         "id": 36,
         "item_meta": {
           "name": "traits::OfTypeBis::of_type",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn of_type(x: T) -> Self\n    where\n        Self: std::marker::Sized;",
           "lang_item": null,
           "span": {
@@ -9079,6 +9126,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -9086,7 +9134,7 @@
         "id": 37,
         "item_meta": {
           "name": "traits::{traits::TestType<T>}::test",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test(&self, x: T) -> bool {\n        struct TestType1(u64);\n        trait TestTrait {\n            fn test(&self) -> bool;\n        }\n\n        // Remark: we can't write: impl TestTrait for TestType<T>,\n        // we have to use a *local* parameter (can't use the outer T).\n        // In other words: the parameters used in the items inside\n        // an impl must be bound by the impl block (can't come from outer\n        // blocks).\n\n        impl TestTrait for TestType1 {\n            fn test(&self) -> bool {\n                self.0 > 1\n            }\n        }\n\n        let x = x.to_u64();\n        let y = TestType1(0);\n        x > 0 && y.test()\n    }",
           "lang_item": null,
           "span": {
@@ -9658,6 +9706,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "x", "x", null, "y", null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9665,7 +9716,7 @@
         "id": 38,
         "item_meta": {
           "name": "traits::{traits::ToType<T> for traits::BoolWrapper}::to_type",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn to_type(self) -> T {\n        self.0.to_type()\n    }",
           "lang_item": null,
           "span": {
@@ -9794,6 +9845,7 @@
           { "Adt": { "id": { "Adt": 2 }, "generics": { "types": [] } } },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9801,7 +9853,7 @@
         "id": 39,
         "item_meta": {
           "name": "traits::WithConstTy::f",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn f(x: &mut Self::W, y: &[u8; LEN]);",
           "lang_item": null,
           "span": {
@@ -9845,6 +9897,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -9852,7 +9905,7 @@
         "id": 40,
         "item_meta": {
           "name": "traits::{traits::WithConstTy<u8, u64, 32usize> for bool}::f",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn f(_: &mut Self::W, _: &[u8; 32]) {}",
           "lang_item": null,
           "span": {
@@ -10001,6 +10054,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10008,7 +10062,7 @@
         "id": 41,
         "item_meta": {
           "name": "traits::ParentTrait0::get_name",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_name(&self) -> String;",
           "lang_item": null,
           "span": {
@@ -10038,6 +10092,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10045,7 +10100,7 @@
         "id": 42,
         "item_meta": {
           "name": "traits::ParentTrait0::get_w",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_w(&self) -> Self::W;",
           "lang_item": null,
           "span": {
@@ -10073,6 +10128,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10080,7 +10136,7 @@
         "id": 43,
         "item_meta": {
           "name": "traits::IntoIterator::into_iter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn into_iter(self) -> Self::IntoIter;",
           "lang_item": null,
           "span": {
@@ -10110,6 +10166,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10117,7 +10174,7 @@
         "id": 44,
         "item_meta": {
           "name": "traits::ChildTrait2::convert",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn convert(x: Self::U) -> <Self::U as WithTarget>::Target;",
           "lang_item": null,
           "span": {
@@ -10147,6 +10204,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10154,7 +10212,7 @@
         "id": 45,
         "item_meta": {
           "name": "traits::{traits::ChildTrait2<u32, u32> for u32}::convert",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn convert(x: u32) -> u32 {\n        x\n    }",
           "lang_item": null,
           "span": {
@@ -10227,6 +10285,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10234,7 +10293,7 @@
         "id": 46,
         "item_meta": {
           "name": "traits::CFnOnce::call_once",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn call_once(self, args: Args) -> Self::Output;",
           "lang_item": null,
           "span": {
@@ -10266,6 +10325,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10273,7 +10333,7 @@
         "id": 47,
         "item_meta": {
           "name": "traits::CFnMut::call_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn call_mut(&mut self, args: Args) -> Self::Output;",
           "lang_item": null,
           "span": {
@@ -10306,6 +10366,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10313,7 +10374,7 @@
         "id": 48,
         "item_meta": {
           "name": "traits::CFn::call",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn call(&self, args: Args) -> Self::Output;",
           "lang_item": null,
           "span": {
@@ -10344,6 +10405,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10351,7 +10413,7 @@
         "id": 49,
         "item_meta": {
           "name": "traits::GetTrait::get_w",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn get_w(&self) -> Self::W;",
           "lang_item": null,
           "span": {
@@ -10379,6 +10441,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10386,7 +10449,7 @@
         "id": 53,
         "item_meta": {
           "name": "traits::{traits::TestType<T>}::test::{traits::{traits::TestType<T>}::test::TestTrait for traits::{traits::TestType<T>}::test::TestType1}::test",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn test(&self) -> bool {\n                self.0 > 1\n            }",
           "lang_item": null,
           "span": {
@@ -10541,6 +10604,7 @@
           },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10548,7 +10612,7 @@
         "id": 54,
         "item_meta": {
           "name": "traits::WithConstTy::LEN2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "const LEN2: usize = 32;",
           "lang_item": null,
           "span": {
@@ -10622,6 +10686,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -10629,7 +10694,7 @@
         "id": 55,
         "item_meta": {
           "name": "traits::{traits::WithConstTy<u8, u64, 32usize> for bool}::LEN1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "const LEN1: usize = 12;",
           "lang_item": null,
           "span": {
@@ -10703,6 +10768,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -10710,7 +10776,7 @@
         "id": 56,
         "item_meta": {
           "name": "traits::{traits::Trait for [T; N]}::LEN",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "const LEN: usize = N;",
           "lang_item": null,
           "span": {
@@ -10780,6 +10846,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -10787,7 +10854,7 @@
         "id": 57,
         "item_meta": {
           "name": "traits::{traits::Trait for traits::Wrapper<T>}::LEN",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "const LEN: usize = 0;",
           "lang_item": null,
           "span": {
@@ -10863,6 +10930,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -10870,7 +10938,7 @@
         "id": 58,
         "item_meta": {
           "name": "traits::{traits::Foo<T, U>}::FOO",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const FOO: Result<T, i32> = Err(0);",
           "lang_item": null,
           "span": {
@@ -10997,6 +11065,7 @@
             }
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -11004,7 +11073,7 @@
         "id": 59,
         "item_meta": {
           "name": "traits::{traits::TestType<T>}::test::TestTrait::test",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn test(&self) -> bool;",
           "lang_item": null,
           "span": {
@@ -11035,6 +11104,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -11044,7 +11114,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits::BoolTrait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait BoolTrait {\n    // Required method\n    fn get_bool(&self) -> bool;\n\n    // Provided method\n    fn ret_true(&self) -> bool {\n        true\n    }\n}",
           "lang_item": null,
           "span": {
@@ -11109,7 +11179,7 @@
         "id": 1,
         "item_meta": {
           "name": "traits::ToU64",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ToU64 {\n    fn to_u64(self) -> u64;\n}",
           "lang_item": null,
           "span": {
@@ -11155,7 +11225,7 @@
         "id": 2,
         "item_meta": {
           "name": "traits::ToType",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ToType<T> {\n    fn to_type(self) -> T;\n}",
           "lang_item": null,
           "span": {
@@ -11201,7 +11271,7 @@
         "id": 3,
         "item_meta": {
           "name": "traits::OfType",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait OfType {\n    fn of_type<T: ToType<Self>>(x: T) -> Self\n    where\n        Self: std::marker::Sized;\n}",
           "lang_item": null,
           "span": {
@@ -11248,7 +11318,7 @@
         "id": 4,
         "item_meta": {
           "name": "traits::OfTypeBis",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait OfTypeBis<T: ToType<Self>>\nwhere\n    Self: std::marker::Sized,\n{\n    fn of_type(x: T) -> Self\n    where\n        Self: std::marker::Sized;\n}",
           "lang_item": null,
           "span": {
@@ -11294,7 +11364,7 @@
         "id": 5,
         "item_meta": {
           "name": "traits::WithConstTy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait WithConstTy<const LEN: usize> {\n    const LEN1: usize;\n    // Testing default values\n    const LEN2: usize = 32;\n\n    type V;\n    type W: ToU64;\n\n    // Below: we can't use [Self::Len1] in the type of the array.\n    // Probably because of dyn traits...\n    fn f(x: &mut Self::W, y: &[u8; LEN]);\n}",
           "lang_item": null,
           "span": {
@@ -11362,7 +11432,7 @@
         "id": 6,
         "item_meta": {
           "name": "traits::ParentTrait0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ParentTrait0 {\n    type W;\n    fn get_name(&self) -> String;\n    fn get_w(&self) -> Self::W;\n}",
           "lang_item": null,
           "span": {
@@ -11431,7 +11501,7 @@
         "id": 7,
         "item_meta": {
           "name": "traits::ParentTrait1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ParentTrait1 {}",
           "lang_item": null,
           "span": {
@@ -11459,7 +11529,7 @@
         "id": 8,
         "item_meta": {
           "name": "traits::ChildTrait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ChildTrait: ParentTrait0 + ParentTrait1 {}",
           "lang_item": null,
           "span": {
@@ -11487,7 +11557,7 @@
         "id": 9,
         "item_meta": {
           "name": "traits::ChildTrait1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ChildTrait1: ParentTrait1 {}",
           "lang_item": null,
           "span": {
@@ -11515,7 +11585,7 @@
         "id": 10,
         "item_meta": {
           "name": "traits::Iterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait Iterator {\n    type Item;\n}",
           "lang_item": null,
           "span": {
@@ -11543,7 +11613,7 @@
         "id": 11,
         "item_meta": {
           "name": "traits::IntoIterator",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait IntoIterator {\n    type Item;\n    type IntoIter: Iterator<Item = Self::Item>;\n\n    // Required method\n    fn into_iter(self) -> Self::IntoIter;\n}",
           "lang_item": null,
           "span": {
@@ -11597,7 +11667,7 @@
         "id": 12,
         "item_meta": {
           "name": "traits::Try",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Try: FromResidual<<Self as Try>::Residual> {\n    type Residual;\n}",
           "lang_item": null,
           "span": {
@@ -11625,7 +11695,7 @@
         "id": 13,
         "item_meta": {
           "name": "traits::FromResidual",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait FromResidual<T> {}",
           "lang_item": null,
           "span": {
@@ -11653,7 +11723,7 @@
         "id": 14,
         "item_meta": {
           "name": "traits::WithTarget",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait WithTarget {\n    type Target;\n}",
           "lang_item": null,
           "span": {
@@ -11681,7 +11751,7 @@
         "id": 15,
         "item_meta": {
           "name": "traits::ParentTrait2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ParentTrait2 {\n    type U: WithTarget;\n}",
           "lang_item": null,
           "span": {
@@ -11713,7 +11783,7 @@
         "id": 16,
         "item_meta": {
           "name": "traits::ChildTrait2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait ChildTrait2: ParentTrait2 {\n    fn convert(x: Self::U) -> <Self::U as WithTarget>::Target;\n}",
           "lang_item": null,
           "span": {
@@ -11767,7 +11837,7 @@
         "id": 17,
         "item_meta": {
           "name": "traits::CFnOnce",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait CFnOnce<Args> {\n    type Output;\n\n    fn call_once(self, args: Args) -> Self::Output;\n}",
           "lang_item": null,
           "span": {
@@ -11821,7 +11891,7 @@
         "id": 18,
         "item_meta": {
           "name": "traits::CFnMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait CFnMut<Args>: CFnOnce<Args> {\n    fn call_mut(&mut self, args: Args) -> Self::Output;\n}",
           "lang_item": null,
           "span": {
@@ -11878,7 +11948,7 @@
         "id": 19,
         "item_meta": {
           "name": "traits::CFn",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait CFn<Args>: CFnMut<Args> {\n    fn call(&self, args: Args) -> Self::Output;\n}",
           "lang_item": null,
           "span": {
@@ -11935,7 +12005,7 @@
         "id": 20,
         "item_meta": {
           "name": "traits::GetTrait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait GetTrait {\n    type W;\n    fn get_w(&self) -> Self::W;\n}",
           "lang_item": null,
           "span": {
@@ -11983,7 +12053,7 @@
         "id": 21,
         "item_meta": {
           "name": "traits::Trait",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub trait Trait {\n    const LEN: usize;\n}",
           "lang_item": null,
           "span": {
@@ -12011,7 +12081,7 @@
         "id": 23,
         "item_meta": {
           "name": "traits::{traits::TestType<T>}::test::TestTrait",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait TestTrait {\n            fn test(&self) -> bool;\n        }",
           "lang_item": null,
           "span": {
@@ -12064,7 +12134,7 @@
         "id": 0,
         "item_meta": {
           "name": "traits::{traits::BoolTrait for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl BoolTrait for bool {\n    fn get_bool(&self) -> bool {\n        *self\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12099,7 +12169,7 @@
         "id": 1,
         "item_meta": {
           "name": "traits::{traits::BoolTrait for core::option::Option<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl<T> BoolTrait for Option<T> {\n    fn get_bool(&self) -> bool {\n        match self {\n            Option::Some(_) => true,\n            Option::None => false,\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12139,7 +12209,7 @@
         "id": 2,
         "item_meta": {
           "name": "traits::{traits::ToU64 for u64}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl ToU64 for u64 {\n    fn to_u64(self) -> u64 {\n        self\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12171,7 +12241,7 @@
         "id": 3,
         "item_meta": {
           "name": "traits::{traits::ToU64 for (A, A)}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl<A: ToU64> ToU64 for (A, A) {\n    fn to_u64(self) -> u64 {\n        self.0.to_u64() + self.1.to_u64()\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12212,7 +12282,7 @@
         "id": 4,
         "item_meta": {
           "name": "traits::{traits::ToU64 for traits::Wrapper<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl<T: ToU64> ToU64 for Wrapper<T> {\n    fn to_u64(self) -> u64 {\n        self.x.to_u64()\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12249,7 +12319,7 @@
         "id": 5,
         "item_meta": {
           "name": "traits::{traits::ToType<bool> for u64}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl ToType<bool> for u64 {\n    fn to_type(self) -> bool {\n        self > 0\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12281,7 +12351,7 @@
         "id": 6,
         "item_meta": {
           "name": "traits::{traits::ToType<T> for traits::BoolWrapper}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl<T> ToType<T> for BoolWrapper\nwhere\n    bool: ToType<T>,\n{\n    fn to_type(self) -> T {\n        self.0.to_type()\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12315,7 +12385,7 @@
         "id": 7,
         "item_meta": {
           "name": "traits::{traits::WithConstTy<u8, u64, 32usize> for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl WithConstTy<32> for bool {\n    const LEN1: usize = 12;\n\n    type V = u8;\n    type W = u64;\n\n    fn f(_: &mut Self::W, _: &[u8; 32]) {}\n}",
           "lang_item": null,
           "span": {
@@ -12347,7 +12417,7 @@
         "id": 8,
         "item_meta": {
           "name": "traits::{traits::ParentTrait1 for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl ParentTrait1 for usize {}",
           "lang_item": null,
           "span": {
@@ -12379,7 +12449,7 @@
         "id": 9,
         "item_meta": {
           "name": "traits::{traits::ChildTrait1 for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl ChildTrait1 for usize {}",
           "lang_item": null,
           "span": {
@@ -12411,7 +12481,7 @@
         "id": 10,
         "item_meta": {
           "name": "traits::{traits::WithTarget<u32> for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl WithTarget for u32 {\n    type Target = u32;\n}",
           "lang_item": null,
           "span": {
@@ -12443,7 +12513,7 @@
         "id": 11,
         "item_meta": {
           "name": "traits::{traits::ParentTrait2<u32, u32> for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl ParentTrait2 for u32 {\n    type U = u32;\n}",
           "lang_item": null,
           "span": {
@@ -12475,7 +12545,7 @@
         "id": 12,
         "item_meta": {
           "name": "traits::{traits::ChildTrait2<u32, u32> for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl ChildTrait2 for u32 {\n    fn convert(x: u32) -> u32 {\n        x\n    }\n}",
           "lang_item": null,
           "span": {
@@ -12507,7 +12577,7 @@
         "id": 13,
         "item_meta": {
           "name": "traits::{traits::Trait for [T; N]}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl<const N: usize, T> Trait for [T; N] {\n    const LEN: usize = N;\n}",
           "lang_item": null,
           "span": {
@@ -12543,7 +12613,7 @@
         "id": 14,
         "item_meta": {
           "name": "traits::{traits::Trait for traits::Wrapper<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl<T: Trait> Trait for Wrapper<T> {\n    const LEN: usize = 0;\n}",
           "lang_item": null,
           "span": {
@@ -12580,7 +12650,7 @@
         "id": 18,
         "item_meta": {
           "name": "traits::{traits::TestType<T>}::test::{traits::{traits::TestType<T>}::test::TestTrait for traits::{traits::TestType<T>}::test::TestType1}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl TestTrait for TestType1 {\n            fn test(&self) -> bool {\n                self.0 > 1\n            }\n        }",
           "lang_item": null,
           "span": {

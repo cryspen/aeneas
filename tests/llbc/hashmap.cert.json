@@ -9191,7 +9191,7 @@
         "id": 2,
         "item_meta": {
           "name": "hashmap::AList",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum AList<T> {\n    Cons(Key, T, Box<AList<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -9272,7 +9272,7 @@
         "id": 3,
         "item_meta": {
           "name": "hashmap::Fraction",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Fraction {\n    dividend: usize,\n    divisor: usize,\n}",
           "lang_item": null,
           "span": {
@@ -9316,7 +9316,7 @@
         "id": 4,
         "item_meta": {
           "name": "hashmap::HashMap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct HashMap<T> {\n    /// The current number of entries in the table\n    num_entries: usize,\n    /// The max load factor, expressed as a fraction\n    max_load_factor: Fraction,\n    /// The max load factor applied to the current table length:\n    /// gives the threshold at which to resize the table.\n    max_load: usize,\n    /// [true] if we can't increase the size anymore.\n    saturated: bool,\n    /// The table itself\n    slots: Vec<AList<T>>,\n}",
           "lang_item": null,
           "span": {
@@ -9396,7 +9396,7 @@
         "id": 5,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -9425,7 +9425,7 @@
         "id": 6,
         "item_meta": {
           "name": "alloc::vec::Vec",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Vec",
           "span": {
@@ -9454,7 +9454,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -9509,7 +9509,7 @@
         "id": 0,
         "item_meta": {
           "name": "hashmap::hash_key",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn hash_key(k: &Key) -> Hash {\n    // Do nothing for now, we might want to implement something smarter\n    // in the future, or to call an external function (which will be\n    // abstract): we don't need to reason about the hash function.\n    *k\n}",
           "lang_item": null,
           "span": {
@@ -9589,6 +9589,7 @@
           { "Literal": { "UInt": "Usize" } },
           { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "k" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9596,7 +9597,7 @@
         "id": 1,
         "item_meta": {
           "name": "hashmap::{core::clone::Clone for hashmap::Fraction}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -9704,6 +9705,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9711,7 +9713,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -9739,6 +9741,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -9746,7 +9749,7 @@
         "id": 5,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::allocate_slots",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn allocate_slots(mut slots: Vec<AList<T>>, mut n: usize) -> Vec<AList<T>> {\n        while n > 0 {\n            slots.push(AList::Nil);\n            n -= 1;\n        }\n        slots\n    }",
           "lang_item": null,
           "span": {
@@ -10520,6 +10523,9 @@
           },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "slots", "n", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10527,7 +10533,7 @@
         "id": 6,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::new_with_capacity",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn new_with_capacity(capacity: usize, max_load_factor: Fraction) -> Self {\n        // TODO: better to use `Vec::with_capacity(capacity)` instead\n        // of `Vec::new()`\n        let slots = HashMap::allocate_slots(Vec::new(), capacity);\n        HashMap {\n            num_entries: 0,\n            max_load_factor,\n            max_load: (capacity * max_load_factor.dividend) / max_load_factor.divisor,\n            saturated: false,\n            slots,\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -11358,6 +11364,10 @@
             }
           }
         ],
+        "locals_names": [
+          null, "capacity", "max_load_factor", "slots", null, null, null,
+          null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11365,7 +11375,7 @@
         "id": 7,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::new",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn new() -> Self {\n        // For now we create a table with 32 slots and a max load factor of 4/5\n        HashMap::new_with_capacity(\n            32,\n            Fraction {\n                dividend: 4,\n                divisor: 5,\n            },\n        )\n    }",
           "lang_item": null,
           "span": {
@@ -11543,6 +11553,7 @@
           },
           { "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11550,7 +11561,7 @@
         "id": 8,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::clear",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn clear(&mut self) {\n        self.num_entries = 0;\n        let slots = &mut self.slots;\n        let mut i = 0;\n        while i < slots.len() {\n            slots[i] = AList::Nil;\n            i += 1;\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -12759,6 +12770,10 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "self", "slots", "i", null, null, null, null, null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12766,7 +12781,7 @@
         "id": 9,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn len(&self) -> usize {\n        self.num_entries\n    }",
           "lang_item": null,
           "span": {
@@ -12879,6 +12894,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -12886,7 +12902,7 @@
         "id": 10,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::insert_in_list",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn insert_in_list(key: Key, value: T, mut ls: &mut AList<T>) -> bool {\n        loop {\n            match ls {\n                AList::Nil => {\n                    *ls = AList::Cons(key, value, Box::new(AList::Nil));\n                    return true;\n                }\n                AList::Cons(ckey, cvalue, tl) => {\n                    if *ckey == key {\n                        *cvalue = value;\n                        return false;\n                    } else {\n                        ls = tl;\n                    }\n                }\n            }\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -14606,6 +14622,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "key", "value", "ls", null, null, null, null, null, "ckey",
+          "cvalue", "tl", null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14613,7 +14633,7 @@
         "id": 11,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::insert_no_resize",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn insert_no_resize(&mut self, key: Key, value: T) {\n        let hash = hash_key(&key);\n        let hash_mod = hash % self.slots.len();\n        // We may want to use slots[...] instead of get_mut...\n        let inserted = HashMap::insert_in_list(key, value, &mut self.slots[hash_mod]);\n        if inserted {\n            self.num_entries += 1;\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -16016,6 +16036,11 @@
           { "Literal": "Bool" },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "self", "key", "value", "hash", null, null, "hash_mod", null,
+          null, null, "inserted", null, null, null, null, null, null, null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16023,7 +16048,7 @@
         "id": 12,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::insert",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn insert(&mut self, key: Key, value: T) {\n        // Insert\n        self.insert_no_resize(key, value);\n        // Resize if necessary and if we're not saturated\n        if self.len() > self.max_load && !self.saturated {\n            self.try_resize()\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -17109,6 +17134,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "key", "value", null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17116,7 +17145,7 @@
         "id": 13,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::try_resize",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn try_resize(&mut self) {\n        let max_usize = usize::MAX;\n        let capacity = self.slots.len();\n        // Checking that there won't be overflows by using the fact that, if m > 0:\n        // n * m <= p <==> n <= p / m\n        let n1 = max_usize / 2;\n        if capacity <= n1 / self.max_load_factor.dividend {\n            // Create a new table with a higher capacity\n            let mut ntable = HashMap::new_with_capacity(capacity * 2, self.max_load_factor);\n\n            // Move the elements to the new table\n            HashMap::move_elements(&mut ntable, &mut self.slots);\n\n            // Replace the current table with the new table\n            self.slots = ntable.slots;\n            self.max_load = ntable.max_load;\n        } else {\n            self.saturated = true;\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -19115,6 +19144,11 @@
           { "Literal": { "UInt": "Usize" } },
           { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "self", "max_usize", "capacity", null, "n1", null, null,
+          null, null, null, null, "ntable", null, null, null, null, null,
+          null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19122,7 +19156,7 @@
         "id": 14,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::move_elements",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn move_elements<'a>(ntable: &'a mut HashMap<T>, slots: &'a mut Vec<AList<T>>) {\n        let mut i = 0;\n        while i < slots.len() {\n            // Move the elements out of the slot i\n            let ls = std::mem::replace(&mut slots[i], AList::Nil);\n            // Move all those elements to the new table\n            HashMap::move_elements_from_list(ntable, ls);\n            // Do the same for slot i+1\n            i += 1;\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -20614,6 +20648,10 @@
           },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "ntable", "slots", "i", null, null, null, null, "ls", null,
+          null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -20621,7 +20659,7 @@
         "id": 15,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::move_elements_from_list",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn move_elements_from_list(ntable: &mut HashMap<T>, mut ls: AList<T>) {\n        // As long as there are elements in the list, move them\n        loop {\n            match ls {\n                AList::Nil => return, // We're done\n                AList::Cons(k, v, tl) => {\n                    // Insert the element in the new table\n                    ntable.insert_no_resize(k, v);\n                    // Move the elements out of the tail\n                    ls = *tl;\n                }\n            }\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -21638,6 +21676,9 @@
             }
           }
         ],
+        "locals_names": [
+          null, "ntable", "ls", "k", "v", "tl", null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21645,7 +21686,7 @@
         "id": 16,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::contains_key",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn contains_key(&self, key: &Key) -> bool {\n        let hash = hash_key(key);\n        let hash_mod = hash % self.slots.len();\n        HashMap::contains_key_in_list(key, &self.slots[hash_mod])\n    }",
           "lang_item": null,
           "span": {
@@ -22566,6 +22607,10 @@
           },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "self", "key", "hash", null, "hash_mod", null, null, null,
+          null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22573,7 +22618,7 @@
         "id": 17,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::contains_key_in_list",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn contains_key_in_list(key: &Key, mut ls: &AList<T>) -> bool {\n        loop {\n            match ls {\n                AList::Nil => return false,\n                AList::Cons(ckey, _, tl) => {\n                    if *ckey == *key {\n                        return true;\n                    } else {\n                        ls = tl;\n                    }\n                }\n            }\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -23472,6 +23517,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "key", "ls", "ckey", "tl", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -23479,7 +23527,7 @@
         "id": 18,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::get_in_list",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get_in_list<'a, 'k>(key: &'k Key, mut ls: &'a AList<T>) -> Option<&'a T> {\n        while let AList::Cons(ckey, cvalue, tl) = ls {\n            if *ckey == *key {\n                return Some(cvalue);\n            } else {\n                ls = tl;\n            }\n        }\n        None\n    }",
           "lang_item": null,
           "span": {
@@ -24632,6 +24680,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "key", "ls", "ckey", "cvalue", "tl", null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -24639,7 +24691,7 @@
         "id": 19,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get<'a, 'k>(&'a self, key: &'k Key) -> Option<&'a T> {\n        let hash = hash_key(key);\n        let hash_mod = hash % self.slots.len();\n        HashMap::get_in_list(key, &self.slots[hash_mod])\n    }",
           "lang_item": null,
           "span": {
@@ -25591,6 +25643,10 @@
           },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "self", "key", "hash", null, "hash_mod", null, null, null,
+          null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -25598,7 +25654,7 @@
         "id": 20,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::get_mut_in_list",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get_mut_in_list<'a, 'k>(mut ls: &'a mut AList<T>, key: &'k Key) -> Option<&'a mut T> {\n        while let AList::Cons(ckey, cvalue, tl) = ls {\n            if *ckey == *key {\n                return Some(cvalue);\n            } else {\n                ls = tl;\n            }\n        }\n        None\n    }",
           "lang_item": null,
           "span": {
@@ -26751,6 +26807,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "ls", "key", "ckey", "cvalue", "tl", null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -26758,7 +26818,7 @@
         "id": 21,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get_mut<'a, 'k>(&'a mut self, key: &'k Key) -> Option<&'a mut T> {\n        let hash = hash_key(key);\n        let hash_mod = hash % self.slots.len();\n        HashMap::get_mut_in_list(&mut self.slots[hash_mod], key)\n    }",
           "lang_item": null,
           "span": {
@@ -27710,6 +27770,10 @@
           { "Literal": { "UInt": "Usize" } },
           { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "self", "key", "hash", null, "hash_mod", null, null, null,
+          null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27717,7 +27781,7 @@
         "id": 22,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::remove_from_list",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn remove_from_list(key: &Key, mut ls: &mut AList<T>) -> Option<T> {\n        loop {\n            match ls {\n                AList::Nil => return None,\n                // We have to use a guard and split the Cons case into two\n                // branches, otherwise the borrow checker is not happy.\n                AList::Cons(ckey, _, _) if *ckey == *key => {\n                    // We have to move under borrows, so we need to use\n                    // [std::mem::replace] in several steps.\n                    // Retrieve the tail\n                    let mv_ls = std::mem::replace(ls, AList::Nil);\n                    match mv_ls {\n                        AList::Nil => unreachable!(),\n                        AList::Cons(_, cvalue, tl) => {\n                            // Make the list equal to its tail\n                            *ls = *tl;\n                            // Return the dropped value\n                            return Some(cvalue);\n                        }\n                    }\n                }\n                AList::Cons(_, _, tl) => {\n                    ls = tl;\n                }\n            }\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -29757,6 +29821,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "key", "ls", null, null, "ckey", "ckey", null, null, null,
+          "mv_ls", null, null, "cvalue", "tl", null, null, "tl", null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -29764,7 +29832,7 @@
         "id": 23,
         "item_meta": {
           "name": "hashmap::{hashmap::HashMap<T>}::remove",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn remove(&mut self, key: &Key) -> Option<T> {\n        let hash = hash_key(key);\n        let hash_mod = hash % self.slots.len();\n\n        let x = HashMap::remove_from_list(key, &mut self.slots[hash_mod]);\n        match x {\n            Option::None => Option::None,\n            Option::Some(x) => {\n                self.num_entries -= 1;\n                Option::Some(x)\n            }\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -31229,6 +31297,10 @@
           { "Literal": { "UInt": "Usize" } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [
+          null, "self", "key", "hash", null, "hash_mod", null, null, null,
+          "x", null, null, null, null, null, null, "x", null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -31236,7 +31308,7 @@
         "id": 24,
         "item_meta": {
           "name": "alloc::vec::{alloc::vec::Vec<T>}::push",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31274,6 +31346,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31281,7 +31354,7 @@
         "id": 26,
         "item_meta": {
           "name": "alloc::vec::{alloc::vec::Vec<T>}::new",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "vec_new",
           "span": {
@@ -31310,6 +31383,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31317,7 +31391,7 @@
         "id": 27,
         "item_meta": {
           "name": "alloc::vec::{alloc::vec::Vec<T>}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31354,6 +31428,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31361,7 +31436,7 @@
         "id": 28,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::IndexMut<I, Clause0_Output> for alloc::vec::Vec<T>}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31406,6 +31481,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31413,7 +31489,7 @@
         "id": 29,
         "item_meta": {
           "name": "core::mem::replace",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "mem_replace",
           "span": {
@@ -31440,6 +31516,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31447,7 +31524,7 @@
         "id": 30,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::Index<I, Clause0_Output> for alloc::vec::Vec<T>}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31492,6 +31569,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31499,7 +31577,7 @@
         "id": 33,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31541,6 +31619,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31548,7 +31627,7 @@
         "id": 34,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31590,6 +31669,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31597,7 +31677,7 @@
         "id": 35,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31630,6 +31710,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31637,7 +31718,7 @@
         "id": 36,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31670,6 +31751,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31677,7 +31759,7 @@
         "id": 37,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31710,6 +31792,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31717,7 +31800,7 @@
         "id": 38,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31750,6 +31833,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31757,7 +31841,7 @@
         "id": 39,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31797,6 +31881,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31804,7 +31889,7 @@
         "id": 40,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31842,6 +31927,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31849,7 +31935,7 @@
         "id": 41,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31880,6 +31966,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31887,7 +31974,7 @@
         "id": 42,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31916,6 +32003,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31923,7 +32011,7 @@
         "id": 43,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31954,6 +32042,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31961,7 +32050,7 @@
         "id": 44,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -31990,6 +32079,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -31997,7 +32087,7 @@
         "id": 46,
         "item_meta": {
           "name": "core::num::{usize}::MAX",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32021,6 +32111,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": true,
         "src": null
       },
@@ -32028,7 +32119,7 @@
         "id": 49,
         "item_meta": {
           "name": "core::ops::index::IndexMut::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32061,6 +32152,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -32068,7 +32160,7 @@
         "id": 50,
         "item_meta": {
           "name": "core::ops::index::Index::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32101,6 +32193,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -32110,7 +32203,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -32158,7 +32251,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -32186,7 +32279,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::slice::index::SliceIndex",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "SliceIndex",
           "span": {
@@ -32403,7 +32496,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::ops::index::IndexMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index_mut",
           "span": {
@@ -32460,7 +32553,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::ops::index::Index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index",
           "span": {
@@ -32517,7 +32610,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::Sealed",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32547,7 +32640,7 @@
         "id": 1,
         "item_meta": {
           "name": "hashmap::{core::clone::Clone for hashmap::Fraction}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32581,7 +32674,7 @@
         "id": 2,
         "item_meta": {
           "name": "hashmap::{core::marker::Copy for hashmap::Fraction}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32615,7 +32708,7 @@
         "id": 5,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::IndexMut<I, Clause0_Output> for alloc::vec::Vec<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32659,7 +32752,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], T> for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32698,7 +32791,7 @@
         "id": 9,
         "item_meta": {
           "name": "alloc::vec::{core::ops::index::Index<I, Clause0_Output> for alloc::vec::Vec<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -32742,7 +32835,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::{core::slice::index::private_slice_index::Sealed for usize}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

@@ -4211,7 +4211,7 @@
         "id": 0,
         "item_meta": {
           "name": "nested_borrows::IterMut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct IterMut<'a, T> {\n    v: Option<&'a mut T>,\n}",
           "lang_item": null,
           "span": {
@@ -4258,7 +4258,7 @@
         "id": 1,
         "item_meta": {
           "name": "nested_borrows::List",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum List<T> {\n    Nil,\n    Cons(T, Box<List<T>>),\n}",
           "lang_item": null,
           "span": {
@@ -4333,7 +4333,7 @@
         "id": 2,
         "item_meta": {
           "name": "nested_borrows::ListIterMut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct ListIterMut<'a, T> {\n    current: Option<&'a mut List<T>>,\n}",
           "lang_item": null,
           "span": {
@@ -4393,7 +4393,7 @@
         "id": 3,
         "item_meta": {
           "name": "nested_borrows::BitReader",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct BitReader<'a> {\n    data: &'a [u8],\n    bit_buf: u64,\n}",
           "lang_item": null,
           "span": {
@@ -4441,7 +4441,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -4494,7 +4494,7 @@
         "id": 5,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -4525,7 +4525,7 @@
         "id": 0,
         "item_meta": {
           "name": "nested_borrows::inner_shared",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn inner_shared<'a, 'b>(x: &'a &'b u32) -> &'b u32 {\n    *x\n}",
           "lang_item": null,
           "span": {
@@ -4629,6 +4629,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4636,7 +4637,7 @@
         "id": 1,
         "item_meta": {
           "name": "nested_borrows::inner_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn inner_mut<'a, 'b>(x: &'a mut &'b mut u32) -> &'a mut u32 {\n    *x\n}",
           "lang_item": null,
           "span": {
@@ -4784,6 +4785,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4791,7 +4793,7 @@
         "id": 2,
         "item_meta": {
           "name": "nested_borrows::call_inner_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn call_inner_mut() {\n    let mut x = 0;\n    let mut px = &mut x;\n    let py = inner_mut(&mut px);\n    *py = 1;\n    assert!(*px == 1);\n    *px = 2;\n    assert!(x == 2);\n}",
           "lang_item": null,
           "span": {
@@ -5545,6 +5547,9 @@
           { "Literal": "Bool" },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "x", "px", "py", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5552,7 +5557,7 @@
         "id": 3,
         "item_meta": {
           "name": "nested_borrows::inner_mut_swap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn inner_mut_swap<'a, 'b>(ppx: &'a mut &'b mut u32, py: &'b mut u32) -> &'a mut u32 {\n    **ppx = 10;\n    *ppx = py;\n    *ppx\n}",
           "lang_item": null,
           "span": {
@@ -5829,6 +5834,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "ppx", "py", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5836,7 +5842,7 @@
         "id": 4,
         "item_meta": {
           "name": "nested_borrows::call_inner_mut_swap",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn call_inner_mut_swap() {\n    let mut x = 0;\n    let mut px = &mut x;\n    let mut y = 1;\n    let mut py = &mut y;\n    let pz = inner_mut_swap(&mut px, py);\n    *pz = 2;\n    assert!(*px == 2); // px now points to y\n    *px = 3;\n    assert!(x == 10);\n    assert!(y == 3);\n}",
           "lang_item": null,
           "span": {
@@ -6882,6 +6888,10 @@
           { "Literal": "Bool" },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "x", "px", "y", "py", "pz", null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6889,7 +6899,7 @@
         "id": 5,
         "item_meta": {
           "name": "nested_borrows::incr_inner",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn incr_inner<'a, 'b>(x: &'a mut &'b mut u32) {\n    **x += 1;\n}",
           "lang_item": null,
           "span": {
@@ -7102,6 +7112,7 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7109,7 +7120,7 @@
         "id": 6,
         "item_meta": {
           "name": "nested_borrows::replace_option_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn replace_option_mut<'a, 'b, T>(\n    x: &'a mut Option<&'b mut T>,\n    v: Option<&'b mut T>,\n) -> Option<&'b mut T> {\n    panic!() // std::mem::replace(x, v)\n}",
           "lang_item": null,
           "span": {
@@ -7226,6 +7237,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", "v" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7233,7 +7245,7 @@
         "id": 7,
         "item_meta": {
           "name": "nested_borrows::call_iter_mut_next",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn call_iter_mut_next<'a, T>(mut it: IterMut<'a, T>) {\n    match it.next() {\n        None => (),\n        Some(_) => (),\n    }\n}",
           "lang_item": null,
           "span": {
@@ -7634,6 +7646,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "it", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7641,7 +7654,7 @@
         "id": 8,
         "item_meta": {
           "name": "nested_borrows::call_iter_mut_next_u32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn call_iter_mut_next_u32<'a, T>(mut it: IterMut<'a, u32>) {\n    match it.next() {\n        None => (),\n        Some(x) => *x += 1,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -8203,6 +8216,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "it", null, null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8210,7 +8224,7 @@
         "id": 9,
         "item_meta": {
           "name": "nested_borrows::iter_mut_loop",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn iter_mut_loop<'a, T>(mut it: IterMut<'a, T>) {\n    while let Some(_) = it.next() {}\n}",
           "lang_item": null,
           "span": {
@@ -8605,6 +8619,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "it", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8612,7 +8627,7 @@
         "id": 10,
         "item_meta": {
           "name": "nested_borrows::iter_mut_incr",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn iter_mut_incr<'a, T>(mut it: IterMut<'a, u32>) {\n    while let Some(x) = it.next() {\n        *x += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -9147,6 +9162,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "it", null, null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9154,7 +9170,7 @@
         "id": 11,
         "item_meta": {
           "name": "nested_borrows::take_option_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn take_option_mut<'a, 'b, T>(x: &'a mut Option<&'b mut T>) -> Option<&'b mut T> {\n    panic!() // x.take()\n}",
           "lang_item": null,
           "span": {
@@ -9251,6 +9267,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9258,7 +9275,7 @@
         "id": 12,
         "item_meta": {
           "name": "nested_borrows::incr_list",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn incr_list(l: &mut List<u32>) {\n    let mut it = l.iter_mut();\n    while let Some(x) = it.next() {\n        *x += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -9961,6 +9978,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "l", "it", null, null, null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -9968,7 +9986,7 @@
         "id": 13,
         "item_meta": {
           "name": "nested_borrows::next1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn next1<'a, 'b, T>(it: &'a mut &'b mut List<T>) -> Option<&'b mut T> {\n    panic!()\n}",
           "lang_item": null,
           "span": {
@@ -10073,6 +10091,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "it" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10080,7 +10099,7 @@
         "id": 14,
         "item_meta": {
           "name": "nested_borrows::iter_list_while",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn iter_list_while<T>(b: bool, l: &mut &mut List<T>) {\n    while let Some(_) = next1(l) {\n        while b {}\n    }\n}",
           "lang_item": null,
           "span": {
@@ -10670,6 +10689,7 @@
           },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "b", "l", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -10677,7 +10697,7 @@
         "id": 15,
         "item_meta": {
           "name": "nested_borrows::Trait1::f",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn f(x: &&u32);",
           "lang_item": null,
           "span": {
@@ -10711,6 +10731,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -10718,7 +10739,7 @@
         "id": 16,
         "item_meta": {
           "name": "nested_borrows::{nested_borrows::IterMut<'a, T>}::next",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn next(&mut self) -> Option<&'a mut T> {\n        /* We need to use `std::mem::replace` because otherwise the\n        code doesn't borrow-check. */\n        replace_option_mut(&mut self.v, None)\n    }",
           "lang_item": null,
           "span": {
@@ -11152,6 +11173,7 @@
             }
           }
         ],
+        "locals_names": [ null, "self", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11159,7 +11181,7 @@
         "id": 17,
         "item_meta": {
           "name": "nested_borrows::{nested_borrows::List<T>}::iter_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn iter_mut<'a>(&'a mut self) -> ListIterMut<'a, T> {\n        ListIterMut {\n            current: Some(self),\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -11523,6 +11545,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -11530,7 +11553,7 @@
         "id": 18,
         "item_meta": {
           "name": "nested_borrows::{nested_borrows::ListIterMut<'a, T>}::next",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn next(&mut self) -> Option<&'a mut T> {\n        // TODO: self.current.take()\n        match take_option_mut(&mut self.current) {\n            Some(&mut List::Cons(ref mut value, ref mut next)) => {\n                self.current = Some(next);\n                Some(value)\n            }\n            _ => None,\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -13065,6 +13088,9 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "self", null, null, null, "value", "next", null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13072,7 +13098,7 @@
         "id": 19,
         "item_meta": {
           "name": "nested_borrows::{nested_borrows::BitReader<'a>}::peek",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn peek(&mut self, b: bool) -> u64 {\n        if b {\n            self.refill();\n        }\n        self.bit_buf & 1\n    }",
           "lang_item": null,
           "span": {
@@ -13437,6 +13463,7 @@
           },
           { "Literal": { "UInt": "U64" } }
         ],
+        "locals_names": [ null, "self", "b", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13444,7 +13471,7 @@
         "id": 20,
         "item_meta": {
           "name": "nested_borrows::{nested_borrows::BitReader<'a>}::refill",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn refill(&mut self) {}",
           "lang_item": null,
           "span": {
@@ -13571,6 +13598,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       }
@@ -13580,7 +13608,7 @@
         "id": 0,
         "item_meta": {
           "name": "nested_borrows::Trait1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Trait1 {\n    fn f(x: &&u32);\n}",
           "lang_item": null,
           "span": {

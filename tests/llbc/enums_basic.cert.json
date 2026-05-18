@@ -147,7 +147,7 @@
         "id": 0,
         "item_meta": {
           "name": "enums_basic::Sign",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum Sign {\n    Pos,\n    Neg,\n    Zero,\n}",
           "lang_item": null,
           "span": {
@@ -202,7 +202,7 @@
         "id": 0,
         "item_meta": {
           "name": "enums_basic::flip",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn flip(s: Sign) -> Sign {\n    match s {\n        Sign::Pos => Sign::Neg,\n        Sign::Neg => Sign::Pos,\n        Sign::Zero => Sign::Zero,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -457,6 +457,7 @@
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "s" ],
         "is_global_initializer": false,
         "src": null
       }

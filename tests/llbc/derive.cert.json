@@ -12249,7 +12249,7 @@
         "id": 0,
         "item_meta": {
           "name": "derive::CopyEnumOneVariant",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum CopyEnumOneVariant {\n    Variant(bool),\n}",
           "lang_item": null,
           "span": {
@@ -12295,7 +12295,7 @@
         "id": 1,
         "item_meta": {
           "name": "derive::ScalarEnum",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum ScalarEnum {\n    Variant0 = 2,\n    Variant1 = 4,\n    Variant2 = 8,\n    Variant3 = 16,\n}",
           "lang_item": null,
           "span": {
@@ -12355,7 +12355,7 @@
         "id": 2,
         "item_meta": {
           "name": "derive::CopyEnum",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum CopyEnum<T> {\n    Variant0,\n    Variant1(bool),\n    Variant2(u32),\n    Variant3(T),\n}",
           "lang_item": null,
           "span": {
@@ -12436,7 +12436,7 @@
         "id": 3,
         "item_meta": {
           "name": "derive::Enum",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum Enum<T> {\n    Variant0,\n    Variant1(bool),\n    Variant2(u32),\n    Variant3(T),\n    Variant4(Vec<T>),\n}",
           "lang_item": null,
           "span": {
@@ -12538,7 +12538,7 @@
         "id": 4,
         "item_meta": {
           "name": "derive::List",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum List<T> {\n    Nil,\n    Cons(T, Box<List<T>>),\n    // TODO: Vec<...>\n}",
           "lang_item": null,
           "span": {
@@ -12613,7 +12613,7 @@
         "id": 5,
         "item_meta": {
           "name": "derive::CopyStruct",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct CopyStruct<T> {\n    f0: (),\n    f1: bool,\n    f2: u32,\n    f3: T,\n}",
           "lang_item": null,
           "span": {
@@ -12669,7 +12669,7 @@
         "id": 6,
         "item_meta": {
           "name": "derive::Struct",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Struct<T> {\n    f: Vec<T>,\n}",
           "lang_item": null,
           "span": {
@@ -12712,7 +12712,7 @@
         "id": 7,
         "item_meta": {
           "name": "derive::Struct6Fields",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Struct6Fields {\n    a: u32,\n    b: u32,\n    c: u32,\n    d: u32,\n    e: u32,\n    f: u32,\n}",
           "lang_item": null,
           "span": {
@@ -12780,7 +12780,7 @@
         "id": 9,
         "item_meta": {
           "name": "alloc::vec::Vec",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Vec",
           "span": {
@@ -12809,7 +12809,7 @@
         "id": 10,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -12838,7 +12838,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::fmt::Formatter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Formatter",
           "span": {
@@ -12867,7 +12867,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::result::Result",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Result",
           "span": {
@@ -12927,7 +12927,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::fmt::Error",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -12958,7 +12958,7 @@
         "id": 0,
         "item_meta": {
           "name": "derive::refs_ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn refs_ne(a: &Struct6Fields, b: &Struct6Fields) -> bool {\n    a != b\n}",
           "lang_item": null,
           "span": {
@@ -13281,6 +13281,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13288,7 +13289,7 @@
         "id": 1,
         "item_meta": {
           "name": "derive::refs_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn refs_eq(a: &Struct6Fields, b: &Struct6Fields) -> bool {\n    a == b\n}",
           "lang_item": null,
           "span": {
@@ -13611,6 +13612,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13618,7 +13620,7 @@
         "id": 2,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::CopyEnumOneVariant}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -13726,6 +13728,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -13733,7 +13736,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -13761,6 +13764,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -13768,7 +13772,7 @@
         "id": 6,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyEnumOneVariant> for derive::CopyEnumOneVariant}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -14429,6 +14433,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "other", null, null, null, "__self_0", "__arg1_0",
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14436,7 +14444,7 @@
         "id": 7,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyEnumOneVariant> for derive::CopyEnumOneVariant}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -14479,6 +14487,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -14486,7 +14495,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::cmp::PartialEq::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_eq",
           "span": {
@@ -14515,6 +14524,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -14522,7 +14532,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::cmp::PartialEq::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -14551,6 +14561,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -14558,7 +14569,7 @@
         "id": 10,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::CopyEnumOneVariant}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -14685,6 +14696,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -14692,7 +14704,7 @@
         "id": 11,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::CopyEnumOneVariant}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -15413,6 +15425,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "f", "__self_0", null, null, null, null, null, null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15420,7 +15436,7 @@
         "id": 12,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::ScalarEnum}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -15528,6 +15544,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15535,7 +15552,7 @@
         "id": 14,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::ScalarEnum> for derive::ScalarEnum}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -15957,6 +15974,10 @@
           { "Literal": { "Int": "Isize" } },
           { "Literal": { "Int": "Isize" } }
         ],
+        "locals_names": [
+          null, "self", "other", "__self_discr", null, "__arg1_discr", null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -15964,7 +15985,7 @@
         "id": 15,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::ScalarEnum> for derive::ScalarEnum}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -16007,6 +16028,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -16014,7 +16036,7 @@
         "id": 16,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::ScalarEnum}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -16141,6 +16163,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -16148,7 +16171,7 @@
         "id": 17,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::ScalarEnum}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -17411,6 +17434,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "f", null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17418,7 +17445,7 @@
         "id": 18,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::CopyEnum<T>}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -18377,6 +18404,10 @@
           { "TypeVar": { "Free": 0 } },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "self", "__self_0", null, null, "__self_0", null, null,
+          "__self_0", null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18384,7 +18415,7 @@
         "id": 20,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyEnum<T>> for derive::CopyEnum<T>}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21650,6 +21681,12 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "other", "__self_discr", null, "__arg1_discr", null,
+          null, null, null, null, null, null, "__self_0", "__arg1_0", null,
+          null, "__self_0", "__arg1_0", null, null, "__self_0", "__arg1_0",
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21657,7 +21694,7 @@
         "id": 21,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyEnum<T>> for derive::CopyEnum<T>}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -21708,6 +21745,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -21715,7 +21753,7 @@
         "id": 22,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::CopyEnum<T>}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -21852,6 +21890,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21859,7 +21898,7 @@
         "id": 23,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::CopyEnum<T>}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -24503,6 +24542,12 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "f", null, null, null, "__self_0", null, null, null,
+          null, null, null, "__self_0", null, null, null, null, null, null,
+          "__self_0", null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -24510,7 +24555,7 @@
         "id": 24,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::Enum<T>}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -25843,6 +25888,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "__self_0", null, null, "__self_0", null, null,
+          "__self_0", null, null, "__self_0", null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -25850,7 +25899,7 @@
         "id": 26,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Enum<T>> for derive::Enum<T>}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -29996,6 +30045,12 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "other", "__self_discr", null, "__arg1_discr", null,
+          null, null, null, null, null, null, "__self_0", "__arg1_0", null,
+          null, "__self_0", "__arg1_0", null, null, "__self_0", "__arg1_0",
+          null, null, "__self_0", "__arg1_0", null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -30003,7 +30058,7 @@
         "id": 27,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Enum<T>> for derive::Enum<T>}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -30054,6 +30109,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -30061,7 +30117,7 @@
         "id": 28,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::Enum<T>}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -30198,6 +30254,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -30205,7 +30262,7 @@
         "id": 29,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::Enum<T>}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -33653,6 +33710,13 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "f", null, null, null, "__self_0", null, null, null,
+          null, null, null, "__self_0", null, null, null, null, null, null,
+          "__self_0", null, null, null, null, null, null, "__self_0", null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -33660,7 +33724,7 @@
         "id": 30,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::List<T>}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -34532,6 +34596,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "__self_0", "__self_1", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -34539,7 +34606,7 @@
         "id": 32,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::List<T>> for derive::List<T>}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -37310,6 +37377,11 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "other", "__self_discr", null, "__arg1_discr", null,
+          null, null, null, null, null, null, "__self_0", "__self_1",
+          "__arg1_0", "__arg1_1", null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37317,7 +37389,7 @@
         "id": 33,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::List<T>> for derive::List<T>}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -37368,6 +37440,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -37375,7 +37448,7 @@
         "id": 34,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::List<T>}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -37512,6 +37585,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37519,7 +37593,7 @@
         "id": 35,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::CopyStruct<T>}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -38344,6 +38418,10 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "self", null, null, null, null, null, null, null, null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -38351,7 +38429,7 @@
         "id": 37,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyStruct<T>> for derive::CopyStruct<T>}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -39682,6 +39760,10 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "self", "other", null, null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -39689,7 +39771,7 @@
         "id": 38,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyStruct<T>> for derive::CopyStruct<T>}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -39740,6 +39822,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -39747,7 +39830,7 @@
         "id": 39,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::CopyStruct<T>}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -39884,6 +39967,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -39891,7 +39975,7 @@
         "id": 40,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::CopyStruct<T>}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -42201,6 +42285,12 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "f", null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -42208,7 +42298,7 @@
         "id": 41,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::Struct<T>}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -42600,6 +42690,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -42607,7 +42698,7 @@
         "id": 43,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Struct<T>> for derive::Struct<T>}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -42928,6 +43019,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self", "other", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -42935,7 +43027,7 @@
         "id": 44,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Struct<T>> for derive::Struct<T>}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -42986,6 +43078,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -42993,7 +43086,7 @@
         "id": 45,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::Struct<T>}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -43130,6 +43223,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -43137,7 +43231,7 @@
         "id": 46,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::Struct<T>}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -44250,6 +44344,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "f", null, null, null, null, null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -44257,7 +44355,7 @@
         "id": 47,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::Struct6Fields}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -45318,6 +45416,10 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "self", null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -45325,7 +45427,7 @@
         "id": 49,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Struct6Fields> for derive::Struct6Fields}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -47319,6 +47421,10 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "self", "other", null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -47326,7 +47432,7 @@
         "id": 50,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Struct6Fields> for derive::Struct6Fields}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_ne",
           "span": {
@@ -47369,6 +47475,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -47376,7 +47483,7 @@
         "id": 51,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::Struct6Fields}::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -47503,6 +47610,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -47510,7 +47618,7 @@
         "id": 52,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::Struct6Fields}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51605,6 +51713,14 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "self", "f", "names", null, "values", null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -51612,7 +51728,7 @@
         "id": 53,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<&0 (B)> for &1 (A)}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51655,6 +51771,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -51662,7 +51779,7 @@
         "id": 54,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<&0 (B)> for &1 (A)}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51705,6 +51822,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -51712,7 +51830,7 @@
         "id": 55,
         "item_meta": {
           "name": "core::cmp::Eq::assert_receiver_is_total_eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51740,6 +51858,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -51747,7 +51866,7 @@
         "id": 56,
         "item_meta": {
           "name": "core::fmt::Debug::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51799,6 +51918,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -51806,7 +51926,7 @@
         "id": 57,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Formatter<'a>}::debug_tuple_field1_finish",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51873,6 +51993,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -51880,7 +52001,7 @@
         "id": 58,
         "item_meta": {
           "name": "core::intrinsics::discriminant_value",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51906,6 +52027,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -51913,7 +52035,7 @@
         "id": 59,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Formatter<'a>}::write_str",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -51974,6 +52096,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -51981,7 +52104,7 @@
         "id": 60,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for bool}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52005,6 +52128,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52012,7 +52136,7 @@
         "id": 61,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for u32}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52038,6 +52162,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52045,7 +52170,7 @@
         "id": 63,
         "item_meta": {
           "name": "alloc::vec::{core::clone::Clone for alloc::vec::Vec<T>}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52090,6 +52215,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52097,7 +52223,7 @@
         "id": 64,
         "item_meta": {
           "name": "alloc::boxed::{core::clone::Clone for alloc::boxed::Box<T>}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52142,6 +52268,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52149,7 +52276,7 @@
         "id": 65,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<()> for ()}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52188,6 +52315,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52195,7 +52323,7 @@
         "id": 66,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field4_finish",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52320,6 +52448,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52327,7 +52456,7 @@
         "id": 67,
         "item_meta": {
           "name": "alloc::vec::partial_eq::{core::cmp::PartialEq<alloc::vec::Vec<U>> for alloc::vec::Vec<T>}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52383,6 +52512,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52390,7 +52520,7 @@
         "id": 68,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Formatter<'a>}::debug_struct_field1_finish",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52470,6 +52600,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52477,7 +52608,7 @@
         "id": 69,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Formatter<'a>}::debug_struct_fields_finish",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52573,6 +52704,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52580,7 +52712,7 @@
         "id": 70,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<bool> for bool}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52607,6 +52739,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52614,7 +52747,7 @@
         "id": 71,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<bool> for bool}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52641,6 +52774,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52648,7 +52782,7 @@
         "id": 72,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for &0 (T)}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52708,6 +52842,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52715,7 +52850,7 @@
         "id": 73,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for bool}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52765,6 +52900,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52772,7 +52908,7 @@
         "id": 77,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<u32> for u32}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52799,6 +52935,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52806,7 +52943,7 @@
         "id": 78,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<u32> for u32}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52833,6 +52970,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52840,7 +52978,7 @@
         "id": 79,
         "item_meta": {
           "name": "core::fmt::num::{core::fmt::Debug for u32}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52890,6 +53028,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52897,7 +53036,7 @@
         "id": 81,
         "item_meta": {
           "name": "alloc::alloc::{core::clone::Clone for alloc::alloc::Global}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52933,6 +53072,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -52940,7 +53080,7 @@
         "id": 84,
         "item_meta": {
           "name": "alloc::vec::partial_eq::{core::cmp::PartialEq<alloc::vec::Vec<U>> for alloc::vec::Vec<T>}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -52996,6 +53136,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53003,7 +53144,7 @@
         "id": 85,
         "item_meta": {
           "name": "alloc::vec::{core::fmt::Debug for alloc::vec::Vec<T>}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53066,6 +53207,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53073,7 +53215,7 @@
         "id": 88,
         "item_meta": {
           "name": "alloc::boxed::{core::cmp::PartialEq<alloc::boxed::Box<T>> for alloc::boxed::Box<T>}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53124,6 +53266,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53131,7 +53274,7 @@
         "id": 89,
         "item_meta": {
           "name": "alloc::boxed::{core::cmp::PartialEq<alloc::boxed::Box<T>> for alloc::boxed::Box<T>}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53182,6 +53325,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53189,7 +53333,7 @@
         "id": 90,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<()> for ()}::ne",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53228,6 +53372,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53235,7 +53380,7 @@
         "id": 91,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for ()}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53291,6 +53436,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53298,7 +53444,7 @@
         "id": 96,
         "item_meta": {
           "name": "core::hash::Hash::hash",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53328,6 +53474,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53335,7 +53482,7 @@
         "id": 98,
         "item_meta": {
           "name": "core::hash::Hasher::finish",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53363,6 +53510,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -53370,7 +53518,7 @@
         "id": 99,
         "item_meta": {
           "name": "core::hash::Hasher::write",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53403,6 +53551,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -53412,7 +53561,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -53460,7 +53609,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -53488,7 +53637,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::marker::StructuralPartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "structural_peq",
           "span": {
@@ -53516,7 +53665,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::cmp::PartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "eq",
           "span": {
@@ -53585,7 +53734,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::cmp::Eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Eq",
           "span": {
@@ -53635,7 +53784,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::fmt::Debug",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Debug",
           "span": {
@@ -53712,7 +53861,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::marker::DiscriminantKind",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "discriminant_kind",
           "span": {
@@ -53740,7 +53889,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::hash::Hash",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Hash",
           "span": {
@@ -53792,7 +53941,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::hash::Hasher",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53868,7 +54017,7 @@
         "id": 1,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::CopyEnumOneVariant}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53902,7 +54051,7 @@
         "id": 2,
         "item_meta": {
           "name": "derive::{core::marker::Copy for derive::CopyEnumOneVariant}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53936,7 +54085,7 @@
         "id": 3,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::CopyEnumOneVariant}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -53970,7 +54119,7 @@
         "id": 4,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyEnumOneVariant> for derive::CopyEnumOneVariant}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54006,7 +54155,7 @@
         "id": 5,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::CopyEnumOneVariant}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54040,7 +54189,7 @@
         "id": 6,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::CopyEnumOneVariant}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54074,7 +54223,7 @@
         "id": 8,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::ScalarEnum}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54108,7 +54257,7 @@
         "id": 9,
         "item_meta": {
           "name": "derive::{core::marker::Copy for derive::ScalarEnum}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54142,7 +54291,7 @@
         "id": 10,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::ScalarEnum}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54176,7 +54325,7 @@
         "id": 11,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::ScalarEnum> for derive::ScalarEnum}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54212,7 +54361,7 @@
         "id": 12,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::ScalarEnum}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54246,7 +54395,7 @@
         "id": 13,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::ScalarEnum}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54280,7 +54429,7 @@
         "id": 14,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::CopyEnum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54319,7 +54468,7 @@
         "id": 15,
         "item_meta": {
           "name": "derive::{core::marker::Copy for derive::CopyEnum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54358,7 +54507,7 @@
         "id": 16,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::CopyEnum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54395,7 +54544,7 @@
         "id": 17,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyEnum<T>> for derive::CopyEnum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54436,7 +54585,7 @@
         "id": 18,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::CopyEnum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54473,7 +54622,7 @@
         "id": 19,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::CopyEnum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54512,7 +54661,7 @@
         "id": 20,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::Enum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54551,7 +54700,7 @@
         "id": 21,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::Enum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54588,7 +54737,7 @@
         "id": 22,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Enum<T>> for derive::Enum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54629,7 +54778,7 @@
         "id": 23,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::Enum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54666,7 +54815,7 @@
         "id": 24,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::Enum<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54705,7 +54854,7 @@
         "id": 25,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::List<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54744,7 +54893,7 @@
         "id": 26,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::List<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54781,7 +54930,7 @@
         "id": 27,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::List<T>> for derive::List<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54822,7 +54971,7 @@
         "id": 28,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::List<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54859,7 +55008,7 @@
         "id": 29,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::CopyStruct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54898,7 +55047,7 @@
         "id": 30,
         "item_meta": {
           "name": "derive::{core::marker::Copy for derive::CopyStruct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54937,7 +55086,7 @@
         "id": 31,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::CopyStruct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -54974,7 +55123,7 @@
         "id": 32,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::CopyStruct<T>> for derive::CopyStruct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55015,7 +55164,7 @@
         "id": 33,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::CopyStruct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55052,7 +55201,7 @@
         "id": 34,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::CopyStruct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55091,7 +55240,7 @@
         "id": 35,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::Struct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55130,7 +55279,7 @@
         "id": 36,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::Struct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55167,7 +55316,7 @@
         "id": 37,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Struct<T>> for derive::Struct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55208,7 +55357,7 @@
         "id": 38,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::Struct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55245,7 +55394,7 @@
         "id": 39,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::Struct<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55284,7 +55433,7 @@
         "id": 40,
         "item_meta": {
           "name": "derive::{core::clone::Clone for derive::Struct6Fields}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55318,7 +55467,7 @@
         "id": 41,
         "item_meta": {
           "name": "derive::{core::marker::StructuralPartialEq for derive::Struct6Fields}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55352,7 +55501,7 @@
         "id": 42,
         "item_meta": {
           "name": "derive::{core::cmp::PartialEq<derive::Struct6Fields> for derive::Struct6Fields}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55388,7 +55537,7 @@
         "id": 43,
         "item_meta": {
           "name": "derive::{core::cmp::Eq for derive::Struct6Fields}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55422,7 +55571,7 @@
         "id": 44,
         "item_meta": {
           "name": "derive::{core::fmt::Debug for derive::Struct6Fields}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55456,7 +55605,7 @@
         "id": 45,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<&0 (B)> for &1 (A)}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55492,7 +55641,7 @@
         "id": 46,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<bool> for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55526,7 +55675,7 @@
         "id": 47,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for &0 (T)}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55560,7 +55709,7 @@
         "id": 48,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55592,7 +55741,7 @@
         "id": 49,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55624,7 +55773,7 @@
         "id": 50,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55656,7 +55805,7 @@
         "id": 51,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<u32> for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55690,7 +55839,7 @@
         "id": 52,
         "item_meta": {
           "name": "core::fmt::num::{core::fmt::Debug for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55722,7 +55871,7 @@
         "id": 53,
         "item_meta": {
           "name": "alloc::vec::{core::clone::Clone for alloc::vec::Vec<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55762,7 +55911,7 @@
         "id": 54,
         "item_meta": {
           "name": "alloc::alloc::{core::clone::Clone for alloc::alloc::Global}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55796,7 +55945,7 @@
         "id": 56,
         "item_meta": {
           "name": "alloc::vec::partial_eq::{core::cmp::PartialEq<alloc::vec::Vec<U>> for alloc::vec::Vec<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55842,7 +55991,7 @@
         "id": 57,
         "item_meta": {
           "name": "alloc::vec::{core::fmt::Debug for alloc::vec::Vec<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55881,7 +56030,7 @@
         "id": 58,
         "item_meta": {
           "name": "alloc::boxed::{core::clone::Clone for alloc::boxed::Box<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55921,7 +56070,7 @@
         "id": 60,
         "item_meta": {
           "name": "alloc::boxed::{core::cmp::PartialEq<alloc::boxed::Box<T>> for alloc::boxed::Box<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55962,7 +56111,7 @@
         "id": 61,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<()> for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -55998,7 +56147,7 @@
         "id": 62,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

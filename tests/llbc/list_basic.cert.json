@@ -218,7 +218,7 @@
         "id": 0,
         "item_meta": {
           "name": "list_basic::List",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum List {\n    Cons(u32, Box<List>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -291,7 +291,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -322,7 +322,7 @@
         "id": 0,
         "item_meta": {
           "name": "list_basic::list_len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_len(xs: List) -> u32 {\n    match xs {\n        List::Nil => 0,\n        List::Cons(_, tail) => list_len(*tail).wrapping_add(1),\n    }\n}",
           "lang_item": null,
           "span": {
@@ -789,6 +789,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "xs", "tail", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -796,7 +797,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -823,6 +824,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

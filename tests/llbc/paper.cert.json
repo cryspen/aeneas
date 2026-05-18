@@ -2831,7 +2831,7 @@
         "id": 0,
         "item_meta": {
           "name": "paper::List",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum List<T> {\n    Cons(T, Box<List<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -2906,7 +2906,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -2937,7 +2937,7 @@
         "id": 0,
         "item_meta": {
           "name": "paper::ref_incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn ref_incr(x: &mut i32) {\n    *x = *x + 1;\n}",
           "lang_item": null,
           "span": {
@@ -3162,6 +3162,7 @@
           { "Literal": { "Int": "I32" } },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3169,7 +3170,7 @@
         "id": 1,
         "item_meta": {
           "name": "paper::test_incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_incr() {\n    let mut x = 0i32;\n    ref_incr(&mut x);\n    assert!(x == 1);\n}",
           "lang_item": null,
           "span": {
@@ -3617,6 +3618,7 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "x", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3624,7 +3626,7 @@
         "id": 2,
         "item_meta": {
           "name": "paper::choose",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn choose<'a, T>(b: bool, x: &'a mut T, y: &'a mut T) -> &'a mut T {\n    if b {\n        return x;\n    } else {\n        return y;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -3855,6 +3857,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Literal": "Bool" }
         ],
+        "locals_names": [ null, "b", "x", "y", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3862,7 +3865,7 @@
         "id": 3,
         "item_meta": {
           "name": "paper::test_choose",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_choose() {\n    let mut x = 0;\n    let mut y = 0;\n    let z = choose(true, &mut x, &mut y);\n    *z = *z + 1;\n    assert!(*z == 1);\n    assert!(x == 1);\n    assert!(y == 0);\n}",
           "lang_item": null,
           "span": {
@@ -4876,6 +4879,10 @@
           { "Literal": "Bool" },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4883,7 +4890,7 @@
         "id": 4,
         "item_meta": {
           "name": "paper::list_nth_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn list_nth_mut<'a, T>(l: &'a mut List<T>, i: u32) -> &'a mut T {\n    match l {\n        Nil => {\n            panic!()\n        }\n        Cons(x, tl) => {\n            if i == 0 {\n                return x;\n            } else {\n                return list_nth_mut(tl, i - 1);\n            }\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -5731,6 +5738,9 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "l", "i", "x", "tl", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5738,7 +5748,7 @@
         "id": 5,
         "item_meta": {
           "name": "paper::sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum(l: &List<i32>) -> i32 {\n    match l {\n        Nil => {\n            return 0;\n        }\n        Cons(x, tl) => {\n            return *x + sum(tl);\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -6336,6 +6346,7 @@
           },
           { "Literal": { "Int": "I32" } }
         ],
+        "locals_names": [ null, "l", "x", "tl", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6343,7 +6354,7 @@
         "id": 6,
         "item_meta": {
           "name": "paper::test_nth",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn test_nth() {\n    let mut l = Cons(1, Box::new(Cons(2, Box::new(Cons(3, Box::new(Nil))))));\n    let x = list_nth_mut(&mut l, 2);\n    *x = *x + 1;\n    assert!(sum(&l) == 7);\n}",
           "lang_item": null,
           "span": {
@@ -7872,6 +7883,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "l", null, null, null, null, null, null, "x", null, null,
+          null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -7879,7 +7894,7 @@
         "id": 7,
         "item_meta": {
           "name": "paper::call_choose",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn call_choose(mut p: (u32, u32)) -> u32 {\n    let px = &mut p.0;\n    let py = &mut p.1;\n    let pz = choose(true, px, py);\n    *pz = *pz + 1;\n    return p.0;\n}",
           "lang_item": null,
           "span": {
@@ -8359,6 +8374,9 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
+        ],
+        "locals_names": [
+          null, "p", "px", "py", "pz", null, null, null, null
         ],
         "is_global_initializer": false,
         "src": null

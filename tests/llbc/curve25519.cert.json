@@ -8291,7 +8291,7 @@
         "id": 0,
         "item_meta": {
           "name": "curve25519::Scalar52",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Scalar52(pub [u64; 5]);",
           "lang_item": null,
           "span": {
@@ -8342,7 +8342,7 @@
         "id": 0,
         "item_meta": {
           "name": "curve25519::m",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn m(x: u64, y: u64) -> u128 {\n    (x as u128) * (y as u128)\n}",
           "lang_item": null,
           "span": {
@@ -8616,6 +8616,7 @@
           { "Literal": { "UInt": "U64" } },
           { "Literal": { "UInt": "U128" } }
         ],
+        "locals_names": [ null, "x", "y", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -8623,7 +8624,7 @@
         "id": 1,
         "item_meta": {
           "name": "curve25519::mul_internal",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn mul_internal(a: &Scalar52, b: &Scalar52) -> [u128; 9] {\n    let mut z = [0u128; 9];\n\n    z[0] = m(a[0], b[0]);\n    z[1] = m(a[0], b[1]) + m(a[1], b[0]);\n    z[2] = m(a[0], b[2]) + m(a[1], b[1]) + m(a[2], b[0]);\n    z[3] = m(a[0], b[3]) + m(a[1], b[2]) + m(a[2], b[1]) + m(a[3], b[0]);\n    z[4] = m(a[0], b[4]) + m(a[1], b[3]) + m(a[2], b[2]) + m(a[3], b[1]) + m(a[4], b[0]);\n    z[5] = m(a[1], b[4]) + m(a[2], b[3]) + m(a[3], b[2]) + m(a[4], b[1]);\n    z[6] = m(a[2], b[4]) + m(a[3], b[3]) + m(a[4], b[2]);\n    z[7] = m(a[3], b[4]) + m(a[4], b[3]);\n    z[8] = m(a[4], b[4]);\n\n    z\n}",
           "lang_item": null,
           "span": {
@@ -21874,6 +21875,29 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U128" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "a", "b", "z", null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21881,7 +21905,7 @@
         "id": 2,
         "item_meta": {
           "name": "curve25519::{core::ops::index::Index<usize, u64> for curve25519::Scalar52}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "fn index(&self, _index: usize) -> &u64 {\n        &(self.0[_index])\n    }",
           "lang_item": null,
           "span": {
@@ -22212,6 +22236,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U64" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self", "_index", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22219,7 +22244,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::ops::index::Index::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -22252,6 +22277,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -22261,7 +22287,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::ops::index::Index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index",
           "span": {
@@ -22320,7 +22346,7 @@
         "id": 0,
         "item_meta": {
           "name": "curve25519::{core::ops::index::Index<usize, u64> for curve25519::Scalar52}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl Index<usize> for Scalar52 {\n    type Output = u64;\n    fn index(&self, _index: usize) -> &u64 {\n        &(self.0[_index])\n    }\n}",
           "lang_item": null,
           "span": {

@@ -402,7 +402,7 @@
         "id": 0,
         "item_meta": {
           "name": "slices_basic::get_first",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get_first(xs: &[u32]) -> u32 {\n    xs[0]\n}",
           "lang_item": null,
           "span": {
@@ -628,6 +628,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "xs", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -635,7 +636,7 @@
         "id": 1,
         "item_meta": {
           "name": "slices_basic::set_idx_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn set_idx_slice(xs: &mut [u32], i: usize, v: u32) {\n    xs[i] = v;\n}",
           "lang_item": null,
           "span": {
@@ -960,6 +961,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "xs", "i", "v", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       }

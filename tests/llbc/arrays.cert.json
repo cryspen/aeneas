@@ -16681,7 +16681,7 @@
         "id": 0,
         "item_meta": {
           "name": "arrays::AB",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum AB {\n    A,\n    B,\n}",
           "lang_item": null,
           "span": {
@@ -16727,7 +16727,7 @@
         "id": 1,
         "item_meta": {
           "name": "arrays::Scalar",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Scalar([u32; 2]);",
           "lang_item": null,
           "span": {
@@ -16776,7 +16776,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::ops::range::Range",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Range",
           "span": {
@@ -16820,7 +16820,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -16875,7 +16875,7 @@
         "id": 0,
         "item_meta": {
           "name": "arrays::incr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr(x: &mut u32) {\n    *x += 1;\n}",
           "lang_item": null,
           "span": {
@@ -17062,6 +17062,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17069,7 +17070,7 @@
         "id": 1,
         "item_meta": {
           "name": "arrays::array_to_shared_slice_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_to_shared_slice_<T>(s: &[T; 32]) -> &[T] {\n    s\n}",
           "lang_item": null,
           "span": {
@@ -17307,6 +17308,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "s", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17314,7 +17316,7 @@
         "id": 2,
         "item_meta": {
           "name": "arrays::array_to_mut_slice_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_to_mut_slice_<T>(s: &mut [T; 32]) -> &mut [T] {\n    s\n}",
           "lang_item": null,
           "span": {
@@ -17598,6 +17600,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "s", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17605,7 +17608,7 @@
         "id": 3,
         "item_meta": {
           "name": "arrays::array_len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_len<T>(s: [T; 32]) -> usize {\n    s.len()\n}",
           "lang_item": null,
           "span": {
@@ -17900,6 +17903,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "s", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -17907,7 +17911,7 @@
         "id": 4,
         "item_meta": {
           "name": "arrays::shared_array_len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn shared_array_len<T>(s: &[T; 32]) -> usize {\n    s.len()\n}",
           "lang_item": null,
           "span": {
@@ -18193,6 +18197,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "s", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18200,7 +18205,7 @@
         "id": 5,
         "item_meta": {
           "name": "arrays::shared_slice_len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn shared_slice_len<T>(s: &[T]) -> usize {\n    s.len()\n}",
           "lang_item": null,
           "span": {
@@ -18348,6 +18353,7 @@
             "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
           }
         ],
+        "locals_names": [ null, "s", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18355,7 +18361,7 @@
         "id": 6,
         "item_meta": {
           "name": "arrays::index_array_shared",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_array_shared<T>(s: &[T; 32], i: usize) -> &T {\n    &s[i]\n}",
           "lang_item": null,
           "span": {
@@ -18704,6 +18710,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "s", "i", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18711,7 +18718,7 @@
         "id": 7,
         "item_meta": {
           "name": "arrays::index_array_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_array_u32(s: [u32; 32], i: usize) -> u32 {\n    s[i]\n}",
           "lang_item": null,
           "span": {
@@ -18990,6 +18997,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "s", "i", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -18997,7 +19005,7 @@
         "id": 8,
         "item_meta": {
           "name": "arrays::index_array_copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_array_copy(x: &[u32; 32]) -> u32 {\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -19299,6 +19307,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19306,7 +19315,7 @@
         "id": 9,
         "item_meta": {
           "name": "arrays::index_mut_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_mut_array<T>(s: &mut [T; 32], i: usize) -> &mut T {\n    &mut s[i]\n}",
           "lang_item": null,
           "span": {
@@ -19695,6 +19704,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "s", "i", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19702,7 +19712,7 @@
         "id": 10,
         "item_meta": {
           "name": "arrays::index_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_slice<T>(s: &[T], i: usize) -> &T {\n    &s[i]\n}",
           "lang_item": null,
           "span": {
@@ -19971,6 +19981,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "s", "i", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -19978,7 +19989,7 @@
         "id": 11,
         "item_meta": {
           "name": "arrays::index_mut_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_mut_slice<T>(s: &mut [T], i: usize) -> &mut T {\n    &mut s[i]\n}",
           "lang_item": null,
           "span": {
@@ -20279,6 +20290,7 @@
           { "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "s", "i", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -20286,7 +20298,7 @@
         "id": 12,
         "item_meta": {
           "name": "arrays::slice_subslice_shared_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn slice_subslice_shared_(x: &[u32], y: usize, z: usize) -> &[u32] {\n    &x[y..z]\n}",
           "lang_item": null,
           "span": {
@@ -20731,6 +20743,9 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -20738,7 +20753,7 @@
         "id": 13,
         "item_meta": {
           "name": "arrays::slice_subslice_mut_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn slice_subslice_mut_(x: &mut [u32], y: usize, z: usize) -> &mut [u32] {\n    &mut x[y..z]\n}",
           "lang_item": null,
           "span": {
@@ -21239,6 +21254,9 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21246,7 +21264,7 @@
         "id": 14,
         "item_meta": {
           "name": "arrays::array_to_slice_shared_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_to_slice_shared_(x: &[u32; 32]) -> &[u32] {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -21488,6 +21506,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21495,7 +21514,7 @@
         "id": 15,
         "item_meta": {
           "name": "arrays::array_to_slice_mut_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_to_slice_mut_(x: &mut [u32; 32]) -> &mut [u32] {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -21793,6 +21812,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -21800,7 +21820,7 @@
         "id": 16,
         "item_meta": {
           "name": "arrays::array_subslice_shared_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_subslice_shared_(x: &[u32; 32], y: usize, z: usize) -> &[u32] {\n    &x[y..z]\n}",
           "lang_item": null,
           "span": {
@@ -22321,6 +22341,9 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22328,7 +22351,7 @@
         "id": 17,
         "item_meta": {
           "name": "arrays::array_subslice_mut_",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_subslice_mut_(x: &mut [u32; 32], y: usize, z: usize) -> &mut [u32] {\n    &mut x[y..z]\n}",
           "lang_item": null,
           "span": {
@@ -22905,6 +22928,9 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -22912,7 +22938,7 @@
         "id": 18,
         "item_meta": {
           "name": "arrays::index_slice_0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_slice_0<T>(s: &[T]) -> &T {\n    &s[0]\n}",
           "lang_item": null,
           "span": {
@@ -23182,6 +23208,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "s", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -23189,7 +23216,7 @@
         "id": 19,
         "item_meta": {
           "name": "arrays::index_array_0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_array_0<T>(s: &[T; 32]) -> &T {\n    &s[0]\n}",
           "lang_item": null,
           "span": {
@@ -23539,6 +23566,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "s", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -23546,7 +23574,7 @@
         "id": 20,
         "item_meta": {
           "name": "arrays::index_index_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_index_array(s: [[u32; 32]; 32], i: usize, j: usize) -> u32 {\n    s[i][j]\n}",
           "lang_item": null,
           "span": {
@@ -24114,6 +24142,9 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "s", "i", "j", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -24121,7 +24152,7 @@
         "id": 21,
         "item_meta": {
           "name": "arrays::update_update_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_update_array(mut s: &mut [[u32; 32]; 32], i: usize, j: usize) {\n    s[i][j] = 0;\n}",
           "lang_item": null,
           "span": {
@@ -24774,6 +24805,9 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "s", "i", "j", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -24781,7 +24815,7 @@
         "id": 22,
         "item_meta": {
           "name": "arrays::array_local_deep_copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_local_deep_copy(x: &[u32; 32]) {\n    let _y = *x;\n}",
           "lang_item": null,
           "span": {
@@ -25005,6 +25039,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", "_y" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -25012,7 +25047,7 @@
         "id": 23,
         "item_meta": {
           "name": "arrays::array_update1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_update1(a: &mut [u32], i: usize, x: u32) {\n    a[i + 1] = x + 1;\n}",
           "lang_item": null,
           "span": {
@@ -25457,6 +25492,9 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "a", "i", "x", null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -25464,7 +25502,7 @@
         "id": 24,
         "item_meta": {
           "name": "arrays::array_update2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_update2(a: &mut [u32], i: usize, x: u32) {\n    a[i] = x + 1;\n    a[i + 1] = x + 1;\n}",
           "lang_item": null,
           "span": {
@@ -26150,6 +26188,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "a", "i", "x", null, null, null, null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -26157,7 +26199,7 @@
         "id": 25,
         "item_meta": {
           "name": "arrays::array_update3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_update3(a: &mut [u32], i: usize, x: u32) {\n    a[i] = x;\n    a[i + 1] = x;\n    a[i + 2] = x;\n}",
           "lang_item": null,
           "span": {
@@ -27040,6 +27082,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "a", "i", "x", null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27047,7 +27093,7 @@
         "id": 26,
         "item_meta": {
           "name": "arrays::take_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn take_array(_: [u32; 2]) {}",
           "lang_item": null,
           "span": {
@@ -27178,6 +27224,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27185,7 +27232,7 @@
         "id": 27,
         "item_meta": {
           "name": "arrays::take_array_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn take_array_borrow(_: &[u32; 2]) {}",
           "lang_item": null,
           "span": {
@@ -27332,6 +27379,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27339,7 +27387,7 @@
         "id": 28,
         "item_meta": {
           "name": "arrays::take_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn take_slice(_: &[u32]) {}",
           "lang_item": null,
           "span": {
@@ -27460,6 +27508,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27467,7 +27516,7 @@
         "id": 29,
         "item_meta": {
           "name": "arrays::take_mut_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn take_mut_slice(_: &mut [u32]) {}",
           "lang_item": null,
           "span": {
@@ -27588,6 +27637,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27595,7 +27645,7 @@
         "id": 30,
         "item_meta": {
           "name": "arrays::const_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn const_array() -> [u32; 2] {\n    [0, 0]\n}",
           "lang_item": null,
           "span": {
@@ -27706,6 +27756,7 @@
             ]
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -27713,7 +27764,7 @@
         "id": 31,
         "item_meta": {
           "name": "arrays::const_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn const_slice() -> u32 {\n    let s: &[u32] = &[0, 0];\n    s[0]\n}",
           "lang_item": null,
           "span": {
@@ -28400,6 +28451,9 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "s", null, null, null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -28407,7 +28461,7 @@
         "id": 32,
         "item_meta": {
           "name": "arrays::take_all",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn take_all() {\n    let mut x: [u32; 2] = [0, 0];\n    // x is deep copied (copy node appears in Charon, followed by a move)\n    take_array(x);\n    take_array(x);\n    // x passed by address, there is a reborrow here\n    take_array_borrow(&x);\n    // automatic cast from array to slice (spanning entire array)\n    take_slice(&x);\n    // note that both appear as SliceNew expressions, meaning the SliceNew UnOp is overloaded for\n    // mut and non-mut cases\n    take_mut_slice(&mut x);\n}",
           "lang_item": null,
           "span": {
@@ -29685,6 +29739,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "x", null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -29692,7 +29750,7 @@
         "id": 33,
         "item_meta": {
           "name": "arrays::index_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_array(x: [u32; 2]) -> u32 {\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -29970,6 +30028,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -29977,7 +30036,7 @@
         "id": 34,
         "item_meta": {
           "name": "arrays::index_array_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_array_borrow(x: &[u32; 2]) -> u32 {\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -30279,6 +30338,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -30286,7 +30346,7 @@
         "id": 35,
         "item_meta": {
           "name": "arrays::index_slice_u32_0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_slice_u32_0(x: &[u32]) -> u32 {\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -30512,6 +30572,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -30519,7 +30580,7 @@
         "id": 36,
         "item_meta": {
           "name": "arrays::index_mut_slice_u32_0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_mut_slice_u32_0(x: &mut [u32]) -> u32 {\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -30745,6 +30806,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -30752,7 +30814,7 @@
         "id": 37,
         "item_meta": {
           "name": "arrays::index_all",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_all() -> u32 {\n    let mut x: [u32; 2] = [0, 0];\n    if true {\n        let _y: [u32; 2] = [0, 0];\n    } else {\n        let _z: [u32; 1] = [0];\n    }\n    index_array(x)\n        + index_array(x)\n        + index_array_borrow(&x)\n        + index_slice_u32_0(&x)\n        + index_mut_slice_u32_0(&mut x)\n}",
           "lang_item": null,
           "span": {
@@ -32478,6 +32540,11 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "x", null, "_y", "_z", null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -32485,7 +32552,7 @@
         "id": 38,
         "item_meta": {
           "name": "arrays::update_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_array(mut x: [u32; 2]) {\n    x[0] = 1\n}",
           "lang_item": null,
           "span": {
@@ -32826,6 +32893,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -32833,7 +32901,7 @@
         "id": 39,
         "item_meta": {
           "name": "arrays::update_array_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_array_mut_borrow(x: &mut [u32; 2]) {\n    x[0] = 1\n}",
           "lang_item": null,
           "span": {
@@ -33198,6 +33266,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -33205,7 +33274,7 @@
         "id": 40,
         "item_meta": {
           "name": "arrays::update_mut_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_mut_slice(x: &mut [u32]) {\n    x[0] = 1\n}",
           "lang_item": null,
           "span": {
@@ -33494,6 +33563,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -33501,7 +33571,7 @@
         "id": 41,
         "item_meta": {
           "name": "arrays::update_all",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_all() {\n    let mut x: [u32; 2] = [0, 0];\n    update_array(x);\n    update_array(x);\n    update_array_mut_borrow(&mut x);\n    update_mut_slice(&mut x);\n}",
           "lang_item": null,
           "span": {
@@ -34476,6 +34546,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "x", null, null, null, null, null, null, null, null, null,
+          null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -34483,7 +34557,7 @@
         "id": 42,
         "item_meta": {
           "name": "arrays::incr_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr_array(mut x: &mut [u32; 2]) {\n    x[0] += 1\n}",
           "lang_item": null,
           "span": {
@@ -35037,6 +35111,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -35044,7 +35119,7 @@
         "id": 43,
         "item_meta": {
           "name": "arrays::incr_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr_slice(mut x: &mut [u32]) {\n    x[0] += 1\n}",
           "lang_item": null,
           "span": {
@@ -35472,6 +35547,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -35479,7 +35555,7 @@
         "id": 44,
         "item_meta": {
           "name": "arrays::range_all",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn range_all() {\n    let mut x: [u32; 4] = [0, 0, 0, 0];\n    // CONFIRM: there is no way to shrink [T;N] into [T;M] with M<N?\n    update_mut_slice(&mut x[1..3]);\n}",
           "lang_item": null,
           "span": {
@@ -36071,6 +36147,7 @@
             }
           }
         ],
+        "locals_names": [ null, "x", null, null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36078,7 +36155,7 @@
         "id": 45,
         "item_meta": {
           "name": "arrays::deref_array_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn deref_array_borrow(x: &[u32; 2]) -> u32 {\n    let x: [u32; 2] = *x;\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -36449,6 +36526,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36456,7 +36534,7 @@
         "id": 46,
         "item_meta": {
           "name": "arrays::deref_array_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn deref_array_mut_borrow(x: &mut [u32; 2]) -> u32 {\n    let x: [u32; 2] = *x;\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -36827,6 +36905,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36834,7 +36913,7 @@
         "id": 47,
         "item_meta": {
           "name": "arrays::take_array_t",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn take_array_t(_: [AB; 2]) {}",
           "lang_item": null,
           "span": {
@@ -36967,6 +37046,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -36974,7 +37054,7 @@
         "id": 48,
         "item_meta": {
           "name": "arrays::non_copyable_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn non_copyable_array() {\n    let x: [AB; 2] = [AB::A, AB::B];\n    // x is moved (not deep copied!)\n    // TODO: determine whether the translation needs to be aware of that and pass by ref instead of by copy\n    take_array_t(x);\n\n    // this fails, naturally:\n    // take_array_t(x);\n}",
           "lang_item": null,
           "span": {
@@ -37412,6 +37492,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -37419,7 +37500,7 @@
         "id": 49,
         "item_meta": {
           "name": "arrays::sum",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum(s: &[u32]) -> u32 {\n    let mut sum = 0;\n    let mut i = 0;\n    while i < s.len() {\n        sum += s[i];\n        i += 1;\n    }\n    sum\n}",
           "lang_item": null,
           "span": {
@@ -38222,6 +38303,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "s", "sum", "i", null, null, null, null, null, null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -38229,7 +38314,7 @@
         "id": 50,
         "item_meta": {
           "name": "arrays::sum2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum2(s: &[u32], s2: &[u32]) -> u32 {\n    let mut sum = 0;\n    assert!(s.len() == s2.len());\n    let mut i = 0;\n    while i < s.len() {\n        sum += s[i] + s2[i];\n        i += 1;\n    }\n    sum\n}",
           "lang_item": null,
           "span": {
@@ -39638,6 +39723,11 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "s", "s2", "sum", null, null, null, null, null, "i", null,
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -39645,7 +39735,7 @@
         "id": 51,
         "item_meta": {
           "name": "arrays::f0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f0() {\n    let s: &mut [u32] = &mut [1, 2];\n    s[0] = 1;\n}",
           "lang_item": null,
           "span": {
@@ -40255,6 +40345,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "s", null, null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -40262,7 +40353,7 @@
         "id": 52,
         "item_meta": {
           "name": "arrays::f1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f1() {\n    let mut s: [u32; 2] = [1, 2];\n    s[0] = 1;\n}",
           "lang_item": null,
           "span": {
@@ -40663,6 +40754,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "s", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -40670,7 +40762,7 @@
         "id": 53,
         "item_meta": {
           "name": "arrays::f2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f2(_: u32) {}",
           "lang_item": null,
           "span": {
@@ -40781,6 +40873,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -40788,7 +40881,7 @@
         "id": 54,
         "item_meta": {
           "name": "arrays::f3",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f3() -> u32 {\n    let a: [u32; 2] = [1, 2];\n    f2(a[0]);\n    let b = [0; 32];\n    sum2(&a, f4(&b, 16, 18))\n}",
           "lang_item": null,
           "span": {
@@ -41880,6 +41973,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "a", null, null, null, "b", null, null, null, null, null,
+          null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -41887,7 +41984,7 @@
         "id": 55,
         "item_meta": {
           "name": "arrays::f4",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f4(x: &[u32; 32], y: usize, z: usize) -> &[u32] {\n    &x[y..z]\n}",
           "lang_item": null,
           "span": {
@@ -42408,6 +42505,9 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "x", "y", "z", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -42415,7 +42515,7 @@
         "id": 56,
         "item_meta": {
           "name": "arrays::f5",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn f5(x: &[u32; SZ]) -> u32 {\n    x[0]\n}",
           "lang_item": null,
           "span": {
@@ -42717,6 +42817,7 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -42724,7 +42825,7 @@
         "id": 57,
         "item_meta": {
           "name": "arrays::ite",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn ite() {\n    let mut x: [u32; 2] = [0, 0];\n    if true {\n        let mut y: [u32; 2] = [0, 0];\n        index_mut_slice_u32_0(&mut x);\n        index_mut_slice_u32_0(&mut y);\n    }\n}",
           "lang_item": null,
           "span": {
@@ -43765,6 +43866,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "x", null, "y", null, null, null, null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -43772,7 +43877,7 @@
         "id": 58,
         "item_meta": {
           "name": "arrays::zero_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn zero_slice(a: &mut [u8]) {\n    let mut i: usize = 0;\n    let len = a.len();\n    while i < len {\n        a[i] = 0;\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -44563,6 +44668,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "a", "i", "len", null, null, null, null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -44570,7 +44679,7 @@
         "id": 59,
         "item_meta": {
           "name": "arrays::iter_mut_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn iter_mut_slice(a: &mut [u8]) {\n    let len = a.len();\n    let mut i = 0;\n    while i < len {\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -45162,6 +45271,9 @@
           { "Literal": { "UInt": "Usize" } },
           { "Literal": { "UInt": "Usize" } }
         ],
+        "locals_names": [
+          null, "a", "len", null, "i", null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -45169,7 +45281,7 @@
         "id": 60,
         "item_meta": {
           "name": "arrays::sum_mut_slice",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn sum_mut_slice(a: &mut [u32]) -> u32 {\n    let mut i = 0;\n    let mut s = 0;\n    while i < a.len() {\n        s += a[i];\n        i += 1;\n    }\n    s\n}",
           "lang_item": null,
           "span": {
@@ -45972,6 +46084,10 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [
+          null, "a", "i", "s", null, null, null, null, null, null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -45979,7 +46095,7 @@
         "id": 61,
         "item_meta": {
           "name": "arrays::add_acc",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn add_acc(paSrc: &mut [u32; 256], peDst: &mut [u32; 256]) {\n    let mut i = 0;\n    while (i < 256) {\n        let mut a = paSrc[i];\n        paSrc[i] = 0;\n\n        let mut c = peDst[i];\n        c += a;\n        peDst[i] = c;\n\n        i += 1;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -47680,6 +47796,11 @@
           },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
         ],
+        "locals_names": [
+          null, "paSrc", "peDst", "i", null, null, "a", null, null, "c",
+          null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -47687,7 +47808,7 @@
         "id": 62,
         "item_meta": {
           "name": "core::slice::{[T]}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "slice_len_fn",
           "span": {
@@ -47717,6 +47838,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -47724,7 +47846,7 @@
         "id": 64,
         "item_meta": {
           "name": "core::slice::index::{core::ops::index::Index<I, Clause0_Output> for [T]}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -47759,6 +47881,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -47766,7 +47889,7 @@
         "id": 65,
         "item_meta": {
           "name": "core::slice::index::{core::ops::index::IndexMut<I, Clause0_Output> for [T]}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -47799,6 +47922,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -47806,7 +47930,7 @@
         "id": 66,
         "item_meta": {
           "name": "core::array::{core::ops::index::Index<I, Clause0_Output> for [T; N]}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -47848,6 +47972,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -47855,7 +47980,7 @@
         "id": 67,
         "item_meta": {
           "name": "core::array::{core::ops::index::IndexMut<I, Clause0_Clause0_Output> for [T; N]}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -47899,6 +48024,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -47906,7 +48032,7 @@
         "id": 68,
         "item_meta": {
           "name": "arrays::SZ",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub const SZ: usize = 32;",
           "lang_item": null,
           "span": {
@@ -47980,6 +48106,7 @@
           ]
         },
         "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -47987,7 +48114,7 @@
         "id": 69,
         "item_meta": {
           "name": "arrays::ARRAY1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const ARRAY1: [u32; 2] = [0, 1];",
           "lang_item": null,
           "span": {
@@ -48112,6 +48239,7 @@
             ]
           }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -48119,7 +48247,7 @@
         "id": 70,
         "item_meta": {
           "name": "arrays::L",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "const L: Scalar = Scalar([0, 1]);",
           "lang_item": null,
           "span": {
@@ -48304,6 +48432,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": true,
         "src": null
       },
@@ -48311,7 +48440,7 @@
         "id": 72,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48353,6 +48482,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48360,7 +48490,7 @@
         "id": 73,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48402,6 +48532,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48409,7 +48540,7 @@
         "id": 74,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48442,6 +48573,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48449,7 +48581,7 @@
         "id": 75,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48482,6 +48614,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48489,7 +48622,7 @@
         "id": 76,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48522,6 +48655,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48529,7 +48663,7 @@
         "id": 77,
         "item_meta": {
           "name": "core::slice::index::SliceIndex::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48562,6 +48696,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48569,7 +48704,7 @@
         "id": 78,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::Range<usize>}::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48620,6 +48755,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48627,7 +48763,7 @@
         "id": 79,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::Range<usize>}::get_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48676,6 +48812,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48683,7 +48820,7 @@
         "id": 80,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::Range<usize>}::get_unchecked",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48723,6 +48860,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48730,7 +48868,7 @@
         "id": 81,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::Range<usize>}::get_unchecked_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48768,6 +48906,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48775,7 +48914,7 @@
         "id": 82,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::Range<usize>}::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48815,6 +48954,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48822,7 +48962,7 @@
         "id": 83,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::Range<usize>}::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48860,6 +49000,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48867,7 +49008,7 @@
         "id": 84,
         "item_meta": {
           "name": "core::ops::index::Index::index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48900,6 +49041,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -48907,7 +49049,7 @@
         "id": 85,
         "item_meta": {
           "name": "core::ops::index::IndexMut::index_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -48940,6 +49082,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -48949,7 +49092,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::slice::index::SliceIndex",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "SliceIndex",
           "span": {
@@ -49166,7 +49309,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::ops::index::Index",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index",
           "span": {
@@ -49223,7 +49366,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::ops::index::IndexMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "index_mut",
           "span": {
@@ -49280,7 +49423,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::Sealed",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -49310,7 +49453,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::slice::index::{core::ops::index::Index<I, Clause0_Output> for [T]}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -49346,7 +49489,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::slice::index::{core::slice::index::SliceIndex<[T], [T]> for core::ops::range::Range<usize>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -49390,7 +49533,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::slice::index::{core::ops::index::IndexMut<I, Clause0_Output> for [T]}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -49426,7 +49569,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::array::{core::ops::index::Index<I, Clause0_Output> for [T; N]}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -49466,7 +49609,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::array::{core::ops::index::IndexMut<I, Clause0_Clause0_Output> for [T; N]}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -49508,7 +49651,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::slice::index::private_slice_index::{core::slice::index::private_slice_index::Sealed for core::ops::range::Range<usize>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

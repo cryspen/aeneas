@@ -8,7 +8,7 @@
         "id": 0,
         "item_meta": {
           "name": "names::Struct",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Struct {\n    name: String,\n}",
           "lang_item": null,
           "span": {
@@ -48,7 +48,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::string::String",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "String",
           "span": {

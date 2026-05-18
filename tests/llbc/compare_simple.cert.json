@@ -340,7 +340,7 @@
         "id": 0,
         "item_meta": {
           "name": "compare_simple::id_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn id_u32(x: u32) -> u32 {\n    x\n}",
           "lang_item": null,
           "span": {
@@ -413,6 +413,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -420,7 +421,7 @@
         "id": 1,
         "item_meta": {
           "name": "compare_simple::incr_val",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn incr_val(x: &mut u32) {\n    *x += 1;\n}",
           "lang_item": null,
           "span": {
@@ -607,6 +608,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -614,7 +616,7 @@
         "id": 2,
         "item_meta": {
           "name": "compare_simple::add_u32",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn add_u32(a: u32, b: u32) -> u32 {\n    a.wrapping_add(b)\n}",
           "lang_item": null,
           "span": {
@@ -781,6 +783,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -788,7 +791,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -815,6 +818,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

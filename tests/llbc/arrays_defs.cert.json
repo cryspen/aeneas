@@ -374,7 +374,7 @@
         "id": 0,
         "item_meta": {
           "name": "arrays_defs::clone_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn clone_array<T: Clone, const N: usize>(x: &[T; N]) -> [T; N] {\n    x.clone()\n}",
           "lang_item": null,
           "span": {
@@ -577,6 +577,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -584,7 +585,7 @@
         "id": 1,
         "item_meta": {
           "name": "arrays_defs::index_slice_0",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_slice_0<T>(s: &[T]) -> &T {\n    &s[0]\n}",
           "lang_item": null,
           "span": {
@@ -854,6 +855,7 @@
           },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "s", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -861,7 +863,7 @@
         "id": 2,
         "item_meta": {
           "name": "arrays_defs::index_empty_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn index_empty_array() {\n    let _ = index_slice_0::<u32>(&[]);\n}",
           "lang_item": null,
           "span": {
@@ -1490,6 +1492,7 @@
             ]
           }
         ],
+        "locals_names": [ null, null, null, null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1497,7 +1500,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::array::{core::clone::Clone for [T; N]}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1540,6 +1543,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1547,7 +1551,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -1575,6 +1579,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -1584,7 +1589,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -1634,7 +1639,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::array::{core::clone::Clone for [T; N]}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

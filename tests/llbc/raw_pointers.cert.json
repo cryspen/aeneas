@@ -397,7 +397,7 @@
         "id": 0,
         "item_meta": {
           "name": "raw_pointers::read_via_ptr",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn read_via_ptr(data: &[u16; 8]) -> u16 {\n    unsafe {\n        let ptr = data.as_ptr();\n        *ptr.add(1)\n    }\n}",
           "lang_item": null,
           "span": {
@@ -839,6 +839,7 @@
           { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Shared" ] },
           { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "data", "ptr", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -846,7 +847,7 @@
         "id": 1,
         "item_meta": {
           "name": "raw_pointers::write_via_ptr",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn write_via_ptr(data: &mut [u16; 8]) {\n    unsafe {\n        let ptr = data.as_mut_ptr();\n        *ptr.add(2) = 42;\n    }\n}",
           "lang_item": null,
           "span": {
@@ -1347,6 +1348,7 @@
           { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ] },
           { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ] }
         ],
+        "locals_names": [ null, "data", "ptr", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1354,7 +1356,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::slice::{[T]}::as_ptr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1384,6 +1386,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1391,7 +1394,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::ptr::const_ptr::{*const T}::add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1418,6 +1421,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1425,7 +1429,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::slice::{[T]}::as_mut_ptr",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1453,6 +1457,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1460,7 +1465,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::ptr::mut_ptr::{*mut T}::add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1487,6 +1492,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

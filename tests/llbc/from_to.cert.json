@@ -169,7 +169,7 @@
         "id": 0,
         "item_meta": {
           "name": "from_to::From::from",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn from(x: T) -> Self;",
           "lang_item": null,
           "span": {
@@ -195,6 +195,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -202,7 +203,7 @@
         "id": 1,
         "item_meta": {
           "name": "from_to::To::to",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn to<T: From<Self>>(&self) -> T\n    where\n        Self: std::marker::Sized;",
           "lang_item": null,
           "span": {
@@ -231,6 +232,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -238,7 +240,7 @@
         "id": 2,
         "item_meta": {
           "name": "from_to::{from_to::From<u32> for u32}::from",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn from(x: u32) -> u32 {\n        x\n    }",
           "lang_item": null,
           "span": {
@@ -311,6 +313,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -318,7 +321,7 @@
         "id": 3,
         "item_meta": {
           "name": "from_to::{from_to::To for u32}::to",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn to<T: From<Self>>(&self) -> T {\n        <T as From<Self>>::from(*self)\n    }",
           "lang_item": null,
           "span": {
@@ -444,6 +447,7 @@
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       }
@@ -453,7 +457,7 @@
         "id": 0,
         "item_meta": {
           "name": "from_to::From",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait From<T> {\n    fn from(x: T) -> Self;\n}",
           "lang_item": null,
           "span": {
@@ -499,7 +503,7 @@
         "id": 1,
         "item_meta": {
           "name": "from_to::To",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait To {\n    fn to<T: From<Self>>(&self) -> T\n    where\n        Self: std::marker::Sized;\n}",
           "lang_item": null,
           "span": {
@@ -550,7 +554,7 @@
         "id": 0,
         "item_meta": {
           "name": "from_to::{from_to::From<u32> for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl From<u32> for u32 {\n    fn from(x: u32) -> u32 {\n        x\n    }\n}",
           "lang_item": null,
           "span": {
@@ -582,7 +586,7 @@
         "id": 1,
         "item_meta": {
           "name": "from_to::{from_to::To for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl To for u32 {\n    fn to<T: From<Self>>(&self) -> T {\n        <T as From<Self>>::from(*self)\n    }\n}",
           "lang_item": null,
           "span": {

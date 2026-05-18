@@ -318,7 +318,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops_simple::count_to",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn count_to(n: u32) -> u32 {\n    let mut i: u32 = 0;\n    while i < n {\n        i = i + 1;\n    }\n    i\n}",
           "lang_item": null,
           "span": {
@@ -797,6 +797,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "n", "i", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       }

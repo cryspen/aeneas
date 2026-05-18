@@ -198,6 +198,11 @@ structure StructDecl where
       since the fixture only exercises the unit case). Defaults to
       false (named-field struct, the M9.5b shape). -/
   isTupleStruct : Bool := false
+  /-- Session 7 Item 1a: source-item visibility, threaded from the
+      cert json (`attr_info.public`). When true, the pretty-printer
+      appends a `Visibility: public` line to the docstring, matching
+      mainline's `extract_comment_with_span ~public:true` output. -/
+  isPublic : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5d / M9.5e: a single variant in an `EnumDecl`. M9.5d's C-style
@@ -224,6 +229,8 @@ structure EnumDecl where
       `inductive` header and appends them to the trailing
       `: <Enum> T` of each variant's signature. -/
   typeParams : Array String := #[]
+  /-- Session 7 Item 1a: source-item visibility — see [StructDecl.isPublic]. -/
+  isPublic : Bool := false
   deriving Repr, Inhabited
 
 /-- A pure function declaration.
@@ -274,6 +281,8 @@ structure Decl where
       reject a definition that does not pass the structural-recursion
       check by shape alone. `none` for non-recursive functions. -/
   trailer : Option String := none
+  /-- Session 7 Item 1a: source-item visibility — see [StructDecl.isPublic]. -/
+  isPublic : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5l: one method declared in a trait. `name` is the bare method
@@ -298,6 +307,8 @@ structure TraitDecl where
   qualifiedName : String
   methods : Array TraitMethod
   sourceSpan : Option Raw.SourceSpan := none
+  /-- Session 7 Item 1a: source-item visibility — see [StructDecl.isPublic]. -/
+  isPublic : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5l: one method's body binding inside a trait impl. `name` is
@@ -333,6 +344,11 @@ structure TraitImpl where
       where-clauses. The pretty-printer renders these between the
       `def <name>` and `: <traitName> <selfTy>`. -/
   traitBoundParams : Array TraitBoundParam := #[]
+  /-- Session 7 Item 1a: source-item visibility — see [StructDecl.isPublic].
+      Note: Charon arbitrarily sets [public := false] for impl blocks,
+      so this will typically be `false` and mainline also omits the
+      `Visibility: public` line for trait impls. -/
+  isPublic : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5b: a crate-level emit unit. The translator now interleaves

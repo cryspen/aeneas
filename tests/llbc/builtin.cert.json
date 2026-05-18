@@ -766,7 +766,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::fmt::Formatter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Formatter",
           "span": {
@@ -795,7 +795,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::result::Result",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Result",
           "span": {
@@ -855,7 +855,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::fmt::Error",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -886,7 +886,7 @@
         "id": 0,
         "item_meta": {
           "name": "builtin::clone_bool",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn clone_bool(x: bool) -> bool {\n    x.clone()\n}",
           "lang_item": null,
           "span": {
@@ -1008,6 +1008,7 @@
           { "Literal": "Bool" },
           { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1015,7 +1016,7 @@
         "id": 1,
         "item_meta": {
           "name": "builtin::clone_u32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn clone_u32(x: u32) -> u32 {\n    x.clone()\n}",
           "lang_item": null,
           "span": {
@@ -1143,6 +1144,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1150,7 +1152,7 @@
         "id": 2,
         "item_meta": {
           "name": "builtin::into_from",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn into_from<T, U: From<T>>(x: T) -> U {\n    x.into()\n}",
           "lang_item": null,
           "span": {
@@ -1290,6 +1292,7 @@
           { "TypeVar": { "Free": 0 } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1297,7 +1300,7 @@
         "id": 3,
         "item_meta": {
           "name": "builtin::into_same",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn into_same<T>(x: T) -> T {\n    x.into()\n}",
           "lang_item": null,
           "span": {
@@ -1435,6 +1438,7 @@
           { "TypeVar": { "Free": 0 } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1442,7 +1446,7 @@
         "id": 4,
         "item_meta": {
           "name": "builtin::from_same",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn from_same<T>(x: T) -> T {\n    T::from(x)\n}",
           "lang_item": null,
           "span": {
@@ -1580,6 +1584,7 @@
           { "TypeVar": { "Free": 0 } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1587,7 +1592,7 @@
         "id": 5,
         "item_meta": {
           "name": "builtin::copy",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn copy<T: Copy>(x: &T) -> T {\n    *x\n}",
           "lang_item": null,
           "span": {
@@ -1669,6 +1674,7 @@
           { "TypeVar": { "Free": 0 } },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1676,7 +1682,7 @@
         "id": 6,
         "item_meta": {
           "name": "builtin::u32_from_le_bytes",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_from_le_bytes(x: [u8; 4]) -> u32 {\n    u32::from_le_bytes(x)\n}",
           "lang_item": null,
           "span": {
@@ -1856,6 +1862,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1863,7 +1870,7 @@
         "id": 7,
         "item_meta": {
           "name": "builtin::u32_to_le_bytes",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn u32_to_le_bytes(x: u32) -> [u8; 4] {\n    x.to_le_bytes()\n}",
           "lang_item": null,
           "span": {
@@ -2010,6 +2017,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2017,7 +2025,7 @@
         "id": 8,
         "item_meta": {
           "name": "builtin::use_debug_clause",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_debug_clause<T: core::fmt::Debug>(_: T) {}",
           "lang_item": null,
           "span": {
@@ -2150,6 +2158,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2157,7 +2166,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for bool}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2181,6 +2190,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2188,7 +2198,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for u32}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2214,6 +2224,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2221,7 +2232,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::convert::{core::convert::Into<U> for T}::into",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2247,6 +2258,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2254,7 +2266,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::convert::{core::convert::From<T> for T}::from",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2278,6 +2290,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2285,7 +2298,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::num::{u32}::from_le_bytes",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2320,6 +2333,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2327,7 +2341,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::num::{u32}::to_le_bytes",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2360,6 +2374,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2367,7 +2382,7 @@
         "id": 17,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -2395,6 +2410,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2402,7 +2418,7 @@
         "id": 20,
         "item_meta": {
           "name": "core::convert::From::from",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "from_fn",
           "span": {
@@ -2428,6 +2444,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2435,7 +2452,7 @@
         "id": 21,
         "item_meta": {
           "name": "core::fmt::Debug::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2487,6 +2504,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2494,7 +2512,7 @@
         "id": 22,
         "item_meta": {
           "name": "core::convert::Into::into",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2520,6 +2538,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -2529,7 +2548,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::convert::From",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "From",
           "span": {
@@ -2575,7 +2594,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -2603,7 +2622,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::fmt::Debug",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Debug",
           "span": {
@@ -2680,7 +2699,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -2728,7 +2747,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::convert::Into",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Into",
           "span": {
@@ -2776,7 +2795,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for bool}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2808,7 +2827,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2840,7 +2859,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::convert::{core::convert::Into<U> for T}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2874,7 +2893,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::convert::{core::convert::From<T> for T}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

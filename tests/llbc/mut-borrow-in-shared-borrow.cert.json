@@ -1971,7 +1971,7 @@
         "id": 0,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::MutFieldAccessViaShared",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct MutFieldAccessViaShared<'a> {\n    data: &'a mut u32,\n}",
           "lang_item": null,
           "span": {
@@ -2009,7 +2009,7 @@
         "id": 1,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::SliceWrapper",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct SliceWrapper<'a, T> {\n    buf: &'a mut [T],\n}",
           "lang_item": null,
           "span": {
@@ -2051,7 +2051,7 @@
         "id": 2,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::MixedBorrows",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct MixedBorrows<'a, T> {\n    shared: &'a [T],\n    mutable: &'a mut [T],\n}",
           "lang_item": null,
           "span": {
@@ -2103,7 +2103,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -2158,7 +2158,7 @@
         "id": 0,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::use_mut_field_access_via_shared",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_field_access_via_shared() {\n    let mut x: u32 = 42;\n    let w = MutFieldAccessViaShared { data: &mut x };\n    let _v = w.get();\n}",
           "lang_item": null,
           "span": {
@@ -2572,6 +2572,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", "w", null, null, "_v", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2579,7 +2580,7 @@
         "id": 1,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::use_mut_field_access_via_shared_param",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mut_field_access_via_shared_param(x: &mut u32) -> u32 {\n    let w = MutFieldAccessViaShared { data: x };\n    w.get()\n}",
           "lang_item": null,
           "span": {
@@ -2838,6 +2839,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", "w", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2845,7 +2847,7 @@
         "id": 2,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::use_slice_wrapper",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_slice_wrapper() {\n    let mut data = [1u32, 2, 3];\n    let w = SliceWrapper { buf: &mut data };\n    let _len = w.len();\n}",
           "lang_item": null,
           "span": {
@@ -3501,6 +3503,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "data", "w", null, null, null, "_len", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3508,7 +3511,7 @@
         "id": 3,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::use_slice_wrapper_param",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_slice_wrapper_param(buf: &mut [u32]) -> usize {\n    let w = SliceWrapper { buf };\n    w.len()\n}",
           "lang_item": null,
           "span": {
@@ -3814,6 +3817,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "buf", "w", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3821,7 +3825,7 @@
         "id": 4,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::use_mixed_borrows",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mixed_borrows() {\n    let shared_data = [1u32, 2, 3];\n    let mut mut_data = [4u32, 5, 6];\n    let w = MixedBorrows {\n        shared: &shared_data,\n        mutable: &mut mut_data,\n    };\n    let _s = w.shared_len();\n    let _m = w.mutable_len();\n}",
           "lang_item": null,
           "span": {
@@ -4964,6 +4968,10 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "shared_data", "mut_data", "w", null, null, null, null, null,
+          null, "_s", null, "_m", null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4971,7 +4979,7 @@
         "id": 5,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::use_mixed_borrows_param",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_mixed_borrows_param(shared: &[u32], mutable: &mut [u32]) -> (usize, usize) {\n    let w = MixedBorrows { shared, mutable };\n    (w.shared_len(), w.mutable_len())\n}",
           "lang_item": null,
           "span": {
@@ -5574,6 +5582,9 @@
             ]
           }
         ],
+        "locals_names": [
+          null, "shared", "mutable", "w", null, null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5581,7 +5592,7 @@
         "id": 6,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::{mut_borrow_in_shared_borrow::MutFieldAccessViaShared<'a>}::get",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn get(&self) -> u32 {\n        *self.data\n    }",
           "lang_item": null,
           "span": {
@@ -5686,6 +5697,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5693,7 +5705,7 @@
         "id": 7,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::{mut_borrow_in_shared_borrow::SliceWrapper<'a, T>}::len",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn len(&self) -> usize {\n        self.buf.len()\n    }",
           "lang_item": null,
           "span": {
@@ -5868,6 +5880,7 @@
             "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
           }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5875,7 +5888,7 @@
         "id": 8,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::{mut_borrow_in_shared_borrow::SliceWrapper<'a, T>}::first",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn first(&self) -> Option<&T> {\n        self.buf.first()\n    }",
           "lang_item": null,
           "span": {
@@ -6081,6 +6094,7 @@
             "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
           }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6088,7 +6102,7 @@
         "id": 9,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::{mut_borrow_in_shared_borrow::MixedBorrows<'a, T>}::shared_len",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn shared_len(&self) -> usize {\n        self.shared.len()\n    }",
           "lang_item": null,
           "span": {
@@ -6263,6 +6277,7 @@
             "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
           }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6270,7 +6285,7 @@
         "id": 10,
         "item_meta": {
           "name": "mut_borrow_in_shared_borrow::{mut_borrow_in_shared_borrow::MixedBorrows<'a, T>}::mutable_len",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn mutable_len(&self) -> usize {\n        self.mutable.len()\n    }",
           "lang_item": null,
           "span": {
@@ -6445,6 +6460,7 @@
             "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
           }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -6452,7 +6468,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::slice::{[T]}::len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "slice_len_fn",
           "span": {
@@ -6482,6 +6498,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -6489,7 +6506,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::slice::{[T]}::first",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -6528,6 +6545,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

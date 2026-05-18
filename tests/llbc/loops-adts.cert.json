@@ -1696,7 +1696,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops_adts::List",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum List<T> {\n    Cons(T, Box<List<T>>),\n    Nil,\n}",
           "lang_item": null,
           "span": {
@@ -1771,7 +1771,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -1800,7 +1800,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -1855,7 +1855,7 @@
         "id": 0,
         "item_meta": {
           "name": "loops_adts::nth_shared",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn nth_shared<T>(mut ls: &List<T>, mut i: u32) -> Option<&T> {\n    while let List::Cons(x, tl) = ls {\n        if i == 0 {\n            return Some(x);\n        } else {\n            ls = tl;\n            i -= 1;\n        }\n    }\n    None\n}",
           "lang_item": null,
           "span": {
@@ -2925,6 +2925,9 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls", "i", "x", "tl", null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2932,7 +2935,7 @@
         "id": 1,
         "item_meta": {
           "name": "loops_adts::nth_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn nth_mut<T>(mut ls: &mut List<T>, mut i: u32) -> Option<&mut T> {\n    while let List::Cons(x, tl) = ls {\n        if i == 0 {\n            return Some(x);\n        } else {\n            ls = tl;\n            i -= 1;\n        }\n    }\n    None\n}",
           "lang_item": null,
           "span": {
@@ -4002,6 +4005,9 @@
           },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "ls", "i", "x", "tl", null, null, null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4009,7 +4015,7 @@
         "id": 2,
         "item_meta": {
           "name": "loops_adts::update_array_mut_borrow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn update_array_mut_borrow(a: [&mut u32; 32]) -> [&mut u32; 32] {\n    a\n}",
           "lang_item": null,
           "span": {
@@ -4153,6 +4159,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "a" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4160,7 +4167,7 @@
         "id": 3,
         "item_meta": {
           "name": "loops_adts::array_mut_borrow_loop1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_mut_borrow_loop1(b: bool, mut a: [&mut u32; 32]) {\n    while b {\n        a = update_array_mut_borrow(a)\n    }\n}",
           "lang_item": null,
           "span": {
@@ -4706,6 +4713,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "b", "a", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4713,7 +4721,7 @@
         "id": 4,
         "item_meta": {
           "name": "loops_adts::array_mut_borrow_loop2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_mut_borrow_loop2(b: bool, mut a: [&mut u32; 32]) -> [&mut u32; 32] {\n    while b {\n        a = update_array_mut_borrow(a)\n    }\n    a\n}",
           "lang_item": null,
           "span": {
@@ -5270,6 +5278,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "b", "a", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5277,7 +5286,7 @@
         "id": 5,
         "item_meta": {
           "name": "loops_adts::copy_shared_array",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn copy_shared_array(a: [&u32; 32]) -> [&u32; 32] {\n    a\n}",
           "lang_item": null,
           "span": {
@@ -5421,6 +5430,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "a" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5428,7 +5438,7 @@
         "id": 6,
         "item_meta": {
           "name": "loops_adts::array_shared_borrow_loop1",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_shared_borrow_loop1(b: bool, mut a: [&u32; 32]) {\n    while b {\n        a = copy_shared_array(a)\n    }\n}",
           "lang_item": null,
           "span": {
@@ -5974,6 +5984,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "b", "a", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -5981,7 +5992,7 @@
         "id": 7,
         "item_meta": {
           "name": "loops_adts::array_shared_borrow_loop2",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn array_shared_borrow_loop2(b: bool, mut a: [&u32; 32]) -> [&u32; 32] {\n    while b {\n        a = copy_shared_array(a)\n    }\n    a\n}",
           "lang_item": null,
           "span": {
@@ -6538,6 +6549,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "b", "a", null, null, null ],
         "is_global_initializer": false,
         "src": null
       }

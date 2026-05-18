@@ -126,7 +126,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::fmt::Arguments",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "format_arguments",
           "span": {
@@ -157,7 +157,7 @@
         "id": 0,
         "item_meta": {
           "name": "print::call_println",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn call_println() {\n    println!(\"Hello World!\")\n}",
           "lang_item": null,
           "span": {
@@ -377,6 +377,7 @@
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -384,7 +385,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Arguments<'a>}::from_str",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -423,6 +424,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -430,7 +432,7 @@
         "id": 2,
         "item_meta": {
           "name": "std::io::stdio::_print",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -456,6 +458,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

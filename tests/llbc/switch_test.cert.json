@@ -116,7 +116,7 @@
         "id": 0,
         "item_meta": {
           "name": "switch_test::match_u32",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn match_u32(x: u32) -> u32 {\n    match x {\n        0 => 0,\n        1 => 1,\n        _ => 2,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -346,6 +346,7 @@
         "locals_types": [
           { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x" ],
         "is_global_initializer": false,
         "src": null
       }

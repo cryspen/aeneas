@@ -861,7 +861,7 @@
         "id": 0,
         "item_meta": {
           "name": "multi_target::Foo",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Foo {\n    pub data: [u16; 4],\n}",
           "lang_item": null,
           "span": {
@@ -910,7 +910,7 @@
         "id": 1,
         "item_meta": {
           "name": "multi_target::arm::Neon",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Neon;",
           "lang_item": null,
           "span": {
@@ -941,7 +941,7 @@
         "id": 0,
         "item_meta": {
           "name": "multi_target::add_vec",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn add_vec<T: SimdTrait>(a: T::Vec, b: T::Vec) -> T::Vec {\n    T::add(a, b)\n}",
           "lang_item": null,
           "span": {
@@ -1109,6 +1109,7 @@
           { "TypeVar": { "Free": 1 } },
           { "TypeVar": { "Free": 1 } }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1116,7 +1117,7 @@
         "id": 1,
         "item_meta": {
           "name": "multi_target::scalar_add",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn scalar_add(a: u128, b: u128) -> u128 {\n    a.wrapping_add(b)\n}",
           "lang_item": null,
           "span": {
@@ -1283,6 +1284,7 @@
           { "Literal": { "UInt": "U128" } },
           { "Literal": { "UInt": "U128" } }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1290,7 +1292,7 @@
         "id": 2,
         "item_meta": {
           "name": "multi_target::cpu_features_present",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn cpu_features_present(_mask: u32) -> bool {\n    true\n}",
           "lang_item": null,
           "span": {
@@ -1362,6 +1364,7 @@
         "locals_types": [
           { "Literal": "Bool" }, { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "_mask" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1369,7 +1372,7 @@
         "id": 3,
         "item_meta": {
           "name": "multi_target::dispatch_add",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn dispatch_add(a: u128, b: u128) -> u128 {\n    #[cfg(target_arch = \"x86_64\")]\n    {\n        if cpu_features_present(1) {\n            add_vec::<x86::Sse2>(a, b)\n        } else {\n            scalar_add(a, b)\n        }\n    }\n\n    #[cfg(target_arch = \"aarch64\")]\n    {\n        if cpu_features_present(2) {\n            add_vec::<arm::Neon>(a, b)\n        } else {\n            scalar_add(a, b)\n        }\n    }\n}",
           "lang_item": null,
           "span": {
@@ -1763,6 +1766,7 @@
           { "Literal": { "UInt": "U128" } },
           { "Literal": { "UInt": "U128" } }
         ],
+        "locals_names": [ null, "a", "b", null, null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1770,7 +1774,7 @@
         "id": 4,
         "item_meta": {
           "name": "multi_target::SimdTrait::add",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn add(a: Self::Vec, b: Self::Vec) -> Self::Vec;",
           "lang_item": null,
           "span": {
@@ -1798,6 +1802,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1805,7 +1810,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::num::{u128}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1832,6 +1837,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1839,7 +1845,7 @@
         "id": 6,
         "item_meta": {
           "name": "multi_target::{multi_target::Foo}::f",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn f(&self) {}",
           "lang_item": null,
           "span": {
@@ -1966,6 +1972,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1973,7 +1980,7 @@
         "id": 7,
         "item_meta": {
           "name": "multi_target::arm::{multi_target::SimdTrait<u128> for multi_target::arm::Neon}::add",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn add(a: u128, b: u128) -> u128 {\n            a.wrapping_add(b)\n        }",
           "lang_item": null,
           "span": {
@@ -2140,6 +2147,7 @@
           { "Literal": { "UInt": "U128" } },
           { "Literal": { "UInt": "U128" } }
         ],
+        "locals_names": [ null, "a", "b", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2147,7 +2155,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -2175,6 +2183,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2182,7 +2191,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for u128}::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2208,6 +2217,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -2217,7 +2227,7 @@
         "id": 0,
         "item_meta": {
           "name": "multi_target::SimdTrait",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait SimdTrait {\n    type Vec: Copy;\n    fn add(a: Self::Vec, b: Self::Vec) -> Self::Vec;\n}",
           "lang_item": null,
           "span": {
@@ -2265,7 +2275,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -2293,7 +2303,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -2343,7 +2353,7 @@
         "id": 0,
         "item_meta": {
           "name": "multi_target::arm::{multi_target::SimdTrait<u128> for multi_target::arm::Neon}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl SimdTrait for Neon {\n        type Vec = u128;\n\n        fn add(a: u128, b: u128) -> u128 {\n            a.wrapping_add(b)\n        }\n    }",
           "lang_item": null,
           "span": {
@@ -2377,7 +2387,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::marker::{core::marker::Copy for u128}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2409,7 +2419,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::clone::impls::{core::clone::Clone for u128}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

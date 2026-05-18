@@ -1493,7 +1493,14 @@ def tailToResult (e : PExpr) : PExpr :=
     -- Session 6: `__cast::<ty>` heads (synthesised by the cert walker
     -- for `as`-casts) emit a pure typed coercion / Rust cast — wrap
     -- in `ok` so the do-tail typechecks against `Result α`.
-    if head.contains '.' || isPureBinop head || head.startsWith "__cast::" then
+    -- Session 7 Item 1c follow-up: a Charon-style raw qualified head
+    -- (`core::num::{u32}::wrapping_add`) also resolves to a pure shim
+    -- call at the Lean level; detect it via `::` (the head comes in
+    -- pre-sanitisation here) — without this, do-tail wrapping_add /
+    -- pure intercept calls would emit a bare `(call)` and fail to
+    -- typecheck against `Result α`.
+    if head.contains '.' || head.contains ':' ||
+        isPureBinop head || head.startsWith "__cast::" then
       .ok e else e
   | .ifThenElse _ _ _ => e  -- Branches are already Result-typed.
   | .matchE _ _ => e  -- M9.5d: arms are already Result-typed.
@@ -2212,15 +2219,53 @@ structure SeedAcc where
   binds : Array Bind := #[]
   deriving Inhabited
 
+/-- Session 7 Item 2: resolve a single Charon debug-printed generic
+    arg back to its user-visible name. `T@k` (type var, de-Bruijn
+    `k`) → `typeNames[k]?`; `C@k` (const-generic var) →
+    `constNames[k]?`. Falls back to the raw string when the marker
+    doesn't parse cleanly or the index is out of range — the caller
+    will then either emit it as-is or skip. A bare identifier (`T`,
+    `4`) passes through unchanged. -/
+def resolveGlobalGenericArg (typeNames constNames : Array String)
+    (s : String) : Option String :=
+  if s.startsWith "T@" then
+    let suffix := s.drop 2
+    match suffix.toNat? with
+    | some k => typeNames[k]?
+    | none => some s
+  else if s.startsWith "C@" then
+    let suffix := s.drop 2
+    match suffix.toNat? with
+    | some k => constNames[k]?
+    | none => some s
+  else some s
+
+/-- Session 7 Item 2: build the seed binding's call expression for a
+    generic global. Combines the sanitised bare name with the
+    resolved type / const-generic args; skips when any arg fails to
+    resolve (returns `none` so the seed pass leaves the local
+    uninitialised and the event walker falls back to the typed-zero
+    placeholder). -/
+def buildGlobalGenericCall
+    (typeNames constNames : Array String)
+    (bareName : String) (gg : Raw.LlbcGlobalGenerics) : Option PExpr := do
+  let resolve (s : String) : Option PExpr :=
+    (resolveGlobalGenericArg typeNames constNames s).map PExpr.var
+  let tyArgs ← gg.types.mapM resolve
+  let cgArgs ← gg.constGenerics.mapM resolve
+  some (.app bareName (tyArgs ++ cgArgs))
+
 mutual
 
 partial def seedGlobalRefsFromBlock
+    (typeNames constNames : Array String)
     : Raw.LlbcBlock → SeedAcc → SeedAcc
 | .mk _ stmts, acc =>
   stmts.foldl (init := acc) fun acc s =>
-    seedGlobalRefsFromStatement s acc
+    seedGlobalRefsFromStatement typeNames constNames s acc
 
 partial def seedGlobalRefsFromStatement
+    (typeNames constNames : Array String)
     : Raw.LlbcStatement → SeedAcc → SeedAcc
 | .mk kind _, acc =>
   match kind with
@@ -2229,19 +2274,27 @@ partial def seedGlobalRefsFromStatement
     | .ref placeRef _ =>
       match placeRef.globalName with
       | some g =>
-        -- Session 5 (Item 1): skip globals whose name carries
-        -- generic params (`<T, N>` in `constants::{constants::V<T,
-        -- N>}::LEN`). Without threading the caller's generics through
-        -- the seed (the cert events don't surface the instantiation),
-        -- the emitted call would lack the implicit type arg and fail
-        -- elaboration. Curly impl-paths (`{u32}` etc.) don't carry
-        -- generic params and stay in scope.
-        if g.contains '<' then acc
-        else
+        -- Session 7 Item 2: when the global carries generic args
+        -- (`global_generics`), build a typed call `<bareName>
+        -- <T> <N>`. Otherwise emit the legacy `<g>` call shape.
+        -- The check that previously skipped `<`-bearing names is
+        -- gone: the bare name is recovered by sanitisation (see
+        -- `sanitizeCallName`) and the args are resolved from the
+        -- function's generic-param names.
+        let mkCall : Option PExpr :=
+          match placeRef.globalGenerics with
+          | some gg =>
+            buildGlobalGenericCall typeNames constNames g gg
+          | none =>
+            if g.contains '<' then none
+            else some (.app g #[])
+        match mkCall with
+        | some callE =>
           let name := s!"g{place.local_}"
           { acc with
               vm := acc.vm.insert place.local_ (.var name)
-              binds := acc.binds.push (.regular name (.app g #[])) }
+              binds := acc.binds.push (.regular name callE) }
+        | none => acc
       | none =>
         match acc.vm[placeRef.local_]? with
         | some v => { acc with vm := acc.vm.insert place.local_ v }
@@ -2256,24 +2309,26 @@ partial def seedGlobalRefsFromStatement
       | .move p => propagate p
       | _ => acc
     | _ => acc
-  | .block b => seedGlobalRefsFromBlock b acc
-  | .loopStmt b => seedGlobalRefsFromBlock b acc
-  | .switch sw => seedGlobalRefsFromSwitch sw acc
+  | .block b => seedGlobalRefsFromBlock typeNames constNames b acc
+  | .loopStmt b => seedGlobalRefsFromBlock typeNames constNames b acc
+  | .switch sw => seedGlobalRefsFromSwitch typeNames constNames sw acc
   | _ => acc
 
 partial def seedGlobalRefsFromSwitch
+    (typeNames constNames : Array String)
     : Raw.LlbcSwitch → SeedAcc → SeedAcc
 | .ifBool _ t e, acc =>
-  seedGlobalRefsFromBlock e (seedGlobalRefsFromBlock t acc)
+  seedGlobalRefsFromBlock typeNames constNames e
+    (seedGlobalRefsFromBlock typeNames constNames t acc)
 | .switchInt _ _ arms dflt, acc =>
   let acc := arms.foldl (init := acc)
-    fun acc (_, b) => seedGlobalRefsFromBlock b acc
-  seedGlobalRefsFromBlock dflt acc
+    fun acc (_, b) => seedGlobalRefsFromBlock typeNames constNames b acc
+  seedGlobalRefsFromBlock typeNames constNames dflt acc
 | .match_ _ arms dfltOpt, acc =>
   let acc := arms.foldl (init := acc)
-    fun acc (_, b) => seedGlobalRefsFromBlock b acc
+    fun acc (_, b) => seedGlobalRefsFromBlock typeNames constNames b acc
   match dfltOpt with
-  | some b => seedGlobalRefsFromBlock b acc
+  | some b => seedGlobalRefsFromBlock typeNames constNames b acc
   | none => acc
 
 end
@@ -2302,12 +2357,23 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- into the type-translator so any `LlbcTy.tVar K` inside an input /
   -- output type resolves to `.tyVar (typeParams[K])`.
   let typeParams := lsig.generics.types
+  -- Session 7 Item 1d: prefer the source-level name from
+  -- `lf.localsNames[i+1]?` over the synthesised `x{i+1}`. Returns
+  -- the synthesised name as a fallback when the local is unnamed
+  -- (return slot, MIR-introduced temp) or `localsNames` is empty
+  -- (opaque body / older cert). Charon stores locals in index order
+  -- with index 0 = return slot, 1..N = inputs, so paramI refers to
+  -- local index `i + 1`.
+  let effectiveParamName (i : Nat) : String :=
+    match lf.localsNames[i + 1]? with
+    | some (some n) => n
+    | _ => paramName (i + 1)
   let params : Array Param :=
     (List.range numParams).toArray.map fun i =>
       let ty := match lsig.inputs[i]? with
         | some t => llbcTyToPTyWithVars tdm typeParams t
         | none => placeholderTy
-      { name := paramName (i + 1), ty }
+      { name := effectiveParamName i, ty }
   -- M12.1: loop-bearing functions are handled separately by
   -- `translateLoopFun` (called from `Driver.translateCrate` before
   -- this function). If we reach here with `EvLoopInv` in the
@@ -2324,13 +2390,23 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- falls back to a typed-zero placeholder and call args / field
   -- accesses misuse the `Result`-typed global. See
   -- `seedGlobalRefsFromBlock`.
+  -- Session 7 Item 2: the seed pass now receives the function's
+  -- type-param + const-generic names so it can resolve Charon's
+  -- debug-printed `T@k` / `C@k` markers attached to `global_generics`
+  -- back to the user-visible identifiers (`T`, `N`). For functions
+  -- without globals this is a no-op.
+  let genericTypeNames : Array String := typeParams
+  let genericConstNames : Array String := lsig.generics.constGenerics
   let seedAcc : SeedAcc := match lf.body with
-    | some b => seedGlobalRefsFromBlock b {}
+    | some b => seedGlobalRefsFromBlock genericTypeNames genericConstNames b {}
     | none => {}
   let initVm : VarMap := Id.run do
     let mut m : VarMap := seedAcc.vm
     for i in [0:numParams] do
-      m := m.insert (i + 1) (.var (paramName (i + 1)))
+      -- Session 7 Item 1d: seed with the source-level name so body
+      -- emit (which resolves `local L` through this vm) inherits the
+      -- user's `y` instead of the synthesised `x1`.
+      m := m.insert (i + 1) (.var (effectiveParamName i))
     return m
   -- M9.5n / M9.7o-E5b: seed `localTypes` from the structured
   -- `LlbcFunDecl.localsTypes`. Charon's convention: index 0 is the
@@ -2506,7 +2582,10 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
     -- functions, so the emit shape stays byte-identical with M9.5h.
     typeParams
     -- M9.5j: `partial_fixpoint` only when we observed a self-call.
-    trailer }
+    trailer
+    -- Session 7 Item 1a: thread Charon's `attr_info.public` so the
+    -- docstring can carry the `Visibility: public` line.
+    isPublic := lf.itemMeta.isPublic }
 
 /-- M9.5b / M9.7o-E5b: back-compat wrapper around [translateFunWith]
     with an empty type-decl map and a synthetic empty `LlbcFunDecl`.

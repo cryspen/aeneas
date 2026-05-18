@@ -83,7 +83,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_803_self_in_array::Arguments",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Arguments<'a>(&'a ());",
           "lang_item": null,
           "span": {
@@ -129,7 +129,7 @@
         "id": 0,
         "item_meta": {
           "name": "issue_803_self_in_array::{issue_803_self_in_array::Arguments<'a>}::none",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn none(x: Self) -> [Self; 1] {\n        [x]\n    }",
           "lang_item": null,
           "span": {
@@ -307,6 +307,7 @@
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       }

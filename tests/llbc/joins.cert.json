@@ -2162,7 +2162,7 @@
         "id": 0,
         "item_meta": {
           "name": "joins::Enum",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "enum Enum {\n    V0,\n    V1,\n    V2,\n}",
           "lang_item": null,
           "span": {
@@ -2217,7 +2217,7 @@
         "id": 0,
         "item_meta": {
           "name": "joins::opt_add_1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn opt_add_1(b: bool, x: u32) -> u32 {\n    let y = if b { 1 } else { 0 };\n    x + y\n}",
           "lang_item": null,
           "span": {
@@ -2565,6 +2565,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "b", "x", "y", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2572,7 +2573,7 @@
         "id": 1,
         "item_meta": {
           "name": "joins::opt_add_2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn opt_add_2(b: bool, x: u32) -> u32 {\n    let y = if b { 1 } else { 0 };\n    let z = if b { 1 } else { 0 };\n    x + y + z\n}",
           "lang_item": null,
           "span": {
@@ -3191,6 +3192,10 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [
+          null, "b", "x", "y", null, "z", null, null, null, null, null, null,
+          null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3198,7 +3203,7 @@
         "id": 2,
         "item_meta": {
           "name": "joins::opt_add_1_or_panic",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn opt_add_1_or_panic(b: bool, x: u32) -> u32 {\n    let y = if b { 1 } else { panic!() };\n    x + y\n}",
           "lang_item": null,
           "span": {
@@ -3492,6 +3497,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "b", "x", "y", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3499,7 +3505,7 @@
         "id": 3,
         "item_meta": {
           "name": "joins::opt_add_switch_1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn opt_add_switch_1(a: u32, x: u32) -> u32 {\n    let y = match a {\n        0 => 0,\n        1 => 1,\n        _ => panic!(),\n    };\n    x + y\n}",
           "lang_item": null,
           "span": {
@@ -3844,6 +3850,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "a", "x", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -3851,7 +3858,7 @@
         "id": 4,
         "item_meta": {
           "name": "joins::opt_add_switch_2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn opt_add_switch_2(a: u32, x: u32) -> u32 {\n    let y = match a {\n        0 => 0,\n        _ => panic!(),\n    };\n    x + y\n}",
           "lang_item": null,
           "span": {
@@ -4143,6 +4150,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "a", "x", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4150,7 +4158,7 @@
         "id": 5,
         "item_meta": {
           "name": "joins::use_enum",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_enum(e: Enum, x: u32) -> u32 {\n    use Enum::*;\n    let y = match e {\n        V0 => 0,\n        V1 => 1,\n        V2 => 2,\n    };\n    x + y\n}",
           "lang_item": null,
           "span": {
@@ -4525,6 +4533,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "e", "x", "y", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -4532,7 +4541,7 @@
         "id": 6,
         "item_meta": {
           "name": "joins::call_choose",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn call_choose(b: bool, x: &mut u32, y: &mut u32) {\n    let z = if b { x } else { y };\n    *z = *z + 1;\n}",
           "lang_item": null,
           "span": {
@@ -4984,6 +4993,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "b", "x", "y", "z", null, null, null, null ],
         "is_global_initializer": false,
         "src": null
       }

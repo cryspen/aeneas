@@ -345,7 +345,7 @@
         "id": 0,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -376,7 +376,7 @@
         "id": 0,
         "item_meta": {
           "name": "as_mut::use_box_as_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_box_as_mut<T>(mut x: &mut Box<T>) -> &mut T {\n    x.as_mut()\n}",
           "lang_item": null,
           "span": {
@@ -660,6 +660,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -667,7 +668,7 @@
         "id": 1,
         "item_meta": {
           "name": "as_mut::use_as_mut",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn use_as_mut<S, T: core::convert::AsMut<S>>(mut x: &mut T) -> &mut S {\n    x.as_mut()\n}",
           "lang_item": null,
           "span": {
@@ -885,6 +886,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Mut" ] }
         ],
+        "locals_names": [ null, "x", null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -892,7 +894,7 @@
         "id": 2,
         "item_meta": {
           "name": "alloc::boxed::{core::convert::AsMut<T> for alloc::boxed::Box<T>}::as_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -929,6 +931,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -936,7 +939,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::convert::AsMut::as_mut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -962,6 +965,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -971,7 +975,7 @@
         "id": 0,
         "item_meta": {
           "name": "core::convert::AsMut",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "AsMut",
           "span": {
@@ -1021,7 +1025,7 @@
         "id": 0,
         "item_meta": {
           "name": "alloc::boxed::{core::convert::AsMut<T> for alloc::boxed::Box<T>}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

@@ -288,7 +288,7 @@
         "id": 0,
         "item_meta": {
           "name": "enums_payload::NumOrZero",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum NumOrZero {\n    Num(u32),\n    Zero,\n}",
           "lang_item": null,
           "span": {
@@ -343,7 +343,7 @@
         "id": 0,
         "item_meta": {
           "name": "enums_payload::value",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn value(x: NumOrZero) -> u32 {\n    match x {\n        NumOrZero::Num(n) => n,\n        NumOrZero::Zero => 0,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -570,6 +570,7 @@
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "n" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -577,7 +578,7 @@
         "id": 1,
         "item_meta": {
           "name": "enums_payload::wrap",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn wrap(x: u32) -> NumOrZero {\n    NumOrZero::Num(x)\n}",
           "lang_item": null,
           "span": {
@@ -707,6 +708,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -714,7 +716,7 @@
         "id": 2,
         "item_meta": {
           "name": "enums_payload::zero",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn zero() -> NumOrZero {\n    NumOrZero::Zero\n}",
           "lang_item": null,
           "span": {
@@ -797,6 +799,7 @@
         "locals_types": [
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       }

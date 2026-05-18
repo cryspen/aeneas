@@ -131,7 +131,7 @@
         "id": 0,
         "item_meta": {
           "name": "builtin_auto::Inner",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct Inner {\n    ptr: *const u8,\n}",
           "lang_item": null,
           "span": {
@@ -171,7 +171,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -200,7 +200,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::fmt::Formatter",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Formatter",
           "span": {
@@ -229,7 +229,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::result::Result",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Result",
           "span": {
@@ -289,7 +289,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::fmt::Error",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -318,7 +318,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::cmp::Ordering",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ordering",
           "span": {
@@ -371,7 +371,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -424,7 +424,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::ops::control_flow::ControlFlow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ControlFlow",
           "span": {
@@ -486,7 +486,7 @@
         "id": 0,
         "item_meta": {
           "name": "builtin_auto::make",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn make() -> Box<Inner> {\n    Box::new(Inner {\n        ptr: std::ptr::null(),\n    })\n}",
           "lang_item": null,
           "span": {
@@ -708,6 +708,7 @@
           { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
           { "RawPtr": [ { "Literal": { "UInt": "U8" } }, "Shared" ] }
         ],
+        "locals_names": [ null, null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -715,7 +716,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::ptr::null",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ptr_null",
           "span": {
@@ -739,6 +740,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -746,7 +748,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::fmt::Debug::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -798,6 +800,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -805,7 +808,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for ()}::fmt",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -861,6 +864,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -868,7 +872,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::clone::Clone::clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone_fn",
           "span": {
@@ -896,6 +900,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -903,7 +908,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::cmp::Ord::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ord_cmp_method",
           "span": {
@@ -934,6 +939,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -941,7 +947,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for ()}::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -982,6 +988,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -989,7 +996,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::hash::Hash::hash",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1019,6 +1026,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1026,7 +1034,7 @@
         "id": 16,
         "item_meta": {
           "name": "core::hash::impls::{core::hash::Hash for ()}::hash",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1061,6 +1069,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1068,7 +1077,7 @@
         "id": 19,
         "item_meta": {
           "name": "core::cmp::PartialOrd::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialord_cmp",
           "span": {
@@ -1111,6 +1120,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1118,7 +1128,7 @@
         "id": 29,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<()> for ()}::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1171,6 +1181,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1178,7 +1189,7 @@
         "id": 38,
         "item_meta": {
           "name": "core::hash::Hasher::finish",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1206,6 +1217,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1213,7 +1225,7 @@
         "id": 39,
         "item_meta": {
           "name": "core::hash::Hasher::write",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1246,6 +1258,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1253,7 +1266,7 @@
         "id": 54,
         "item_meta": {
           "name": "core::cmp::PartialEq::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_eq",
           "span": {
@@ -1282,6 +1295,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1289,7 +1303,7 @@
         "id": 56,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<()> for ()}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1328,6 +1342,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -1337,7 +1352,7 @@
         "id": 0,
         "item_meta": {
           "name": "builtin_auto::SuperPointee",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait SuperPointee: Pointee {}",
           "lang_item": null,
           "span": {
@@ -1365,7 +1380,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::fmt::Debug",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Debug",
           "span": {
@@ -1442,7 +1457,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::marker::Copy",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "copy",
           "span": {
@@ -1470,7 +1485,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::clone::Clone",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "clone",
           "span": {
@@ -1518,7 +1533,7 @@
         "id": 8,
         "item_meta": {
           "name": "core::cmp::Ord",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ord",
           "span": {
@@ -1569,7 +1584,7 @@
         "id": 9,
         "item_meta": {
           "name": "core::hash::Hash",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Hash",
           "span": {
@@ -1621,7 +1636,7 @@
         "id": 11,
         "item_meta": {
           "name": "core::marker::Freeze",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "freeze",
           "span": {
@@ -1649,7 +1664,7 @@
         "id": 12,
         "item_meta": {
           "name": "core::cmp::Eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Eq",
           "span": {
@@ -1677,7 +1692,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::cmp::PartialOrd",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "partial_ord",
           "span": {
@@ -1740,7 +1755,7 @@
         "id": 14,
         "item_meta": {
           "name": "core::hash::Hasher",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1814,7 +1829,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::cmp::PartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "eq",
           "span": {
@@ -1865,7 +1880,7 @@
         "id": 0,
         "item_meta": {
           "name": "builtin_auto::{builtin_auto::SuperPointee for u32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl SuperPointee for u32 {}",
           "lang_item": null,
           "span": {
@@ -1897,7 +1912,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::fmt::{core::fmt::Debug for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1931,7 +1946,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1965,7 +1980,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::hash::impls::{core::hash::Hash for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -1999,7 +2014,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Eq for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2033,7 +2048,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<()> for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2067,7 +2082,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<()> for ()}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

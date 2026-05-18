@@ -308,7 +308,7 @@
         "id": 0,
         "item_meta": {
           "name": "aggregates_basic::Pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub struct Pair {\n    pub x: u32,\n    pub y: u32,\n}",
           "lang_item": null,
           "span": {
@@ -354,7 +354,7 @@
         "id": 0,
         "item_meta": {
           "name": "aggregates_basic::mk_tuple",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn mk_tuple(x: u32, y: u32) -> (u32, u32) {\n    (x, y)\n}",
           "lang_item": null,
           "span": {
@@ -556,6 +556,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -563,7 +564,7 @@
         "id": 1,
         "item_meta": {
           "name": "aggregates_basic::mk_pair",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn mk_pair(x: u32, y: u32) -> Pair {\n    Pair { x, y }\n}",
           "lang_item": null,
           "span": {
@@ -742,6 +743,7 @@
           { "Literal": { "UInt": "U32" } },
           { "Literal": { "UInt": "U32" } }
         ],
+        "locals_names": [ null, "x", "y", null, null ],
         "is_global_initializer": false,
         "src": null
       }

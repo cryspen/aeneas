@@ -218,7 +218,7 @@
         "id": 0,
         "item_meta": {
           "name": "list_generic::GList",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum GList<T> {\n    GCons(T, Box<GList<T>>),\n    GNil,\n}",
           "lang_item": null,
           "span": {
@@ -293,7 +293,7 @@
         "id": 1,
         "item_meta": {
           "name": "alloc::alloc::Global",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "global_alloc_ty",
           "span": {
@@ -324,7 +324,7 @@
         "id": 0,
         "item_meta": {
           "name": "list_generic::glist_len",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn glist_len<T>(xs: GList<T>) -> u32 {\n    match xs {\n        GList::GNil => 0,\n        GList::GCons(_, tail) => glist_len(*tail).wrapping_add(1),\n    }\n}",
           "lang_item": null,
           "span": {
@@ -852,6 +852,7 @@
             }
           }
         ],
+        "locals_names": [ null, "xs", "tail", null, null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -859,7 +860,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::num::{u32}::wrapping_add",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -886,6 +887,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }

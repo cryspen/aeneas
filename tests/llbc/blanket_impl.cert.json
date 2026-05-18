@@ -111,7 +111,7 @@
         "id": 0,
         "item_meta": {
           "name": "blanket_impl::Trait2::foo",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn foo() {}",
           "lang_item": null,
           "span": {
@@ -221,6 +221,7 @@
         "locals_types": [
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -228,7 +229,7 @@
         "id": 1,
         "item_meta": {
           "name": "blanket_impl::{blanket_impl::Trait2 for T}::foo",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn foo() {}",
           "lang_item": null,
           "span": {
@@ -340,6 +341,7 @@
         "locals_types": [
           { "Adt": { "id": "Tuple", "generics": { "types": [] } } }
         ],
+        "locals_names": [ null ],
         "is_global_initializer": false,
         "src": null
       }
@@ -349,7 +351,7 @@
         "id": 0,
         "item_meta": {
           "name": "blanket_impl::Trait1",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Trait1 {}",
           "lang_item": null,
           "span": {
@@ -377,7 +379,7 @@
         "id": 1,
         "item_meta": {
           "name": "blanket_impl::Trait2",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Trait2 {\n    fn foo() {}\n}",
           "lang_item": null,
           "span": {
@@ -425,7 +427,7 @@
         "id": 0,
         "item_meta": {
           "name": "blanket_impl::{blanket_impl::Trait2 for T}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl<T: Trait1> Trait2 for T {}",
           "lang_item": null,
           "span": {

@@ -618,7 +618,7 @@
         "id": 0,
         "item_meta": {
           "name": "defaulted_method::NoOverride",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct NoOverride;",
           "lang_item": null,
           "span": {
@@ -647,7 +647,7 @@
         "id": 1,
         "item_meta": {
           "name": "defaulted_method::YesOverride",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "struct YesOverride;",
           "lang_item": null,
           "span": {
@@ -676,7 +676,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::cmp::Ordering",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ordering",
           "span": {
@@ -729,7 +729,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::option::Option",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Option",
           "span": {
@@ -782,7 +782,7 @@
         "id": 6,
         "item_meta": {
           "name": "core::ops::control_flow::ControlFlow",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ControlFlow",
           "span": {
@@ -844,7 +844,7 @@
         "id": 0,
         "item_meta": {
           "name": "defaulted_method::main",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn main() {\n    NoOverride.provided_method();\n    YesOverride.provided_method();\n\n    // `min` is a default method of standard trait `Ord`.\n    let n = 10.min(1);\n    assert!(n == 1);\n}",
           "lang_item": null,
           "span": {
@@ -1704,6 +1704,10 @@
           },
           { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } }
         ],
+        "locals_names": [
+          null, null, null, null, null, "n", null, null, null, null, null,
+          null, null, null
+        ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1711,7 +1715,7 @@
         "id": 1,
         "item_meta": {
           "name": "defaulted_method::Trait::provided_method",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn provided_method(&self) -> u32 {\n        self.required_method()\n    }",
           "lang_item": null,
           "span": {
@@ -1847,6 +1851,7 @@
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
           { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1854,7 +1859,7 @@
         "id": 2,
         "item_meta": {
           "name": "defaulted_method::Trait::required_method",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn required_method(&self) -> u32;",
           "lang_item": null,
           "span": {
@@ -1882,6 +1887,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -1889,7 +1895,7 @@
         "id": 3,
         "item_meta": {
           "name": "defaulted_method::{defaulted_method::Trait for defaulted_method::NoOverride}::provided_method",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn provided_method(&self) -> u32 {\n        73\n    }",
           "lang_item": null,
           "span": {
@@ -1982,6 +1988,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -1989,7 +1996,7 @@
         "id": 4,
         "item_meta": {
           "name": "defaulted_method::{defaulted_method::Trait for defaulted_method::NoOverride}::required_method",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn required_method(&self) -> u32 {\n        12\n    }",
           "lang_item": null,
           "span": {
@@ -2082,6 +2089,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2089,7 +2097,7 @@
         "id": 5,
         "item_meta": {
           "name": "defaulted_method::{defaulted_method::Trait for defaulted_method::YesOverride}::provided_method",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn provided_method(&self) -> u32 {\n        self.required_method()\n    }",
           "lang_item": null,
           "span": {
@@ -2264,6 +2272,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self", null ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2271,7 +2280,7 @@
         "id": 6,
         "item_meta": {
           "name": "defaulted_method::{defaulted_method::Trait for defaulted_method::YesOverride}::required_method",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "fn required_method(&self) -> u32 {\n        42\n    }",
           "lang_item": null,
           "span": {
@@ -2364,6 +2373,7 @@
             ]
           }
         ],
+        "locals_names": [ null, "self" ],
         "is_global_initializer": false,
         "src": null
       },
@@ -2371,7 +2381,7 @@
         "id": 7,
         "item_meta": {
           "name": "core::cmp::Ord::min",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_ord_min",
           "span": {
@@ -2399,6 +2409,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2406,7 +2417,7 @@
         "id": 10,
         "item_meta": {
           "name": "core::cmp::Ord::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "ord_cmp_method",
           "span": {
@@ -2437,6 +2448,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2444,7 +2456,7 @@
         "id": 13,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for i32}::cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2473,6 +2485,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2480,7 +2493,7 @@
         "id": 15,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for i32}::min",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_ord_min",
           "span": {
@@ -2506,6 +2519,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2513,7 +2527,7 @@
         "id": 18,
         "item_meta": {
           "name": "core::cmp::PartialOrd::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialord_cmp",
           "span": {
@@ -2556,6 +2570,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2563,7 +2578,7 @@
         "id": 28,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<i32> for i32}::partial_cmp",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2604,6 +2619,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2611,7 +2627,7 @@
         "id": 37,
         "item_meta": {
           "name": "core::cmp::PartialEq::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "cmp_partialeq_eq",
           "span": {
@@ -2640,6 +2656,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       },
@@ -2647,7 +2664,7 @@
         "id": 39,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<i32> for i32}::eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -2674,6 +2691,7 @@
         },
         "body": null,
         "locals_types": [],
+        "locals_names": [],
         "is_global_initializer": false,
         "src": null
       }
@@ -2683,7 +2701,7 @@
         "id": 0,
         "item_meta": {
           "name": "defaulted_method::Trait",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "trait Trait {\n    fn provided_method(&self) -> u32 {\n        self.required_method()\n    }\n    fn required_method(&self) -> u32;\n}",
           "lang_item": null,
           "span": {
@@ -2750,7 +2768,7 @@
         "id": 1,
         "item_meta": {
           "name": "core::cmp::Ord",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Ord",
           "span": {
@@ -2820,7 +2838,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::cmp::Eq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "Eq",
           "span": {
@@ -2848,7 +2866,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::cmp::PartialOrd",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "partial_ord",
           "span": {
@@ -2911,7 +2929,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::cmp::PartialEq",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": null,
           "lang_item": "eq",
           "span": {
@@ -2962,7 +2980,7 @@
         "id": 0,
         "item_meta": {
           "name": "defaulted_method::{defaulted_method::Trait for defaulted_method::NoOverride}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl Trait for NoOverride {\n    fn provided_method(&self) -> u32 {\n        73\n    }\n    fn required_method(&self) -> u32 {\n        12\n    }\n}",
           "lang_item": null,
           "span": {
@@ -2999,7 +3017,7 @@
         "id": 1,
         "item_meta": {
           "name": "defaulted_method::{defaulted_method::Trait for defaulted_method::YesOverride}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": "impl Trait for YesOverride {\n    fn required_method(&self) -> u32 {\n        42\n    }\n}",
           "lang_item": null,
           "span": {
@@ -3036,7 +3054,7 @@
         "id": 2,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Ord for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3070,7 +3088,7 @@
         "id": 3,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::Eq for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3102,7 +3120,7 @@
         "id": 4,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialOrd<i32> for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {
@@ -3134,7 +3152,7 @@
         "id": 5,
         "item_meta": {
           "name": "core::cmp::impls::{core::cmp::PartialEq<i32> for i32}",
-          "attr_info": null,
+          "attr_info": { "public": false },
           "source_text": null,
           "lang_item": null,
           "span": {

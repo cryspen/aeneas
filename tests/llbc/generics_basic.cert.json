@@ -163,7 +163,7 @@
         "id": 0,
         "item_meta": {
           "name": "generics_basic::MyOption",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub enum MyOption<T> {\n    MySome(T),\n    MyNone,\n}",
           "lang_item": null,
           "span": {
@@ -218,7 +218,7 @@
         "id": 0,
         "item_meta": {
           "name": "generics_basic::get",
-          "attr_info": null,
+          "attr_info": { "public": true },
           "source_text": "pub fn get<T>(x: MyOption<T>, default: T) -> T {\n    match x {\n        MyOption::MySome(t) => t,\n        MyOption::MyNone => default,\n    }\n}",
           "lang_item": null,
           "span": {
@@ -572,6 +572,7 @@
           { "TypeVar": { "Free": 0 } },
           { "TypeVar": { "Free": 0 } }
         ],
+        "locals_names": [ null, "x", "default", "t" ],
         "is_global_initializer": false,
         "src": null
       }
