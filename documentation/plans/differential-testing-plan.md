@@ -52,9 +52,9 @@ gates** and treat the implied pairs as bonus coverage if cheap.
 
 | Pair | Comparison | What it tells us | Status today |
 |---|---|---|---|
-| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 39 proptests / 11 fixtures (in `tests/lean-checker/differential/`); needs scaling |
+| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 44 proptests / 12 fixtures (in `tests/lean-checker/differential/`); needs scaling |
 | **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 267 vectors / 7 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
-| **G_byte** | L₀ ↔ L₁ (byte-equal) | Our Lean backend produces the same source as mainline (cheap syntactic check) | `scripts/compare-backends.sh` exists; per-fixture, opt-in; no allowed-divergence list |
+| **G_byte** | L₀ ↔ L₁ (byte-equal) | Our Lean backend produces the same source as mainline (cheap syntactic check) | `scripts/compare-backends.sh --sweep` (Session 6 Item 2); baseline 1 pass / 85 divergent / 3 skip / 89 total; allowed-divergence list at `scripts/compare-backends-known-divergent.txt` |
 | **G_rfl** | L₀ ↔ L₁ (definitional equality, `rfl`) | Our Lean's *meaning* matches mainline's, even where syntax differs (e.g. binder order, beta-equivalence) | Does not exist; this plan adds it |
 | (implied) | R₀ ↔ L₀ | Mainline Aeneas's Lean matches developer intent | Trusted via upstream test suite; we don't add separate coverage |
 | (implied) | R₁ ↔ L₁ | Our Rust and Lean outputs agree | Falls out of G_rust + G_lean (both go through R₀) |
@@ -100,7 +100,10 @@ Resolved on this branch:
 - `ac176ee3` + `df1441cd` (Phase 1C) — ADT placeholders: `record_lit { … }` and `with_<field>(base, value)` now render as real `Foo { f: e, … }` and `Foo { f: v, ..base }` syntax via plumbed `adtName` on `PExpr.recordLit` / `PExpr.structUpdate`. Unblocks `aggregates_basic`, `reborrows::set_fst` and other ADT-heavy fixtures.
 - `c84781e4` (Session 4 / Phase 4b-4b) — variant-ctor path rewrite: `PExpr.toRust` introduces `rustifyPath` (sanitize braces + `.` → `::`) and applies it to `.var` (nullary ctor) and `.app` head (payload ctor). Unblocks `enums_basic::flip`, `enums_payload::{value,wrap,zero}`.
 
-Remaining: generic binders on `<T,U>` functions; `Array.update` rendered as Lean dot-notation instead of `Array::update(…)` (surfaces in `reborrows::set_idx_model`); the cast emitter drops the `as` op (`x as u16` emits as bare `x`, so `cast_*` fixtures in `no_nested_borrows` produce ill-typed Rust); branch-variable confusion in `get_max` / similar (`if x1 { x1 } else { x2 }` where the if-cond should be the precomputed bool `t0`).
+Remaining: generic binders on `<T,U>` functions; `Array.update` rendered as Lean dot-notation instead of `Array::update(…)` (surfaces in `reborrows::set_idx_model`).
+
+Session 6 resolved:
+- (Session 6 / Item 1) — `as`-cast wrapper drop + `get_max` branch-variable confusion. Fix added a new `SymCast` cert-sym-expr variant carrying the stringified target type. `InterpStatements.ml`'s rvalue arm now emits `EvAssign { dst; rhs = SymCast { target_ty; inner } }` for `Rvalue.UnaryOp (Cast (CastScalar _), _)`. The Lean parser, Forward.lean's `lookupSymExpr`, the Step replayer, and the typecheck side each gained a `.symCast` arm. Forward emits `.app "__cast::<ty>" #[inner]`; RustEmit renders `(<inner> as <ty>)`; LeanEmit renders `((inner : Aeneas.Std.<T>))` (relying on `CoeHead` instances). `tailToResult` now wraps cast results in `.ok`. Companion `get_max`-branch fix: `.returnTailed`'s cond detection now primes from `st.lastWrite`'s vm entry (was the buggy "first input param" heuristic). G_rust: 39 → 44 proptests, +5 new in `no_nested_borrows`.
 
 ### G_lean — Source Rust ↔ Our Lean (executed)
 

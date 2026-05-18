@@ -420,3 +420,260 @@ Priority order:
 - `tests/lean-checker/lean-diff/generated/{demo, constants, scalars}.lean` — regen output (the cert-format change is visible in `constants` + `scalars`; `demo` is a brand-new wire-in via `--skip-decl`).
 - `tests/llbc/{constants, scalars}.cert.json` — regen — now carry `"global"` fields. Other fixtures regen'd to identical bytes.
 - `documentation/plans/differential-testing-{plan, progress}.md` — updated counts + Session 5 note.
+
+---
+
+## Session 6 (2026-05-18) — Phase 4b Items 0 + 1 + Phase 2 (G_byte sweep)
+
+### What landed (top 3 commits over `62a572b2`)
+```
+2d47c1ff Session 6 Item 2: G_byte sweep mode in compare-backends.sh
+c57c8e91 Session 6 Item 1: cast keyword emit fix + get_max branch-variable fix
+371b30d8 Session 6 Item 0: regen cert.json sweep — pick up Session-5 global field
+```
+
+No mid-session parent merge — `aeneas-lean-certificate` had not moved
+since Session 5's `78352e5b` merge of M10.x.5-8.
+
+### Item 0 outcome — cert.json regen sweep
+
+Session 5's `j_place` change in `src/cert/LlbcJson.ml` (preserving the
+`PlaceGlobal` info as a new optional `"global"` field) had been
+applied to only 3 of 89 fixtures (`constants`, `scalars`, `demo`).
+Item 0 swept every `tests/llbc/*.llbc` through the Session-5 aeneas
+binary; 10 fixtures gained real `"global"` fields and 1 (`incr_cert`)
+produced path-absoluteness-only churn (reverted per the Session-5
+pitfall).
+
+| Fixture | New global reference |
+|---|---|
+| `constants-lean` | `constants_lean::N` |
+| `hashmap` | `core::num::{usize}::MAX` |
+| `issue-815-...` | `issue_815_...::INNER` |
+| `loops-issues` | `loops_issues::CARRAY` |
+| `loops-nested-rec` | `loops_nested_rec::FACTORS` |
+| `loops-nested` | `loops_nested::FACTORS` |
+| `loops-rec` | `loops_rec::copy_carray::CARRAY` |
+| `loops` | `loops::copy_carray::CARRAY` |
+| `static` | `static::use_static::PREFIX` |
+| `traits` | `traits::{traits::Trait for traits::Wrapper<T>}::LEN` |
+
+Other 78 fixtures regen to byte-identical output (no PlaceGlobal in
+their source). Harness check: G_lean 267/267 and G_rust 39/39 both
+held pre- and post-regen.
+
+### Item 1 outcome — cast keyword + get_max branch-variable fixes
+
+Two cert-walker bugs found by the differential harness. Both required
+**new** cert-event schema (a `SymCast { target_ty; inner }` variant
+on `cert_sym_expr`), not just Forward.lean tweaks as the Session-4
+notes hypothesised.
+
+| Side | Change | Files |
+|---|---|---|
+| OCaml cert (event schema) | `cert_sym_expr` gains `SymCast` carrying the stringified `target_ty` ("i32"/"u32"/"bool"/…). The `[@@deriving show]` regenerates equality. | `src/cert/CertEvent.ml`, `.mli` |
+| OCaml cert (JSON) | `json_cert_sym_expr` emits `{ "SymCast": { "target_ty": "<t>", "inner": <symexpr> } }`. | `src/cert/CertJson.ml` |
+| OCaml interp (emit) | The `eval_assignment` rvalue match adds a `UnaryOp (Cast (CastScalar (_, dst_ty)), op)` case → emits `EvAssign { dst; rhs: SymCast { target_ty; inner } }`. `target_ty` is stringified from the `literal_type` (`TUInt U32` → `"u32"`, etc.). | `src/interp/InterpStatements.ml` |
+| Lean (event schema) | `SymExpr.symCast (targetTy : String) (inner : SymExpr)`. The JSON parser reads `{ target_ty, inner }`. | `Raw/CertEvent.lean`, `Json/Parser.lean` |
+| Lean (Step + Typecheck) | `evalSymExpr` recurses on inner; `valOfSymExpr` returns `.bottom`; `Typecheck.{Places,Consistency}` recurse. | `LLBCSharp/Step.lean`, `Typecheck/{Places,Consistency}.lean` |
+| Lean (Forward translator) | `lookupSymExpr` and `lookupSymExprWithBinders` emit `.app s!"__cast::{targetTy}" #[innerE]`. `postLocalOfArg` returns `0` (cast results aren't places). `tailToResult` adds `__cast::` to its `ok`-wrap predicate. | `Translate/Forward.lean` |
+| Lean (RustEmit) | `.app head args` detects `head.startsWith "__cast::"` and renders `"(" ++ inner.toRust ++ " as " ++ suffix ++ ")"`. | `Backends/RustEmit.lean` |
+| Lean (LeanEmit) | Same head detection; renders `((inner : Aeneas.Std.<T>))`. Type ascription triggers the shim's `CoeHead` chain. | `Pure/Pretty.lean` |
+| Shim | `CoeHead` instances for U32 ↔ I32, U16 ↔ I16, U8 ↔ I8 (bit-pattern reinterpret via `Int<N>.ofBitVec`/`UInt<N>.ofBitVec`); `CoeHead Bool → {I32, U32, U8}` for bool→int. | `RuntimeShim/Aeneas/Std.lean` |
+
+Plus the **`get_max` companion fix**: Forward.lean's `.returnTailed`
+case (where both branches end in EvReturn with no EvJoin) used an
+"first input parameter" heuristic to pick the if-condition's surface
+form. That always picked an input param like `x1`, even when the cond
+local was the freshly-bound bool result of the preceding EvBinop. The
+fix primes the cond from `st.lastWrite`'s vm entry. For
+`get_max(x, y) → u32`:
+- EvBinop(Ge, …) writes vm[3] := .var "t0" and lastWrite := some 3.
+- EvMove(3→3) (skipped — preserves lastWrite).
+- EvAssert(SymVal 2, true) — branch open with lastWrite = some 3.
+- New cond = vm[3] = .var "t0" (was .var "x1").
+
+`choose`-style fixtures (where the cond is a parameter) still work
+because lastWrite still points at the cond local, and
+`vm[cond_local] = .var "<param>"` in that case.
+
+### Item 1 acceptance — Rust emit + Lean emit shapes
+
+```
+def cast_u32_to_i32 (x1 : Std.U32) : Result Std.I32 := do
+  ok ((x1 : Aeneas.Std.I32))
+
+def cast_bool_to_i32 (x1 : Bool) : Result Std.I32 := do
+  ok ((x1 : Aeneas.Std.I32))
+
+def get_max (x1 : Std.U32) (x2 : Std.U32) : Result Std.U32 := do
+  let t0 := (x1 ≥ x2)
+  if t0 then ok x1 else ok x2
+```
+
+```rust
+pub fn cast_u32_to_i32_model(x1: u32) -> i32 {
+    (x1 as i32)
+}
+pub fn get_max_model(x1: u32, x2: u32) -> u32 {
+    let t0 = (x1 >= x2);
+    if t0 { x1 } else { x2 }
+}
+```
+
+G_rust: 39 → 44 proptests across 12 fixtures (+5 in `no_nested_borrows`:
+cast_u32_to_i32, cast_bool_to_i32, cast_bool_to_bool, get_max_u32,
+get_max_u32_equal — boundary case for `>=`).
+
+G_lean: 267 / 267 byte-identical (no regression; the cast scalars
+fixture already had a runner but skipped exercising the cast fns
+because of the bug — see the Session-4 shim comment).
+
+9 cert.json files regenerate with new `SymCast` events:
+`assert-cfg`, `curve25519`, `dyn`, `loop_shared_loan_in_join`,
+`loops-nested`, `loops-nested-rec`, `loops-sequences`,
+`no_nested_borrows`, `scalars`. (`incr_cert` produced only
+path-absoluteness churn; reverted.)
+
+### Item 2 outcome — G_byte sweep mode
+
+`scripts/compare-backends.sh` gains a `--sweep` flag that iterates
+every `tests/llbc/*.llbc`, emits L₀ via mainline `aeneas -backend
+lean -dest /tmp/aeneas-g-byte-sweep/<fx>-l0/` and L₁ via
+`aeneas-check --out /tmp/aeneas-g-byte-sweep/<fx>-l1.lean`, and
+classifies each fixture as pass / divergent / mismatch / skip. A
+companion `--regen-divergent` flag rewrites
+`scripts/compare-backends-known-divergent.txt` with PLACEHOLDER
+entries for every currently-divergent fixture.
+
+Baseline (post-Item 1):
+
+| Status     | Count | Notes |
+|---         |---    |---    |
+| pass       | 1     | `blanket_impl` (byte-identical) |
+| divergent  | 85    | listed in known-divergent.txt |
+| mismatch   | 0     | (gate green) |
+| skip       | 3     | `closures`, `issue-804-...`, `raw_pointers` — mainline emit fails |
+| **total**  | **89**|       |
+
+Sweep exit: `0` (no unlisted mismatches).
+
+The 85 divergent fixtures collectively exhibit ~7 categories of
+divergence, documented in the known-divergent file's header:
+
+1. Visibility lines (mainline emits `Visibility: public -/`).
+2. Param naming (`x` vs `x1`).
+3. Parenthesisation (`x + 1#u32` vs `(x + 1#u32)`).
+4. Source path absoluteness.
+5. Decl ordering (different topo sort).
+6. Loop-body factorisation (mainline separates `<fn>::loop body 0`).
+7. Missing / extra impl methods or trait decls.
+
+Per-fixture categorisation is deferred (each entry shares a generic
+reason for now); future sessions can split the list as emit-side
+fixes land. The known-divergent file is force-added (the root
+`.gitignore` ignores `*.txt`).
+
+The `scripts/compare-backends.sh` single-fixture interactive mode is
+preserved unchanged; `--sweep` is gated on the first arg.
+
+### Coverage matrix snapshot (post-Session 6)
+
+| Fixture | G_rust | G_lean | G_byte | C_lean (shim) |
+|---|---|---|---|---|
+| incr_cert | ✓ 1/1 | ✓ 16/16 | divergent (param naming, parens, paths) | ✓ |
+| compare_simple | ✓ 3/3 | ✓ 22/22 | divergent (same class) | ✓ |
+| calls | ✓ 2/2 | ✓ 22/22 | divergent | ✓ |
+| bitwise | ✓ 5/5 | ✓ 30/30 | divergent | ✓ |
+| constants | ✓ 5/5 | ✓ 37/37 | divergent (missing X0–X4 in L₁) | ✓ |
+| aggregates_basic | ✓ 2/2 | (skip, ADT runner) | divergent | n/a |
+| reborrows | ✓ 1/1 | (skip, ADT runner) | divergent | n/a |
+| scalars | ✓ 13/13 | ✓ 105/105 | divergent | ✓ |
+| demo | ✓ 4/4 | ✓ 35/35 | divergent (extra trait decls) | ✓ |
+| enums_basic | ✓ 1/1 | — | divergent | n/a |
+| enums_payload | ✓ 3/3 | — | divergent | n/a |
+| no_nested_borrows | ✓ 5/5 | — | divergent | n/a |
+| blanket_impl | — | — | **pass** | — |
+| **Total** | **44 proptests / 12 fixtures** | **267 vectors / 7 fixtures** | **1 pass / 85 div / 3 skip / 89** | 7/89 |
+
+### Bugs found / changes by class (Session 6)
+
+| Class | Bug / change | Fix layer |
+|---|---|---|
+| OCaml cert event format | `Rvalue.UnaryOp (Cast (CastScalar _), _)` fell through the `_ -> ()` catch-all in `InterpStatements.ml::eval_assignment`'s rvalue match. The event stream had no record of `as`-casts, so the cert walker emitted the inner value bare (ill-typed Rust + Lean). | `src/cert/CertEvent.{ml,mli}`, `src/cert/CertJson.ml`, `src/interp/InterpStatements.ml` |
+| Lean cert event consumers | New `.symCast` variant required cases in 6 files (parser, Forward translator, Step replayer, Typecheck.Places, Typecheck.Consistency, postLocalOfArg). | (5 files in `aeneas-lean-checker/AeneasCheck/`) |
+| Lean Forward.lean (branch cond) | `.returnTailed`'s cond detection picked the first input-parameter local from vm, missing freshly-bound bool results. `get_max` emitted `if x1 { x1 } else { x2 }`. Fixed by priming from `st.lastWrite`'s vm entry. | `Translate/Forward.lean` |
+| Lean emit / shim | `__cast::<ty>` head pattern: RustEmit renders `(<inner> as <ty>)`, LeanEmit renders `((inner : Aeneas.Std.<T>))` and relies on `CoeHead` instances in the shim. 8 new instances added (U/I 8/16/32 + Bool→{I32,U32,U8}). | `Backends/RustEmit.lean`, `Pure/Pretty.lean`, `RuntimeShim/Aeneas/Std.lean` |
+| New infrastructure | `scripts/compare-backends.sh --sweep` (G_byte gate) + `scripts/compare-backends-known-divergent.txt` (allowed-divergence list). | `scripts/` |
+
+### Carry-forward into Session 7
+
+Priority order:
+
+1. **Generic-aware global propagation** (Item 3 carry-over, ~half day):
+   `seedGlobalRefsFromBlock` skips globals whose name carries `<` (a
+   generic-instantiation marker — e.g. `V::LEN<T, N>`). The right
+   fix is OCaml-side: surface the resolved `global_decl_ref.generics`
+   alongside the qualified name in `LlbcJson.ml::j_place`, then
+   thread them through the Lean cert walker. Unblocks `use_v` in
+   the constants fixture (and similar generic-global references in
+   other fixtures).
+
+2. **G_byte categorisation** (~1–2 hours each, fast wins):
+   The 85 known-divergent entries currently share one generic
+   "cosmetic + structural" reason. Tackling them one category at
+   a time should shrink the divergent count:
+     * **Visibility lines + paren-wrap binops** are pure emit-side
+       choices; align with mainline to drop the divergence on
+       most simple fixtures.
+     * **Source path absoluteness** depends on the LLBC's build
+       environment; cleaning the path on emit (or normalising
+       in the harness) drops the divergence on every fixture
+       that has it.
+     * **Param naming `x1` vs `x`** would require routing the
+       source name through Forward.lean's emit (Charon's LLBC
+       carries the source name in `local_decl.name`).
+   Each category fix is a small Forward.lean / LeanEmit edit
+   plus the diff verifier.
+
+3. **Cross-fixture mod-crate wraps** (Session 4 carry-over,
+   ~1 hour each fixture): `nested_borrows::call_inner_mut`,
+   `paper::ref_incr`. Mirror the Session-4 `demo::*` pattern.
+
+4. **More G_lean wire-ins**: the Session-6 cert regen surfaced
+   real globals in `loops-issues`, `loops-nested-rec`, etc.
+   Some of those fixtures may now elaborate against the shim and
+   could be wired into the lean-diff harness.
+
+5. **Phase 3 (G_rfl harness)**: still deferred. The G_byte
+   baseline now exists; the next definitional-equality gate
+   would catch divergences G_byte misses (binder-order
+   differences, `let`-vs-inline choices).
+
+### Operational notes (Session 6 specifics)
+- **No agent dispatches.** Inline work in `/Users/karthik/aeneas/.claude/worktrees/diff-test`. Worktree HEAD stayed on `aeneas-lean-certificate-diff-test`.
+- **OCaml + Lean rebuilt** from this worktree's source at every regen point. `bin/aeneas` not present in the worktree; `src/_build/default/main.exe` invoked by absolute path.
+- **Pre-built binaries lesson honoured throughout.**
+- **macOS bash-3.2 compat**: the new `compare-backends.sh --sweep` initially used `declare -A` (bash 4+). Refactored to `grep`-based lookup so the script runs unchanged on stock macOS bash.
+- **No files under `aeneas-lean-soundness/` or `AeneasCheck/Theorems/` touched.** Changes localised to `src/cert/`, `src/interp/`, `aeneas-lean-checker/{Raw,Json,Translate,LLBCSharp,Typecheck,Backends,Pure}/`, `RuntimeShim/`, the lean-diff harness, the proptest harness, the new G_byte infrastructure, and the docs.
+
+### Files touched (Session 6, high-level)
+
+- `src/cert/CertEvent.{ml,mli}` — `SymCast` constructor.
+- `src/cert/CertJson.ml` — JSON emit for SymCast.
+- `src/interp/InterpStatements.ml` — `UnaryOp (Cast (CastScalar _), _)` rvalue arm.
+- `aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean` — `symCast` variant.
+- `aeneas-lean-checker/AeneasCheck/Json/Parser.lean` — parse SymCast.
+- `aeneas-lean-checker/AeneasCheck/Translate/Forward.lean` — `.symCast` arms + `.returnTailed` cond fix + `tailToResult` predicate.
+- `aeneas-lean-checker/AeneasCheck/LLBCSharp/Step.lean` — `evalSymExpr` + `valOfSymExpr` for SymCast.
+- `aeneas-lean-checker/AeneasCheck/Typecheck/{Places, Consistency}.lean` — recursive symCast cases.
+- `aeneas-lean-checker/AeneasCheck/Backends/RustEmit.lean` — `__cast::` head detection.
+- `aeneas-lean-checker/AeneasCheck/Pure/Pretty.lean` — `((e : Aeneas.Std.T))` rendering.
+- `aeneas-lean-checker/RuntimeShim/Aeneas/Std.lean` — 8 new CoeHead instances.
+- `tests/lean-checker/differential/{src/lib.rs,tests/diff.rs}` — `no_nested_borrows` module + 5 new proptests.
+- `tests/lean-checker/lean-diff/generated/scalars.lean` — regen (cast wrappers now present).
+- `tests/llbc/*.cert.json` — regen (Item 0: 10 fixtures with new `"global"` field; Item 1: 9 fixtures with new SymCast events).
+- `scripts/compare-backends.sh` — `--sweep` + `--regen-divergent` modes.
+- `scripts/compare-backends-known-divergent.txt` — initial 85 entries + 7-category header.
+- `documentation/plans/differential-testing-{plan, progress}.md` — counts + Session 6 note.
+
