@@ -768,13 +768,24 @@ def parseLlbcProjElem (j : Json) : Result LlbcProjElem := do
     | _ => fail s!"parseLlbcProjElem: unknown tag {tag}"
 
 /-- M9.7b: parse an `LlbcPlace`. Phase-B emission flattens Charon's
-    nested `place_kind` into `{local, projection, ty}`. -/
+    nested `place_kind` into `{local, projection, ty}`.
+
+    Session 5: the optional `global` field carries a qualified Rust
+    path when the underlying Charon place was a `PlaceGlobal` (cert
+    serializer side: `LlbcJson.j_place`). Pre-Session-5 certs lack
+    the field; parser defaults `globalName` to `none`. -/
 def parseLlbcPlace (j : Json) : Result LlbcPlace := do
   let local_ ← asNat (← field j "local")
   let projArr ← asArr (← field j "projection")
   let projection ← projArr.mapM parseLlbcProjElem
   let ty ← parseLlbcTy (← field j "ty")
-  return { local_, projection, ty }
+  let globalName : Option String ← (do
+    match fieldOpt j "global" with
+    | some gj => match gj with
+      | .str s => pure (some s)
+      | _ => pure none
+    | none => pure none) <|> pure none
+  return { local_, projection, ty, globalName }
 
 /-- M9.7b: parse a `Lit` payload as a literal-value sub-tree. Reuses
     `parseLiteral` to interpret a Serde-tagged `Scalar`/`Bool`/`Char`/

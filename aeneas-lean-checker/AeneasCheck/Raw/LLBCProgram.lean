@@ -123,11 +123,19 @@ inductive LlbcProjElem
   deriving Repr, Inhabited
 
 /-- M9.7a: a place — `local + projection*` with the place's static
-    type. Mirrors `Generated_Expressions.ml`'s `place`. -/
+    type. Mirrors `Generated_Expressions.ml`'s `place`.
+
+    Session 5: `globalName` carries the qualified Rust path of a
+    `PlaceGlobal` root when the cert serializer captured it (a
+    `static`/`const` initializer that reads another global or a
+    primitive `T::MAX`-style builtin). When `some`, the projection
+    list is applied *to the global*, not the otherwise-uninitialized
+    `local_ = 0` placeholder Charon's pre-pass produces. -/
 structure LlbcPlace where
   local_ : Nat
   projection : Array LlbcProjElem
   ty : LlbcTy
+  globalName : Option String := none
   deriving Repr, Inhabited
 
 /-- M9.7a: an operand. Mirrors `Generated_Expressions.ml:174`. -/

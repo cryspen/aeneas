@@ -2156,6 +2156,110 @@ def buildBackwardTail (bs : BackSig) (vm : VarMap) : PExpr :=
     else
       .ok (.tuple #[fwdValue, backLam])
 
+-- Session 5 (Item 1): seed the var-map with global-ref bindings
+-- surfaced by the LLBC body.
+--
+-- Charon's `decompose_global_operands` pre-pass (`PrePasses.ml`'s
+-- `visit_PlaceGlobal`) rewrites every `PlaceGlobal g` operand into
+-- `*local L` after inserting `local L = RvRef(PlaceGlobal g)` as a
+-- new earlier statement. The cert event log captures the
+-- *consequence* (a reborrow chain with `Deref`-projected reads)
+-- but drops the `Assign` that records `g` — so `lookupPlace local
+-- L [Deref]` during event walk has no way to recover the source
+-- global without help.
+--
+-- This pass walks the LLBC body once (pre-event-walk) and:
+--   1. For each `Assign(local L, RvRef(<place with globalName g>, _))`,
+--      emits a fresh monadic let-bind `let gN ← <g>` *and* seeds
+--      `vm[L] := .var gN`. The bind is mandatory because every
+--      global is `Result`-typed in our emit and call arguments /
+--      field accesses need the unwrapped value.
+--   2. For each re-borrow `Assign(local L, RvRef(<place with
+--      placeRef.local_ in vm>, _))`, propagates the seeded var
+--      unchanged (`&*v ≡ v` at pure-IR level).
+--   3. For each `Assign(local L, Use(Copy/Move <place with
+--      placeRef.local_ in vm>))`, propagates the seeded var unchanged
+--      (any projection threading is left to the event walker's
+--      `applyFieldProj` at the use site).
+--
+-- Walks nested blocks (loops + switch arms) defensively even though
+-- const-fn bodies are flat in practice. Names use a `g<L>` shape
+-- (collision-safe: each LLBC local L gets at most one seed) to
+-- minimise interference with the event walker's `tN` fresh-name
+-- counter.
+
+/-- Accumulator state for the seed pass. -/
+structure SeedAcc where
+  vm : VarMap := {}
+  binds : Array Bind := #[]
+  deriving Inhabited
+
+mutual
+
+partial def seedGlobalRefsFromBlock
+    : Raw.LlbcBlock → SeedAcc → SeedAcc
+| .mk _ stmts, acc =>
+  stmts.foldl (init := acc) fun acc s =>
+    seedGlobalRefsFromStatement s acc
+
+partial def seedGlobalRefsFromStatement
+    : Raw.LlbcStatement → SeedAcc → SeedAcc
+| .mk kind _, acc =>
+  match kind with
+  | .assign place rvalue =>
+    match rvalue with
+    | .ref placeRef _ =>
+      match placeRef.globalName with
+      | some g =>
+        -- Session 5 (Item 1): skip globals whose name carries
+        -- generic params (`<T, N>` in `constants::{constants::V<T,
+        -- N>}::LEN`). Without threading the caller's generics through
+        -- the seed (the cert events don't surface the instantiation),
+        -- the emitted call would lack the implicit type arg and fail
+        -- elaboration. Curly impl-paths (`{u32}` etc.) don't carry
+        -- generic params and stay in scope.
+        if g.contains '<' then acc
+        else
+          let name := s!"g{place.local_}"
+          { acc with
+              vm := acc.vm.insert place.local_ (.var name)
+              binds := acc.binds.push (.regular name (.app g #[])) }
+      | none =>
+        match acc.vm[placeRef.local_]? with
+        | some v => { acc with vm := acc.vm.insert place.local_ v }
+        | none => acc
+    | .use op =>
+      let propagate (p : Raw.LlbcPlace) : SeedAcc :=
+        match acc.vm[p.local_]? with
+        | some v => { acc with vm := acc.vm.insert place.local_ v }
+        | none => acc
+      match op with
+      | .copy p => propagate p
+      | .move p => propagate p
+      | _ => acc
+    | _ => acc
+  | .block b => seedGlobalRefsFromBlock b acc
+  | .loopStmt b => seedGlobalRefsFromBlock b acc
+  | .switch sw => seedGlobalRefsFromSwitch sw acc
+  | _ => acc
+
+partial def seedGlobalRefsFromSwitch
+    : Raw.LlbcSwitch → SeedAcc → SeedAcc
+| .ifBool _ t e, acc =>
+  seedGlobalRefsFromBlock e (seedGlobalRefsFromBlock t acc)
+| .switchInt _ _ arms dflt, acc =>
+  let acc := arms.foldl (init := acc)
+    fun acc (_, b) => seedGlobalRefsFromBlock b acc
+  seedGlobalRefsFromBlock dflt acc
+| .match_ _ arms dfltOpt, acc =>
+  let acc := arms.foldl (init := acc)
+    fun acc (_, b) => seedGlobalRefsFromBlock b acc
+  match dfltOpt with
+  | some b => seedGlobalRefsFromBlock b acc
+  | none => acc
+
+end
+
 /-- Translate a function's cert + replay into a Pure decl.
 
     The forward translator walks `f.events`, updates a per-local
@@ -2194,8 +2298,19 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- Lean code. Driver should always route loops through
   -- `translateLoopFun`.
   -- Initial var map: input local 1 ↦ x1, local 2 ↦ x2, ...
+  -- Session 5 (Item 1): also pre-seed locals that the LLBC body binds
+  -- to global references, and accumulate the `let gN ← <global>`
+  -- monadic let-binds those references require. The cert event log
+  -- doesn't carry the `RvRef(PlaceGlobal g)` borrows that Charon's
+  -- pre-pass inserted; without this seed, `lookupPlace local L [Deref]`
+  -- falls back to a typed-zero placeholder and call args / field
+  -- accesses misuse the `Result`-typed global. See
+  -- `seedGlobalRefsFromBlock`.
+  let seedAcc : SeedAcc := match lf.body with
+    | some b => seedGlobalRefsFromBlock b {}
+    | none => {}
   let initVm : VarMap := Id.run do
-    let mut m : VarMap := {}
+    let mut m : VarMap := seedAcc.vm
     for i in [0:numParams] do
       m := m.insert (i + 1) (.var (paramName (i + 1)))
     return m
@@ -2220,9 +2335,17 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
       for i in [0:lf.localsTypes.size] do
         m := m.insert i lf.localsTypes[i]!
     return m
+  -- Session 5 (Item 1): seed the initial walk-state with the binds
+  -- the global-ref seed pass produced. These prepend the body so the
+  -- function-level `let g<L> ← <global>` shows up before any
+  -- event-walk-generated bind. Order within `seedAcc.binds` is
+  -- LLBC-statement order, matching Charon's pre-pass insertion order
+  -- (`g<L>` for the smallest `L` first), so a later global that
+  -- references an earlier one resolves in scope.
   let finalSt : WalkState :=
     walkEvents f.events
-      { vm := initVm, numParams, tdm, localTypes := initLocalTypes }
+      { vm := initVm, numParams, tdm, localTypes := initLocalTypes,
+        binds := seedAcc.binds }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
   -- M9.5i / M9.7o-E5b: thread the structured `LlbcSignature` so a

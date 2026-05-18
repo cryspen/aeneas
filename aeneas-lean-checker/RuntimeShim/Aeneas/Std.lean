@@ -413,6 +413,15 @@ namespace core
 namespace num
 
 namespace U32
+-- Session 5 (Item 1, constants + scalars fixtures): primitive integer
+-- builtins surfaced through the cert walker's new global-ref pass.
+--   MAX/MIN     : `pub const X1: u32 = u32::MAX;`  (constants fixture)
+--   BITS        : `pub fn u32_use_bits() -> u32 { u32::BITS }` (scalars)
+-- The standard backend resolves the same calls through the real
+-- `Std.U32.MAX`/`Std.U32.BITS` constants.
+@[inline] def MAX : Aeneas.Std.Result Aeneas.Std.U32 := .ok 0xFFFFFFFF#u32
+@[inline] def MIN : Aeneas.Std.Result Aeneas.Std.U32 := .ok 0#u32
+@[inline] def BITS : Aeneas.Std.Result Aeneas.Std.U32 := .ok 32#u32
 @[inline] def wrapping_add (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
   .ok (UInt32.add a b)
 @[inline] def wrapping_sub (a b : Aeneas.Std.U32) : Aeneas.Std.Result Aeneas.Std.U32 :=
@@ -434,6 +443,11 @@ end U32
 -- helpers. Mirror the U32 set so cert emit of `i32_use_wrapping_add`
 -- (call: `core.num.I32.wrapping_add`) resolves.
 namespace I32
+-- Session 5 (Item 1): I32 counterparts for the U32 trio above. Note
+-- BITS is U32-typed (matches Rust's `i32::BITS : u32`).
+@[inline] def MAX : Aeneas.Std.Result Aeneas.Std.I32 := .ok 0x7FFFFFFF#i32
+@[inline] def MIN : Aeneas.Std.Result Aeneas.Std.I32 := .ok (-0x80000000)#i32
+@[inline] def BITS : Aeneas.Std.Result Aeneas.Std.U32 := .ok 32#u32
 @[inline] def wrapping_add (a b : Aeneas.Std.I32) : Aeneas.Std.Result Aeneas.Std.I32 :=
   .ok (Int32.add a b)
 @[inline] def wrapping_sub (a b : Aeneas.Std.I32) : Aeneas.Std.Result Aeneas.Std.I32 :=
