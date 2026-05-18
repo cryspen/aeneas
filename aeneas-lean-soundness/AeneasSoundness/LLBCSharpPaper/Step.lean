@@ -482,18 +482,29 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       tracked loans are released and any `tokenClearLocals` are
       reset.
 
-      Premises (baseline): `Ω.abs abs = some r` — the abs exists.
-      Phase C strengthens with the matching-loan-release condition
-      (every id in `releasedLoans` is in `r.roles` as a mutLoan).
+      Premises (M10.x.6, post-vestigial-existential drop): none.
+      The previous `Ω.abs abs = some r` premise bound `r` which was
+      never used in the post-state (vestigial-existential, same
+      pattern as M10.x.4 / M10.x.5). Phase C-strengthening with a
+      matching-loan-release condition (every id in `releasedLoans`
+      is in `r.roles` as a mutLoan) is still future work.
 
-      Post-state: drop the abs from `Ω.abs`. The `tokenClearLocals`
-      reset is folded into the local-clear step. -/
+      Post-state (M10.x.6 strengthening): drop the abs from `Ω.abs`
+      then fold `clearMutLoanToken` over `tokenClearLocals`. This
+      matches the replayer's `stepEndAbs` exactly: loans-erase on
+      the replayer side is `concretise`-no-op (loans aren't in
+      `LLBCState`), token-clear is the env-rewrite of `mutLoan _`
+      slots to `bottom`, removeAbsShape is `removeAbs`. Without
+      the fold the paper-side ctx would still carry stale
+      `.mutLoan b` tokens for loans the abs released, which
+      `concretise` reflects directly. Phase C may further refine
+      the conditional (currently any `.mutLoan _` is cleared; a
+      stricter `b ∈ releasedLoans` guard would also be sound and
+      mirror the replayer's pattern match). -/
   | endAbs {Ω : LLBCState} {abs : AbsId} {finalValues : Array SymExpr}
-      {releasedLoans : Array LoanId} {tokenClearLocals : Array LocalId}
-      {r : RegionAbs} :
-      Ω.abs abs = some r →
+      {releasedLoans : Array LoanId} {tokenClearLocals : Array LocalId} :
       LStep Ω (.endAbs abs finalValues releasedLoans tokenClearLocals)
-        (Ω.removeAbs abs)
+        (tokenClearLocals.foldl (init := Ω.removeAbs abs) LLBCState.clearMutLoanToken)
 
   /-- Lazy mut-borrow expansion (paper §4.1 rewriting). The OCaml
       interpreter just replaced symbolic value `svId` with a
@@ -503,19 +514,27 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
 
       Premises (baseline): `bid` and `innerSv` fresh.
 
-      Post-state: bump freshness counters past `bid`, `innerSv`.
-      The substitution itself (rewriting every `Val.sym svId` to
-      `Val.mutBorrow bid (.sym innerSv)`) is the
-      `substLocals` / `substLoans` job — modelled here as a no-op
-      on ctx pending the Phase-C `SubstScope_Complete` premise
-      (plan §3.4 risk on substitution scope). -/
+      Post-state (M10.x.8 strengthening): bump freshness counters
+      past `bid`, `innerSv`, and fold the paper-side
+      `substLocalOne svId bid` mirror over `substLocals` (rewriting
+      each `Val.sym svId` in ctx to `Val.mutLoan bid`). The
+      `substLoans` array doesn't enter the post-state because
+      `concretise` doesn't read the replayer's `loans` field
+      (loan inner values live inside `ctx`'s `mutLoan b` tokens /
+      inside abs's role lists; `loans` is replayer-only bookkeeping).
+      Pre-M10.x.8 this rule was a no-op on substitution; 418/423
+      EvSymExpandMutBorrow fixtures emit non-empty substLocals, so
+      keeping the rule a no-op required the now-retired
+      `CertGen_faithful.symExpandMutBorrow` axiom to claim
+      `substLocals = #[]` falsely. -/
   | symExpandMutBorrow {Ω : LLBCState} {svId bid innerSv : Nat}
       {parentAbs : Option AbsId} {substLocals substLoans : Array Nat} :
       Ω.loanIdFresh bid →
       Ω.symValIdFresh innerSv →
       LStep Ω
         (.symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans)
-        ((Ω.bumpLoanId bid).bumpSymValId innerSv)
+        (((substLocals.foldl
+              (init := Ω) (LLBCState.substLocalOne svId bid)).bumpLoanId bid).bumpSymValId innerSv)
 
   -- Fig. 11 — join rules (M10.0h) ---
 
@@ -539,13 +558,27 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       side has computed the loop-region-abstraction's content from
       its loanRegistry and is asserting the snapshot `invariant`.
 
-      Premises (baseline): trivial (the loanRegistry-to-abs
-      consistency is Phase-C C17 territory). State unchanged at
-      this layer; the actual region-abstraction installation
-      surfaces via the subsequent `EvMutBorrow … MbkLoopOwned`
-      / `EvEndAbs` pair. -/
+      Premises (M10.x.7, post-strengthening): none. The previous
+      cert-emission premise (loanRegistry-to-abs consistency) was
+      tracked at the Typecheck layer (`Consistency.lean`'s
+      `seenAbs`); the per-step rule doesn't need to re-check.
+
+      Post-state (M10.x.7 strengthening): for each `(b, _) ∈
+      loanRegistry`, `bumpLoanId b` (unconditional). The replayer
+      conditionally `addLoan b .bottom .reborrow`-s (skipping if
+      `b` is already in `st.loans`), but on the paper side both
+      arms collapse to `bumpLoanId b` modulo the HwmInvariant —
+      the skip arm is `Ω.bumpLoanId b = Ω` when `b < nextLoanId`,
+      and `concretise` is loans-insensitive (loans live inside
+      `ctx` as `mutLoan` tokens / inside `abs`'s role lists, not
+      in a separate field). The previous `Ω → Ω` no-op rule was
+      strictly weaker than the replayer's behavior; it required a
+      `loanRegistry = #[]` premise via `CertGen_faithful.loopInv`
+      to close, which M10.x.7 retires. -/
   | loopInv {Ω : LLBCState} {loopId : Nat} {invariant : StateSummary}
       {loanRegistry : Array (Nat × Nat)} :
-      LStep Ω (.loopInv loopId invariant loanRegistry) Ω
+      LStep Ω (.loopInv loopId invariant loanRegistry)
+        (loanRegistry.foldl (init := Ω)
+          (fun Ω' entry => Ω'.bumpLoanId entry.1))
 
 end AeneasSoundness.LLBCSharpPaper

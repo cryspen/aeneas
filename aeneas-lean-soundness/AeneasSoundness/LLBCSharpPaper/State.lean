@@ -122,6 +122,31 @@ def setAbs (Ω : LLBCState) (a : AbsId) (r : RegionAbs) : LLBCState :=
 def removeAbs (Ω : LLBCState) (a : AbsId) : LLBCState :=
   { Ω with abs := Function.update Ω.abs a none }
 
+/-- M10.x.6 (paper-side mirror of the replayer's `tokenClearOne`). The
+    `LStep.endAbs` rule's post-state folds this over each
+    `tokenClearLocals` entry: if the slot holds a `Val.mutLoan _` token
+    it gets rewritten to `.bottom`; non-mutLoan slots (including
+    `none`) are unchanged. The conditional matches the replayer's
+    `match newEnv[l]? with | some (.mutLoan _) => ... | _ => ...`
+    arm-for-arm, with `liftVal` preserving the `.mutLoan` constructor
+    so the per-step commute closes by case analysis. -/
+def clearMutLoanToken (Ω : LLBCState) (x : LocalId) : LLBCState :=
+  match Ω.ctx x with
+  | some (.mutLoan _) => Ω.setLocal x .bottom
+  | _ => Ω
+
+/-- M10.x.8 (paper-side mirror of the replayer's `substLocalsOne`).
+    The `LStep.symExpandMutBorrow` rule's post-state folds this over
+    each `substLocals` entry: if the slot holds a `Val.sym k` token
+    with `k = svId`, overwrite to `.mutLoan bid`; otherwise unchanged.
+    `liftVal` preserves `.sym _` and `.mutLoan _` exactly, so the
+    per-step commute closes by case analysis. -/
+def substLocalOne (svId bid : SymValId) (Ω : LLBCState) (x : LocalId) :
+    LLBCState :=
+  match Ω.ctx x with
+  | some (.sym k) => if k = svId then Ω.setLocal x (.mutLoan bid) else Ω
+  | _ => Ω
+
 /-! ## Freshness -/
 
 /-- Bump `nextLoanId` past `ℓ`. Idempotent if `ℓ < nextLoanId`. -/

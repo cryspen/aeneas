@@ -326,36 +326,27 @@ def stepSymExpandMutBorrow (st : SymState) (svId bid innerSv : Nat)
     Result SymState := do
   if st.loans.contains bid then
     fail s!"E-SymExpandMutBorrow: borrow id {bid} already live"
-  -- M9.6 (Option C, plan §7.1 #23) — strict-only path: the OCaml
-  -- side enumerates the env locals and loan-given slots it
-  -- touched (commit #6 source). The M9.5r scan-env fallback is
-  -- gone — when the hint arrays are empty we do no substitution
-  -- (a legacy v1 cert that needs the rewrite is now a cert bug,
-  -- caught at the next event). The OCaml ctx tracks function-
-  -- parameter and abstraction-bound locals the Lean SymState
-  -- doesn't model, so we tolerate "unbound local" and
-  -- "unknown loan" entries in the hints silently — only env
-  -- slots / loans we already track get rewritten.
-  -- [parentAbs] is recorded by commit #19's AbsRegistry
-  -- consumer; ignored here.
-  let mut newEnv := st.env
-  for l in substLocals do
-    match newEnv[l]? with
-    | some (.sym k) =>
-      if k = svId then newEnv := newEnv.insert l (.mutLoan bid)
-    | _ => pure ()
-  let mut newLoans := st.loans
-  for b in substLoans do
-    match newLoans[b]? with
-    | some li =>
-      match li.given with
-      | .sym k =>
-        if k = svId then
-          newLoans := newLoans.insert b { li with given := .mutLoan bid }
-      | _ => pure ()
-    | none => pure ()
-  let st := { st with env := newEnv, loans := newLoans }
-  return st.addLoan bid (.sym innerSv) .lazyExpand
+  else if st.loanIdHwm > bid then
+    -- M10.x.8: monotone-allocator strengthening, mirrors stepMutBorrow.
+    -- Discharges `CertGen_faithful.symExpandMutBorrow`'s `st.loanIdHwm ≤ bid`
+    -- clause via hStep inversion. G4 pre-flight: no fixture currently
+    -- violates this (all bid emissions are monotone-fresh).
+    fail s!"E-SymExpandMutBorrow: borrow id {bid} below HWM {st.loanIdHwm}"
+  else
+    -- M9.6 (Option C, plan §7.1 #23) — strict-only path: the OCaml
+    -- side enumerates the env locals and loan-given slots it
+    -- touched (commit #6 source). The M9.5r scan-env fallback is
+    -- gone. Unbound locals / unknown loans in the hints are tolerated
+    -- silently (only tracked slots get rewritten). [parentAbs] is
+    -- recorded by commit #19's AbsRegistry consumer; ignored here.
+    --
+    -- M10.x.8: refactored from `for + mut` to explicit `Array.foldl`
+    -- over `substLocalsOne` / `substLoansOne` so the soundness proof
+    -- can chain per-step commute lemmas.
+    let newEnv := substLocals.foldl (init := st.env) (substLocalsOne svId bid)
+    let newLoans := substLoans.foldl (init := st.loans) (substLoansOne svId bid)
+    let st := { st with env := newEnv, loans := newLoans }
+    return st.addLoan bid (.sym innerSv) .lazyExpand
 
 /-! ## E-EndAbstraction
 
@@ -373,16 +364,23 @@ makes the paper.rs `call_choose` pattern check — loan 1 flowed into
 the call's abstraction, is implicitly ended on EvEndAbs, and so
 must no longer count as "live at function exit". -/
 
-def stepEndAbs (st : SymState) (absId : Nat) (released : Array Nat)
-    (tokenClearLocals : Array Nat := #[]) : Result SymState := do
-  -- M9.6 (Option C, plan §4.1.8): when the closing abstraction is
-  -- in [absRegistry] (populated by [stepCall.absSig] in commit
-  -- #7's path), validate that every released loan matches one of
-  -- its recorded MutBorrow / MutLoan roles. Roles for unreleased
-  -- loans are fine — the abstraction may carry side-channel
-  -- borrows that don't end here. Unrecognised loan ids in the
-  -- released list are a cert violation when the registry has the
-  -- abs but doesn't list the loan.
+/-- M10.x.6: pure post-validation body for `stepEndAbs`. Computes the
+    deterministic post-state given that validation succeeded. Used by
+    `stepEndAbs_sound` to side-step inversion on the validation `do`
+    block; the soundness proof inverts `hStep` to extract this body's
+    output and then applies the M10.x.6 commute lemmas. -/
+def stepEndAbsBody (st : SymState) (absId : Nat) (released : Array Nat)
+    (tokenClearLocals : Array Nat) : SymState :=
+  let st := released.foldl (init := st) loansEraseIfPresent
+  let newEnv := tokenClearLocals.foldl (init := st.env) tokenClearOne
+  ({ st with env := newEnv } : SymState).removeAbsShape absId
+
+/-- M10.x.6: validation half of `stepEndAbs`. Returns `()` on success,
+    `fail` on a released loan not matching the abs's role list. Kept
+    as a `Result Unit` so the do-block continues exactly when the
+    cert's released list is consistent with the recorded abs shape. -/
+def stepEndAbsValidate (st : SymState) (absId : Nat) (released : Array Nat) :
+    Result Unit := do
   match st.absRegistry[absId]? with
   | none => pure ()
   | some shape =>
@@ -394,27 +392,19 @@ def stepEndAbs (st : SymState) (absId : Nat) (released : Array Nat)
     for l in released do
       if !knownLoans.contains l then
         fail s!"E-EndAbs: abs {absId} released loan {l} not in its role list"
-  let mut st := st
-  for loan in released do
-    if st.loans.contains loan then
-      st := { st with loans := st.loans.erase loan }
-  -- M9.6 (Option C, plan §7.1 #23) — strict-only path: clear
-  -- exactly the locals named by [tokenClearLocals] (commit #8
-  -- source). The M9.5s env-scan fallback is gone. Unbound
-  -- locals are silently skipped.
-  let mut newEnv := st.env
-  for l in tokenClearLocals do
-    match newEnv[l]? with
-    | some (.mutLoan _) => newEnv := newEnv.insert l .bottom
-    | _ => pure ()
-  st := { st with env := newEnv }
-  -- M10.1i (soundness side): drop the closing abs's registry
-  -- entry so [concretise st'.abs absId = none] matches the paper's
-  -- `Ω.removeAbs abs`. `absIdHwm` is left untouched (monotone
-  -- mirror of paper's nextAbsId). No other replayer code reads
-  -- erased entries — grep confirms only stepCall populates /
-  -- stepEndAbs reads.
-  return st.removeAbsShape absId
+
+def stepEndAbs (st : SymState) (absId : Nat) (released : Array Nat)
+    (tokenClearLocals : Array Nat := #[]) : Result SymState := do
+  -- M9.6 (Option C, plan §4.1.8): validate released loans against the
+  -- recorded abs role list (silent skip if absRegistry has no entry).
+  -- M10.x.6 factored out as `stepEndAbsValidate` so the soundness
+  -- proof can decouple validation-success from body-output.
+  let _ ← stepEndAbsValidate st absId released
+  -- M10.x.6: deterministic three-phase body (loan-erase fold →
+  -- token-clear env fold → removeAbsShape). The fold structure
+  -- mirrors the paper-side `LStep.endAbs` post-state's
+  -- `tokenClearLocals.foldl clearMutLoanToken (Ω.removeAbs abs)`.
+  return stepEndAbsBody st absId released tokenClearLocals
 
 def stepAssert (_st : SymState) (cond : SymExpr) (expected : Bool) :
     Result Unit := do
