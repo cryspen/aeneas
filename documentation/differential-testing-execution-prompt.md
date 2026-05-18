@@ -31,10 +31,10 @@ Read these in order before dispatching anything:
    - `tests/lean-checker/lean-diff/` — G_lean executed harness (3
      fixtures, 60 vectors; already passing)
 4. **Cert-pipeline orientation** (skim, don't read in full):
-   - `documentation/verified-pipeline-architecture.md` (pipeline
-     overview)
-   - `documentation/llbc-sharp-soundness-plan.md` (M10 campaign
-     context; M10 agent is actively committing to the parent branch)
+   - `documentation/certificate-pipeline.md` (architecture, theorems
+     proven, how to run; replaces the older `verified-pipeline-
+     architecture.md` + `llbc-sharp-soundness-plan.md` after the
+     M10 campaign closed)
 
 ## Critical operational constraints
 

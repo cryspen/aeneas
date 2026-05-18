@@ -1,13 +1,27 @@
 # Aeneas Documentation
 
-Aeneas translates Rust programs to into pure functional programs (primarily Lean) for formal verification.
+Aeneas translates Rust programs into pure functional programs (primarily Lean) for formal verification.
+
+## Core
 
 - [Getting Started](getting-started.md) — Rust to LLBC to Lean to first proof
 - [Aeneas Overview](aeneas-overview.md) — How Aeneas works, translation model, workflow
-- [Proof Strategies](proof-strategies.md) — Step, loops, decomposition, specs
-- [Tactics Reference](tactics-reference.md) — All tactics with docstrings and examples
-- [Tips, Tricks & Pitfalls](tips-and-tricks.md) — Common pitfalls and how to avoid them
-- [Crypto Verification](crypto-verification.md) — Verifying cryptographic code
-- [Glossary](glossary.md) — Aeneas-specific terms
+- [Certificate-based Pipeline](certificate-pipeline.md) — Cert checker architecture, soundness theorems, how to run
+- [Glossary](glossary.md)
 
-For AI agent instructions see the [skills/](skills/) folder.
+## Proof engineering
+
+- [Proof Strategies](proof-strategies.md)
+- [Tactics Reference](tactics-reference.md)
+- [Tips, Tricks & Pitfalls](tips-and-tricks.md)
+- [Crypto Verification](crypto-verification.md)
+
+## Upstreaming (active planning)
+
+- [Differential Testing Plan](differential-testing-plan.md) — four-artifact audit
+- [Differential Testing Progress](differential-testing-progress.md)
+- [Differential Testing Execution Prompt](differential-testing-execution-prompt.md)
+
+## AI agents
+
+See [skills/](skills/) for agent instructions.

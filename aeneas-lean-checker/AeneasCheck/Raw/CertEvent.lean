@@ -76,11 +76,9 @@ These types are the Lean mirror of the JSON hints introduced in
 `cert_fmt_version = 2`. They are carried as optional fields on the
 existing `Event` constructors (with defaults that preserve the
 pragmatic behaviour of v1 certs). The Lean checker's "strict path"
-(landed across plan §7.1 commits #13-#23) consumes them; the JSON
-parser fills the defaults for any v1 cert or any v2 cert that omits
-the field. See `documentation/option-c-implementation-plan.md` §1 for
-the per-field specification and `documentation/cert-format-and-soundness.md`
-§3.2 for the pragmatic shortcuts each hint eliminates. -/
+consumes them; the JSON parser fills the defaults for any v1 cert
+or any v2 cert that omits the field. See
+`documentation/certificate-pipeline.md` for the cert format overview. -/
 
 /-- M9.6: classification of an `EvMutBorrow`. Subsumes the
     pragmatic M9.5w (Deref-projection ⇒ reborrow-class) and M9.5aa
