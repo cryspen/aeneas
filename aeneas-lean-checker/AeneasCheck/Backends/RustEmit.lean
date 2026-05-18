@@ -178,6 +178,23 @@ partial def PExpr.toRust : PExpr → String
     rustifyPath name
   | .lit l => litToRust l
   | .app head args =>
+    -- Session 6: a synthesised `as`-cast head. Forward.lean emits
+    -- `.app "__cast::<rust_ty>" #[inner]` for an LLBC-level
+    -- `UnaryOp (Cast (CastScalar _), _)`; here we unwrap it to Rust's
+    -- `(<inner> as <rust_ty>)` syntax. The head's suffix is already a
+    -- valid Rust primitive name (`"i32"`, `"u32"`, `"usize"`, etc.).
+    if head.startsWith "__cast::" then
+      match args.toList with
+      | [inner] =>
+        let ty : String := (head.drop "__cast::".length).toString
+        "(" ++ inner.toRust ++ " as " ++ ty ++ ")"
+      | _ =>
+        -- Shouldn't happen — cast heads are unary. Fall back to the
+        -- generic call render.
+        let head := rustifyPath head
+        if args.isEmpty then head
+        else s!"{head}(" ++ String.intercalate ", " (args.toList.map PExpr.toRust) ++ ")"
+    else
     match binopRustOp head, binopRustMethod head, args.toList with
     | some op, _, [l, r] =>
       "(" ++ l.toRust ++ " " ++ op ++ " " ++ r.toRust ++ ")"

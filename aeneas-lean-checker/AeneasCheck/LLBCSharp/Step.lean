@@ -62,6 +62,13 @@ def evalSymExpr (st : SymState) (e : SymExpr) : Result Val := do
     -- translator handles record-literal rendering via the EvAssign
     -- rhs. Project to a fresh sym-0 token.
     return .sym 0
+  | .symCast _ inner =>
+    -- Session 6: a cast wraps an inner SymExpr; at the abstract
+    -- symbolic-state level a cast does not change the witness
+    -- identity (it's a bit-pattern reinterpretation that the
+    -- replayer's coarse `Val` lattice does not refine). Recurse on
+    -- the inner expr and return whatever witness it produces.
+    evalSymExpr st inner
 
 /-! ## E-MutBorrow
 
@@ -471,6 +478,10 @@ def valOfSymExpr : SymExpr → Val
   -- `symCopy`/`symMove` case.
   | .symTuple _ => .bottom
   | .symRecord _ _ => .bottom
+  -- Session 6: a cast wraps an inner SymExpr. The join witness side
+  -- treats the cast result as `.bottom` since the abstract lattice
+  -- doesn't distinguish bit-pattern reinterpretations.
+  | .symCast _ _ => .bottom
 
 /-- Structural equality on `SymExpr` cert values, used by the M9.6
     strict join check (and only there). Two `SymVal n` are equal

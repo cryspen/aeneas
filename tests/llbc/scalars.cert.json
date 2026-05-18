@@ -2244,6 +2244,27 @@
             }
           }
         },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u16",
+                "inner": {
+                  "SymMove": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                  }
+                }
+              }
+            }
+          }
+        },
         "EvReturn",
         {
           "EvMove": {
@@ -2261,7 +2282,7 @@
         }
       ],
       "final_state": { "env": [], "live_loans": [] },
-      "stmt_refs": [ null, null, null, null, null ]
+      "stmt_refs": [ null, null, null, null, null, null ]
     },
     {
       "fn_id": 18,
@@ -2318,6 +2339,27 @@
             }
           }
         },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u32",
+                "inner": {
+                  "SymMove": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))"
+                  }
+                }
+              }
+            }
+          }
+        },
         "EvReturn",
         {
           "EvMove": {
@@ -2335,7 +2377,7 @@
         }
       ],
       "final_state": { "env": [], "live_loans": [] },
-      "stmt_refs": [ null, null, null, null, null ]
+      "stmt_refs": [ null, null, null, null, null, null ]
     },
     {
       "fn_id": 19,
@@ -2392,6 +2434,27 @@
             }
           }
         },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I16))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "i16",
+                "inner": {
+                  "SymMove": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                  }
+                }
+              }
+            }
+          }
+        },
         "EvReturn",
         {
           "EvMove": {
@@ -2409,7 +2472,7 @@
         }
       ],
       "final_state": { "env": [], "live_loans": [] },
-      "stmt_refs": [ null, null, null, null, null ]
+      "stmt_refs": [ null, null, null, null, null, null ]
     },
     {
       "fn_id": 20,
@@ -2466,6 +2529,27 @@
             }
           }
         },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u32",
+                "inner": {
+                  "SymMove": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I16))"
+                  }
+                }
+              }
+            }
+          }
+        },
         "EvReturn",
         {
           "EvMove": {
@@ -2483,7 +2567,7 @@
         }
       ],
       "final_state": { "env": [], "live_loans": [] },
-      "stmt_refs": [ null, null, null, null, null ]
+      "stmt_refs": [ null, null, null, null, null, null ]
     },
     {
       "fn_id": 21,

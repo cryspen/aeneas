@@ -153,6 +153,9 @@ private partial def symExprPlaceRefs : SymExpr → Array (String × Place)
     fs.foldl (init := #[]) fun acc f => acc ++ symExprPlaceRefs f
   | .symRecord _ fs =>
     fs.foldl (init := #[]) fun acc (_, f) => acc ++ symExprPlaceRefs f
+  -- Session 6: cast — recurse on the inner expression so its
+  -- embedded place (if any) is collected.
+  | .symCast _ inner => symExprPlaceRefs inner
   | _ => #[]
 
 /-- M9.7i: places that appear inside an `Event`'s rhs/args/witness

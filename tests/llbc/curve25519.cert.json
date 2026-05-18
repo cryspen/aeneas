@@ -58,6 +58,27 @@
           }
         },
         {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U128))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u128",
+                "inner": {
+                  "SymMove": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
           "EvCopy": {
             "src": {
               "local": 2,
@@ -98,6 +119,27 @@
               "local": 6,
               "projection": [],
               "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U128))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u128",
+                "inner": {
+                  "SymMove": {
+                    "local": 6,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+                  }
+                }
+              }
             }
           }
         },
@@ -202,7 +244,7 @@
       "final_state": { "env": [], "live_loans": [] },
       "stmt_refs": [
         null, null, null, null, null, null, null, null, null, null, null,
-        null, null
+        null, null, null, null
       ]
     },
     {

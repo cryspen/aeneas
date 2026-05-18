@@ -156,6 +156,14 @@ partial def parseSymExpr (j : Json) : Result SymExpr := do
       let v ← parseSymExpr (← field fj "value")
       return (n, v)
     return .symRecord adtId fields
+  | "SymCast" =>
+    -- Session 6: an `as`-cast result. Payload is
+    -- `{ target_ty: "<rust ty tag>", inner: <SymExpr> }`. The target
+    -- ty tag is a short string like "i32" / "u32" / "usize" — the
+    -- OCaml side stringifies `literal_type` at emit time.
+    let targetTy ← asStr (← field payload "target_ty")
+    let inner ← parseSymExpr (← field payload "inner")
+    return .symCast targetTy inner
   | _ => fail s!"unknown SymExpr tag: {tag}"
 
 def parseRestoreInfo (j : Json) : Result RestoreInfo := do

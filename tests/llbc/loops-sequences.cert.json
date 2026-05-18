@@ -836,6 +836,27 @@
         {
           "EvAssign": {
             "dst": {
+              "local": 63,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u8",
+                "inner": {
+                  "SymMove": {
+                    "local": 15,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
               "local": 19,
               "projection": [],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
@@ -1893,6 +1914,27 @@
         {
           "EvAssign": {
             "dst": {
+              "local": 65,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u8",
+                "inner": {
+                  "SymMove": {
+                    "local": 40,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
               "local": 44,
               "projection": [],
               "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
@@ -2727,7 +2769,7 @@
         null, null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null,
-        null, null, null, null, null, null
+        null, null, null, null, null, null, null, null
       ]
     },
     {

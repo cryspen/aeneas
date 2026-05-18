@@ -300,6 +300,57 @@ pub mod demo {
     }
 }
 
+// Session 6 — Item 1: cast keyword + get_max branch-variable fixes.
+// Both bugs lived in the cert walker:
+//   * `as`-casts dropped the wrapper, producing `def f(x: u32) -> i32 { x }`.
+//     Fixed by surfacing `Rvalue.UnaryOp (Cast (CastScalar _), _)` as a
+//     new `SymCast` event RHS in the OCaml cert serializer, with
+//     `Forward.lean` lifting it to `.app "__cast::<rust_ty>" #[inner]`
+//     and RustEmit / LeanEmit recognising the head.
+//   * `get_max`'s if-cond picked the first input param instead of the
+//     freshly-bound bool result of the preceding EvBinop. Fixed by
+//     making `.returnTailed`'s cond detection prefer `st.lastWrite`'s
+//     vm entry.
+pub mod no_nested_borrows {
+    #![allow(unused_variables, dead_code, unused_parens, unused_mut, non_snake_case)]
+
+    // R₀: verbatim from `tests/src/no_nested_borrows.rs`.
+    pub fn cast_u32_to_i32_ref(x: u32) -> i32 {
+        x as i32
+    }
+
+    pub fn cast_bool_to_i32_ref(x: bool) -> i32 {
+        x as i32
+    }
+
+    pub fn cast_bool_to_bool_ref(x: bool) -> bool {
+        x as bool
+    }
+
+    pub fn get_max_ref(x: u32, y: u32) -> u32 {
+        if x >= y { x } else { y }
+    }
+
+    // R₁: verbatim from `/tmp/nnb.rs` (the `aeneas-check --rust-model`
+    // emit, post-Session-6 cert-walker fixes).
+    pub fn cast_u32_to_i32_model(x1: u32) -> i32 {
+        (x1 as i32)
+    }
+
+    pub fn cast_bool_to_i32_model(x1: bool) -> i32 {
+        (x1 as i32)
+    }
+
+    pub fn cast_bool_to_bool_model(x1: bool) -> bool {
+        x1
+    }
+
+    pub fn get_max_model(x1: u32, x2: u32) -> u32 {
+        let t0 = (x1 >= x2);
+        if t0 { x1 } else { x2 }
+    }
+}
+
 pub mod enums_payload {
     #![allow(unused_variables, dead_code, unused_parens, unused_mut, non_snake_case)]
 

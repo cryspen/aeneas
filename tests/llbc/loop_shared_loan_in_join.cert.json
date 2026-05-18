@@ -766,6 +766,27 @@
           }
         },
         {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "usize",
+                "inner": {
+                  "SymMove": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
           "EvCopy": {
             "src": {
               "local": 3,
@@ -1893,7 +1914,7 @@
         null, null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null,
-        null, null, null, null, null, null
+        null, null, null, null, null, null, null
       ]
     }
   ],

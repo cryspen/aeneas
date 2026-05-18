@@ -440,6 +440,13 @@ partial def lookupSymExpr
   | .symRecord adtId fields =>
     let adtName := (tdm[adtId]?).map (·.name)
     .recordLit (fields.map fun (n, e) => (n, lookupSymExpr tdm localTypes vm e)) adtName
+  -- Session 6: an `as`-cast. We emit `.app "__cast::<targetTy>" #[inner]`;
+  -- RustEmit recognises the head and renders `(<inner> as <targetTy>)`,
+  -- LeanEmit renders a typed Lean coercion / shim call. The targetTy
+  -- string is the OCaml-stringified literal_type tag (`"i32"`, `"u32"`,
+  -- etc.) — both emitters re-stringify it to their target syntax.
+  | .symCast targetTy inner =>
+    .app s!"__cast::{targetTy}" #[lookupSymExpr tdm localTypes vm inner]
 
 /-- M9.5e/f: payload-binder-aware variant of [lookupSymExpr]. Same
     semantics as [lookupSymExpr] except a `symCopy` / `symMove` of a
@@ -470,6 +477,12 @@ partial def lookupSymExprWithBinders
     let adtName := (tdm[adtId]?).map (·.name)
     .recordLit (fields.map fun (n, e) =>
       (n, lookupSymExprWithBinders tdm localTypes vm payloadBinders e)) adtName
+  -- Session 6: an `as`-cast (binder-aware variant). Identical to
+  -- the non-binder case — casts cannot appear inside match-arm
+  -- payloads in current LLBC, so the binder map is not consulted.
+  | .symCast targetTy inner =>
+    .app s!"__cast::{targetTy}"
+      #[lookupSymExprWithBinders tdm localTypes vm payloadBinders inner]
 
 /-- Map an OCaml `cert_binop_string` tag onto a Pure `App` head. The
     head string is what the Lean emitter pretty-prints — see
@@ -706,7 +719,7 @@ def postLocalOfArg (vm : VarMap) : SymExpr → Nat
   | .symCopy p | .symMove p =>
     if vm.contains p.local_ then p.local_ else 1
   | .symVal _ | .symLit _ | .symMutBorrowTok _ | .symVariant _ _ _ _
-  | .symTuple _ | .symRecord _ _ => 0
+  | .symTuple _ | .symRecord _ _ | .symCast _ _ => 0
 
 /-- M12.2a-2: outcome of [findBranchEnd]'s lookahead.
     * `joined jIdx kIdx` — standard M11.2 if/else with a closing
@@ -1477,7 +1490,11 @@ def tailToResult (e : PExpr) : PExpr :=
     -- A pure binop (`BitXor`, `Lt`, `AddWrap`, …) similarly returns
     -- a non-Result value; wrap it. Monadic binops (`Add`, `Shl`, …)
     -- already produce `Result α` and are emitted bare.
-    if head.contains '.' || isPureBinop head then .ok e else e
+    -- Session 6: `__cast::<ty>` heads (synthesised by the cert walker
+    -- for `as`-casts) emit a pure typed coercion / Rust cast — wrap
+    -- in `ok` so the do-tail typechecks against `Result α`.
+    if head.contains '.' || isPureBinop head || head.startsWith "__cast::" then
+      .ok e else e
   | .ifThenElse _ _ _ => e  -- Branches are already Result-typed.
   | .matchE _ _ => e  -- M9.5d: arms are already Result-typed.
   | _ => .ok e
@@ -1787,29 +1804,30 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
           let rightEvs := (evs.extract (jIdx + 1) fEnd)
           let leftSub  := walkEvents leftEvs  { st with binds := #[] }
           let rightSub := walkEvents rightEvs { st with binds := #[], fresh := leftSub.fresh }
-          -- Pick the condition's surface form. Mirror the
-          -- M11.2 heuristic but without a join witness: look up the
-          -- parent's `vm` for the cond's symbolic id directly.
+          -- Pick the condition's surface form.
           --
-          -- The cond's sym id is `n`. M11.0's EvAssert(true) hook
-          -- typically fires *after* an EvAssign of the cond local
-          -- to a SymVal n; the parent's `vm` already has `vm[l] :=
-          -- .var <param>`. We scan for any local in vm whose entry
-          -- is a `.var` matching a known param name. Default to
-          -- `s{n}` if we can't refine.
+          -- Session 6 Item 1: prefer `st.lastWrite`'s vm entry. The
+          -- common case for `get_max`-shape switches is an EvBinop
+          -- writing a fresh `t0` to a bool local immediately before
+          -- the EvAssert(SymVal n, true) opener. `lastWrite` points
+          -- at that bool local; `vm[lastWrite]` is `.var "t0"` — the
+          -- right scrutinee. For `choose`-shape switches the bool
+          -- comes from a parameter copy (lastWrite still points at
+          -- the cond local, vm[lastWrite] = .var "b"). We fall back
+          -- to the legacy "first param" heuristic only when
+          -- lastWrite is absent, and final fallback is the raw
+          -- symbolic name `s{n}`.
           let cond : PExpr := Id.run do
-            -- Find which local holds a parameter named .var
-            -- pointing into the parent's params. The branch
-            -- marker's `cond` is `SymVal n`; the OCaml emits this
-            -- after `eval_operand` on a Bool-typed operand whose
-            -- value was just expanded. The cleanest signal: look
-            -- at the *last* EvAssign before `i` whose dst.local_
-            -- maps to a bool-typed param. As a coarse fallback,
-            -- pick the first input-parameter local that is in vm
-            -- and whose stored expression is `.var "xK"`.
+            -- Primary: vm[st.lastWrite].
+            match st.lastWrite with
+            | some lw =>
+              match st.vm[lw]? with
+              | some (.var name) => return .var name
+              | _ => pure ()
+            | none => pure ()
+            -- Secondary: legacy first-param scan.
             let mut found : Option PExpr := none
             for (l, e) in st.vm.toList do
-              -- Heuristic: prefer the lowest-numbered param.
               if 1 ≤ l ∧ l ≤ st.numParams then
                 match e with
                 | .var name =>

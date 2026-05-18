@@ -70,6 +70,18 @@ type cert_sym_expr =
           field carries its surface name (resolved via the cert type-decl
           table on the OCaml side). The Lean translator renders this as
           [{ x := e1, y := e2, ... }] (Lean record-literal syntax). *)
+  | SymCast of {
+      target_ty : string;
+      inner : cert_sym_expr;
+    }
+      (** [Session 6] An [as]-cast result: [<inner> as <target_ty>]. The
+          [target_ty] is a short stringified [literal_type] like
+          ["i32"], ["u32"], ["usize"], or ["bool"] — matching the
+          surface tags the Lean side uses for renderable Rust types.
+          Emitted by the rvalue arm for [UnaryOp (Cast (CastScalar _), _)];
+          consumed by the Lean cert walker to produce
+          [.app "__cast::<target_ty>" #[inner]] which the Rust/Lean
+          emitters render as [(inner as target_ty)] / a typed cast. *)
 [@@deriving show]
 
 (** A coarse summary of the abstract state at a particular point.

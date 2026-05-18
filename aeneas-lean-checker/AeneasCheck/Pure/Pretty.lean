@@ -245,6 +245,34 @@ partial def PExpr.toLeanDo : PExpr → String
   | .var name => name
   | .lit l => litToLean l
   | .app head args =>
+    -- Session 6: an `as`-cast head. Forward.lean emits
+    -- `.app "__cast::<rust_ty>" #[inner]` for an LLBC-level
+    -- `UnaryOp (Cast (CastScalar _), _)`; here we unwrap it to a
+    -- typed Lean coercion `((inner : Aeneas.Std.<T>))` and rely on
+    -- the shim's `CoeHead` instances to elaborate. The standard
+    -- Aeneas backend emits `UScalar.hcast .I32 x` etc.; we differ
+    -- syntactically but produce equivalent values once elaborated.
+    if head.startsWith "__cast::" then
+      match args.toList with
+      | [inner] =>
+        let suffix : String := (head.drop "__cast::".length).toString
+        let leanTy : String := match suffix with
+          | "i8" => "Aeneas.Std.I8"
+          | "i16" => "Aeneas.Std.I16"
+          | "i32" => "Aeneas.Std.I32"
+          | "i64" => "Aeneas.Std.I64"
+          | "isize" => "Aeneas.Std.Isize"
+          | "u8" => "Aeneas.Std.U8"
+          | "u16" => "Aeneas.Std.U16"
+          | "u32" => "Aeneas.Std.U32"
+          | "u64" => "Aeneas.Std.U64"
+          | "usize" => "Aeneas.Std.Usize"
+          | "bool" => "Bool"
+          | other => other
+        s!"(({inner.toLeanDo} : {leanTy}))"
+      | _ => "__cast(" ++ String.intercalate ", "
+               (args.toList.map (PExpr.toLeanDo)) ++ ")"
+    else
     match binopInfix head, args.toList with
     | some op, [lhs, rhs] =>
       "(" ++ lhs.toLeanDo ++ " " ++ op ++ " " ++ rhs.toLeanDo ++ ")"

@@ -162,6 +162,16 @@ let rec json_cert_sym_expr (e : cert_sym_expr) : Yojson.Basic.t =
                      fields);
               ] );
         ]
+  | SymCast { target_ty; inner } ->
+      `Assoc
+        [
+          ( "SymCast",
+            `Assoc
+              [
+                "target_ty", `String target_ty;
+                "inner", json_cert_sym_expr inner;
+              ] );
+        ]
 
 and json_cert_state_summary (s : cert_state_summary) : Yojson.Basic.t =
   `Assoc

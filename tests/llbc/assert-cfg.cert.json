@@ -5515,6 +5515,23 @@
           }
         },
         {
+          "EvAssign": {
+            "dst": {
+              "local": 17,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u32",
+                "inner": {
+                  "SymLit": { "Scalar": { "Signed": [ "I32", "-200" ] } }
+                }
+              }
+            }
+          }
+        },
+        {
           "EvMove": {
             "src": {
               "local": 16,
@@ -5980,6 +5997,23 @@
                 "local": 9,
                 "projection": [],
                 "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 27,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCast": {
+                "target_ty": "u32",
+                "inner": {
+                  "SymLit": { "Scalar": { "Signed": [ "I32", "-100" ] } }
+                }
               }
             }
           }
@@ -6744,7 +6778,8 @@
         null, null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null,
-        null, null, null, null, null, null, null, null, null, null
+        null, null, null, null, null, null, null, null, null, null, null,
+        null
       ]
     }
   ],

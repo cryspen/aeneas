@@ -27,6 +27,10 @@ type cert_sym_expr =
       adt_id : int;
       fields : (string * cert_sym_expr) list;
     }
+  | SymCast of {
+      target_ty : string;
+      inner : cert_sym_expr;
+    }
 
 type cert_state_summary = {
   cs_env : (local_id * cert_sym_expr) list;

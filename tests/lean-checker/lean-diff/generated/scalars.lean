@@ -104,22 +104,22 @@ def match_isize (x1 : Std.Isize) : Result Std.Isize := do
 /-- [scalars::u32_as_u16]:
     Source: 'tests/src/scalars.rs', lines 77:0-79:1 -/
 def u32_as_u16 (x1 : Std.U32) : Result Std.U16 := do
-  ok x1
+  ok ((x1 : Aeneas.Std.U16))
 
 /-- [scalars::u16_as_u32]:
     Source: 'tests/src/scalars.rs', lines 81:0-83:1 -/
 def u16_as_u32 (x1 : Std.U16) : Result Std.U32 := do
-  ok x1
+  ok ((x1 : Aeneas.Std.U32))
 
 /-- [scalars::u32_as_i16]:
     Source: 'tests/src/scalars.rs', lines 85:0-87:1 -/
 def u32_as_i16 (x1 : Std.U32) : Result Std.I16 := do
-  ok x1
+  ok ((x1 : Aeneas.Std.I16))
 
 /-- [scalars::i16_as_u32]:
     Source: 'tests/src/scalars.rs', lines 89:0-91:1 -/
 def i16_as_u32 (x1 : Std.I16) : Result Std.U32 := do
-  ok x1
+  ok ((x1 : Aeneas.Std.U32))
 
 /-- [scalars::u32_use_bits]:
     Source: 'tests/src/scalars.rs', lines 93:0-95:1 -/

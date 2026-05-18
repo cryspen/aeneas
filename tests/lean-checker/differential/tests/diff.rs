@@ -394,3 +394,61 @@ proptest! {
         prop_assert_eq!(zero_ref(), zero_model());
     }
 }
+
+// ====================================================================
+// no_nested_borrows.rs (Session 6 — cast keyword + get_max fixes).
+// ====================================================================
+
+proptest! {
+    /// `cast_u32_to_i32(x: u32) -> i32 { x as i32 }`. Wraps in two's
+    /// complement when `x ≥ 0x80000000` — assert byte-identical
+    /// output across the full u32 range.
+    #[test]
+    fn no_nested_borrows_cast_u32_to_i32_matches_model(x in any::<u32>()) {
+        use aeneas_cert_differential::no_nested_borrows::{
+            cast_u32_to_i32_ref, cast_u32_to_i32_model,
+        };
+        prop_assert_eq!(cast_u32_to_i32_ref(x), cast_u32_to_i32_model(x));
+    }
+
+    /// `cast_bool_to_i32(x: bool) -> i32 { x as i32 }`. Should
+    /// produce 1 for true / 0 for false.
+    #[test]
+    fn no_nested_borrows_cast_bool_to_i32_matches_model(x in any::<bool>()) {
+        use aeneas_cert_differential::no_nested_borrows::{
+            cast_bool_to_i32_ref, cast_bool_to_i32_model,
+        };
+        prop_assert_eq!(cast_bool_to_i32_ref(x), cast_bool_to_i32_model(x));
+    }
+
+    /// `cast_bool_to_bool(x: bool) -> bool { x as bool }`. Identity
+    /// — Charon's prepass elides this so the model emits bare `x`.
+    #[test]
+    fn no_nested_borrows_cast_bool_to_bool_matches_model(x in any::<bool>()) {
+        use aeneas_cert_differential::no_nested_borrows::{
+            cast_bool_to_bool_ref, cast_bool_to_bool_model,
+        };
+        prop_assert_eq!(cast_bool_to_bool_ref(x), cast_bool_to_bool_model(x));
+    }
+
+    /// `get_max(x, y) -> u32 { if x >= y then x else y }`. The
+    /// pre-fix model emitted `if x { x } else { y }` (picked the
+    /// first input param instead of the precomputed `t0 = (x >= y)`);
+    /// the fix threads `lastWrite` into the cond surface form.
+    #[test]
+    fn no_nested_borrows_get_max_u32_matches_model(x in any::<u32>(), y in any::<u32>()) {
+        use aeneas_cert_differential::no_nested_borrows::{
+            get_max_ref, get_max_model,
+        };
+        prop_assert_eq!(get_max_ref(x, y), get_max_model(x, y));
+    }
+
+    /// Edge case for get_max: equal inputs (the boundary of `>=`).
+    #[test]
+    fn no_nested_borrows_get_max_u32_matches_model_equal(x in any::<u32>()) {
+        use aeneas_cert_differential::no_nested_borrows::{
+            get_max_ref, get_max_model,
+        };
+        prop_assert_eq!(get_max_ref(x, x), get_max_model(x, x));
+    }
+}

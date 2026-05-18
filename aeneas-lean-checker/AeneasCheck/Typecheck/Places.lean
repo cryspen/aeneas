@@ -44,5 +44,8 @@ def checkSymExpr (e : SymExpr) : TC Unit := do
   -- parsed); we skip deeper recursion here for minimal blast radius.
   | .symTuple _ => pure ()
   | .symRecord _ _ => pure ()
+  -- Session 6: cast. Recurse on the inner sym-expr so its place
+  -- (if any) is checked.
+  | .symCast _ inner => checkSymExpr inner
 
 end AeneasCheck.Typecheck

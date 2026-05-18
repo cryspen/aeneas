@@ -522,3 +522,30 @@ instance : CoeHead Aeneas.Std.U32 Aeneas.Std.I16 :=
   ⟨fun x => Int16.ofBitVec (x.toBitVec.truncate 16)⟩
 instance : CoeHead Aeneas.Std.I16 Aeneas.Std.U32 :=
   ⟨fun x => UInt32.ofBitVec (x.toBitVec.signExtend 32)⟩
+/-! Session 6: the cast-keyword emit fix surfaces unsigned↔signed
+    same-width casts (and bool→int, int→bool) that the cert walker
+    can now thread through. Rust's `as` semantics: when source and
+    target have the same bit width, the bit pattern is reinterpreted
+    (zero or sign extension is a no-op). Lean's `Int32` / `UInt32`
+    bit-cast machinery uses `toBitVec` and `ofBitVec`. -/
+instance : CoeHead Aeneas.Std.U32 Aeneas.Std.I32 :=
+  ⟨fun x => Int32.ofBitVec x.toBitVec⟩
+instance : CoeHead Aeneas.Std.I32 Aeneas.Std.U32 :=
+  ⟨fun x => UInt32.ofBitVec x.toBitVec⟩
+instance : CoeHead Aeneas.Std.U16 Aeneas.Std.I16 :=
+  ⟨fun x => Int16.ofBitVec x.toBitVec⟩
+instance : CoeHead Aeneas.Std.I16 Aeneas.Std.U16 :=
+  ⟨fun x => UInt16.ofBitVec x.toBitVec⟩
+instance : CoeHead Aeneas.Std.U8 Aeneas.Std.I8 :=
+  ⟨fun x => Int8.ofBitVec x.toBitVec⟩
+instance : CoeHead Aeneas.Std.I8 Aeneas.Std.U8 :=
+  ⟨fun x => UInt8.ofBitVec x.toBitVec⟩
+/-- Session 6: bool → integer cast. Rust's `true as i32 == 1`, `false as i32 == 0`.
+    The cert walker emits `__cast::i32` heads for `bool as i32` and the
+    shim coerces via this instance. -/
+instance : CoeHead Bool Aeneas.Std.I32 :=
+  ⟨fun b => if b then (1 : Int32) else (0 : Int32)⟩
+instance : CoeHead Bool Aeneas.Std.U32 :=
+  ⟨fun b => if b then (1 : UInt32) else (0 : UInt32)⟩
+instance : CoeHead Bool Aeneas.Std.U8 :=
+  ⟨fun b => if b then (1 : UInt8) else (0 : UInt8)⟩

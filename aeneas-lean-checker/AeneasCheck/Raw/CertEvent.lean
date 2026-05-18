@@ -46,6 +46,14 @@ inductive SymExpr
       `field_name`; tuple-style structs fall back to `fieldK`). The
       Lean translator renders this as `{ x := e1, y := e2 }`. -/
   | symRecord (adtId : Nat) (fields : Array (String × SymExpr))
+  /-- Session 6: an `as`-cast result `<inner> as <targetTy>`. The
+      `targetTy` is the surface tag of a Rust primitive type:
+      `"i32"`, `"u32"`, `"isize"`, etc., emitted by the OCaml cert
+      serializer for `Rvalue.UnaryOp (Cast (CastScalar _), _)`. The
+      Forward translator produces a `.app "__cast::<targetTy>" #[inner]`
+      that the Rust + Lean emitters recognise and render as
+      `(<inner> as <targetTy>)` / a typed Lean cast. -/
+  | symCast (targetTy : String) (inner : SymExpr)
   deriving Repr
 
 /-- Restoration info for an EvEndBorrow event.

@@ -1070,6 +1070,51 @@ and eval_statement_raw (config : config) (st : statement) : stl_cm_fun =
                                    ; fields }
                              })
                     | _ -> ())
+               | UnaryOp (Cast (CastScalar (_src_ty, dst_ty)), operand) ->
+                   (* Session 6 Item 1: an `as`-cast at the rvalue level
+                      (Charon's [Rvalue.UnaryOp (Cast (CastScalar _), op)]).
+                      The OCaml interp would otherwise drop the cast on
+                      the floor — the event stream then has no record of
+                      the type conversion, and the Lean cert walker
+                      emits the inner operand bare (e.g. `def cast_u32_to_i32
+                      (x : U32) : Result I32 := do ok x`, which is
+                      ill-typed in both Lean and Rust).
+                      We emit [EvAssign { dst; rhs: SymCast { target_ty;
+                      inner } }] so the Lean walker can wrap the operand
+                      in an explicit cast.
+                      Other cast kinds (CastRawPtr / CastFnPtr / CastUnsize
+                      / CastTransmute / CastConcretize) are out of scope
+                      for the differential testing harness; they fall
+                      through to the [_ -> ()] catch-all below. *)
+                   let target_ty : string = match dst_ty with
+                     | TInt Isize -> "isize"
+                     | TInt I8 -> "i8"
+                     | TInt I16 -> "i16"
+                     | TInt I32 -> "i32"
+                     | TInt I64 -> "i64"
+                     | TInt I128 -> "i128"
+                     | TUInt Usize -> "usize"
+                     | TUInt U8 -> "u8"
+                     | TUInt U16 -> "u16"
+                     | TUInt U32 -> "u32"
+                     | TUInt U64 -> "u64"
+                     | TUInt U128 -> "u128"
+                     | TBool -> "bool"
+                     | TChar -> "char"
+                     | TFloat _ -> "float"
+                   in
+                   (match
+                      ( CertEvent.cert_place_of_place p,
+                        CertEvent.cert_sym_expr_of_operand operand )
+                    with
+                    | Some cp, Some inner ->
+                        ctx_emit_event ctx
+                          (CertEvent.EvAssign
+                             { dst = cp
+                             ; rhs =
+                                 CertEvent.SymCast
+                                   { target_ty; inner } })
+                    | _ -> ())
                | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
                    (* M12.2a: a reborrow assignment `v@N := &mut *(local)`
                       previously emitted only an `EvMutBorrow` /
