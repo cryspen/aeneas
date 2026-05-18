@@ -77,7 +77,17 @@ declaration).
 **Acceptance:** remove `--skip-decl CList` from `run-diff.sh:43` and
 `--skip-decl List` from `run-diff.sh:63`. Re-run G_lean.
 
-### Step 2 — `alloc.boxed.Box.new` shim binding
+### Step 2 — `alloc.boxed.Box.new` shim binding — PARTIAL 2026-05-18
+
+**Actual work:** ~10 min. Shim binding added to `RuntimeShim/Aeneas/Std.lean`
+(returns `Result α`, treating `Box::new x` as `ok x` to match the emitter's
+`do let t ← ...` form). The `alloc.boxed.Box.new` reference now resolves.
+
+**Cascade.** `paper::test_nth`'s body calls both `paper.list_nth_mut` and
+`paper.sum` directly. Until Step 3 lands and those unskip, `test_nth` would
+fail with `Unknown identifier paper.list_nth_mut` / `Unknown identifier
+paper.sum`. So the `--skip-decl test_nth` flag stays for now and is
+revisited after Step 3.
 
 **Unlocks:** `paper::test_nth` directly. Possibly other fixtures we haven't
 audited yet (`list-borrows`, etc.).

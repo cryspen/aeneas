@@ -513,6 +513,23 @@ end default
 
 end core
 
+/-! Session 8 / Zero-Skip Step 2: `alloc.boxed.Box.new` shim binding.
+
+The mainline `Aeneas.Std` provides `alloc.boxed.Box.new` as the identity at
+the value layer (the Aeneas runtime treats `Box::new x` as just `x` because
+the heap-allocation is uninteresting for functional verification). The shim
+mirrors that: a Result-monad-wrapped identity so that
+`(alloc.boxed.Box.new x)` elaborates inside the emitter's `do let t ← ...`
+bindings. Unlocks `paper::test_nth`. -/
+
+namespace alloc
+namespace boxed
+namespace Box
+@[inline] def new {α : Type} (x : α) : Aeneas.Std.Result α := .ok x
+end Box
+end boxed
+end alloc
+
 /-! ## Cast coercion shims (Session 4, scalars fixture)
 
 The cert walker currently lowers Rust's `as` casts to a bare value
