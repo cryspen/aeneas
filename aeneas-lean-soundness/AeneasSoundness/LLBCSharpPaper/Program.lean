@@ -276,9 +276,11 @@ quote the smoke-lemma name. -/
 
 /-- The empty-signature base case for `signatureToInitialAbs`. -/
 theorem signatureToInitialAbs_empty (sig : AeneasCheck.Raw.LlbcSignature)
-    (_h : sig.inputs = #[]) :
+    (h : sig.inputs = #[]) :
     signatureToInitialAbs sig = #[] := by
-  sorry
+  unfold signatureToInitialAbs
+  rw [h]
+  rfl
 
 /-- Paper Fig. 10's upward implication: `Initial` records that the
     signature is borrow-checkable. At v4 trivial; the M11 stronger
@@ -286,7 +288,6 @@ theorem signatureToInitialAbs_empty (sig : AeneasCheck.Raw.LlbcSignature)
 theorem Initial_implies_borrow_checks
     {Ω : LLBCState} {sig : AeneasCheck.Raw.LlbcSignature}
     {prog : AeneasCheck.Raw.LlbcProgram} :
-    Initial Ω sig prog → BorrowChecks sig := by
-  sorry
+    Initial Ω sig prog → BorrowChecks sig := fun h => h.borrow_checks_sig
 
 end AeneasSoundness.LLBCSharpPaper

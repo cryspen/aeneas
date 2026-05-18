@@ -3,21 +3,19 @@
 Aeneas translates Rust programs into pure functional programs
 (primarily Lean) for formal verification.
 
-## User-facing references
+## Core
 
 - [Getting Started](getting-started.md) — Rust → LLBC → Lean → first proof
 - [Aeneas Overview](aeneas-overview.md) — How Aeneas works, translation model, workflow
-- [Proof Strategies](proof-strategies.md) — Step, loops, decomposition, specs
-- [Tactics Reference](tactics-reference.md) — All tactics with docstrings and examples
-- [Tips, Tricks & Pitfalls](tips-and-tricks.md) — Common pitfalls and how to avoid them
-- [Crypto Verification](crypto-verification.md) — Verifying cryptographic code
-- [Glossary](glossary.md) — Aeneas-specific terms
+- [Certificate-based Pipeline](certificate-pipeline.md) — Cert checker architecture, soundness theorems, how to run
+- [Glossary](glossary.md)
 
-## Architecture / pipeline reference
+## Proof engineering
 
-- [Cert format & soundness](cert-format-and-soundness.md) — Cert v6 format, soundness statement
-- [Verified pipeline architecture](verified-pipeline-architecture.md) — End-to-end pipeline overview
-- [Paper / proof comparison](PaperProofComparison.md) — Crosswalk between the paper and the Lean development
+- [Proof Strategies](proof-strategies.md)
+- [Tactics Reference](tactics-reference.md)
+- [Tips, Tricks & Pitfalls](tips-and-tricks.md)
+- [Crypto Verification](crypto-verification.md)
 
 ## Active campaigns
 

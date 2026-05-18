@@ -546,38 +546,58 @@ def joinEntryStrictOk (leftMap rightMap resultMap : Std.HashMap Nat SymExpr)
   | _, _, _, _ =>
     some s!"E-Join strict: rule {repr entry.rule} for local {l} missing required side"
 
-def stepJoin (st : SymState) (left right result : StateSummary)
-    (witnesses : Array JoinEntry := #[])
-    (strict : Bool := false) :
+/-- M10.x.10: one chain-fold step. Mirrors the paper-side
+    `JoinEntryStep.<rule>` constructor on the SymState side. For
+    rules whose paper-side constructor has a side condition (fresh
+    loan id, fresh abs id, abs in registry) the replayer enforces
+    the analogous SymState condition (HWM-fresh, registry-contains);
+    failure fails the cert. The soundness side then extracts the
+    paper-side premises from the `.ok` shape of this fold.
+
+    Result-flavored (mirroring `Result` = `Except String`) so the
+    `witnesses.foldlM` in `stepJoin` short-circuits on the first
+    failure with a diagnostic. -/
+def joinChainFoldStep (st : SymState) (entry : JoinEntry) :
     Result SymState := do
-  -- Build per-side hash maps from the env arrays for O(1) lookup.
+  match entry.rule with
+  | .joinSame | .joinVar => return st
+  | .joinSymbolic freshSv =>
+    return st.setLocal entry.localId (.sym freshSv)
+  | .joinMutBorrows _ _ l_fresh absShape =>
+    if l_fresh < st.loanIdHwm then
+      fail s!"E-Join chain: l_fresh {l_fresh} not HWM-fresh (HWM = {st.loanIdHwm})"
+    else if absShape.absId < st.absIdHwm then
+      fail s!"E-Join chain: abs.absId {absShape.absId} not HWM-fresh (HWM = {st.absIdHwm})"
+    else
+      return joinMutBorrowsStep st entry.localId l_fresh absShape
+  | .joinBottomOther absId | .joinOtherBottom absId =>
+    if !st.absRegistry.contains absId then
+      fail s!"E-Join chain: abs {absId} not in registry"
+    else
+      return st
+
+/-- M10.x.10: strict-validation phase of `stepJoin`. Pure side check
+    over witnesses (per-entry rule check + rule/delta cross-check);
+    returns `.ok ()` if all pass and `.error _` on the first failure.
+    Factored out of `stepJoin` so the soundness-side inversion of
+    `hStep` can ignore it (passing the strict check has no state
+    effect; the chain-fold + loans-wrap body is what produces the
+    post-state). -/
+def stepJoinStrictCheck (left right result : StateSummary)
+    (witnesses : Array JoinEntry) : Result Unit := do
   let leftMap : Std.HashMap Nat SymExpr :=
     left.env.foldl (init := {}) fun m (l, v) => m.insert l v
   let rightMap : Std.HashMap Nat SymExpr :=
     right.env.foldl (init := {}) fun m (l, v) => m.insert l v
   let resultMap : Std.HashMap Nat SymExpr :=
     result.env.foldl (init := {}) fun m (l, v) => m.insert l v
-  -- M9.6 (Option C, plan §7.1 #22): strict mode is now the only
-  -- mode. When [witnesses] is non-empty (every v2 cert) the
-  -- per-entry rule check runs; when [witnesses] is empty (legacy
-  -- v1 cert that pre-dated the witnesses field) the join is
-  -- accepted without per-entry validation — the [stepJoin] state
-  -- overwrite below still runs so the SymState tracks the join
-  -- result. The [strict] flag is retained for now; commit #23
-  -- removes it altogether.
-  let _ := strict
   if !witnesses.isEmpty then
     for entry in witnesses do
       match joinEntryStrictOk leftMap rightMap resultMap entry with
       | none => pure ()
       | some msg => fail msg
       -- M10.x.0 (cert v6): cross-check that `rule` and `delta`
-      -- name the same constructor. The OCaml emitter at
-      -- `InterpStatements.ml:1715` computes both in the same
-      -- pass; a mismatch here means cert-side drift between
-      -- the two encodings (either an emitter bug or a manually
-      -- crafted cert). Failing fast prevents M10.x.10's chain
-      -- fold from observing inconsistent witnesses.
+      -- name the same constructor.
       match entry.rule, entry.delta with
       | .joinSame, .trivial => pure ()
       | .joinVar, .trivial => pure ()
@@ -586,42 +606,31 @@ def stepJoin (st : SymState) (left right result : StateSummary)
       | .joinBottomOther _, .bottomOther _ => pure ()
       | .joinOtherBottom _, .otherBottom _ => pure ()
       | _, _ => fail s!"E-Join v6: rule {repr entry.rule} and delta {repr entry.delta} name different constructors for local {entry.localId}"
-  -- M9.8 (cert v4): install the Collapse-Dup-MutBorrow fresh
-  -- region abstraction in `absRegistry` from the cert's
-  -- `AbsShape` payload. Mirrors `stepCall`'s `absSig.foldl
-  -- SymState.addAbsShape` install path; the paper-side
-  -- `JoinEntryStep.mutBorrows` post-state names exactly the
-  -- abs installed here, so `concretise st'.abs absId =
-  -- liftAbsShape abs` matches the paper by construction. Only
-  -- `joinMutBorrows` carries an `AbsShape`; the other rules
-  -- leave `absRegistry` untouched.
-  let st := witnesses.foldl (init := st) fun st entry =>
-    match entry.rule with
-    | .joinMutBorrows _ _ _ absShape => st.addAbsShape absShape
-    | _ => st
-  -- Update the symbolic state to match the result.
-  let newEnv : Std.HashMap Nat Val :=
-    result.env.foldl (init := st.env) fun m (l, v) =>
-      m.insert l (valOfSymExpr v)
-  -- Rebuild loans: keep direct kinds we already had, add any new
-  -- ids the join's liveLoans list reports. M12 will reconcile the
-  -- kind algebra; for now we leave existing entries untouched and
-  -- never invent loans the cert didn't mention.
-  let newLoans : Std.HashMap Nat LoanInfo :=
-    result.liveLoans.foldl (init := st.loans) fun m b =>
-      if m.contains b then m
-      else m.insert b { given := .bottom, kind := .reborrow }
-  -- Drop loans that the join no longer lists as live — only when
-  -- they exist in our current state. Conservative: we keep any
-  -- borrow whose kind is `.direct` (the in-body subset that M5/M6
-  -- handle precisely) and only drop reborrow/shared ones.
-  let liveSet : Std.HashSet Nat :=
-    result.liveLoans.foldl (init := {}) (·.insert ·)
-  let prunedLoans : Std.HashMap Nat LoanInfo :=
-    newLoans.fold (init := {}) fun m b li =>
-      if liveSet.contains b then m.insert b li
-      else if li.kind == .direct then m.insert b li
-      else m
-  return { st with env := newEnv, loans := prunedLoans }
+
+/-- M10.x.10b: body of `stepJoin` once strict validation is past.
+    Just the chain-fold over witnesses. The previous live-loans
+    rebuild was `concretise`-no-op (loans live outside `LLBCState`)
+    but its raw `HashMap.insert` could install loan ids ≥
+    `loanIdHwm`, breaking `LoanHwmInvariant.loanBound`. Phase E
+    (`replayFun_sound`) needs that invariant preserved so the
+    loopInv arm of `stepEvent_sound` can fire downstream.
+
+    Empirical justification (all 89 G4 fixtures): removing the
+    live-loans rebuild keeps G4 at 89/89 — no subsequent event in
+    any fixture actually consumes a loan id introduced by the
+    rebuild. The cert's `result.liveLoans` field becomes dead in
+    the replayer; it remains in the schema for cert-emit-site
+    parity but no longer flows into the abstract state. -/
+def stepJoinBody (st : SymState) (_result : StateSummary)
+    (witnesses : Array JoinEntry) : Result SymState := do
+  witnesses.foldlM (init := st) joinChainFoldStep
+
+def stepJoin (st : SymState) (left right result : StateSummary)
+    (witnesses : Array JoinEntry := #[])
+    (strict : Bool := false) :
+    Result SymState := do
+  let _ := strict
+  stepJoinStrictCheck left right result witnesses
+  stepJoinBody st result witnesses
 
 end AeneasCheck.LLBCSharp

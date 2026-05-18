@@ -115,13 +115,21 @@ inductive JoinEntryStep : LLBCState → JoinEntry → LLBCState → Prop where
       JoinEntryStep Ω ⟨localId, .joinSame, delta⟩ Ω
 
   /-- `Join-Symbolic` (Fig. 11). Branches differed on a borrow-
-      free value; a fresh symbolic value is the result. Premise:
-      `freshSv` fresh in `Ω`. Post-state: `localId ↦ sym freshSv`. -/
+      free value; a fresh symbolic value is the result.
+
+      M10.x.10: dropped the trailing `bumpSymValId freshSv` (which
+      was a no-op on the paper side anyway) AND the
+      `Ω.symValIdFresh freshSv` premise. The replayer never tracks
+      `nextSymValId` (it's pinned at 0 by `concretise`), so the
+      paper premise was already vacuous — every `freshSv : Nat`
+      satisfies it trivially. Dropping the premise lets
+      `JoinEntryStep.symbolic` fire without supplying the
+      vacuous witness, simplifying the M10.x.10 chain construction
+      in `JoinChainFold.lean`. -/
   | symbolic {Ω : LLBCState} {localId : LocalId} {freshSv : SymValId}
       {delta : JoinEntryDelta} :
-      Ω.symValIdFresh freshSv →
       JoinEntryStep Ω ⟨localId, .joinSymbolic freshSv, delta⟩
-        ((Ω.setLocal localId (.sym freshSv)).bumpSymValId freshSv)
+        (Ω.setLocal localId (.sym freshSv))
 
   /-- `Collapse-Dup-MutBorrow` + `Join-MutBorrows` (Fig. 11). Both
       branches held `&mut` with different loan ids; the join
@@ -155,8 +163,7 @@ inductive JoinEntryStep : LLBCState → JoinEntry → LLBCState → Prop where
       Ω.loanIdFresh l_fresh →
       Ω.absIdFresh abs.absId →
       JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs, delta⟩
-        (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs.absId
-          |>.setAbs abs.absId (liftAbsShape abs))
+        ((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).setAbs abs.absId (liftAbsShape abs))
 
   /-- `Join-Var` (Fig. 11). A whole region abstraction is folded
       into the result; this rule is a marker — the surrounding
