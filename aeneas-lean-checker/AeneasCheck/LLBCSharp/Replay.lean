@@ -107,12 +107,25 @@ def replayFun (numLocals : Nat) (f : FunCert) (strictJoin : Bool := true) :
     throw s!"[fn {f.fnId} '{f.fnName}']: {leakedDirect.length} direct loan(s) live at exit: {leakedDirect}"
   return { fnId := f.fnId, fnName := f.fnName, events := f.events, finalState := st }
 
+/-- Per-function step for `replayCrate`'s `mapM`. Pulled out so the
+    soundness side's `replayCrate_correspondence` can invert
+    `Array.mapM` cleanly through the existing
+    `replayFun_correspondence`. -/
+def replayCrateStep (strictJoin : Bool) (f : FunCert) : Result CheckedTrace :=
+  replayFun (Typecheck.inferNumLocals f.events) f strictJoin
+
 /-- Replay a whole crate cert. Typechecks first to surface structural
     errors before running the replayer. [strictJoin] (M9.6) toggles
     the per-witness EvJoin validation; off by default so callers
     that don't care (tests/Direct) keep working unchanged. The
     CLI reads the [AENEAS_STRICT_JOIN] env var and threads the
-    flag in. -/
+    flag in.
+
+    M10.x.10d — refactored from `for + mut` to explicit
+    `Array.mapM` so the soundness side's
+    `replayCrate_correspondence` can invert `hReplay` via
+    `Array.mapM_toList` / per-index lookup. Behavior-preserving;
+    G4 89/89. -/
 def replayCrate (cc : CrateCert) (strictJoin : Bool := true) :
     Except String (Array CheckedTrace) := do
   -- M9.7h: Level-S structural consistency between the flat cert
@@ -128,12 +141,8 @@ def replayCrate (cc : CrateCert) (strictJoin : Bool := true) :
     let msgs := errs.map (·.toString)
     throw <| String.intercalate "\n" msgs
   | .ok _ => pure ()
-  let mut out : Array CheckedTrace := #[]
-  for f in cc.functions do
-    -- numLocals approximation: infer from events (same as the
-    -- typechecker). M6.5 / M9 will replace with the LLBC signature.
-    let numLocals := Typecheck.inferNumLocals f.events
-    out := out.push (← replayFun numLocals f strictJoin)
-  return out
+  cc.functions.foldlM (init := #[]) fun acc f => do
+    let trace ← replayCrateStep strictJoin f
+    return acc.push trace
 
 end AeneasCheck.LLBCSharp
