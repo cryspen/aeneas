@@ -18,9 +18,17 @@
     when [-emit-cert] is set; the no-op default remains otherwise. -*)
 val install : unit -> unit
 
+(** Reset all per-function observer state (event buffer, loop-id
+    stack, ended-loan dedupe set). [CertGen] calls this before
+    driving the interpreter on each fun_decl. -*)
+val reset : unit -> unit
+
+(** Read out the accumulated events in firing order and clear the
+    buffer. -*)
+val flush : unit -> CertEvent.event list
+
 (** Translate one interpreter event to a [CertEvent.event]. Returns
     [None] when the event has no cert representation (e.g. globals
-    that don't lift, or — currently — events whose migration has
-    not landed yet). -*)
+    that don't lift). -*)
 val event_to_cert :
   Contexts.eval_ctx -> Event.t -> CertEvent.event option

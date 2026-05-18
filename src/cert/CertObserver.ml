@@ -3,6 +3,28 @@ open Values
 open Expressions
 open Contexts
 
+(** Per-function observer state — owned by this module rather than by
+    [eval_ctx]. Plan §"Design decisions / cert_ended_loans reset
+    point" (audit Q2) confirms cert generation is sequential per
+    fun_decl ([CertGen.generate_crate_cert] iterates via
+    [List.filter_map]), so module-level refs are safe. [reset] / [flush]
+    are called by [CertGen.collect_for_fun] per function. -*)
+let event_buffer : CertEvent.event list ref = ref []
+
+let loop_id_stack : LoopId.id list ref = ref []
+
+let ended_loans : BorrowId.Set.t ref = ref BorrowId.Set.empty
+
+let reset () : unit =
+  event_buffer := [];
+  loop_id_stack := [];
+  ended_loans := BorrowId.Set.empty
+
+let flush () : CertEvent.event list =
+  let evs = List.rev !event_buffer in
+  event_buffer := [];
+  evs
+
 (** Translate the rvalue half of an [Event.Assign]. Mirrors the
     inline cert-side dispatch the original
     [InterpStatements.eval_statement_raw Assign] arm did. Returns
@@ -182,17 +204,17 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
            })
        | None -> None)
   | Event.EndBorrow { loan; borrowed_value } ->
-      (* M9.6 (Option C, plan §4.1.6): dedupe against
-         [cert_ended_loans] so the M9.5x redundant post-join
-         EvEndBorrow on the same loan id collapses to a single
-         emit. The OCaml join machinery linearises each branch's
-         cleanup separately and may re-walk the same loan during
-         reconciliation. The on_event suppression guard above ensures
-         loop-fixpoint speculative iterations don't poison the set. *)
-      if BorrowId.Set.mem loan !(ctx.cert_ended_loans) then None
+      (* M9.6 (Option C, plan §4.1.6): dedupe against [ended_loans]
+         so the M9.5x redundant post-join EvEndBorrow on the same
+         loan id collapses to a single emit. The OCaml join
+         machinery linearises each branch's cleanup separately and
+         may re-walk the same loan during reconciliation.
+         [Observer.with_suppressed] gates [notify] above so
+         loop-fixpoint speculative iterations don't reach here and
+         can't poison the set. *)
+      if BorrowId.Set.mem loan !ended_loans then None
       else begin
-        ctx.cert_ended_loans :=
-          BorrowId.Set.add loan !(ctx.cert_ended_loans);
+        ended_loans := BorrowId.Set.add loan !ended_loans;
         let given_back : CertEvent.cert_sym_expr =
           match borrowed_value with
           | Some bv -> (
@@ -599,7 +621,7 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
       (* Push the loop onto the cert-side loop-id stack so any
          in-body [MutBorrow] event can derive
          [MbkLoopOwned loop_id]. Popped on [LoopEnd]. -*)
-      ctx.cert_loop_id_stack := loop_id :: !(ctx.cert_loop_id_stack);
+      loop_id_stack := loop_id :: !loop_id_stack;
       Some (CertEvent.EvLoopInv {
         loop_id;
         invariant = CertEvent.cert_state_summary_of_env fp_env;
@@ -607,8 +629,8 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
       })
   | Event.LoopEnd { loop_id } ->
       (* Pop the loop we just closed. -*)
-      (match !(ctx.cert_loop_id_stack) with
-       | _ :: rest -> ctx.cert_loop_id_stack := rest
+      (match !loop_id_stack with
+       | _ :: rest -> loop_id_stack := rest
        | [] -> ());
       Some (CertEvent.EvLoopEnd { loop_id })
   | Event.SymExpandMutBorrow
@@ -641,7 +663,7 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
              if has_deref then
                CertEvent.MbkInAbsReborrow (AbsId.of_int 0)
              else
-               match !(ctx.cert_loop_id_stack) with
+               match !loop_id_stack with
                | top :: _ -> CertEvent.MbkLoopOwned top
                | [] -> CertEvent.MbkDirect
            in
@@ -650,16 +672,14 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
            })
        | None -> None)
   | _ ->
-      (* Other variants are migrated in commits 4-9. *)
+      (* All Event.t variants are handled above; this catch-all
+         remains so future Event variants compile pre-migration. *)
       None
 
 let on_event (ctx : eval_ctx) (ev : Event.t) : unit =
-  if !(ctx.cert_events_suppressed) then ()
-  else
-    match event_to_cert ctx ev with
-    | None -> ()
-    | Some cert_ev ->
-        ctx.cert_event_buffer := cert_ev :: !(ctx.cert_event_buffer)
+  match event_to_cert ctx ev with
+  | None -> ()
+  | Some cert_ev -> event_buffer := cert_ev :: !event_buffer
 
 let observer : Observer.observer = { on_event }
 

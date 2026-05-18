@@ -156,62 +156,8 @@ type eval_ctx = {
   fresh_loop_id : unit -> loop_id;
   fresh_meta_id : unit -> meta_id;
   fresh_symbolic_expr_id : unit -> symbolic_expr_id;
-  cert_event_buffer : (CertEvent.event list ref[@opaque]);
-      (** Append-only LLBC# event log, populated when the [-emit-cert] flag is
-          on. Held behind a ref so that shared/copied contexts append to the
-          same buffer; the interpreter never reads this back, only writes. *)
-  cert_events_suppressed : (bool ref[@opaque]);
-      (** When [true], [ctx_emit_event] silently drops the event. Used by
-          the loop fixed-point computation in [InterpLoopsFixedPoint]: the
-          fixpoint iterates [eval_loop_body] multiple times, but the cert
-          trace must only record one canonical evaluation (the post-fixpoint
-          one). M12.1 wraps the fixpoint and break-context body
-          evaluations with this flag so the cert is a linear, replayable
-          trace rather than an unrolled multi-iteration log. *)
-  cert_loop_id_stack : (loop_id list ref[@opaque]);
-      (** [M9.6 — Option C] Stack of currently-open loop ids. Pushed
-          right before [EvLoopInv] is emitted at the start of a loop
-          body's canonical synthesis and popped right after [EvLoopEnd];
-          the cert-emission sites that need to know whether they are
-          inside a loop body (notably [InterpExpressions.eval_rvalue_ref]
-          for [EvMutBorrow.kind_hint = MbkLoopOwned]) read the topmost
-          entry. Held in a [ref] for the same reason as
-          [cert_event_buffer]: shared/copied contexts must observe the
-          same stack. *)
-  cert_ended_loans : (BorrowId.Set.t ref[@opaque]);
-      (** [M9.6 — Option C] Set of borrow ids for which an
-          [EvEndBorrow] has already been emitted in the current
-          cert trace. Consulted at the [EvEndBorrow] emit site in
-          [InterpBorrows] to drop the M9.5x redundant post-join
-          duplicates (the OCaml join algorithm linearises each
-          branch's cleanup separately and then re-emits a
-          reconciliation end-borrow on the same loan id; the Lean
-          replayer used to no-op them via [joinDedupe], commit
-          #20 deletes that fallback). Borrow ids are fresh per
-          fun_decl so the set never wraps. *)
 }
 [@@deriving show]
-
-let ctx_emit_event (ctx : eval_ctx) (ev : CertEvent.event) : unit =
-  if !(ctx.cert_events_suppressed) then ()
-  else ctx.cert_event_buffer := ev :: !(ctx.cert_event_buffer)
-
-(** Run [f] with cert-event emission suppressed; restore the previous
-    suppression state on exit (also on exception). Used to silence the
-    speculative loop-body evaluations inside the fixed-point and
-    break-context computations. *)
-let ctx_with_cert_events_suppressed (ctx : eval_ctx) (f : unit -> 'a) : 'a =
-  let prev = !(ctx.cert_events_suppressed) in
-  ctx.cert_events_suppressed := true;
-  let restore () = ctx.cert_events_suppressed := prev in
-  match f () with
-  | r -> restore (); r
-  | exception e -> restore (); raise e
-
-let ctx_take_events (ctx : eval_ctx) : CertEvent.event list =
-  let evs = List.rev !(ctx.cert_event_buffer) in
-  ctx.cert_event_buffer := [];
-  evs
 
 let lookup_type_var_opt (ctx : eval_ctx) (vid : TypeVarId.id) :
     type_param option =

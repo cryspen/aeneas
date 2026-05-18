@@ -56,10 +56,12 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
   match fdef.body with
   | StructuredBody _ -> begin
       try
+        (* Reset the observer's per-function state before driving
+           the interpreter on this fun_decl. -*)
+        CertObserver.reset ();
         let ctx, _input_svs, _inst_sg =
           initialize_symbolic_context_for_fun trans_ctx marked_ids fdef
         in
-        let buffer = ctx.cert_event_buffer in
         let config = mk_config SymbolicMode in
         let body =
           [%add_loc] LlbcAstUtils.body_as_body_exn fdef.body
@@ -94,7 +96,7 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
                possible. *)
             ()
         in
-        let events = List.rev !buffer in
+        let events = CertObserver.flush () in
         let env = Print.Contexts.decls_ctx_to_fmt_env trans_ctx in
         let fn_name = Print.name_to_string env fdef.item_meta.name in
         (* [M9.7o-E5b] Cert v3 no longer carries a flat per-function
