@@ -102,16 +102,25 @@ as its `localId` field (carried by `JoinEntry.localId`).
 inductive JoinEntryStep : LLBCState → JoinEntry → LLBCState → Prop where
 
   /-- `Join-Same` (Fig. 11). Both branches agreed on this local's
-      value; result inherits. State unchanged. -/
-  | same {Ω : LLBCState} {localId : LocalId} :
-      JoinEntryStep Ω ⟨localId, .joinSame⟩ Ω
+      value; result inherits. State unchanged.
+
+      M10.x.0 (cert v6): the rule accepts any `delta` value — the
+      paper-side rule does not (yet) constrain the parallel
+      `JoinEntryDelta` carrier. M10.x.10 tightens this by replacing
+      the bundled `CertGen_faithful.join` axiom with a fold over
+      `(rule, delta)` pairs; the replayer-side cross-check at
+      `Step.lean:stepJoin` already rejects mismatched constructors
+      so the paper-side rule's leniency is safe. -/
+  | same {Ω : LLBCState} {localId : LocalId} {delta : JoinEntryDelta} :
+      JoinEntryStep Ω ⟨localId, .joinSame, delta⟩ Ω
 
   /-- `Join-Symbolic` (Fig. 11). Branches differed on a borrow-
       free value; a fresh symbolic value is the result. Premise:
       `freshSv` fresh in `Ω`. Post-state: `localId ↦ sym freshSv`. -/
-  | symbolic {Ω : LLBCState} {localId : LocalId} {freshSv : SymValId} :
+  | symbolic {Ω : LLBCState} {localId : LocalId} {freshSv : SymValId}
+      {delta : JoinEntryDelta} :
       Ω.symValIdFresh freshSv →
-      JoinEntryStep Ω ⟨localId, .joinSymbolic freshSv⟩
+      JoinEntryStep Ω ⟨localId, .joinSymbolic freshSv, delta⟩
         ((Ω.setLocal localId (.sym freshSv)).bumpSymValId freshSv)
 
   /-- `Collapse-Dup-MutBorrow` + `Join-MutBorrows` (Fig. 11). Both
@@ -141,10 +150,11 @@ inductive JoinEntryStep : LLBCState → JoinEntry → LLBCState → Prop where
       §11.1 #1 + §3.4); M9.8 collapses the risk by routing the
       cert's `abs` shape end-to-end. -/
   | mutBorrows {Ω : LLBCState} {localId : LocalId}
-      {l_left l_right l_fresh : LoanId} {abs : AbsShape} :
+      {l_left l_right l_fresh : LoanId} {abs : AbsShape}
+      {delta : JoinEntryDelta} :
       Ω.loanIdFresh l_fresh →
       Ω.absIdFresh abs.absId →
-      JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs⟩
+      JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs, delta⟩
         (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs.absId
           |>.setAbs abs.absId (liftAbsShape abs))
 
@@ -152,22 +162,22 @@ inductive JoinEntryStep : LLBCState → JoinEntry → LLBCState → Prop where
       into the result; this rule is a marker — the surrounding
       `EvEndAbs` carries the absorbed abs's contents. State
       unchanged at this entry. -/
-  | var {Ω : LLBCState} {localId : LocalId} :
-      JoinEntryStep Ω ⟨localId, .joinVar⟩ Ω
+  | var {Ω : LLBCState} {localId : LocalId} {delta : JoinEntryDelta} :
+      JoinEntryStep Ω ⟨localId, .joinVar, delta⟩ Ω
 
   /-- `Join-Bottom-Other` (Fig. 11). Left side was `⊥`; right side
       gets wrapped into the abstraction `abs`. Premise: `abs`
       exists in `Ω`. State unchanged at this entry. -/
   | bottomOther {Ω : LLBCState} {localId : LocalId} {abs : AbsId}
-      {r : RegionAbs} :
+      {r : RegionAbs} {delta : JoinEntryDelta} :
       Ω.abs abs = some r →
-      JoinEntryStep Ω ⟨localId, .joinBottomOther abs⟩ Ω
+      JoinEntryStep Ω ⟨localId, .joinBottomOther abs, delta⟩ Ω
 
   /-- Mirror of `bottomOther`. -/
   | otherBottom {Ω : LLBCState} {localId : LocalId} {abs : AbsId}
-      {r : RegionAbs} :
+      {r : RegionAbs} {delta : JoinEntryDelta} :
       Ω.abs abs = some r →
-      JoinEntryStep Ω ⟨localId, .joinOtherBottom abs⟩ Ω
+      JoinEntryStep Ω ⟨localId, .joinOtherBottom abs, delta⟩ Ω
 
 /-- Sequential composition of per-entry join steps: a list of
     `JoinEntryStep`s chains `Ω₀ → Ω₁ → ⋯ → Ω_n` for each entry in

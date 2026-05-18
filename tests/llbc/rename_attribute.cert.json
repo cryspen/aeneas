@@ -1,0 +1,3701 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "cae2ddbf0306c12747fd67554172b62d",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "rename_attribute::test_bool_trait",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 30,
+        "beg_col": 0,
+        "end_line": 32,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "rename_attribute::{rename_attribute::BoolTrait for bool}::get_bool",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "region_abs": [ 0 ],
+            "abs_sig": [
+              {
+                "abs_id": 0,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 0 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 1 }, "expected": true } },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 6,
+            "fn_name": "rename_attribute::{rename_attribute::BoolTrait for bool}::ret_true",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        { "EvAssert": { "cond": { "SymVal": 1 }, "expected": false } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": { "SymLit": { "Bool": false } }
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "rename_attribute::factorial",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 58,
+        "beg_col": 0,
+        "end_line": 64,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "Le",
+            "lhs": {
+              "SymMove": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U64", "1" ] } } },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 1 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U64", "1" ] } } }
+          }
+        },
+        "EvReturn",
+        { "EvAssert": { "cond": { "SymVal": 1 }, "expected": false } },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "SubPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U64", "1" ] } } },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 8,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 1,
+            "fn_name": "rename_attribute::factorial",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 6,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "MulPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 9,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U64))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "rename_attribute::sum",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 67,
+        "beg_col": 0,
+        "end_line": 77,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvLoopInv": {
+            "loop_id": 0,
+            "invariant": {
+              "env": [
+                { "local": 3, "value": { "SymVal": 10 } },
+                { "local": 2, "value": { "SymVal": 9 } },
+                { "local": 1, "value": { "SymVal": 0 } }
+              ],
+              "live_loans": []
+            },
+            "loan_registry": []
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "Lt",
+            "lhs": {
+              "SymMove": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 20 }, "expected": true } },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 8,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 9,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 20 }, "expected": false } },
+        { "EvLoopEnd": { "loop_id": 0 } },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "MulPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "2" ] } } },
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 10,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 4,
+      "fn_name": "rename_attribute::BoolTrait::ret_true",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 17,
+        "beg_col": 4,
+        "end_line": 19,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": { "SymLit": { "Bool": true } }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    },
+    {
+      "fn_id": 5,
+      "fn_name": "rename_attribute::{rename_attribute::BoolTrait for bool}::get_bool",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 24,
+        "beg_col": 4,
+        "end_line": 26,
+        "end_col": 5
+      },
+      "pretty_name": "Bool.Insts.Rename_attributeBoolTrait.get_bool",
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 6,
+      "fn_name": "rename_attribute::{rename_attribute::BoolTrait for bool}::ret_true",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 23,
+        "beg_col": 0,
+        "end_line": 27,
+        "end_col": 1
+      },
+      "pretty_name": "Bool.Insts.Rename_attributeBoolTrait.ret_true",
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": { "SymLit": { "Bool": true } }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    },
+    {
+      "fn_id": 7,
+      "fn_name": "rename_attribute::C",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 52,
+        "beg_col": 0,
+        "end_line": 52,
+        "end_col": 28
+      },
+      "events": [
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "U32", "100" ] } }
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "U32", "10" ] } }
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 8,
+      "fn_name": "rename_attribute::CA",
+      "source_span": {
+        "file": "tests/src/rename_attribute.rs",
+        "beg_line": 55,
+        "beg_col": 0,
+        "end_line": 55,
+        "end_col": 23
+      },
+      "events": [
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "U32", "10" ] } }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "rename_attribute::SimpleEnum",
+          "attr_info": null,
+          "source_text": "enum SimpleEnum {\n    #[charon::rename(\"Variant1\")]\n    FirstVariant,\n    SecondVariant,\n    ThirdVariant,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 38,
+            "beg_col": 0,
+            "end_line": 43,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "FirstVariant",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "SecondVariant",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 2,
+              "name": "ThirdVariant",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "2" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "rename_attribute::Foo",
+          "attr_info": null,
+          "source_text": "struct Foo {\n    #[charon::rename(\"FieldTest\")]\n    field1: u32,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 46,
+            "beg_col": 0,
+            "end_line": 49,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "field1",
+              "ty": { "Literal": { "UInt": "U32" } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "rename_attribute::test_bool_trait",
+          "attr_info": null,
+          "source_text": "pub fn test_bool_trait<T>(x: bool) -> bool {\n    x.get_bool() && x.ret_true()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 30,
+            "beg_col": 0,
+            "end_line": 32,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": "Bool" } ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 31,
+            "beg_col": 4,
+            "end_line": 32,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 31,
+                "beg_col": 4,
+                "end_line": 31,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 31,
+                "beg_col": 4,
+                "end_line": 31,
+                "end_col": 16
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [ 0, { "Literal": "Bool" }, "Shared" ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 31,
+                "beg_col": 4,
+                "end_line": 31,
+                "end_col": 32
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 31,
+                        "beg_col": 4,
+                        "end_line": 31,
+                        "end_col": 32
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 15,
+                            "end_line": 31,
+                            "end_col": 16
+                          },
+                          "kind": { "StorageDead": 3 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 20,
+                            "end_line": 31,
+                            "end_col": 21
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0, { "Literal": "Bool" }, "Shared"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 1,
+                                    "projection": [],
+                                    "ty": { "Literal": "Bool" }
+                                  },
+                                  "kind": "Shared",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 20,
+                            "end_line": 31,
+                            "end_col": 32
+                          },
+                          "kind": {
+                            "Call": {
+                              "func": {
+                                "Regular": {
+                                  "kind": { "Fun": { "Regular": 6 } },
+                                  "generics": null
+                                }
+                              },
+                              "args": [
+                                {
+                                  "Move": {
+                                    "local": 4,
+                                    "projection": [],
+                                    "ty": {
+                                      "Ref": [
+                                        0, { "Literal": "Bool" }, "Shared"
+                                      ]
+                                    }
+                                  }
+                                }
+                              ],
+                              "dest": {
+                                "local": 0,
+                                "projection": [],
+                                "ty": { "Literal": "Bool" }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 31,
+                            "end_line": 31,
+                            "end_col": 32
+                          },
+                          "kind": { "StorageDead": 4 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 31,
+                            "end_line": 31,
+                            "end_col": 32
+                          },
+                          "kind": { "StorageDead": 2 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 32,
+                            "beg_col": 1,
+                            "end_line": 32,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 31,
+                        "beg_col": 4,
+                        "end_line": 31,
+                        "end_col": 32
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 15,
+                            "end_line": 31,
+                            "end_col": 16
+                          },
+                          "kind": { "StorageDead": 3 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 4,
+                            "end_line": 31,
+                            "end_col": 32
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": { "Literal": "Bool" }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": { "Literal": { "Bool": false } },
+                                    "ty": { "Literal": "Bool" }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 31,
+                            "beg_col": 31,
+                            "end_line": 31,
+                            "end_col": 32
+                          },
+                          "kind": { "StorageDead": 2 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 32,
+                            "beg_col": 1,
+                            "end_line": 32,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          { "Literal": "Bool" },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] },
+          { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "rename_attribute::factorial",
+          "attr_info": null,
+          "source_text": "fn factorial(n: u64) -> u64 {\n    if n <= 1 {\n        1\n    } else {\n        return n * factorial(n - 1);\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 58,
+            "beg_col": 0,
+            "end_line": 64,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U64" } } ],
+          "output": { "Literal": { "UInt": "U64" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 59,
+            "beg_col": 7,
+            "end_line": 64,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 59,
+                "beg_col": 7,
+                "end_line": 59,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U64" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U64" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 59,
+                "beg_col": 7,
+                "end_line": 59,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "BinaryOp": [
+                      "Le",
+                      {
+                        "Move": {
+                          "local": 3,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U64" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U64", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U64" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 59,
+                "beg_col": 7,
+                "end_line": 64,
+                "end_col": 1
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 59,
+                        "beg_col": 7,
+                        "end_line": 59,
+                        "end_col": 13
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 59,
+                            "beg_col": 12,
+                            "end_line": 59,
+                            "end_col": 13
+                          },
+                          "kind": { "StorageDead": 3 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 60,
+                            "beg_col": 8,
+                            "end_line": 60,
+                            "end_col": 9
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U64", "1" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U64" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 63,
+                            "beg_col": 4,
+                            "end_line": 63,
+                            "end_col": 5
+                          },
+                          "kind": { "StorageDead": 2 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 64,
+                            "beg_col": 1,
+                            "end_line": 64,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 59,
+                        "beg_col": 12,
+                        "end_line": 64,
+                        "end_col": 1
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 59,
+                            "beg_col": 12,
+                            "end_line": 59,
+                            "end_col": 13
+                          },
+                          "kind": { "StorageDead": 3 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 15,
+                            "end_line": 62,
+                            "end_col": 16
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              },
+                              {
+                                "Use": {
+                                  "Copy": {
+                                    "local": 1,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U64" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 29,
+                            "end_line": 62,
+                            "end_col": 30
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 7,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              },
+                              {
+                                "Use": {
+                                  "Copy": {
+                                    "local": 1,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U64" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 29,
+                            "end_line": 62,
+                            "end_col": 34
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 8,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              },
+                              {
+                                "BinaryOp": [
+                                  "SubPanic",
+                                  {
+                                    "Copy": {
+                                      "local": 7,
+                                      "projection": [],
+                                      "ty": { "Literal": { "UInt": "U64" } }
+                                    }
+                                  },
+                                  {
+                                    "Const": {
+                                      "kind": {
+                                        "Literal": {
+                                          "Scalar": {
+                                            "Unsigned": [ "U64", "1" ]
+                                          }
+                                        }
+                                      },
+                                      "ty": { "Literal": { "UInt": "U64" } }
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 29,
+                            "end_line": 62,
+                            "end_col": 34
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 6,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              },
+                              {
+                                "Use": {
+                                  "Move": {
+                                    "local": 8,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U64" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 33,
+                            "end_line": 62,
+                            "end_col": 34
+                          },
+                          "kind": { "StorageDead": 7 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 19,
+                            "end_line": 62,
+                            "end_col": 35
+                          },
+                          "kind": {
+                            "Call": {
+                              "func": {
+                                "Regular": {
+                                  "kind": { "Fun": { "Regular": 1 } },
+                                  "generics": null
+                                }
+                              },
+                              "args": [
+                                {
+                                  "Move": {
+                                    "local": 6,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U64" } }
+                                  }
+                                }
+                              ],
+                              "dest": {
+                                "local": 5,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 34,
+                            "end_line": 62,
+                            "end_col": 35
+                          },
+                          "kind": { "StorageDead": 6 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 15,
+                            "end_line": 62,
+                            "end_col": 35
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 9,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              },
+                              {
+                                "BinaryOp": [
+                                  "MulPanic",
+                                  {
+                                    "Copy": {
+                                      "local": 4,
+                                      "projection": [],
+                                      "ty": { "Literal": { "UInt": "U64" } }
+                                    }
+                                  },
+                                  {
+                                    "Copy": {
+                                      "local": 5,
+                                      "projection": [],
+                                      "ty": { "Literal": { "UInt": "U64" } }
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 15,
+                            "end_line": 62,
+                            "end_col": 35
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U64" } }
+                              },
+                              {
+                                "Use": {
+                                  "Move": {
+                                    "local": 9,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U64" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 34,
+                            "end_line": 62,
+                            "end_col": 35
+                          },
+                          "kind": { "StorageDead": 5 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 62,
+                            "beg_col": 34,
+                            "end_line": 62,
+                            "end_col": 35
+                          },
+                          "kind": { "StorageDead": 4 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 63,
+                            "beg_col": 4,
+                            "end_line": 63,
+                            "end_col": 5
+                          },
+                          "kind": { "StorageDead": 2 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/rename_attribute.rs",
+                            "beg_line": 64,
+                            "beg_col": 1,
+                            "end_line": 64,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": { "UInt": "U64" } },
+          { "Literal": { "UInt": "U64" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "rename_attribute::sum",
+          "attr_info": null,
+          "source_text": "pub fn sum(max: u32) -> u32 {\n    let mut i = 0;\n    let mut s = 0;\n    while i < max {\n        s += i;\n        i += 1;\n    }\n\n    s *= 2;\n    s\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 67,
+            "beg_col": 0,
+            "end_line": 77,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 68,
+            "beg_col": 8,
+            "end_line": 77,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 68,
+                "beg_col": 16,
+                "end_line": 68,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 69,
+                "beg_col": 16,
+                "end_line": 69,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 70,
+                "beg_col": 4,
+                "end_line": 73,
+                "end_col": 5
+              },
+              "kind": {
+                "Loop": {
+                  "span": {
+                    "file": "tests/src/rename_attribute.rs",
+                    "beg_line": 70,
+                    "beg_col": 4,
+                    "end_line": 73,
+                    "end_col": 5
+                  },
+                  "statements": [
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 70,
+                        "beg_col": 10,
+                        "end_line": 70,
+                        "end_col": 11
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 5,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          },
+                          {
+                            "Use": {
+                              "Copy": {
+                                "local": 2,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 70,
+                        "beg_col": 14,
+                        "end_line": 70,
+                        "end_col": 17
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 6,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "U32" } }
+                          },
+                          {
+                            "Use": {
+                              "Copy": {
+                                "local": 1,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 70,
+                        "beg_col": 10,
+                        "end_line": 70,
+                        "end_col": 17
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 4,
+                            "projection": [],
+                            "ty": { "Literal": "Bool" }
+                          },
+                          {
+                            "BinaryOp": [
+                              "Lt",
+                              {
+                                "Move": {
+                                  "local": 5,
+                                  "projection": [],
+                                  "ty": { "Literal": { "UInt": "U32" } }
+                                }
+                              },
+                              {
+                                "Move": {
+                                  "local": 6,
+                                  "projection": [],
+                                  "ty": { "Literal": { "UInt": "U32" } }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/rename_attribute.rs",
+                        "beg_line": 70,
+                        "beg_col": 4,
+                        "end_line": 73,
+                        "end_col": 5
+                      },
+                      "kind": {
+                        "Switch": {
+                          "If": [
+                            {
+                              "Move": {
+                                "local": 4,
+                                "projection": [],
+                                "ty": { "Literal": "Bool" }
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/rename_attribute.rs",
+                                "beg_line": 70,
+                                "beg_col": 4,
+                                "end_line": 73,
+                                "end_col": 5
+                              },
+                              "statements": [
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 70,
+                                    "beg_col": 16,
+                                    "end_line": 70,
+                                    "end_col": 17
+                                  },
+                                  "kind": { "StorageDead": 6 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 70,
+                                    "beg_col": 16,
+                                    "end_line": 70,
+                                    "end_col": 17
+                                  },
+                                  "kind": { "StorageDead": 5 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 71,
+                                    "beg_col": 13,
+                                    "end_line": 71,
+                                    "end_col": 14
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 7,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "Use": {
+                                          "Copy": {
+                                            "local": 2,
+                                            "projection": [],
+                                            "ty": {
+                                              "Literal": { "UInt": "U32" }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 71,
+                                    "beg_col": 8,
+                                    "end_line": 71,
+                                    "end_col": 14
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 8,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "BinaryOp": [
+                                          "AddPanic",
+                                          {
+                                            "Copy": {
+                                              "local": 3,
+                                              "projection": [],
+                                              "ty": {
+                                                "Literal": { "UInt": "U32" }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "Copy": {
+                                              "local": 7,
+                                              "projection": [],
+                                              "ty": {
+                                                "Literal": { "UInt": "U32" }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 71,
+                                    "beg_col": 8,
+                                    "end_line": 71,
+                                    "end_col": 14
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 3,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "Use": {
+                                          "Move": {
+                                            "local": 8,
+                                            "projection": [],
+                                            "ty": {
+                                              "Literal": { "UInt": "U32" }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 71,
+                                    "beg_col": 13,
+                                    "end_line": 71,
+                                    "end_col": 14
+                                  },
+                                  "kind": { "StorageDead": 7 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 72,
+                                    "beg_col": 8,
+                                    "end_line": 72,
+                                    "end_col": 14
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 9,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "BinaryOp": [
+                                          "AddPanic",
+                                          {
+                                            "Copy": {
+                                              "local": 2,
+                                              "projection": [],
+                                              "ty": {
+                                                "Literal": { "UInt": "U32" }
+                                              }
+                                            }
+                                          },
+                                          {
+                                            "Const": {
+                                              "kind": {
+                                                "Literal": {
+                                                  "Scalar": {
+                                                    "Unsigned": [
+                                                      "U32", "1"
+                                                    ]
+                                                  }
+                                                }
+                                              },
+                                              "ty": {
+                                                "Literal": { "UInt": "U32" }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 72,
+                                    "beg_col": 8,
+                                    "end_line": 72,
+                                    "end_col": 14
+                                  },
+                                  "kind": {
+                                    "Assign": [
+                                      {
+                                        "local": 2,
+                                        "projection": [],
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      },
+                                      {
+                                        "Use": {
+                                          "Move": {
+                                            "local": 9,
+                                            "projection": [],
+                                            "ty": {
+                                              "Literal": { "UInt": "U32" }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 73,
+                                    "beg_col": 4,
+                                    "end_line": 73,
+                                    "end_col": 5
+                                  },
+                                  "kind": { "StorageDead": 4 }
+                                },
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 70,
+                                    "beg_col": 4,
+                                    "end_line": 73,
+                                    "end_col": 5
+                                  },
+                                  "kind": { "Continue": 0 }
+                                }
+                              ]
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/rename_attribute.rs",
+                                "beg_line": 70,
+                                "beg_col": 10,
+                                "end_line": 70,
+                                "end_col": 17
+                              },
+                              "statements": [
+                                {
+                                  "span": {
+                                    "file": "tests/src/rename_attribute.rs",
+                                    "beg_line": 70,
+                                    "beg_col": 10,
+                                    "end_line": 70,
+                                    "end_col": 17
+                                  },
+                                  "kind": { "Break": 0 }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 70,
+                "beg_col": 16,
+                "end_line": 70,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 70,
+                "beg_col": 16,
+                "end_line": 70,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 73,
+                "beg_col": 4,
+                "end_line": 73,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 75,
+                "beg_col": 4,
+                "end_line": 75,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 10,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulPanic",
+                      {
+                        "Copy": {
+                          "local": 3,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "2" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 75,
+                "beg_col": 4,
+                "end_line": 75,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 10,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 76,
+                "beg_col": 4,
+                "end_line": 76,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 77,
+                "beg_col": 0,
+                "end_line": 77,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 77,
+                "beg_col": 0,
+                "end_line": 77,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 77,
+                "beg_col": 1,
+                "end_line": 77,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "rename_attribute::BoolTrait::get_bool",
+          "attr_info": null,
+          "source_text": "fn get_bool(&self) -> bool;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 13,
+            "beg_col": 4,
+            "end_line": 13,
+            "end_col": 31
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "rename_attribute::BoolTrait", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "rename_attribute::BoolTrait::ret_true",
+          "attr_info": null,
+          "source_text": "fn ret_true(&self) -> bool {\n        true\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 17,
+            "beg_col": 4,
+            "end_line": 19,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 18,
+            "beg_col": 8,
+            "end_line": 19,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 18,
+                "beg_col": 8,
+                "end_line": 18,
+                "end_col": 12
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": { "Literal": { "Bool": true } },
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 19,
+                "beg_col": 5,
+                "end_line": 19,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "rename_attribute::{rename_attribute::BoolTrait for bool}::get_bool",
+          "attr_info": null,
+          "source_text": "fn get_bool(&self) -> bool {\n        *self\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 24,
+            "beg_col": 4,
+            "end_line": 26,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] } ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 25,
+            "beg_col": 8,
+            "end_line": 26,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 25,
+                "beg_col": 8,
+                "end_line": 25,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [ 0, { "Literal": "Bool" }, "Shared" ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 26,
+                "beg_col": 5,
+                "end_line": 26,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "rename_attribute::{rename_attribute::BoolTrait for bool}::ret_true",
+          "attr_info": null,
+          "source_text": "fn ret_true(&self) -> bool {\n        true\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 23,
+            "beg_col": 0,
+            "end_line": 27,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] } ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 18,
+            "beg_col": 8,
+            "end_line": 19,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 18,
+                "beg_col": 8,
+                "end_line": 18,
+                "end_col": 12
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": { "Literal": { "Bool": true } },
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 19,
+                "beg_col": 5,
+                "end_line": 19,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "rename_attribute::C",
+          "attr_info": null,
+          "source_text": "const C: u32 = 100 + 10 + 1;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 28
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 52,
+                "beg_col": 15,
+                "end_line": 52,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "100" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "10" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 52,
+                "beg_col": 15,
+                "end_line": 52,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 52,
+                "beg_col": 15,
+                "end_line": 52,
+                "end_col": 27
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 1,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 52,
+                "beg_col": 15,
+                "end_line": 52,
+                "end_col": 27
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 52,
+                "beg_col": 26,
+                "end_line": 52,
+                "end_col": 27
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 52,
+                "beg_col": 0,
+                "end_line": 52,
+                "end_col": 28
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "rename_attribute::CA",
+          "attr_info": null,
+          "source_text": "const CA: u32 = 10 + 1;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 55,
+            "beg_col": 0,
+            "end_line": 55,
+            "end_col": 23
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 55,
+            "beg_col": 0,
+            "end_line": 55,
+            "end_col": 23
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 55,
+                "beg_col": 16,
+                "end_line": 55,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "10" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 55,
+                "beg_col": 16,
+                "end_line": 55,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/rename_attribute.rs",
+                "beg_line": 55,
+                "beg_col": 0,
+                "end_line": 55,
+                "end_col": 23
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "rename_attribute::BoolTrait",
+          "attr_info": null,
+          "source_text": "pub trait BoolTrait {\n    // Required method\n    #[charon::rename(\"getTest\")]\n    fn get_bool(&self) -> bool;\n\n    // Provided method\n    #[charon::rename(\"retTest\")]\n    fn ret_true(&self) -> bool {\n        true\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 10,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "get_bool",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "Literal": "Bool" },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "rename_attribute::BoolTrait", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          },
+          {
+            "name": "ret_true",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "Literal": "Bool" },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": []
+              }
+            },
+            "has_default": true,
+            "default_fn_id": 4
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "rename_attribute::{rename_attribute::BoolTrait for bool}",
+          "attr_info": null,
+          "source_text": "impl BoolTrait for bool {\n    fn get_bool(&self) -> bool {\n        *self\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/rename_attribute.rs",
+            "beg_line": 23,
+            "beg_col": 0,
+            "end_line": 27,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": "Bool" },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          { "name": "get_bool", "fn_id": 5 },
+          { "name": "ret_true", "fn_id": 6 }
+        ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

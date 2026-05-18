@@ -1,0 +1,1676 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "213c5c5edb098771ae6c4bac49c4e872",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "arrays_defs::clone_array",
+      "source_span": {
+        "file": "tests/src/arrays_defs.rs",
+        "beg_line": 3,
+        "beg_col": 0,
+        "end_line": 5,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray ((Generated_Types.TVar (Generated_Types.Free 0)),\n      { Generated_Types.kind =\n        (Generated_Types.CVar (Generated_Types.Free 0));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray ((Generated_Types.TVar (Generated_Types.Free 0)),\n      { Generated_Types.kind =\n        (Generated_Types.CVar (Generated_Types.Free 0));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "core::array::{core::clone::Clone for [T; N]}::clone",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray ((Generated_Types.TVar (Generated_Types.Free 0)),\n      { Generated_Types.kind =\n        (Generated_Types.CVar (Generated_Types.Free 0));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray ((Generated_Types.TVar (Generated_Types.Free 0)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray ((Generated_Types.TVar (Generated_Types.Free 0)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray ((Generated_Types.TVar (Generated_Types.Free 0)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "arrays_defs::index_slice_0",
+      "source_span": {
+        "file": "tests/src/arrays_defs.rs",
+        "beg_line": 7,
+        "beg_col": 0,
+        "end_line": 9,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "Usize", "0" ] } }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@SliceIndexShared",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+                }
+              },
+              {
+                "SymCopy": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "arrays_defs::index_empty_array",
+      "source_span": {
+        "file": "tests/src/arrays_defs.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 13,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayToSliceShared",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 0 ],
+            "abs_sig": [
+              {
+                "abs_id": 0,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 1,
+            "fn_name": "arrays_defs::index_slice_0",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 3 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "arrays_defs::clone_array",
+          "attr_info": null,
+          "source_text": "pub fn clone_array<T: Clone, const N: usize>(x: &[T; N]) -> [T; N] {\n    x.clone()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/arrays_defs.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Array": [
+                    { "TypeVar": { "Free": 0 } },
+                    { "kind": { "Opaque": "len" } }
+                  ]
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Array": [
+              { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/arrays_defs.rs",
+            "beg_line": 4,
+            "beg_col": 4,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 4,
+                "beg_col": 4,
+                "end_line": 4,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "TypeVar": { "Free": 0 } },
+                            { "kind": { "Opaque": "len" } }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "TypeVar": { "Free": 0 } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 4,
+                "beg_col": 4,
+                "end_line": 4,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "TypeVar": { "Free": 0 } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "TypeVar": { "Free": 0 } },
+                        { "kind": { "Opaque": "len" } }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 4,
+                "beg_col": 12,
+                "end_line": 4,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 5,
+                "beg_col": 1,
+                "end_line": 5,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Array": [
+              { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "TypeVar": { "Free": 0 } },
+                  { "kind": { "Opaque": "len" } }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "TypeVar": { "Free": 0 } },
+                  { "kind": { "Opaque": "len" } }
+                ]
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "arrays_defs::index_slice_0",
+          "attr_info": null,
+          "source_text": "pub fn index_slice_0<T>(s: &[T]) -> &T {\n    &s[0]\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/arrays_defs.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared"
+              ]
+            }
+          ],
+          "output": { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/arrays_defs.rs",
+            "beg_line": 8,
+            "beg_col": 4,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 8,
+                "beg_col": 7,
+                "end_line": 8,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "TypeVar": { "Free": 0 } } },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 9
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 5,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "TypeVar": { "Free": 0 } }, "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "TypeVar": { "Free": 0 } }, "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 9,
+                "beg_col": 0,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 9,
+                "beg_col": 0,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 9,
+                "beg_col": 1,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "arrays_defs::index_empty_array",
+          "attr_info": null,
+          "source_text": "pub fn index_empty_array() {\n    let _ = index_slice_0::<u32>(&[]);\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/arrays_defs.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/arrays_defs.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 34,
+                "end_line": 12,
+                "end_col": 36
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U32" } },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Array": [
+                          { "Literal": { "UInt": "U32" } },
+                          { "kind": { "Opaque": "len" } }
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 33,
+                "end_line": 12,
+                "end_col": 36
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U32" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Array": [
+                            { "Literal": { "UInt": "U32" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 33,
+                "end_line": 12,
+                "end_col": 36
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U32" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U32" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "0" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 33,
+                "end_line": 12,
+                "end_col": 36
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U32" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 5,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U32" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "0" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 33,
+                "end_line": 12,
+                "end_col": 36
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U32" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 4,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U32" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "0" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 33,
+                "end_line": 12,
+                "end_col": 36
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U32" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "0" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U32" } } },
+                        "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 35,
+                "end_line": 12,
+                "end_col": 36
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 12,
+                "end_line": 12,
+                "end_col": 37
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 1 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U32" } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "U32" } }, "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 36,
+                "end_line": 12,
+                "end_col": 37
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 37,
+                "end_line": 12,
+                "end_col": 38
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 12,
+                "beg_col": 37,
+                "end_line": 12,
+                "end_col": 38
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 11,
+                "beg_col": 27,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/arrays_defs.rs",
+                "beg_line": 13,
+                "beg_col": 1,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U32" } } }, "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U32" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U32" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U32" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U32" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U32" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "0" ] } }
+                }
+              }
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::array::{core::clone::Clone for [T; N]}::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 446,
+            "beg_col": 4,
+            "end_line": 446,
+            "end_col": 27
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Array": [
+                    { "TypeVar": { "Free": 0 } },
+                    { "kind": { "Opaque": "len" } }
+                  ]
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Array": [
+              { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::clone::Clone::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone_fn",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 236,
+            "beg_col": 4,
+            "end_line": 236,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::clone::Clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 194,
+            "beg_col": 0,
+            "end_line": 194,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "clone",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::clone::Clone", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::array::{core::clone::Clone for [T; N]}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 444,
+            "beg_col": 0,
+            "end_line": 444,
+            "end_col": 47
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Array": [
+            { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+          ]
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [ { "name": "N" } ],
+          "trait_clauses": [
+            { "trait": "core::clone::Clone", "type_param": 0 }
+          ]
+        },
+        "methods": [ { "name": "clone", "fn_id": 3 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

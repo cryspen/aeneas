@@ -86,9 +86,22 @@ type cert_state_summary = {
 
 (** Information needed to restore a borrowed value when ending a mutable
     borrow. The [given_back] symbolic expression is the value that flows
-    back to the borrow's loan upon termination. *)
+    back to the borrow's loan upon termination.
+
+    [M10.x.0 — cert v6] [ri_holder_local] names the local in the OCaml
+    [eval_ctx.env] whose [VLoan (VMutLoan loan_bid)] token the
+    end-borrow restores. The emit site at [InterpBorrows.ml:1050]
+    walks the env and populates this for [.direct]/[.lazyExpand]
+    loan kinds; [None] for [.reborrow]/[.shared] kinds (which don't
+    park a token in env) and as a sentinel when no holder is found
+    (e.g. synthetic / lazy-expansion certs whose token was
+    overwritten before the end-borrow). The Lean side does not yet
+    consume this field at M10.x.0 — it lands here as schema
+    plumbing for M10.x.9, which inverts the env-walk in
+    [stepEndBorrow]. *)
 type cert_restore_info = {
   ri_given_back : cert_sym_expr;
+  ri_holder_local : local_id option;
 }
 [@@deriving show]
 
@@ -162,8 +175,64 @@ type cert_join_rule =
   | JrJoinOtherBottom of abs_id
 [@@deriving show]
 
-(** [M9.6 — Option C] One entry of [EvJoin.witnesses]. *)
-type cert_join_entry = { je_local : local_id; je_rule : cert_join_rule }
+(** [M10.x.0 — cert v6] Per-[cert_join_entry] delta witness. Carries
+    only what the corresponding paper-side [JoinEntryStep] constructor's
+    premise needs — never the full intermediate state. The chain's
+    intermediate [Ω_i] is rebuilt in Lean by folding deltas. The
+    constructor names are parallel to [cert_join_rule] constructors;
+    the Lean replayer cross-checks the pair (see [Step.lean]
+    stepJoin's v6 consistency check). Lands at M10.x.0 as schema
+    plumbing for M10.x.10 (which inverts the [join] axiom into a
+    fold over these deltas). *)
+type cert_join_entry_delta =
+  | JedTrivial
+      (** Matches [JrJoinSame] / [JrJoinVar]: no state change, no
+          freshness premise. *)
+  | JedSymbolic of symbolic_value_id
+      (** Matches [JrJoinSymbolic n]: post-state introduces [SymVal n];
+          the freshness premise is an HWM fact on
+          [Ω_i.symValIdFresh n]. *)
+  | JedMutBorrows of { l_fresh : borrow_id; abs_id : abs_id }
+      (** Matches [JrJoinMutBorrows]: the freshness premise is
+          [Ω_i.loanIdFresh l_fresh ∧ Ω_i.absIdFresh abs_id]. *)
+  | JedBottomOther of abs_id
+      (** Matches [JrJoinBottomOther abs]: the abs must be live in
+          [Ω_i.abs]; carry the absId so the Lean side can check
+          registry presence. *)
+  | JedOtherBottom of abs_id
+      (** Mirror of [JedBottomOther]. *)
+[@@deriving show]
+
+(** [M9.6 — Option C] One entry of [EvJoin.witnesses].
+
+    [M10.x.0 — cert v6] Carries an additional [je_delta : cert_join_entry_delta]
+    witness. Redundant by construction with [je_rule] (the constructor
+    names are parallel), but the redundancy lets the Lean replayer
+    perform the chain fold without case-matching on [cert_join_rule]
+    from outside [JoinLemmas]. *)
+type cert_join_entry = {
+  je_local : local_id;
+  je_rule : cert_join_rule;
+  je_delta : cert_join_entry_delta;
+}
+[@@deriving show]
+
+(** [M10.x.0 — cert v6] Reference to a statement in the cert's embedded
+    LLBC body tree. [fun_id] indexes into the cert's
+    [cc_llbc_program.fun_decls] array; [body_path] is the per-sub-statement
+    path from the function body's root (e.g. [[0; 2; 1]] = then-branch
+    of stmt 0, nested stmt 2, sub-stmt 1).
+
+    Used by [fun_cert.fc_stmt_refs] as a per-event back-pointer so
+    Phase-E2's [replayFun_event_induct] can interleave events with the
+    LLBC body tree rather than the flat event list. Not load-bearing
+    for any axiom drop in the v6 campaign — landed in M10.x.0 as
+    schema plumbing alongside [ri_holder_local] and
+    [cert_join_entry_delta] so the schema bump only happens once. *)
+type cert_stmt_ref = {
+  sr_fun_id : int;
+  sr_body_path : int array;
+}
 [@@deriving show]
 
 (** The LLBC# trace event vocabulary.
@@ -398,6 +467,20 @@ type fun_cert = {
           an unwieldy expression. [None] for plain functions; the
           Lean checker falls back to sanitizing [fc_fn_name] in that
           case. *)
+  fc_stmt_refs : cert_stmt_ref option list;
+      (** [M10.x.0 — cert v6] Parallel array to [fc_events]: one entry
+          per emitted event, in declaration order. Each entry names
+          the cert's-LLBC-body sub-statement that produced the event,
+          or [None] for synthetic events (loop-fixpoint markers,
+          frame-pop end-borrows, etc.) that don't have a body-tree
+          home.
+
+          M10.x.0 ships this field as a length-matched array of
+          [None] sentinels — the threading at the 23 emit sites is
+          deferred to M10.x.0b. The shape is in place so the Lean
+          parser already accepts the field; consumers (Phase E2's
+          [replayFun_event_induct]) land alongside the population
+          work later. *)
 }
 [@@deriving show]
 
@@ -449,8 +532,28 @@ type crate_cert = {
     bare [abs_id] of v3. Lets the Lean replayer install the abs
     in [absRegistry] from the cert and removes the "fresh abs"
     gap that blocked the C23 [stepJoin_witnessed_sound] general
-    case (M10 soundness campaign, plan §11.1 #1 / §3.4 / §14.1). *)
-let cert_fmt_version : int = 4
+    case (M10 soundness campaign, plan §11.1 #1 / §3.4 / §14.1).
+
+    [M10.x.0] v4 → v6 (v5 skipped to avoid confusion with the
+    earlier audit's one-field "cert v5 holderLocal" sketch). v6
+    adds three orthogonal fields aimed at closing the 12 remaining
+    [CertGen_faithful.*] axioms (audit
+    [.claude/plans/robust-swinging-walrus.md] §"Cert v6 design"):
+    - [cert_restore_info.ri_holder_local] — names the env local
+      whose [mutLoan] token an [EvEndBorrow] restores (consumed in
+      M10.x.9 to invert [endBorrow_direct_witness] axiom);
+    - [cert_join_entry.je_delta] — per-witness paper-side
+      [JoinEntryStep] premise (consumed in M10.x.10 to fold the
+      [join] axiom into a derived [JoinChain]);
+    - [fun_cert.fc_stmt_refs] — parallel-to-events array of LLBC
+      body-tree back-pointers (Phase-E2 enabler, threaded across
+      the 23 emit sites in a follow-up commit; M10.x.0 ships the
+      shape with [None] sentinels).
+
+    Back-compat: hard cut, mirroring M9.8's v3→v4 cutover. Cert
+    v4 and v5 are rejected at parse time; regenerate with the
+    current [aeneas -emit-cert]. *)
+let cert_fmt_version : int = 6
 
 (** Encode a Charon [binop] as a flat string tag. Arithmetic ops bake
     the overflow mode into the tag suffix ([Panic] / [UB] / [Wrap])

@@ -1,0 +1,1350 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "04deb158c2f239f6b9c721a4ae2804c6",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "vec::use_extend_from_slice",
+      "source_span": {
+        "file": "tests/src/vec.rs",
+        "beg_line": 5,
+        "beg_col": 0,
+        "end_line": 7,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 2,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "alloc::vec::{alloc::vec::Vec<T>}::extend_from_slice",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 2, 3 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 2 } } ]
+              },
+              {
+                "abs_id": 3,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 1, "sb_id": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [ { "SymVal": 5 } ],
+            "released_loans": [ 2 ],
+            "token_clear_locals": [ 1 ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 3,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "vec::use_alloc_with_capacity",
+      "source_span": {
+        "file": "tests/src/vec.rs",
+        "beg_line": 9,
+        "beg_col": 0,
+        "end_line": 11,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 4,
+            "fn_name": "alloc::vec::{alloc::vec::Vec<T>}::with_capacity",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "vec::from_elem",
+      "source_span": {
+        "file": "tests/src/vec.rs",
+        "beg_line": 13,
+        "beg_col": 0,
+        "end_line": 15,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "alloc::vec::from_elem",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "alloc::vec::Vec",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Vec",
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 440,
+            "beg_col": 0,
+            "end_line": 440,
+            "end_col": 96
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "vec::use_extend_from_slice",
+          "attr_info": null,
+          "source_text": "fn use_extend_from_slice<T: Clone>(v: &mut Vec<T>, s: &[T]) {\n    v.extend_from_slice(s)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/vec.rs",
+            "beg_line": 5,
+            "beg_col": 0,
+            "end_line": 7,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 0 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Mut"
+              ]
+            },
+            {
+              "Ref": [
+                0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared"
+              ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/vec.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 7,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 6,
+                "beg_col": 4,
+                "end_line": 6,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 6,
+                "beg_col": 24,
+                "end_line": 6,
+                "end_col": 25
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "TypeVar": { "Free": 0 } } },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 6,
+                "beg_col": 4,
+                "end_line": 6,
+                "end_col": 26
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 6,
+                "beg_col": 25,
+                "end_line": 6,
+                "end_col": 26
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 6,
+                "beg_col": 25,
+                "end_line": 6,
+                "end_col": 26
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 7,
+                "beg_col": 1,
+                "end_line": 7,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Mut"
+            ]
+          },
+          {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Mut"
+            ]
+          },
+          {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "vec::use_alloc_with_capacity",
+          "attr_info": null,
+          "source_text": "fn use_alloc_with_capacity<T>(n: usize) -> Vec<T> {\n    Vec::with_capacity(n)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/vec.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 11,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "Usize" } } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/vec.rs",
+            "beg_line": 10,
+            "beg_col": 23,
+            "end_line": 11,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 10,
+                "beg_col": 23,
+                "end_line": 10,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 10,
+                "beg_col": 4,
+                "end_line": 10,
+                "end_col": 25
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 4 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "TypeVar": { "Free": 0 } } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 10,
+                "beg_col": 24,
+                "end_line": 10,
+                "end_col": 25
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 11,
+                "beg_col": 1,
+                "end_line": 11,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "vec::from_elem",
+          "attr_info": null,
+          "source_text": "fn from_elem<T: Clone>(x: T, n: usize) -> Vec<T> {\n    std::vec::from_elem(x, n)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/vec.rs",
+            "beg_line": 13,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "TypeVar": { "Free": 0 } }, { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/vec.rs",
+            "beg_line": 14,
+            "beg_col": 24,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 14,
+                "beg_col": 24,
+                "end_line": 14,
+                "end_col": 25
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 14,
+                "beg_col": 27,
+                "end_line": 14,
+                "end_col": 28
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 14,
+                "beg_col": 4,
+                "end_line": 14,
+                "end_col": 29
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "TypeVar": { "Free": 0 } } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 14,
+                "beg_col": 28,
+                "end_line": 14,
+                "end_col": 29
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 14,
+                "beg_col": 28,
+                "end_line": 14,
+                "end_col": 29
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 15,
+                "beg_col": 0,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/vec.rs",
+                "beg_line": 15,
+                "beg_col": 1,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          { "TypeVar": { "Free": 0 } },
+          { "Literal": { "UInt": "Usize" } },
+          { "TypeVar": { "Free": 0 } },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "alloc::vec::{alloc::vec::Vec<T>}::extend_from_slice",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 3434,
+            "beg_col": 4,
+            "end_line": 3434,
+            "end_col": 52
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 0 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Mut"
+              ]
+            },
+            {
+              "Ref": [
+                0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared"
+              ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "T" }, { "name": "A" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "alloc::vec::{alloc::vec::Vec<T>}::with_capacity",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "vec_with_capacity",
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 525,
+            "beg_col": 4,
+            "end_line": 525,
+            "end_col": 55
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "Usize" } } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "alloc::vec::from_elem",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "vec_from_elem",
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 3585,
+            "beg_col": 0,
+            "end_line": 3585,
+            "end_col": 55
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "TypeVar": { "Free": 0 } }, { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::clone::Clone::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone_fn",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 236,
+            "beg_col": 4,
+            "end_line": 236,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::clone::Clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 194,
+            "beg_col": 0,
+            "end_line": 194,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "clone",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::clone::Clone", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

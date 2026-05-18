@@ -1,0 +1,618 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "1c383ae471ae1ae36228af85308c8c58",
+  "functions": [
+    {
+      "fn_id": 2,
+      "fn_name": "from_to::{from_to::From<u32> for u32}::from",
+      "source_span": {
+        "file": "tests/src/from_to.rs",
+        "beg_line": 14,
+        "beg_col": 4,
+        "end_line": 16,
+        "end_col": 5
+      },
+      "pretty_name": "Std.U32.Insts.From_toFrom.from",
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "from_to::{from_to::To for u32}::to",
+      "source_span": {
+        "file": "tests/src/from_to.rs",
+        "beg_line": 20,
+        "beg_col": 4,
+        "end_line": 22,
+        "end_col": 5
+      },
+      "pretty_name": "Std.U32.Insts.From_toTo.to",
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "TraitClause@0::from",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "from_to::From::from",
+          "attr_info": null,
+          "source_text": "fn from(x: T) -> Self;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 4,
+            "beg_col": 4,
+            "end_line": 4,
+            "end_col": 26
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 1 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" }, { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "from_to::From", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "from_to::To::to",
+          "attr_info": null,
+          "source_text": "fn to<T: From<Self>>(&self) -> T\n    where\n        Self: std::marker::Sized;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 8,
+            "beg_col": 4,
+            "end_line": 10,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 1 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "from_to::To", "type_param": 0 },
+              { "trait": "from_to::From", "type_param": 1 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "from_to::{from_to::From<u32> for u32}::from",
+          "attr_info": null,
+          "source_text": "fn from(x: u32) -> u32 {\n        x\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 14,
+            "beg_col": 4,
+            "end_line": 16,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 15,
+            "beg_col": 8,
+            "end_line": 16,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/from_to.rs",
+                "beg_line": 15,
+                "beg_col": 8,
+                "end_line": 15,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/from_to.rs",
+                "beg_line": 16,
+                "beg_col": 5,
+                "end_line": 16,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "from_to::{from_to::To for u32}::to",
+          "attr_info": null,
+          "source_text": "fn to<T: From<Self>>(&self) -> T {\n        <T as From<Self>>::from(*self)\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 20,
+            "beg_col": 4,
+            "end_line": 22,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "from_to::From", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 21,
+            "beg_col": 32,
+            "end_line": 22,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/from_to.rs",
+                "beg_line": 21,
+                "beg_col": 32,
+                "end_line": 21,
+                "end_col": 37
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/from_to.rs",
+                "beg_line": 21,
+                "beg_col": 8,
+                "end_line": 21,
+                "end_col": 38
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "TraitMethod": [ { "id": 0 }, "from" ] },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/from_to.rs",
+                "beg_line": 21,
+                "beg_col": 37,
+                "end_line": 21,
+                "end_col": 38
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/from_to.rs",
+                "beg_line": 22,
+                "beg_col": 5,
+                "end_line": 22,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 0 } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "from_to::From",
+          "attr_info": null,
+          "source_text": "trait From<T> {\n    fn from(x: T) -> Self;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "from",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 1 } } ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" }, { "name": "T" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "from_to::From", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "from_to::To",
+          "attr_info": null,
+          "source_text": "trait To {\n    fn to<T: From<Self>>(&self) -> T\n    where\n        Self: std::marker::Sized;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 11,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "to",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "TypeVar": { "Free": 1 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "T" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "from_to::To", "type_param": 0 },
+                  { "trait": "from_to::From", "type_param": 1 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "from_to::{from_to::From<u32> for u32}",
+          "attr_info": null,
+          "source_text": "impl From<u32> for u32 {\n    fn from(x: u32) -> u32 {\n        x\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 13,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "U32" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "from", "fn_id": 2 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "from_to::{from_to::To for u32}",
+          "attr_info": null,
+          "source_text": "impl To for u32 {\n    fn to<T: From<Self>>(&self) -> T {\n        <T as From<Self>>::from(*self)\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/from_to.rs",
+            "beg_line": 19,
+            "beg_col": 0,
+            "end_line": 23,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "U32" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "to", "fn_id": 3 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

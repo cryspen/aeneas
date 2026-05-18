@@ -1,0 +1,469 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "a3c3430434e8f2ffb212f1ea5de0e8c7",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "print::call_println",
+      "source_span": {
+        "file": "tests/src/print.rs",
+        "beg_line": 4,
+        "beg_col": 0,
+        "end_line": 6,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 1,
+            "fn_name": "core::fmt::{core::fmt::Arguments<'a>}::from_str",
+            "call_id": 1,
+            "args": [ { "SymLit": { "Str": "Hello World!\n" } } ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 0, 1 ],
+            "abs_sig": [
+              { "abs_id": 0, "parent_abs": [], "roles": [] },
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 0 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 2,
+            "fn_name": "std::io::stdio::_print",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [ { "abs_id": 2, "parent_abs": [], "roles": [] } ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [ { "SymVal": 3 } ],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::fmt::Arguments",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "format_arguments",
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 716,
+            "beg_col": 0,
+            "end_line": 716,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [ { "name": "'a" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "print::call_println",
+          "attr_info": null,
+          "source_text": "fn call_println() {\n    println!(\"Hello World!\")\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/print.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/print.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 0,
+            "end_col": 0
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/print.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/std/src/macros.rs",
+                "beg_line": 143,
+                "beg_col": 27,
+                "end_line": 143,
+                "end_col": 60
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 1 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Const": {
+                        "kind": { "Literal": { "Str": "Hello World!\n" } },
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Str" },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/std/src/macros.rs",
+                "beg_line": 143,
+                "beg_col": 8,
+                "end_line": 143,
+                "end_col": 61
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 2 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/std/src/macros.rs",
+                "beg_line": 143,
+                "beg_col": 60,
+                "end_line": 143,
+                "end_col": 61
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/std/src/macros.rs",
+                "beg_line": 143,
+                "beg_col": 61,
+                "end_line": 143,
+                "end_col": 62
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/std/src/macros.rs",
+                "beg_line": 142,
+                "beg_col": 22,
+                "end_line": 144,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/print.rs",
+                "beg_line": 6,
+                "beg_col": 1,
+                "end_line": 6,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::fmt::{core::fmt::Arguments<'a>}::from_str",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 815,
+            "beg_col": 4,
+            "end_line": 815,
+            "end_col": 59
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Str" },
+                    "generics": { "types": [] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [ { "name": "'a" }, { "name": "'b" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "std::io::stdio::_print",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/std/src/io/stdio.rs",
+            "beg_line": 1274,
+            "beg_col": 0,
+            "end_line": 1274,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

@@ -1,0 +1,1201 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "add27f5a72986ecff8f7f6e49235bcc3",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "mini_tree::{mini_tree::Tree}::explore",
+      "source_span": {
+        "file": "tests/src/mini_tree.rs",
+        "beg_line": 14,
+        "beg_col": 4,
+        "end_line": 20,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvLoopInv": {
+            "loop_id": 0,
+            "invariant": {
+              "env": [
+                { "local": 2, "value": { "SymMutBorrowTok": 9 } },
+                { "local": 1, "value": { "SymMutBorrowTok": 2 } }
+              ],
+              "live_loans": []
+            },
+            "loan_registry": []
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 14 },
+            "adt_id": 3,
+            "variant_id": 0,
+            "variant_name": "None"
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 14 },
+            "adt_id": 3,
+            "variant_id": 1,
+            "variant_name": "Some"
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        { "EvLoopEnd": { "loop_id": 0 } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "mini_tree::Node",
+          "attr_info": null,
+          "source_text": "struct Node {\n    child: OptNode,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/mini_tree.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "child",
+              "ty": {
+                "Adt": {
+                  "id": { "Adt": 3 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "mini_tree::Tree",
+          "attr_info": null,
+          "source_text": "struct Tree {\n    root: OptNode,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/mini_tree.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 11,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "root",
+              "ty": {
+                "Adt": {
+                  "id": { "Adt": 3 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::option::Option",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Option",
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 600,
+            "beg_col": 0,
+            "end_line": 600,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "None",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Some",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "mini_tree::{mini_tree::Tree}::explore",
+          "attr_info": null,
+          "source_text": "pub fn explore(&self) {\n        let mut current_tree = &self.root;\n\n        while let Some(current_node) = current_tree {\n            current_tree = &current_node.child\n        }\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/mini_tree.rs",
+            "beg_line": 14,
+            "beg_col": 4,
+            "end_line": 20,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 2 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/mini_tree.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/mini_tree.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/mini_tree.rs",
+                "beg_line": 15,
+                "beg_col": 31,
+                "end_line": 15,
+                "end_col": 41
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 3 },
+                            "generics": {
+                              "types": [
+                                {
+                                  "Adt": {
+                                    "id": { "Builtin": "Box" },
+                                    "generics": {
+                                      "types": [
+                                        {
+                                          "Adt": {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 2, null ] }, 0 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 2 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/mini_tree.rs",
+                "beg_line": 17,
+                "beg_col": 8,
+                "end_line": 19,
+                "end_col": 9
+              },
+              "kind": {
+                "Loop": {
+                  "span": {
+                    "file": "tests/src/mini_tree.rs",
+                    "beg_line": 17,
+                    "beg_col": 8,
+                    "end_line": 19,
+                    "end_col": 9
+                  },
+                  "statements": [
+                    {
+                      "span": {
+                        "file": "tests/src/mini_tree.rs",
+                        "beg_line": 17,
+                        "beg_col": 8,
+                        "end_line": 19,
+                        "end_col": 9
+                      },
+                      "kind": {
+                        "Switch": {
+                          "Match": [
+                            {
+                              "local": 2,
+                              "projection": [ "Deref" ],
+                              "ty": {
+                                "Ref": [
+                                  0,
+                                  {
+                                    "Adt": {
+                                      "id": { "Adt": 3 },
+                                      "generics": {
+                                        "types": [
+                                          {
+                                            "Adt": {
+                                              "id": { "Builtin": "Box" },
+                                              "generics": {
+                                                "types": [
+                                                  {
+                                                    "Adt": {
+                                                      "id": { "Adt": 0 },
+                                                      "generics": {
+                                                        "types": []
+                                                      }
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "Shared"
+                                ]
+                              }
+                            },
+                            [
+                              [
+                                [ 1 ],
+                                {
+                                  "span": {
+                                    "file": "tests/src/mini_tree.rs",
+                                    "beg_line": 17,
+                                    "beg_col": 8,
+                                    "end_line": 19,
+                                    "end_col": 9
+                                  },
+                                  "statements": [
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 17,
+                                        "beg_col": 23,
+                                        "end_line": 17,
+                                        "end_col": 35
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 3,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": {
+                                                      "Builtin": "Box"
+                                                    },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Adt": 0
+                                                            },
+                                                            "generics": {
+                                                              "types": []
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Ref": {
+                                              "place": {
+                                                "local": 2,
+                                                "projection": [
+                                                  "Deref",
+                                                  {
+                                                    "Field": [
+                                                      { "Adt": [ 3, 1 ] }, 0
+                                                    ]
+                                                  }
+                                                ],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": { "Adt": 3 },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Builtin": "Box"
+                                                                },
+                                                                "generics": {
+                                                                  "types": [
+                                                                    {
+                                                                    "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                    }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              },
+                                              "kind": "Shared",
+                                              "ptr_metadata": null
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 18,
+                                        "beg_col": 27,
+                                        "end_line": 18,
+                                        "end_col": 46
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 5,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": { "Adt": 3 },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Builtin": "Box"
+                                                            },
+                                                            "generics": {
+                                                              "types": [
+                                                                {
+                                                                  "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Ref": {
+                                              "place": {
+                                                "local": 3,
+                                                "projection": [
+                                                  "Deref",
+                                                  "Deref",
+                                                  {
+                                                    "Field": [
+                                                      { "Adt": [ 0, null ] },
+                                                      0
+                                                    ]
+                                                  }
+                                                ],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Builtin": "Box"
+                                                        },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Adt": 0
+                                                                },
+                                                                "generics": {
+                                                                  "types": []
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              },
+                                              "kind": "Shared",
+                                              "ptr_metadata": null
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 18,
+                                        "beg_col": 27,
+                                        "end_line": 18,
+                                        "end_col": 46
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 4,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": { "Adt": 3 },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Builtin": "Box"
+                                                            },
+                                                            "generics": {
+                                                              "types": [
+                                                                {
+                                                                  "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Ref": {
+                                              "place": {
+                                                "local": 5,
+                                                "projection": [ "Deref" ],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": { "Adt": 3 },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Builtin": "Box"
+                                                                },
+                                                                "generics": {
+                                                                  "types": [
+                                                                    {
+                                                                    "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                    }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              },
+                                              "kind": "Shared",
+                                              "ptr_metadata": null
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 18,
+                                        "beg_col": 12,
+                                        "end_line": 18,
+                                        "end_col": 46
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 2,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": { "Adt": 3 },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Builtin": "Box"
+                                                            },
+                                                            "generics": {
+                                                              "types": [
+                                                                {
+                                                                  "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Use": {
+                                              "Move": {
+                                                "local": 4,
+                                                "projection": [],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": { "Adt": 3 },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Builtin": "Box"
+                                                                },
+                                                                "generics": {
+                                                                  "types": [
+                                                                    {
+                                                                    "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                    }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 18,
+                                        "beg_col": 45,
+                                        "end_line": 18,
+                                        "end_col": 46
+                                      },
+                                      "kind": { "StorageDead": 4 }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 19,
+                                        "beg_col": 8,
+                                        "end_line": 19,
+                                        "end_col": 9
+                                      },
+                                      "kind": { "StorageDead": 5 }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 19,
+                                        "beg_col": 8,
+                                        "end_line": 19,
+                                        "end_col": 9
+                                      },
+                                      "kind": { "StorageDead": 3 }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/mini_tree.rs",
+                                        "beg_line": 17,
+                                        "beg_col": 8,
+                                        "end_line": 19,
+                                        "end_col": 9
+                                      },
+                                      "kind": { "Continue": 0 }
+                                    }
+                                  ]
+                                }
+                              ]
+                            ],
+                            {
+                              "span": {
+                                "file": "tests/src/mini_tree.rs",
+                                "beg_line": 17,
+                                "beg_col": 18,
+                                "end_line": 17,
+                                "end_col": 36
+                              },
+                              "statements": [
+                                {
+                                  "span": {
+                                    "file": "tests/src/mini_tree.rs",
+                                    "beg_line": 17,
+                                    "beg_col": 18,
+                                    "end_line": 17,
+                                    "end_col": 36
+                                  },
+                                  "kind": { "Break": 0 }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/mini_tree.rs",
+                "beg_line": 17,
+                "beg_col": 8,
+                "end_line": 19,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/mini_tree.rs",
+                "beg_line": 20,
+                "beg_col": 4,
+                "end_line": 20,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/mini_tree.rs",
+                "beg_line": 20,
+                "beg_col": 5,
+                "end_line": 20,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 2 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 3 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Adt": 0 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 3 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 3 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

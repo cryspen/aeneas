@@ -49,9 +49,15 @@ open AeneasSoundness.LLBCSharpPaper
 
 /-- C18 / M10.2r — `Join-Same` (Fig. 11). Both branches agreed on the
     local's value; the result inherits without state change. Pure
-    constructor witness; no premises. -/
-theorem joinSame_step (Ω : LLBCState) (localId : LocalId) :
-    JoinEntryStep Ω ⟨localId, .joinSame⟩ Ω :=
+    constructor witness; no premises.
+
+    M10.x.0 (cert v6): the lemma takes the parallel `delta` field as
+    an unconstrained parameter — the paper-side rule doesn't (yet)
+    constrain it. M10.x.10 will tighten this when the `join` axiom
+    is replaced by a fold consuming the delta. -/
+theorem joinSame_step (Ω : LLBCState) (localId : LocalId)
+    (delta : JoinEntryDelta) :
+    JoinEntryStep Ω ⟨localId, .joinSame, delta⟩ Ω :=
   JoinEntryStep.same
 
 /-- C19 / M10.2r — `Join-Symbolic` (Fig. 11). Branches differed on a
@@ -60,8 +66,9 @@ theorem joinSame_step (Ω : LLBCState) (localId : LocalId) :
     existential supplies; `bumpSymValId` is the no-op `concretise`
     matches (`State.lean:144`). -/
 theorem joinSymbolic_step (Ω : LLBCState) (localId : LocalId)
-    (freshSv : SymValId) (hFresh : Ω.symValIdFresh freshSv) :
-    JoinEntryStep Ω ⟨localId, .joinSymbolic freshSv⟩
+    (freshSv : SymValId) (delta : JoinEntryDelta)
+    (hFresh : Ω.symValIdFresh freshSv) :
+    JoinEntryStep Ω ⟨localId, .joinSymbolic freshSv, delta⟩
       ((Ω.setLocal localId (.sym freshSv)).bumpSymValId freshSv) :=
   JoinEntryStep.symbolic hFresh
 
@@ -83,9 +90,10 @@ theorem joinSymbolic_step (Ω : LLBCState) (localId : LocalId)
     matches the paper-side post-state by construction. -/
 theorem joinMutBorrows_step (Ω : LLBCState) (localId : LocalId)
     (l_left l_right l_fresh : LoanId) (abs : AbsShape)
+    (delta : JoinEntryDelta)
     (hLoanFresh : Ω.loanIdFresh l_fresh)
     (hAbsFresh : Ω.absIdFresh abs.absId) :
-    JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs⟩
+    JoinEntryStep Ω ⟨localId, .joinMutBorrows l_left l_right l_fresh abs, delta⟩
       (((Ω.setLocal localId (.mutBorrow l_fresh .bottom)).bumpLoanId l_fresh).bumpAbsId abs.absId
         |>.setAbs abs.absId (liftAbsShape abs)) :=
   JoinEntryStep.mutBorrows hLoanFresh hAbsFresh
@@ -94,8 +102,9 @@ theorem joinMutBorrows_step (Ω : LLBCState) (localId : LocalId)
     is folded into the result; this rule is a marker. State unchanged
     at this entry — the surrounding `EvEndAbs` carries the absorbed
     abs's contents. -/
-theorem joinVar_step (Ω : LLBCState) (localId : LocalId) :
-    JoinEntryStep Ω ⟨localId, .joinVar⟩ Ω :=
+theorem joinVar_step (Ω : LLBCState) (localId : LocalId)
+    (delta : JoinEntryDelta) :
+    JoinEntryStep Ω ⟨localId, .joinVar, delta⟩ Ω :=
   JoinEntryStep.var
 
 /-- C22a / M10.2r — `Join-Bottom-Other` (Fig. 11). Left was `⊥`;
@@ -103,15 +112,17 @@ theorem joinVar_step (Ω : LLBCState) (localId : LocalId) :
     `Ω.abs abs = some r` for some `r`. State unchanged at this
     entry. -/
 theorem joinBottomOther_step (Ω : LLBCState) (localId : LocalId)
-    (abs : AbsId) (r : RegionAbs) (hAbs : Ω.abs abs = some r) :
-    JoinEntryStep Ω ⟨localId, .joinBottomOther abs⟩ Ω :=
+    (abs : AbsId) (r : RegionAbs) (delta : JoinEntryDelta)
+    (hAbs : Ω.abs abs = some r) :
+    JoinEntryStep Ω ⟨localId, .joinBottomOther abs, delta⟩ Ω :=
   JoinEntryStep.bottomOther hAbs
 
 /-- C22b / M10.2r — `Join-Other-Bottom` (Fig. 11). Mirror of
     `joinBottomOther_step`. -/
 theorem joinOtherBottom_step (Ω : LLBCState) (localId : LocalId)
-    (abs : AbsId) (r : RegionAbs) (hAbs : Ω.abs abs = some r) :
-    JoinEntryStep Ω ⟨localId, .joinOtherBottom abs⟩ Ω :=
+    (abs : AbsId) (r : RegionAbs) (delta : JoinEntryDelta)
+    (hAbs : Ω.abs abs = some r) :
+    JoinEntryStep Ω ⟨localId, .joinOtherBottom abs, delta⟩ Ω :=
   JoinEntryStep.otherBottom hAbs
 
 end AeneasSoundness.Soundness.JoinLemmas

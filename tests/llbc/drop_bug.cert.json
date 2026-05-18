@@ -1,0 +1,4183 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "bf96412d13dedd26d3223f47e2fd5be2",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "drop_bug::wipe_slice",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 20,
+        "beg_col": 0,
+        "end_line": 24,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 1,
+            "fn_name": "core::slice::{[T]}::len",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 0 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "drop_bug::{drop_bug::Inner}::init",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 37,
+        "beg_col": 4,
+        "end_line": 39,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 3,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvMutBorrow": {
+            "loan": 1,
+            "place": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 0 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "symval": 4,
+            "kind_hint": { "InAbsReborrow": { "abs": 0 } }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 0 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvReborrow": {
+            "child": 2,
+            "parent": 1,
+            "place": {
+              "local": 7,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "parent_live": true
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 7,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayToSliceMut",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 6,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 5,
+            "bid": 3,
+            "inner_sv": 6,
+            "subst_locals": [ 5 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "drop_bug::wipe_slice",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 5,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 3 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [ { "SymVal": 8 } ],
+            "released_loans": [ 3 ],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 4,
+      "fn_name": "drop_bug::{drop_bug::Outer}::get_block_size",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 49,
+        "beg_col": 4,
+        "end_line": 51,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 1 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 1 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 1 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 5,
+      "fn_name": "drop_bug::{drop_bug::Outer}::get_pad_value",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 53,
+        "beg_col": 4,
+        "end_line": 55,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 2 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 2 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 2 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 6,
+      "fn_name": "drop_bug::{drop_bug::Outer}::init",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 60,
+        "beg_col": 4,
+        "end_line": 62,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 0 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 4,
+            "fn_name": "drop_bug::{drop_bug::Outer}::get_block_size",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 5,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "drop_bug::{drop_bug::Outer}::get_pad_value",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 7,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "drop_bug::{drop_bug::Inner}::init",
+            "call_id": 3,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 6,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 3 ],
+            "abs_sig": [
+              {
+                "abs_id": 3,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 3,
+            "final_values": [ { "SymVal": 8 } ],
+            "released_loans": [ 1 ],
+            "token_clear_locals": [ 1 ]
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 7,
+      "fn_name": "drop_bug::{drop_bug::InnerNoDrop}::init",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 72,
+        "beg_col": 4,
+        "end_line": 74,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 3,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvMutBorrow": {
+            "loan": 1,
+            "place": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 0 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "symval": 4,
+            "kind_hint": { "InAbsReborrow": { "abs": 0 } }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 0 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvReborrow": {
+            "child": 2,
+            "parent": 1,
+            "place": {
+              "local": 7,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "parent_live": true
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 7,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayToSliceMut",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 6,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 5,
+            "bid": 3,
+            "inner_sv": 6,
+            "subst_locals": [ 5 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "drop_bug::wipe_slice",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 5,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 3 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [ { "SymVal": 8 } ],
+            "released_loans": [ 3 ],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 8,
+      "fn_name": "drop_bug::{drop_bug::OuterNoDrop}::get_block_size",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 84,
+        "beg_col": 4,
+        "end_line": 86,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 1 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 1 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 1 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 9,
+      "fn_name": "drop_bug::{drop_bug::OuterNoDrop}::get_pad_value",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 88,
+        "beg_col": 4,
+        "end_line": 90,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 2 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref", { "Field": 2 } ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 2 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 10,
+      "fn_name": "drop_bug::{drop_bug::OuterNoDrop}::init",
+      "source_span": {
+        "file": "tests/src/drop_bug.rs",
+        "beg_line": 92,
+        "beg_col": 4,
+        "end_line": 94,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref", { "Field": 0 } ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 8,
+            "fn_name": "drop_bug::{drop_bug::OuterNoDrop}::get_block_size",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 5,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 9,
+            "fn_name": "drop_bug::{drop_bug::OuterNoDrop}::get_pad_value",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 7,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 3);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 7,
+            "fn_name": "drop_bug::{drop_bug::InnerNoDrop}::init",
+            "call_id": 3,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 6,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 3 ],
+            "abs_sig": [
+              {
+                "abs_id": 3,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 3,
+            "final_values": [ { "SymVal": 8 } ],
+            "released_loans": [ 1 ],
+            "token_clear_locals": [ 1 ]
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "drop_bug::Inner",
+          "attr_info": null,
+          "source_text": "struct Inner {\n    buf: [u8; 4],\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 26,
+            "beg_col": 0,
+            "end_line": 28,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "buf",
+              "ty": {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "drop_bug::Outer",
+          "attr_info": null,
+          "source_text": "struct Outer {\n    inner: Inner,\n    block_size: u32,\n    pad_value: u8,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 42,
+            "beg_col": 0,
+            "end_line": 46,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "inner",
+              "ty": {
+                "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+              },
+              "attr_info": null
+            },
+            {
+              "idx": 1,
+              "name": "block_size",
+              "ty": { "Literal": { "UInt": "U32" } },
+              "attr_info": null
+            },
+            {
+              "idx": 2,
+              "name": "pad_value",
+              "ty": { "Literal": { "UInt": "U8" } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "drop_bug::InnerNoDrop",
+          "attr_info": null,
+          "source_text": "struct InnerNoDrop {\n    buf: [u8; 4],\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 67,
+            "beg_col": 0,
+            "end_line": 69,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "buf",
+              "ty": {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "drop_bug::OuterNoDrop",
+          "attr_info": null,
+          "source_text": "struct OuterNoDrop {\n    inner: InnerNoDrop,\n    block_size: u32,\n    pad_value: u8,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 77,
+            "beg_col": 0,
+            "end_line": 81,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "inner",
+              "ty": {
+                "Adt": { "id": { "Adt": 2 }, "generics": { "types": [] } }
+              },
+              "attr_info": null
+            },
+            {
+              "idx": 1,
+              "name": "block_size",
+              "ty": { "Literal": { "UInt": "U32" } },
+              "attr_info": null
+            },
+            {
+              "idx": 2,
+              "name": "pad_value",
+              "ty": { "Literal": { "UInt": "U8" } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "drop_bug::wipe_slice",
+          "attr_info": null,
+          "source_text": "fn wipe_slice<T>(s: &mut [T]) {\n    // Opaque to the analyzer (via charon --opaque flag).\n    // Mimics the real wipe_slice which uses raw pointers internally.\n    let _len = s.len();\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 20,
+            "beg_col": 0,
+            "end_line": 24,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 24,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 23,
+                "beg_col": 15,
+                "end_line": 23,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "TypeVar": { "Free": 0 } } },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 23,
+                "beg_col": 15,
+                "end_line": 23,
+                "end_col": 22
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 1 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 23,
+                "beg_col": 21,
+                "end_line": 23,
+                "end_col": 22
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 20,
+                "beg_col": 30,
+                "end_line": 24,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 24,
+                "beg_col": 0,
+                "end_line": 24,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 24,
+                "beg_col": 1,
+                "end_line": 24,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ] },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::slice::{[T]}::len",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "slice_len_fn",
+          "span": {
+            "file": "/rustc/library/core/src/slice/mod.rs",
+            "beg_line": 116,
+            "beg_col": 4,
+            "end_line": 116,
+            "end_col": 36
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::Inner}::init",
+          "attr_info": null,
+          "source_text": "fn init(&mut self, block_size: u32, pad_value: u8) {\n        wipe_slice(&mut self.buf);\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 37,
+            "beg_col": 4,
+            "end_line": 39,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            },
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U8" } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 39,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 19,
+                "end_line": 38,
+                "end_col": 32
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 0, null ] }, 0 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 19,
+                "end_line": 38,
+                "end_col": 32
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 7,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "4" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 19,
+                "end_line": 38,
+                "end_col": 32
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "4" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U8" } } },
+                        "Mut"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 31,
+                "end_line": 38,
+                "end_col": 32
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 8,
+                "end_line": 38,
+                "end_col": 33
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 0 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U8" } } },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 32,
+                "end_line": 38,
+                "end_col": 33
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 33,
+                "end_line": 38,
+                "end_col": 34
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 38,
+                "beg_col": 33,
+                "end_line": 38,
+                "end_col": 34
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 37,
+                "beg_col": 55,
+                "end_line": 39,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 39,
+                "beg_col": 5,
+                "end_line": 39,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U8" } },
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [ 0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Mut" ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::Outer}::get_block_size",
+          "attr_info": null,
+          "source_text": "fn get_block_size(&self) -> u32 {\n        self.block_size\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 49,
+            "beg_col": 4,
+            "end_line": 51,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 50,
+            "beg_col": 8,
+            "end_line": 51,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 50,
+                "beg_col": 8,
+                "end_line": 50,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 1, null ] }, 1 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 51,
+                "beg_col": 5,
+                "end_line": 51,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::Outer}::get_pad_value",
+          "attr_info": null,
+          "source_text": "fn get_pad_value(&self) -> u8 {\n        self.pad_value\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 53,
+            "beg_col": 4,
+            "end_line": 55,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U8" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 54,
+            "beg_col": 8,
+            "end_line": 55,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 54,
+                "beg_col": 8,
+                "end_line": 54,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U8" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 1, null ] }, 2 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 55,
+                "beg_col": 5,
+                "end_line": 55,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U8" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::Outer}::init",
+          "attr_info": null,
+          "source_text": "fn init(&mut self) {\n        self.inner.init(self.get_block_size(), self.get_pad_value());\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 60,
+            "beg_col": 4,
+            "end_line": 62,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 62,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 8,
+                "end_line": 61,
+                "end_col": 18
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 1, null ] }, 0 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 24,
+                "end_line": 61,
+                "end_col": 28
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 1 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 24,
+                "end_line": 61,
+                "end_col": 45
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 4 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 44,
+                "end_line": 61,
+                "end_col": 45
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 47,
+                "end_line": 61,
+                "end_col": 51
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 1 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 47,
+                "end_line": 61,
+                "end_col": 67
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U8" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 66,
+                "end_line": 61,
+                "end_col": 67
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 8,
+                "end_line": 61,
+                "end_col": 68
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U8" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 67,
+                "end_line": 61,
+                "end_col": 68
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 67,
+                "end_line": 61,
+                "end_col": 68
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 67,
+                "end_line": 61,
+                "end_col": 68
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 61,
+                "beg_col": 68,
+                "end_line": 61,
+                "end_col": 69
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 60,
+                "beg_col": 23,
+                "end_line": 62,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 62,
+                "beg_col": 5,
+                "end_line": 62,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "U32" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          },
+          { "Literal": { "UInt": "U8" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::InnerNoDrop}::init",
+          "attr_info": null,
+          "source_text": "fn init(&mut self, block_size: u32, pad_value: u8) {\n        wipe_slice(&mut self.buf);\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 72,
+            "beg_col": 4,
+            "end_line": 74,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 2 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            },
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U8" } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 74,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 19,
+                "end_line": 73,
+                "end_col": 32
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 2, null ] }, 0 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 2 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 19,
+                "end_line": 73,
+                "end_col": 32
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 7,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "4" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 19,
+                "end_line": 73,
+                "end_col": 32
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "4" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U8" } } },
+                        "Mut"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 31,
+                "end_line": 73,
+                "end_col": 32
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 8,
+                "end_line": 73,
+                "end_col": 33
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 0 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U8" } } },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 32,
+                "end_line": 73,
+                "end_col": 33
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 33,
+                "end_line": 73,
+                "end_col": 34
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 73,
+                "beg_col": 33,
+                "end_line": 73,
+                "end_col": 34
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 72,
+                "beg_col": 55,
+                "end_line": 74,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 74,
+                "beg_col": 5,
+                "end_line": 74,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 2 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U8" } },
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [ 0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Mut" ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::OuterNoDrop}::get_block_size",
+          "attr_info": null,
+          "source_text": "fn get_block_size(&self) -> u32 {\n        self.block_size\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 84,
+            "beg_col": 4,
+            "end_line": 86,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 85,
+            "beg_col": 8,
+            "end_line": 86,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 85,
+                "beg_col": 8,
+                "end_line": 85,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 3, null ] }, 1 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 3 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 86,
+                "beg_col": 5,
+                "end_line": 86,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::OuterNoDrop}::get_pad_value",
+          "attr_info": null,
+          "source_text": "fn get_pad_value(&self) -> u8 {\n        self.pad_value\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 88,
+            "beg_col": 4,
+            "end_line": 90,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U8" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 89,
+            "beg_col": 8,
+            "end_line": 90,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 89,
+                "beg_col": 8,
+                "end_line": 89,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U8" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 3, null ] }, 2 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 3 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 90,
+                "beg_col": 5,
+                "end_line": 90,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U8" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 10,
+        "item_meta": {
+          "name": "drop_bug::{drop_bug::OuterNoDrop}::init",
+          "attr_info": null,
+          "source_text": "fn init(&mut self) {\n        self.inner.init(self.get_block_size(), self.get_pad_value());\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 92,
+            "beg_col": 4,
+            "end_line": 94,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/drop_bug.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 94,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 8,
+                "end_line": 93,
+                "end_col": 18
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 2 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [
+                          "Deref", { "Field": [ { "Adt": [ 3, null ] }, 0 ] }
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 3 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 24,
+                "end_line": 93,
+                "end_col": 28
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 3 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 3 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 24,
+                "end_line": 93,
+                "end_col": 45
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 8 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 3 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 44,
+                "end_line": 93,
+                "end_col": 45
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 47,
+                "end_line": 93,
+                "end_col": 51
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 3 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 3 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 47,
+                "end_line": 93,
+                "end_col": 67
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 9 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 3 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U8" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 66,
+                "end_line": 93,
+                "end_col": 67
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 8,
+                "end_line": 93,
+                "end_col": 68
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 7 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 2 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U8" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 67,
+                "end_line": 93,
+                "end_col": 68
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 67,
+                "end_line": 93,
+                "end_col": 68
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 67,
+                "end_line": 93,
+                "end_col": 68
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 93,
+                "beg_col": 68,
+                "end_line": 93,
+                "end_col": 69
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 92,
+                "beg_col": 23,
+                "end_line": 94,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/drop_bug.rs",
+                "beg_line": 94,
+                "beg_col": 5,
+                "end_line": 94,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 2 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "U32" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          },
+          { "Literal": { "UInt": "U8" } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

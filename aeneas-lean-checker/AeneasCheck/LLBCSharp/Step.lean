@@ -75,6 +75,14 @@ def stepMutBorrow (st : SymState) (loan : Nat) (place : Place)
     Result SymState := do
   if st.loans.contains loan then
     fail s!"E-MutBorrow: borrow id {loan} already live"
+  else if st.loanIdHwm > loan then
+    -- M10.x.2: monotone-allocator strengthening. The OCaml interpreter's
+    -- loan-id counter is monotone; a fresh-loan event with id below the
+    -- current HWM is a cert violation (re-use of a previously-issued id).
+    -- Soundness consumer: CertGen_faithful.mutBorrow_{direct,inAbsReborrow,
+    -- loopOwned}'s `st.loanIdHwm ≤ loan` clause becomes a direct `hStep`
+    -- inversion. G4 sweep: zero pre-flight violations.
+    fail s!"E-MutBorrow: borrow id {loan} below HWM {st.loanIdHwm}"
   else
     let root := placeRootLocal place
     if root ≥ st.numLocals then
@@ -113,6 +121,21 @@ def stepSharedBorrow (st : SymState) (loan : Nat) (_sbId : Nat)
     (place : Place) (_symval : Nat) : Result SymState := do
   if st.loans.contains loan then
     fail s!"E-SharedBorrow: borrow id {loan} already live"
+  else if st.loanIdHwm > loan then
+    -- M10.x.2: monotone-allocator strengthening, mirrors stepMutBorrow.
+    -- Discharges CertGen_faithful.sharedBorrow's `st.loanIdHwm ≤ loan`
+    -- clause via hStep inversion. G4 sweep: zero pre-flight violations
+    -- (no fixture currently emits EvSharedBorrow, but the check is in
+    -- place for future v6+ fixtures).
+    fail s!"E-SharedBorrow: borrow id {loan} below HWM {st.loanIdHwm}"
+  else if place.projection.size ≠ 0 then
+    -- M10.x.2: projection-empty strengthening. The replayer operates on
+    -- `placeRootLocal` and ignores the projection chain; the paper-side
+    -- `LStep.sharedBorrow` resolves the full place. Cert-emission
+    -- discipline mandates a root-only place here; future M10.x.3+
+    -- adjustments to the axiom may revisit. G4 sweep: zero violations
+    -- (no fixture emits EvSharedBorrow).
+    fail s!"E-SharedBorrow: place.projection non-empty (size {place.projection.size}) — projection chain not supported"
   else
     let root := placeRootLocal place
     if root ≥ st.numLocals then
@@ -133,6 +156,17 @@ def stepReborrow (st : SymState) (child parent : Nat) (place : Place)
     Result SymState := do
   if st.loans.contains child then
     fail s!"E-Reborrow: child borrow id {child} already live"
+  else if st.loanIdHwm > child then
+    -- M10.x.2: monotone-allocator strengthening on the child id.
+    -- Discharges CertGen_faithful.reborrow's `st.loanIdHwm ≤ child`
+    -- clause via hStep inversion. G4 sweep: zero pre-flight violations
+    -- for the child side. The parent-side `parent < st.loanIdHwm`
+    -- strengthening (audit row 2) was infeasible (95 pre-flight
+    -- violations from abs-internal parent loans the Lean SymState
+    -- never tracked allocation for); the existing pre-add fallback at
+    -- the bottom of this function continues to handle that case until
+    -- M10.x.4 (or a later commit) registers parent abs upstream.
+    fail s!"E-Reborrow: child borrow id {child} below HWM {st.loanIdHwm}"
   else
     let root := placeRootLocal place
     if root ≥ st.numLocals then
@@ -528,6 +562,21 @@ def stepJoin (st : SymState) (left right result : StateSummary)
       match joinEntryStrictOk leftMap rightMap resultMap entry with
       | none => pure ()
       | some msg => fail msg
+      -- M10.x.0 (cert v6): cross-check that `rule` and `delta`
+      -- name the same constructor. The OCaml emitter at
+      -- `InterpStatements.ml:1715` computes both in the same
+      -- pass; a mismatch here means cert-side drift between
+      -- the two encodings (either an emitter bug or a manually
+      -- crafted cert). Failing fast prevents M10.x.10's chain
+      -- fold from observing inconsistent witnesses.
+      match entry.rule, entry.delta with
+      | .joinSame, .trivial => pure ()
+      | .joinVar, .trivial => pure ()
+      | .joinSymbolic _, .symbolic _ => pure ()
+      | .joinMutBorrows _ _ _ _, .mutBorrows _ _ => pure ()
+      | .joinBottomOther _, .bottomOther _ => pure ()
+      | .joinOtherBottom _, .otherBottom _ => pure ()
+      | _, _ => fail s!"E-Join v6: rule {repr entry.rule} and delta {repr entry.delta} name different constructors for local {entry.localId}"
   -- M9.8 (cert v4): install the Collapse-Dup-MutBorrow fresh
   -- region abstraction in `absRegistry` from the cert's
   -- `AbsShape` payload. Mirrors `stepCall`'s `absSig.foldl

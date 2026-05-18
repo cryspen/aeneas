@@ -1605,6 +1605,14 @@ and eval_switch_with_join (config : config) (span : Meta.span)
            joined_ctx.env;
          !found
        in
+       (* M10.x.0 (cert v6, plan §"Cert v6 design" #12):
+          alongside each [cert_join_rule] witness we now also emit
+          a [cert_join_entry_delta]. The constructor names are
+          parallel; the Lean replayer cross-checks the pair in
+          [stepJoin]. The delta carries only the
+          [JoinEntryStep.<rule>] freshness premise (a few ints) —
+          intermediate [Ω_i]'s are reconstructed in Lean by
+          folding. *)
        List.filter_map
          (fun (l, r_expr) ->
            let l_left = lookup left_summary.cs_env l in
@@ -1616,6 +1624,7 @@ and eval_switch_with_join (config : config) (span : Meta.span)
                CertEvent.{
                  je_local = l;
                  je_rule = JrJoinSame;
+                 je_delta = JedTrivial;
                }
            | _, _ ->
              (* JoinMutBorrows (Collapse-Dup-MutBorrow): both
@@ -1668,6 +1677,7 @@ and eval_switch_with_join (config : config) (span : Meta.span)
                     je_rule =
                       JrJoinMutBorrows
                         { l_left = l_l; l_right = l_r; l_fresh; abs };
+                    je_delta = JedMutBorrows { l_fresh; abs_id };
                   }
               | _ ->
                 (match is_sym_val r_expr with
@@ -1682,6 +1692,7 @@ and eval_switch_with_join (config : config) (span : Meta.span)
                      CertEvent.{
                        je_local = l;
                        je_rule = JrJoinSymbolic sv;
+                       je_delta = JedSymbolic sv;
                      }
                  | _ ->
                    (match l_left, l_right with
@@ -1690,23 +1701,26 @@ and eval_switch_with_join (config : config) (span : Meta.span)
                         CertEvent.{
                           je_local = l;
                           je_rule = JrJoinVar;
+                          je_delta = JedTrivial;
                         }
                     | None, Some _ ->
                       (* Left was ⊥ / unflattenable, right
                          carries something through to the
                          result wrapped in an abs. *)
+                      let a0 = Values.AbsId.of_int 0 in
                       Some
                         CertEvent.{
                           je_local = l;
-                          je_rule =
-                            JrJoinBottomOther (Values.AbsId.of_int 0);
+                          je_rule = JrJoinBottomOther a0;
+                          je_delta = JedBottomOther a0;
                         }
                     | Some _, None ->
+                      let a0 = Values.AbsId.of_int 0 in
                       Some
                         CertEvent.{
                           je_local = l;
-                          je_rule =
-                            JrJoinOtherBottom (Values.AbsId.of_int 0);
+                          je_rule = JrJoinOtherBottom a0;
+                          je_delta = JedOtherBottom a0;
                         }
                     | None, None -> None))))
          result_summary.cs_env

@@ -1,0 +1,4997 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "0e1e7670357f4107f5ee23b77630552d",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "joins::opt_add_1",
+      "source_span": {
+        "file": "tests/src/joins.rs",
+        "beg_line": 4,
+        "beg_col": 0,
+        "end_line": 7,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": false } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvJoin": {
+            "left": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": true } } }
+              ],
+              "live_loans": []
+            },
+            "right": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": false } } }
+              ],
+              "live_loans": []
+            },
+            "result": {
+              "env": [
+                { "local": 3, "value": { "SymVal": 3 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymVal": 2 } }
+              ],
+              "live_loans": []
+            },
+            "witnesses": [
+              {
+                "local": 3,
+                "rule": { "JoinSymbolic": { "fresh_sv": 3 } },
+                "delta": { "Symbolic": { "fresh_sv": 3 } }
+              },
+              { "local": 2, "rule": "JoinSame", "delta": "Trivial" },
+              {
+                "local": 1,
+                "rule": { "JoinSymbolic": { "fresh_sv": 2 } },
+                "delta": { "Symbolic": { "fresh_sv": 2 } }
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "joins::opt_add_2",
+      "source_span": {
+        "file": "tests/src/joins.rs",
+        "beg_line": 9,
+        "beg_col": 0,
+        "end_line": 13,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": false } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvJoin": {
+            "left": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": true } } }
+              ],
+              "live_loans": []
+            },
+            "right": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": false } } }
+              ],
+              "live_loans": []
+            },
+            "result": {
+              "env": [
+                { "local": 3, "value": { "SymVal": 3 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymVal": 2 } }
+              ],
+              "live_loans": []
+            },
+            "witnesses": [
+              {
+                "local": 3,
+                "rule": { "JoinSymbolic": { "fresh_sv": 3 } },
+                "delta": { "Symbolic": { "fresh_sv": 3 } }
+              },
+              { "local": 2, "rule": "JoinSame", "delta": "Trivial" },
+              {
+                "local": 1,
+                "rule": { "JoinSymbolic": { "fresh_sv": 2 } },
+                "delta": { "Symbolic": { "fresh_sv": 2 } }
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 2 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 2 }, "expected": false } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvJoin": {
+            "left": {
+              "env": [
+                {
+                  "local": 5,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } }
+                  }
+                },
+                { "local": 3, "value": { "SymVal": 3 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": true } } }
+              ],
+              "live_loans": []
+            },
+            "right": {
+              "env": [
+                {
+                  "local": 5,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } }
+                  }
+                },
+                { "local": 3, "value": { "SymVal": 3 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": false } } }
+              ],
+              "live_loans": []
+            },
+            "result": {
+              "env": [
+                { "local": 5, "value": { "SymVal": 13 } },
+                { "local": 3, "value": { "SymVal": 3 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymVal": 12 } }
+              ],
+              "live_loans": []
+            },
+            "witnesses": [
+              {
+                "local": 5,
+                "rule": { "JoinSymbolic": { "fresh_sv": 13 } },
+                "delta": { "Symbolic": { "fresh_sv": 13 } }
+              },
+              { "local": 3, "rule": "JoinSame", "delta": "Trivial" },
+              { "local": 2, "rule": "JoinSame", "delta": "Trivial" },
+              {
+                "local": 1,
+                "rule": { "JoinSymbolic": { "fresh_sv": 12 } },
+                "delta": { "Symbolic": { "fresh_sv": 12 } }
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 8,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 9,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 10,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 11,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 11,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 11,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 11,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 12,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 12,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 12,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 12,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null
+      ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "joins::opt_add_1_or_panic",
+      "source_span": {
+        "file": "tests/src/joins.rs",
+        "beg_line": 15,
+        "beg_col": 0,
+        "end_line": 18,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "joins::opt_add_switch_1",
+      "source_span": {
+        "file": "tests/src/joins.rs",
+        "beg_line": 20,
+        "beg_col": 0,
+        "end_line": 27,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+          }
+        },
+        "EvPanic",
+        {
+          "EvJoin": {
+            "left": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } },
+                {
+                  "local": 1,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } }
+                  }
+                }
+              ],
+              "live_loans": []
+            },
+            "right": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } },
+                {
+                  "local": 1,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } }
+                  }
+                }
+              ],
+              "live_loans": []
+            },
+            "result": {
+              "env": [
+                { "local": 3, "value": { "SymVal": 3 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymVal": 2 } }
+              ],
+              "live_loans": []
+            },
+            "witnesses": [
+              {
+                "local": 3,
+                "rule": { "JoinSymbolic": { "fresh_sv": 3 } },
+                "delta": { "Symbolic": { "fresh_sv": 3 } }
+              },
+              { "local": 2, "rule": "JoinSame", "delta": "Trivial" },
+              {
+                "local": 1,
+                "rule": { "JoinSymbolic": { "fresh_sv": 2 } },
+                "delta": { "Symbolic": { "fresh_sv": 2 } }
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 4,
+      "fn_name": "joins::opt_add_switch_2",
+      "source_span": {
+        "file": "tests/src/joins.rs",
+        "beg_line": 29,
+        "beg_col": 0,
+        "end_line": 35,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        "EvPanic",
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null
+      ]
+    },
+    {
+      "fn_id": 5,
+      "fn_name": "joins::use_enum",
+      "source_span": {
+        "file": "tests/src/joins.rs",
+        "beg_line": 43,
+        "beg_col": 0,
+        "end_line": 51,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 0,
+            "variant_name": "V0"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 1,
+            "variant_name": "V1"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 0 },
+            "adt_id": 0,
+            "variant_id": 2,
+            "variant_name": "V2"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "2" ] } } }
+          }
+        },
+        {
+          "EvJoin": {
+            "left": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } }
+              ],
+              "live_loans": []
+            },
+            "right": {
+              "env": [
+                {
+                  "local": 3,
+                  "value": {
+                    "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } }
+                  }
+                },
+                { "local": 2, "value": { "SymVal": 1 } }
+              ],
+              "live_loans": []
+            },
+            "result": {
+              "env": [
+                { "local": 3, "value": { "SymVal": 5 } },
+                { "local": 2, "value": { "SymVal": 1 } },
+                { "local": 1, "value": { "SymVal": 4 } }
+              ],
+              "live_loans": []
+            },
+            "witnesses": [
+              {
+                "local": 3,
+                "rule": { "JoinSymbolic": { "fresh_sv": 5 } },
+                "delta": { "Symbolic": { "fresh_sv": 5 } }
+              },
+              { "local": 2, "rule": "JoinSame", "delta": "Trivial" },
+              {
+                "local": 1,
+                "rule": { "JoinSymbolic": { "fresh_sv": 4 } },
+                "delta": { "Symbolic": { "fresh_sv": 4 } }
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 5,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 6,
+      "fn_name": "joins::call_choose",
+      "source_span": {
+        "file": "tests/src/joins.rs",
+        "beg_line": 53,
+        "beg_col": 0,
+        "end_line": 56,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 0,
+            "inner_sv": 3,
+            "subst_locals": [ 2 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 1,
+            "inner_sv": 4,
+            "subst_locals": [ 3 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": true } },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": false } },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvReborrow": {
+            "child": 2,
+            "parent": 1,
+            "place": {
+              "local": 6,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "parent_live": true,
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 6,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvJoin": {
+            "left": {
+              "env": [
+                { "local": 4, "value": { "SymMutBorrowTok": 0 } },
+                { "local": 3, "value": { "SymMutBorrowTok": 1 } },
+                { "local": 1, "value": { "SymLit": { "Bool": true } } }
+              ],
+              "live_loans": []
+            },
+            "right": {
+              "env": [
+                { "local": 4, "value": { "SymMutBorrowTok": 2 } },
+                { "local": 2, "value": { "SymMutBorrowTok": 0 } },
+                { "local": 1, "value": { "SymLit": { "Bool": false } } }
+              ],
+              "live_loans": [ 2 ]
+            },
+            "result": {
+              "env": [
+                { "local": 4, "value": { "SymMutBorrowTok": 3 } },
+                { "local": 1, "value": { "SymVal": 5 } }
+              ],
+              "live_loans": []
+            },
+            "witnesses": [
+              {
+                "local": 4,
+                "rule": {
+                  "JoinMutBorrows": {
+                    "left": 0,
+                    "right": 2,
+                    "fresh": 3,
+                    "abs": {
+                      "abs_id": 8,
+                      "parent_abs": [],
+                      "roles": [
+                        { "MutBorrow": { "arg_idx": 0, "loan": 0 } },
+                        { "MutBorrow": { "arg_idx": 0, "loan": 2 } },
+                        { "MutLoan": { "loan": 3 } }
+                      ]
+                    }
+                  }
+                },
+                "delta": { "MutBorrows": { "fresh": 3, "abs_id": 8 } }
+              },
+              {
+                "local": 1,
+                "rule": { "JoinSymbolic": { "fresh_sv": 5 } },
+                "delta": { "Symbolic": { "fresh_sv": 5 } }
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 8,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "joins::Enum",
+          "attr_info": null,
+          "source_text": "enum Enum {\n    V0,\n    V1,\n    V2,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 37,
+            "beg_col": 0,
+            "end_line": 41,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "V0",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "V1",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 2,
+              "name": "V2",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "2" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "joins::opt_add_1",
+          "attr_info": null,
+          "source_text": "fn opt_add_1(b: bool, x: u32) -> u32 {\n    let y = if b { 1 } else { 0 };\n    x + y\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 7,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": "Bool" }, { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 5,
+            "beg_col": 8,
+            "end_line": 7,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 5,
+                "beg_col": 15,
+                "end_line": 5,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 5,
+                "beg_col": 12,
+                "end_line": 5,
+                "end_col": 33
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 5,
+                        "beg_col": 12,
+                        "end_line": 5,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 5,
+                            "beg_col": 19,
+                            "end_line": 5,
+                            "end_col": 20
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 3,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U32", "1" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 5,
+                        "beg_col": 12,
+                        "end_line": 5,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 5,
+                            "beg_col": 30,
+                            "end_line": 5,
+                            "end_col": 31
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 3,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U32", "0" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 5,
+                "beg_col": 32,
+                "end_line": 5,
+                "end_col": 33
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 6,
+                "beg_col": 4,
+                "end_line": 6,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 6,
+                "beg_col": 8,
+                "end_line": 6,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 6,
+                "beg_col": 4,
+                "end_line": 6,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 5,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 6,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 6,
+                "beg_col": 4,
+                "end_line": 6,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 6,
+                "beg_col": 8,
+                "end_line": 6,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 6,
+                "beg_col": 8,
+                "end_line": 6,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 7,
+                "beg_col": 0,
+                "end_line": 7,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 7,
+                "beg_col": 1,
+                "end_line": 7,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "joins::opt_add_2",
+          "attr_info": null,
+          "source_text": "fn opt_add_2(b: bool, x: u32) -> u32 {\n    let y = if b { 1 } else { 0 };\n    let z = if b { 1 } else { 0 };\n    x + y + z\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": "Bool" }, { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 10,
+            "beg_col": 8,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 10,
+                "beg_col": 15,
+                "end_line": 10,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 10,
+                "beg_col": 12,
+                "end_line": 10,
+                "end_col": 33
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 10,
+                        "beg_col": 12,
+                        "end_line": 10,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 10,
+                            "beg_col": 19,
+                            "end_line": 10,
+                            "end_col": 20
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 3,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U32", "1" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 10,
+                        "beg_col": 12,
+                        "end_line": 10,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 10,
+                            "beg_col": 30,
+                            "end_line": 10,
+                            "end_col": 31
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 3,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U32", "0" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 10,
+                "beg_col": 32,
+                "end_line": 10,
+                "end_col": 33
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 11,
+                "beg_col": 15,
+                "end_line": 11,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 11,
+                "beg_col": 12,
+                "end_line": 11,
+                "end_col": 33
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 11,
+                        "beg_col": 12,
+                        "end_line": 11,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 11,
+                            "beg_col": 19,
+                            "end_line": 11,
+                            "end_col": 20
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 5,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U32", "1" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 11,
+                        "beg_col": 12,
+                        "end_line": 11,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 11,
+                            "beg_col": 30,
+                            "end_line": 11,
+                            "end_col": 31
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 5,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U32", "0" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 11,
+                "beg_col": 32,
+                "end_line": 11,
+                "end_col": 33
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 8,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 8,
+                "end_line": 12,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 9,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 10,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 8,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 9,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 10,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 8,
+                "end_line": 12,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 9 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 8,
+                "end_line": 12,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 8 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 12,
+                "end_line": 12,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 11,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 12,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 7,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 11,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 12,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 12,
+                "end_line": 12,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 11 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 12,
+                "beg_col": 12,
+                "end_line": 12,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 13,
+                "beg_col": 0,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 13,
+                "beg_col": 0,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 13,
+                "beg_col": 1,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "joins::opt_add_1_or_panic",
+          "attr_info": null,
+          "source_text": "fn opt_add_1_or_panic(b: bool, x: u32) -> u32 {\n    let y = if b { 1 } else { panic!() };\n    x + y\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 15,
+            "beg_col": 0,
+            "end_line": 18,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": "Bool" }, { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 16,
+            "beg_col": 8,
+            "end_line": 18,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 16,
+                "beg_col": 15,
+                "end_line": 16,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 16,
+                "beg_col": 15,
+                "end_line": 16,
+                "end_col": 16
+              },
+              "kind": {
+                "Assert": {
+                  "assert": {
+                    "cond": {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    "expected": true
+                  },
+                  "on_failure": null
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 16,
+                "beg_col": 19,
+                "end_line": 16,
+                "end_col": 20
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "1" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 16,
+                "beg_col": 39,
+                "end_line": 16,
+                "end_col": 40
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 17,
+                "beg_col": 4,
+                "end_line": 17,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 17,
+                "beg_col": 8,
+                "end_line": 17,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 17,
+                "beg_col": 4,
+                "end_line": 17,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 5,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 6,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 17,
+                "beg_col": 4,
+                "end_line": 17,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 17,
+                "beg_col": 8,
+                "end_line": 17,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 17,
+                "beg_col": 8,
+                "end_line": 17,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 18,
+                "beg_col": 0,
+                "end_line": 18,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 18,
+                "beg_col": 1,
+                "end_line": 18,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "joins::opt_add_switch_1",
+          "attr_info": null,
+          "source_text": "fn opt_add_switch_1(a: u32, x: u32) -> u32 {\n    let y = match a {\n        0 => 0,\n        1 => 1,\n        _ => panic!(),\n    };\n    x + y\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 20,
+            "beg_col": 0,
+            "end_line": 27,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 21,
+            "beg_col": 8,
+            "end_line": 27,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 21,
+                "beg_col": 12,
+                "end_line": 23,
+                "end_col": 14
+              },
+              "kind": {
+                "Switch": {
+                  "SwitchInt": [
+                    {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    },
+                    { "UInt": "U32" },
+                    [
+                      [
+                        [ { "Scalar": { "Unsigned": [ "U32", "0" ] } } ],
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 22,
+                            "beg_col": 13,
+                            "end_line": 22,
+                            "end_col": 14
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/joins.rs",
+                                "beg_line": 22,
+                                "beg_col": 13,
+                                "end_line": 22,
+                                "end_col": 14
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "0" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ { "Scalar": { "Unsigned": [ "U32", "1" ] } } ],
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 23,
+                            "beg_col": 13,
+                            "end_line": 23,
+                            "end_col": 14
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/joins.rs",
+                                "beg_line": 23,
+                                "beg_col": 13,
+                                "end_line": 23,
+                                "end_col": 14
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "1" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    {
+                      "span": {
+                        "file": "/rustc/library/std/src/panic.rs",
+                        "beg_line": 218,
+                        "beg_col": 8,
+                        "end_line": 218,
+                        "end_col": 49
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "/rustc/library/std/src/panic.rs",
+                            "beg_line": 218,
+                            "beg_col": 8,
+                            "end_line": 218,
+                            "end_col": 49
+                          },
+                          "kind": "Nop"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 26,
+                "beg_col": 4,
+                "end_line": 26,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 26,
+                "beg_col": 8,
+                "end_line": 26,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 26,
+                "beg_col": 4,
+                "end_line": 26,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 4,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 5,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 26,
+                "beg_col": 4,
+                "end_line": 26,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 26,
+                "beg_col": 8,
+                "end_line": 26,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 26,
+                "beg_col": 8,
+                "end_line": 26,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 27,
+                "beg_col": 0,
+                "end_line": 27,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 27,
+                "beg_col": 1,
+                "end_line": 27,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "joins::opt_add_switch_2",
+          "attr_info": null,
+          "source_text": "fn opt_add_switch_2(a: u32, x: u32) -> u32 {\n    let y = match a {\n        0 => 0,\n        _ => panic!(),\n    };\n    x + y\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 29,
+            "beg_col": 0,
+            "end_line": 35,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "U32" } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 30,
+            "beg_col": 8,
+            "end_line": 35,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 30,
+                "beg_col": 12,
+                "end_line": 30,
+                "end_col": 19
+              },
+              "kind": {
+                "Switch": {
+                  "SwitchInt": [
+                    {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    },
+                    { "UInt": "U32" },
+                    [
+                      [
+                        [ { "Scalar": { "Unsigned": [ "U32", "0" ] } } ],
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 30,
+                            "beg_col": 12,
+                            "end_line": 30,
+                            "end_col": 19
+                          },
+                          "statements": []
+                        }
+                      ]
+                    ],
+                    {
+                      "span": {
+                        "file": "/rustc/library/std/src/panic.rs",
+                        "beg_line": 218,
+                        "beg_col": 8,
+                        "end_line": 218,
+                        "end_col": 49
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "/rustc/library/std/src/panic.rs",
+                            "beg_line": 218,
+                            "beg_col": 8,
+                            "end_line": 218,
+                            "end_col": 49
+                          },
+                          "kind": "Nop"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 31,
+                "beg_col": 13,
+                "end_line": 31,
+                "end_col": 14
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U32", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 34,
+                "beg_col": 4,
+                "end_line": 34,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 34,
+                "beg_col": 8,
+                "end_line": 34,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 34,
+                "beg_col": 4,
+                "end_line": 34,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 4,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 5,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 34,
+                "beg_col": 4,
+                "end_line": 34,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 34,
+                "beg_col": 8,
+                "end_line": 34,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 34,
+                "beg_col": 8,
+                "end_line": 34,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 35,
+                "beg_col": 0,
+                "end_line": 35,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 35,
+                "beg_col": 1,
+                "end_line": 35,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "joins::use_enum",
+          "attr_info": null,
+          "source_text": "fn use_enum(e: Enum, x: u32) -> u32 {\n    use Enum::*;\n    let y = match e {\n        V0 => 0,\n        V1 => 1,\n        V2 => 2,\n    };\n    x + y\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 43,
+            "beg_col": 0,
+            "end_line": 51,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+            { "Literal": { "UInt": "U32" } }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 45,
+            "beg_col": 8,
+            "end_line": 51,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 45,
+                "beg_col": 12,
+                "end_line": 48,
+                "end_col": 15
+              },
+              "kind": {
+                "Switch": {
+                  "Match": [
+                    {
+                      "local": 1,
+                      "projection": [],
+                      "ty": {
+                        "Adt": {
+                          "id": { "Adt": 0 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    },
+                    [
+                      [
+                        [ 0 ],
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 46,
+                            "beg_col": 14,
+                            "end_line": 46,
+                            "end_col": 15
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/joins.rs",
+                                "beg_line": 46,
+                                "beg_col": 14,
+                                "end_line": 46,
+                                "end_col": 15
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "0" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ 1 ],
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 47,
+                            "beg_col": 14,
+                            "end_line": 47,
+                            "end_col": 15
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/joins.rs",
+                                "beg_line": 47,
+                                "beg_col": 14,
+                                "end_line": 47,
+                                "end_col": 15
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "1" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ 2 ],
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 48,
+                            "beg_col": 14,
+                            "end_line": 48,
+                            "end_col": 15
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/joins.rs",
+                                "beg_line": 48,
+                                "beg_col": 14,
+                                "end_line": 48,
+                                "end_col": 15
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "2" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    null
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 50,
+                "beg_col": 4,
+                "end_line": 50,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 50,
+                "beg_col": 8,
+                "end_line": 50,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 50,
+                "beg_col": 4,
+                "end_line": 50,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 4,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 5,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 50,
+                "beg_col": 4,
+                "end_line": 50,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 50,
+                "beg_col": 8,
+                "end_line": 50,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 50,
+                "beg_col": 8,
+                "end_line": 50,
+                "end_col": 9
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 51,
+                "beg_col": 0,
+                "end_line": 51,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 51,
+                "beg_col": 1,
+                "end_line": 51,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "joins::call_choose",
+          "attr_info": null,
+          "source_text": "fn call_choose(b: bool, x: &mut u32, y: &mut u32) {\n    let z = if b { x } else { y };\n    *z = *z + 1;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 53,
+            "beg_col": 0,
+            "end_line": 56,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": "Bool" },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/joins.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 56,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 54,
+                "beg_col": 15,
+                "end_line": 54,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 54,
+                "beg_col": 12,
+                "end_line": 54,
+                "end_col": 33
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 54,
+                        "beg_col": 12,
+                        "end_line": 54,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 54,
+                            "beg_col": 19,
+                            "end_line": 54,
+                            "end_col": 20
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Use": {
+                                  "Move": {
+                                    "local": 2,
+                                    "projection": [],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/joins.rs",
+                        "beg_line": 54,
+                        "beg_col": 12,
+                        "end_line": 54,
+                        "end_col": 33
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 54,
+                            "beg_col": 30,
+                            "end_line": 54,
+                            "end_col": 31
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 6,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Use": {
+                                  "Move": {
+                                    "local": 3,
+                                    "projection": [],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 54,
+                            "beg_col": 30,
+                            "end_line": 54,
+                            "end_col": 31
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 4,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    { "Literal": { "UInt": "U32" } },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 6,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "UInt": "U32" } },
+                                        "Mut"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Mut",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/joins.rs",
+                            "beg_line": 54,
+                            "beg_col": 32,
+                            "end_line": 54,
+                            "end_col": 33
+                          },
+                          "kind": { "StorageDead": 6 }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 54,
+                "beg_col": 32,
+                "end_line": 54,
+                "end_col": 33
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 55,
+                "beg_col": 9,
+                "end_line": 55,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 4,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 55,
+                "beg_col": 9,
+                "end_line": 55,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 8,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Copy": {
+                          "local": 7,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 55,
+                "beg_col": 4,
+                "end_line": 55,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 8,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 55,
+                "beg_col": 14,
+                "end_line": 55,
+                "end_col": 15
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 53,
+                "beg_col": 50,
+                "end_line": 56,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 56,
+                "beg_col": 0,
+                "end_line": 56,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/joins.rs",
+                "beg_line": 56,
+                "beg_col": 1,
+                "end_line": 56,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Mut" ] },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

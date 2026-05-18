@@ -1,0 +1,1056 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "41f2fe04ecf10031a1d6874bd2c562a4",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "const_shadow::use_has_const",
+      "source_span": {
+        "file": "tests/src/const-shadow.rs",
+        "beg_line": 30,
+        "beg_col": 0,
+        "end_line": 34,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "TraitClause@0::get",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymTuple": [
+                {
+                  "SymMove": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+                  }
+                },
+                {
+                  "SymMove": {
+                    "local": 6,
+                    "projection": [],
+                    "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ));\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}::get",
+      "source_span": {
+        "file": "tests/src/const-shadow.rs",
+        "beg_line": 23,
+        "beg_col": 4,
+        "end_line": 25,
+        "end_col": 5
+      },
+      "pretty_name": "Foo.Insts.Const_shadowHasConst.get",
+      "events": [
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayRepeat",
+            "call_id": 1,
+            "args": [
+              { "SymLit": { "Scalar": { "Unsigned": [ "U8", "0" ] } } }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}::N",
+      "source_span": {
+        "file": "tests/src/const-shadow.rs",
+        "beg_line": 21,
+        "beg_col": 4,
+        "end_line": 21,
+        "end_col": 24
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "Usize", "42" ] } }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "const_shadow::Foo",
+          "attr_info": null,
+          "source_text": "struct Foo;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 18,
+            "end_col": 11
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "const_shadow::use_has_const",
+          "attr_info": null,
+          "source_text": "fn use_has_const<const N: usize, T: HasConst<N>>(x: &T) -> ([u8; N], usize) {\n    let arr = x.get();\n    let n = T::N;\n    (arr, n)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 30,
+            "beg_col": 0,
+            "end_line": 34,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  {
+                    "Array": [
+                      { "Literal": { "UInt": "U8" } },
+                      { "kind": { "Opaque": "len" } }
+                    ]
+                  },
+                  { "Literal": { "UInt": "Usize" } }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": [
+              { "trait": "const_shadow::HasConst", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 31,
+            "beg_col": 8,
+            "end_line": 34,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 31,
+                "beg_col": 14,
+                "end_line": 31,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "TypeVar": { "Free": 0 } }, "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 31,
+                "beg_col": 14,
+                "end_line": 31,
+                "end_col": 21
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "TraitMethod": [ { "id": 0 }, "get" ] },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "TypeVar": { "Free": 0 } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U8" } },
+                        { "kind": { "Opaque": "len" } }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 31,
+                "beg_col": 20,
+                "end_line": 31,
+                "end_col": 21
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 32,
+                "beg_col": 12,
+                "end_line": 32,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": { "Opaque": "constant" },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 33,
+                "beg_col": 5,
+                "end_line": 33,
+                "end_col": 8
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U8" } },
+                        { "kind": { "Opaque": "len" } }
+                      ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            { "kind": { "Opaque": "len" } }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 33,
+                "beg_col": 10,
+                "end_line": 33,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 33,
+                "beg_col": 4,
+                "end_line": 33,
+                "end_col": 12
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": "Tuple",
+                        "generics": {
+                          "types": [
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            },
+                            { "Literal": { "UInt": "Usize" } }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 5,
+                            "projection": [],
+                            "ty": {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "Move": {
+                            "local": 6,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "Usize" } }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 33,
+                "beg_col": 11,
+                "end_line": 33,
+                "end_col": 12
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 33,
+                "beg_col": 11,
+                "end_line": 33,
+                "end_col": 12
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 34,
+                "beg_col": 0,
+                "end_line": 34,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 34,
+                "beg_col": 0,
+                "end_line": 34,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 34,
+                "beg_col": 1,
+                "end_line": 34,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  {
+                    "Array": [
+                      { "Literal": { "UInt": "U8" } },
+                      { "kind": { "Opaque": "len" } }
+                    ]
+                  },
+                  { "Literal": { "UInt": "Usize" } }
+                ]
+              }
+            }
+          },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              { "kind": { "Opaque": "len" } }
+            ]
+          },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              { "kind": { "Opaque": "len" } }
+            ]
+          },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "const_shadow::HasConst::get",
+          "attr_info": null,
+          "source_text": "fn get(&self) -> [u8; N];",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 14,
+            "beg_col": 4,
+            "end_line": 14,
+            "end_col": 29
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              { "kind": { "Opaque": "len" } }
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": [
+              { "trait": "const_shadow::HasConst", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}::get",
+          "attr_info": null,
+          "source_text": "fn get(&self) -> [u8; 4] {\n        [0; 4]\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 23,
+            "beg_col": 4,
+            "end_line": 25,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                }
+              }
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 24,
+            "beg_col": 8,
+            "end_line": 25,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 24,
+                "beg_col": 8,
+                "end_line": 24,
+                "end_col": 14
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U8", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U8" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U8" } },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 25,
+                "beg_col": 5,
+                "end_line": 25,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                }
+              }
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}::N",
+          "attr_info": null,
+          "source_text": "const N: usize = 42;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 21,
+            "beg_col": 4,
+            "end_line": 21,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 21,
+            "beg_col": 4,
+            "end_line": 21,
+            "end_col": 24
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 21,
+                "beg_col": 21,
+                "end_line": 21,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "42" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/const-shadow.rs",
+                "beg_line": 21,
+                "beg_col": 4,
+                "end_line": 21,
+                "end_col": 24
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "is_global_initializer": true,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "const_shadow::HasConst",
+          "attr_info": null,
+          "source_text": "trait HasConst<const N: usize> {\n    const N: usize;\n\n    fn get(&self) -> [u8; N];\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [ { "name": "N" } ],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "get",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  { "kind": { "Opaque": "len" } }
+                ]
+              },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [ { "name": "N" } ],
+                "trait_clauses": [
+                  { "trait": "const_shadow::HasConst", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "const_shadow::{const_shadow::HasConst<4usize> for const_shadow::Foo}",
+          "attr_info": null,
+          "source_text": "impl HasConst<4> for Foo {\n    const N: usize = 42;\n\n    fn get(&self) -> [u8; 4] {\n        [0; 4]\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/const-shadow.rs",
+            "beg_line": 20,
+            "beg_col": 0,
+            "end_line": 26,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": 0,
+        "self_type": {
+          "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "get", "fn_id": 2 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

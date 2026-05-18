@@ -1,0 +1,127 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "6cddd303b823aa4f15985bf4ad058ffe",
+  "functions": [],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "mutually_recursive_traits::Trait1",
+          "attr_info": null,
+          "source_text": "pub trait Trait1 {\n    type T: Trait2;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/mutually-recursive-traits.rs",
+            "beg_line": 5,
+            "beg_col": 0,
+            "end_line": 7,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "mutually_recursive_traits::Trait2",
+          "attr_info": null,
+          "source_text": "pub trait Trait2: Trait1 {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/mutually-recursive-traits.rs",
+            "beg_line": 9,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 27
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "mutually_recursive_traits::T1",
+          "attr_info": null,
+          "source_text": "pub trait T1<T: T2<Self>>: Sized {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/mutually-recursive-traits.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 11,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "mutually_recursive_traits::T2",
+          "attr_info": null,
+          "source_text": "pub trait T2<T: T1<Self>>: Sized {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/mutually-recursive-traits.rs",
+            "beg_line": 12,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

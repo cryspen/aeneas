@@ -1,0 +1,1035 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "b3635d3004b430fc5ab634b0b010addb",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "join_duplicate::join_nested_shared",
+      "source_span": {
+        "file": "tests/src/join-duplicate.rs",
+        "beg_line": 3,
+        "beg_col": 0,
+        "end_line": 10,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "1" ] } } }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "2" ] } } }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": true } },
+        { "EvAssert": { "cond": { "SymVal": 0 }, "expected": false } },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 6,
+              "projection": [ "Deref", "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [ "Deref", "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 6,
+                "projection": [ "Deref", "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "Gt",
+            "lhs": {
+              "SymMove": {
+                "local": 10,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "0" ] } } },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 2 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        { "EvAssert": { "cond": { "SymVal": 2 }, "expected": false } },
+        "EvPanic",
+        {
+          "EvCopy": {
+            "src": {
+              "local": 6,
+              "projection": [ "Deref", "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [ "Deref", "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 6,
+                "projection": [ "Deref", "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "Gt",
+            "lhs": {
+              "SymMove": {
+                "local": 10,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "0" ] } } },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 3 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        { "EvAssert": { "cond": { "SymVal": 3 }, "expected": false } },
+        "EvPanic",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "join_duplicate::join_nested_shared",
+          "attr_info": null,
+          "source_text": "fn join_nested_shared(b: bool) {\n    let x = 1;\n    let y = 2;\n    let px = &x;\n    let py = &y;\n    let p = if b { &px } else { &py };\n    assert!(**p > 0);\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/join-duplicate.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": "Bool" } ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/join-duplicate.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 4,
+                "beg_col": 12,
+                "end_line": 4,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "Int": "I32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Signed": [ "I32", "1" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "Int": "I32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 5,
+                "beg_col": 12,
+                "end_line": 5,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "Int": "I32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Signed": [ "I32", "2" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "Int": "I32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 6,
+                "beg_col": 13,
+                "end_line": 6,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "Int": "I32" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 7,
+                "beg_col": 13,
+                "end_line": 7,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "Int": "I32" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 8,
+                "beg_col": 15,
+                "end_line": 8,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 8,
+                "beg_col": 12,
+                "end_line": 8,
+                "end_col": 37
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/join-duplicate.rs",
+                        "beg_line": 8,
+                        "beg_col": 12,
+                        "end_line": 8,
+                        "end_col": 37
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 8,
+                            "beg_col": 19,
+                            "end_line": 8,
+                            "end_col": 22
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 6,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "Int": "I32" } },
+                                        "Shared"
+                                      ]
+                                    },
+                                    "Shared"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 4,
+                                    "projection": [],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "Int": "I32" } },
+                                        "Shared"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Shared",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/join-duplicate.rs",
+                        "beg_line": 8,
+                        "beg_col": 12,
+                        "end_line": 8,
+                        "end_col": 37
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 8,
+                            "beg_col": 32,
+                            "end_line": 8,
+                            "end_col": 35
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 8,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "Int": "I32" } },
+                                        "Shared"
+                                      ]
+                                    },
+                                    "Shared"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 5,
+                                    "projection": [],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "Int": "I32" } },
+                                        "Shared"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Shared",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 8,
+                            "beg_col": 32,
+                            "end_line": 8,
+                            "end_col": 35
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 6,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Ref": [
+                                        0,
+                                        { "Literal": { "Int": "I32" } },
+                                        "Shared"
+                                      ]
+                                    },
+                                    "Shared"
+                                  ]
+                                }
+                              },
+                              {
+                                "Ref": {
+                                  "place": {
+                                    "local": 8,
+                                    "projection": [ "Deref" ],
+                                    "ty": {
+                                      "Ref": [
+                                        0,
+                                        {
+                                          "Ref": [
+                                            0,
+                                            { "Literal": { "Int": "I32" } },
+                                            "Shared"
+                                          ]
+                                        },
+                                        "Shared"
+                                      ]
+                                    }
+                                  },
+                                  "kind": "Shared",
+                                  "ptr_metadata": null
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 8,
+                            "beg_col": 36,
+                            "end_line": 8,
+                            "end_col": 37
+                          },
+                          "kind": { "StorageDead": 8 }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 8,
+                "beg_col": 36,
+                "end_line": 8,
+                "end_col": 37
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 9,
+                "beg_col": 12,
+                "end_line": 9,
+                "end_col": 15
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 10,
+                    "projection": [],
+                    "ty": { "Literal": { "Int": "I32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 6,
+                        "projection": [ "Deref", "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Ref": [
+                                0, { "Literal": { "Int": "I32" } }, "Shared"
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 9,
+                "beg_col": 12,
+                "end_line": 9,
+                "end_col": 19
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 9,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "BinaryOp": [
+                      "Gt",
+                      {
+                        "Move": {
+                          "local": 10,
+                          "projection": [],
+                          "ty": { "Literal": { "Int": "I32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Signed": [ "I32", "0" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "Int": "I32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/join-duplicate.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 20
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 9,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/join-duplicate.rs",
+                        "beg_line": 9,
+                        "beg_col": 12,
+                        "end_line": 9,
+                        "end_col": 19
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 9,
+                            "beg_col": 18,
+                            "end_line": 9,
+                            "end_col": 19
+                          },
+                          "kind": { "StorageDead": 10 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 9,
+                            "beg_col": 19,
+                            "end_line": 9,
+                            "end_col": 20
+                          },
+                          "kind": { "StorageDead": 9 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 3,
+                            "beg_col": 31,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": {
+                                  "Adt": {
+                                    "id": "Tuple",
+                                    "generics": { "types": [] }
+                                  }
+                                }
+                              },
+                              {
+                                "Aggregate": [
+                                  {
+                                    "Adt": [
+                                      {
+                                        "id": "Tuple",
+                                        "generics": { "types": [] }
+                                      },
+                                      null,
+                                      null
+                                    ]
+                                  },
+                                  []
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 10,
+                            "beg_col": 0,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 6 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 10,
+                            "beg_col": 0,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 5 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 10,
+                            "beg_col": 0,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 4 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 10,
+                            "beg_col": 0,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 3 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 10,
+                            "beg_col": 0,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 2 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 10,
+                            "beg_col": 1,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/join-duplicate.rs",
+                        "beg_line": 9,
+                        "beg_col": 4,
+                        "end_line": 9,
+                        "end_col": 20
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 9,
+                            "beg_col": 18,
+                            "end_line": 9,
+                            "end_col": 19
+                          },
+                          "kind": { "StorageDead": 10 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/join-duplicate.rs",
+                            "beg_line": 9,
+                            "beg_col": 4,
+                            "end_line": 9,
+                            "end_col": 20
+                          },
+                          "kind": "Nop"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Literal": "Bool" },
+          { "Literal": { "Int": "I32" } },
+          { "Literal": { "Int": "I32" } },
+          { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] },
+          { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] },
+          {
+            "Ref": [
+              0,
+              { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] },
+              "Shared"
+            ]
+          },
+          { "Literal": "Bool" },
+          {
+            "Ref": [
+              0,
+              { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] },
+              "Shared"
+            ]
+          },
+          { "Literal": "Bool" },
+          { "Literal": { "Int": "I32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

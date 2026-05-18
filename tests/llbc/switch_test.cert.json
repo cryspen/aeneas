@@ -1,0 +1,359 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "dca9fd5e7c211355a1e1f6e6264e285b",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "switch_test::match_u32",
+      "source_span": {
+        "file": "tests/src/switch_test.rs",
+        "beg_line": 4,
+        "beg_col": 0,
+        "end_line": 10,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "0" ] } } }
+          }
+        },
+        "EvReturn",
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } }
+          }
+        },
+        "EvReturn",
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "2" ] } } }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "switch_test::match_u32",
+          "attr_info": null,
+          "source_text": "fn match_u32(x: u32) -> u32 {\n    match x {\n        0 => 0,\n        1 => 1,\n        _ => 2,\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/switch_test.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/switch_test.rs",
+            "beg_line": 5,
+            "beg_col": 4,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/switch_test.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": {
+                "Switch": {
+                  "SwitchInt": [
+                    {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    },
+                    { "UInt": "U32" },
+                    [
+                      [
+                        [ { "Scalar": { "Unsigned": [ "U32", "0" ] } } ],
+                        {
+                          "span": {
+                            "file": "tests/src/switch_test.rs",
+                            "beg_line": 5,
+                            "beg_col": 4,
+                            "end_line": 5,
+                            "end_col": 11
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/switch_test.rs",
+                                "beg_line": 6,
+                                "beg_col": 13,
+                                "end_line": 6,
+                                "end_col": 14
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "0" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/switch_test.rs",
+                                "beg_line": 10,
+                                "beg_col": 1,
+                                "end_line": 10,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ],
+                      [
+                        [ { "Scalar": { "Unsigned": [ "U32", "1" ] } } ],
+                        {
+                          "span": {
+                            "file": "tests/src/switch_test.rs",
+                            "beg_line": 7,
+                            "beg_col": 13,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/switch_test.rs",
+                                "beg_line": 7,
+                                "beg_col": 13,
+                                "end_line": 7,
+                                "end_col": 14
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  },
+                                  {
+                                    "Use": {
+                                      "Const": {
+                                        "kind": {
+                                          "Literal": {
+                                            "Scalar": {
+                                              "Unsigned": [ "U32", "1" ]
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "Literal": { "UInt": "U32" }
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/switch_test.rs",
+                                "beg_line": 10,
+                                "beg_col": 1,
+                                "end_line": 10,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    {
+                      "span": {
+                        "file": "tests/src/switch_test.rs",
+                        "beg_line": 8,
+                        "beg_col": 13,
+                        "end_line": 10,
+                        "end_col": 1
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/switch_test.rs",
+                            "beg_line": 8,
+                            "beg_col": 13,
+                            "end_line": 8,
+                            "end_col": 14
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": { "Literal": { "UInt": "U32" } }
+                              },
+                              {
+                                "Use": {
+                                  "Const": {
+                                    "kind": {
+                                      "Literal": {
+                                        "Scalar": {
+                                          "Unsigned": [ "U32", "2" ]
+                                        }
+                                      }
+                                    },
+                                    "ty": { "Literal": { "UInt": "U32" } }
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/switch_test.rs",
+                            "beg_line": 10,
+                            "beg_col": 1,
+                            "end_line": 10,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "fmt_version": 4,
+  "fmt_version": 6,
   "crate_hash": "830f7e05fedb50d298a013e3ccd563d4",
   "functions": [
     {
@@ -205,7 +205,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null
+      ]
     }
   ],
   "llbc_program": {

@@ -1,0 +1,1699 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "351968596a81d280e9f646685675291e",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "issue_804_closure_return_ref::each_ref",
+      "source_span": {
+        "file": "tests/src/issue-804-closure-return-ref.rs",
+        "beg_line": 5,
+        "beg_col": 0,
+        "end_line": 7,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TArray (\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U8)),\n         { Generated_Types.kind =\n           (Generated_Types.CLiteral\n              (Generated_Values.VScalar\n                 (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10\n                    ))));\n           ty =\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n           }\n         )),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TArray (\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U8)),\n         { Generated_Types.kind =\n           (Generated_Types.CLiteral\n              (Generated_Values.VScalar\n                 (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10\n                    ))));\n           ty =\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n           }\n         )),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions =\n       [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymRecord": {
+                "adt_id": 0,
+                "fields": [
+                  {
+                    "name": "field0",
+                    "value": {
+                      "SymMove": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TArray (\n         (Generated_Types.TLiteral\n            (Generated_Values.TUInt Generated_Values.U8)),\n         { Generated_Types.kind =\n           (Generated_Types.CLiteral\n              (Generated_Values.VScalar\n                 (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10\n                    ))));\n           ty =\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n           }\n         )),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions =\n       [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions =\n       [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 1,
+            "fn_name": "core::array::from_fn",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions =\n       [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      Generated_Types.RShared)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [ 1, 2, 3, 4, 5 ],
+            "abs_sig": [
+              { "abs_id": 1, "parent_abs": [], "roles": [] },
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              },
+              { "abs_id": 3, "parent_abs": [], "roles": [] },
+              { "abs_id": 4, "parent_abs": [], "roles": [] },
+              { "abs_id": 5, "parent_abs": [], "roles": [] }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      Generated_Types.RShared)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      Generated_Types.RShared)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnOnce<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}::call_once",
+      "source_span": {
+        "file": "tests/src/issue-804-closure-return-ref.rs",
+        "beg_line": 6,
+        "beg_col": 24,
+        "end_line": 6,
+        "end_col": 33
+      },
+      "pretty_name": "closure.Insts.CoreFnOnce.call_once",
+      "events": [
+        {
+          "EvMutBorrow": {
+            "loan": 2,
+            "place": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions =\n       [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "symval": 0,
+            "kind_hint": "Direct"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions =\n          [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions =\n       [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions =\n          [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions =\n          [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnMut<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<'0, '1>}::call_mut",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions =\n          [Generated_Types.RErased; Generated_Types.RErased]; types = [];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 3, 4, 5, 6 ],
+            "abs_sig": [
+              {
+                "abs_id": 3,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 2 } } ]
+              },
+              {
+                "abs_id": 4,
+                "parent_abs": [ 3 ],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 0 } } ]
+              },
+              { "abs_id": 5, "parent_abs": [ 3 ], "roles": [] },
+              { "abs_id": 6, "parent_abs": [], "roles": [] }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 3,
+            "final_values": [ { "SymVal": 7 } ],
+            "released_loans": [ 2 ],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnMut<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}::call_mut",
+      "source_span": {
+        "file": "tests/src/issue-804-closure-return-ref.rs",
+        "beg_line": 6,
+        "beg_col": 24,
+        "end_line": 6,
+        "end_col": 33
+      },
+      "pretty_name": "closure.Insts.CoreFnMut.call_mut",
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 2,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 2
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 2,
+                "projection": [ { "Field": 0 } ],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayIndexShared",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 5,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 10))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+                }
+              },
+              {
+                "SymCopy": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 4 ],
+            "abs_sig": [
+              {
+                "abs_id": 4,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 2 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_804_closure_return_ref::each_ref::closure",
+          "attr_info": null,
+          "source_text": "|i| &s[i]",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 6,
+            "beg_col": 24,
+            "end_line": 6,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [ { "name": "" }, { "name": "" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": null,
+              "ty": {
+                "Ref": [
+                  0,
+                  {
+                    "Ref": [
+                      0,
+                      {
+                        "Array": [
+                          { "Literal": { "UInt": "U8" } },
+                          {
+                            "kind": {
+                              "Literal": {
+                                "Scalar": { "Unsigned": [ "Usize", "10" ] }
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "Shared"
+                    ]
+                  },
+                  "Shared"
+                ]
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_804_closure_return_ref::each_ref",
+          "attr_info": null,
+          "source_text": "pub fn each_ref(s: &[u8; 10]) -> [&u8; 10] {\n    std::array::from_fn(|i| &s[i])\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 5,
+            "beg_col": 0,
+            "end_line": 7,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Array": [
+                    { "Literal": { "UInt": "U8" } },
+                    {
+                      "kind": {
+                        "Literal": {
+                          "Scalar": { "Unsigned": [ "Usize", "10" ] }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Array": [
+              { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ] },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "10" ] } }
+                }
+              }
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 6,
+            "beg_col": 24,
+            "end_line": 7,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 24,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "10" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "10" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 24,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": { "Adt": 0 }, "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 3,
+                            "projection": [],
+                            "ty": {
+                              "Ref": [
+                                0,
+                                {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Array": [
+                                        { "Literal": { "UInt": "U8" } },
+                                        {
+                                          "kind": {
+                                            "Literal": {
+                                              "Scalar": {
+                                                "Unsigned": [ "Usize", "10" ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "Shared"
+                                  ]
+                                },
+                                "Shared"
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 26,
+                "end_line": 6,
+                "end_col": 27
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 4,
+                "end_line": 6,
+                "end_col": 34
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 1 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U8" } }, "Shared"
+                          ]
+                        },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "10" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 33,
+                "end_line": 6,
+                "end_col": 34
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 7,
+                "beg_col": 1,
+                "end_line": 7,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Array": [
+              { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ] },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "10" ] } }
+                }
+              }
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "10" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              {
+                "Ref": [
+                  0,
+                  {
+                    "Array": [
+                      { "Literal": { "UInt": "U8" } },
+                      {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "10" ] }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "Shared"
+                ]
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::array::from_fn",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 109,
+            "beg_col": 0,
+            "end_line": 111,
+            "end_col": 52
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 1 } } ],
+          "output": {
+            "Array": [
+              { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+            ]
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" }, { "name": "F" } ],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": [
+              { "trait": "core::ops::function::FnMut", "type_param": 1 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnOnce<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}::call_once",
+          "attr_info": null,
+          "source_text": "|i| &s[i]",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 6,
+            "beg_col": 24,
+            "end_line": 6,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+            {
+              "Adt": {
+                "id": "Tuple",
+                "generics": {
+                  "types": [ { "Literal": { "UInt": "Usize" } } ]
+                }
+              }
+            }
+          ],
+          "output": {
+            "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ]
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 250,
+            "beg_col": 4,
+            "end_line": 250,
+            "end_col": 70
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "/rustc/library/core/src/ops/function.rs",
+                "beg_line": 250,
+                "beg_col": 4,
+                "end_line": 250,
+                "end_col": 70
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/core/src/ops/function.rs",
+                "beg_line": 250,
+                "beg_col": 4,
+                "end_line": 250,
+                "end_col": 70
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": "Tuple",
+                            "generics": {
+                              "types": [ { "Literal": { "UInt": "Usize" } } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/core/src/ops/function.rs",
+                "beg_line": 250,
+                "beg_col": 4,
+                "end_line": 250,
+                "end_col": 70
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "/rustc/library/core/src/ops/function.rs",
+                "beg_line": 250,
+                "beg_col": 4,
+                "end_line": 250,
+                "end_col": 70
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ] },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          {
+            "Adt": {
+              "id": "Tuple",
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnMut<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}::call_mut",
+          "attr_info": null,
+          "source_text": "|i| &s[i]",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 6,
+            "beg_col": 24,
+            "end_line": 6,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            },
+            {
+              "Adt": {
+                "id": "Tuple",
+                "generics": {
+                  "types": [ { "Literal": { "UInt": "Usize" } } ]
+                }
+              }
+            }
+          ],
+          "output": {
+            "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ]
+          },
+          "generics": {
+            "regions": [
+              { "name": "" }, { "name": "" }, { "name": "" }, { "name": "" }
+            ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 6,
+            "beg_col": 24,
+            "end_line": 6,
+            "end_col": 33
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 24,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 2,
+                        "projection": [ { "Field": [ { "Tuple": 1 }, 0 ] } ],
+                        "ty": {
+                          "Adt": {
+                            "id": "Tuple",
+                            "generics": {
+                              "types": [ { "Literal": { "UInt": "Usize" } } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 31,
+                "end_line": 6,
+                "end_col": 32
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 28,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "10" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [
+                          "Deref",
+                          { "Field": [ { "Adt": [ 0, null ] }, 0 ] },
+                          "Deref",
+                          "Deref"
+                        ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 28,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "10" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Copy": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 28,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 6,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U8" } }, "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 32,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-804-closure-return-ref.rs",
+                "beg_line": 6,
+                "beg_col": 33,
+                "end_line": 6,
+                "end_col": 33
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ] },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          {
+            "Adt": {
+              "id": "Tuple",
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "10" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "U8" } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::ops::function::FnMut::call_mut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 166,
+            "beg_col": 4,
+            "end_line": 166,
+            "end_col": 74
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+            { "TypeVar": { "Free": 1 } }
+          ],
+          "output": { "TypeVar": { "Free": 2 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [
+              { "name": "Self" },
+              { "name": "Args" },
+              { "name": "Clause0_Clause0_Output" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::function::FnMut", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::ops::function::FnOnce::call_once",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 250,
+            "beg_col": 4,
+            "end_line": 250,
+            "end_col": 70
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "TypeVar": { "Free": 0 } }, { "TypeVar": { "Free": 1 } }
+          ],
+          "output": { "TypeVar": { "Free": 2 } },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "Args" },
+              { "name": "Clause0_Output" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::function::FnOnce", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::ops::function::FnMut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "fn_mut",
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 163,
+            "beg_col": 0,
+            "end_line": 163,
+            "end_col": 48
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" },
+            { "name": "Args" },
+            { "name": "Self_Clause0_Output" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "call_mut",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+                { "TypeVar": { "Free": 1 } }
+              ],
+              "output": { "TypeVar": { "Free": 2 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "Args" },
+                  { "name": "Clause0_Clause0_Output" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::function::FnMut", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::ops::function::FnOnce",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "fn_once",
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 242,
+            "beg_col": 0,
+            "end_line": 242,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" }, { "name": "Args" }, { "name": "Self_Output" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "call_once",
+            "signature": {
+              "inputs": [
+                { "TypeVar": { "Free": 0 } }, { "TypeVar": { "Free": 1 } }
+              ],
+              "output": { "TypeVar": { "Free": 2 } },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "Args" },
+                  { "name": "Clause0_Output" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::function::FnOnce", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnOnce<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}",
+          "attr_info": null,
+          "source_text": "|i| &s[i]",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 6,
+            "beg_col": 24,
+            "end_line": 6,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": 0,
+        "self_type": {
+          "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "call_once", "fn_id": 2 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "issue_804_closure_return_ref::each_ref::{core::ops::function::FnMut<(usize), &'_ (u8)> for issue_804_closure_return_ref::each_ref::closure<0, 1>}",
+          "attr_info": null,
+          "source_text": "|i| &s[i]",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-804-closure-return-ref.rs",
+            "beg_line": 6,
+            "beg_col": 24,
+            "end_line": 6,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": 0,
+        "self_type": {
+          "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "call_mut", "fn_id": 3 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

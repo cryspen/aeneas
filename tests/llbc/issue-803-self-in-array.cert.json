@@ -1,0 +1,320 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "c5bf706c35b9653af07c128456a8b68b",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "issue_803_self_in_array::{issue_803_self_in_array::Arguments<'a>}::none",
+      "source_span": {
+        "file": "tests/src/issue-803-self-in-array.rs",
+        "beg_line": 8,
+        "beg_col": 4,
+        "end_line": 10,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n          const_generics = []; trait_refs = [] }\n        }),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 1))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [Generated_Types.RErased]; types = [];\n          const_generics = []; trait_refs = [] }\n        }),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 1))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_803_self_in_array::Arguments",
+          "attr_info": null,
+          "source_text": "pub struct Arguments<'a>(&'a ());",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-803-self-in-array.rs",
+            "beg_line": 5,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [ { "name": "'a" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": null,
+              "ty": {
+                "Ref": [
+                  0,
+                  { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                  "Shared"
+                ]
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_803_self_in_array::{issue_803_self_in_array::Arguments<'a>}::none",
+          "attr_info": null,
+          "source_text": "fn none(x: Self) -> [Self; 1] {\n        [x]\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-803-self-in-array.rs",
+            "beg_line": 8,
+            "beg_col": 4,
+            "end_line": 10,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+          ],
+          "output": {
+            "Array": [
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "1" ] } }
+                }
+              }
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "'a" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/issue-803-self-in-array.rs",
+            "beg_line": 9,
+            "beg_col": 8,
+            "end_line": 10,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/issue-803-self-in-array.rs",
+                "beg_line": 9,
+                "beg_col": 9,
+                "end_line": 9,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-803-self-in-array.rs",
+                "beg_line": 9,
+                "beg_col": 8,
+                "end_line": 9,
+                "end_col": 11
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "1" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Array": [
+                          {
+                            "Adt": {
+                              "id": { "Adt": 0 },
+                              "generics": { "types": [] }
+                            }
+                          },
+                          { "kind": { "Opaque": "len" } }
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 2,
+                            "projection": [],
+                            "ty": {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-803-self-in-array.rs",
+                "beg_line": 9,
+                "beg_col": 10,
+                "end_line": 9,
+                "end_col": 11
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-803-self-in-array.rs",
+                "beg_line": 10,
+                "beg_col": 5,
+                "end_line": 10,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Array": [
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "1" ] } }
+                }
+              }
+            ]
+          },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

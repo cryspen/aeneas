@@ -1,0 +1,1163 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "7843ee407bc0da0f1dc588db09777643",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "issue_134_loop_shared_borrows::{issue_134_loop_shared_borrows::AVLNode}::find",
+      "source_span": {
+        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+        "beg_line": 12,
+        "beg_col": 4,
+        "end_line": 20,
+        "end_col": 5
+      },
+      "events": [
+        {
+          "EvLoopInv": {
+            "loop_id": 0,
+            "invariant": {
+              "env": [ { "local": 2, "value": { "SymMutBorrowTok": 8 } } ],
+              "live_loans": [ 4, 3 ]
+            },
+            "loan_registry": []
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 11 },
+            "adt_id": 2,
+            "variant_id": 0,
+            "variant_name": "None"
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 11 },
+            "adt_id": 2,
+            "variant_id": 1,
+            "variant_name": "Some"
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 2);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TAdt\n              { Generated_Types.id =\n                (Generated_Types.TBuiltin Generated_Types.TBox);\n                generics =\n                { Generated_Types.regions = [];\n                  types =\n                  [(Generated_Types.TAdt\n                      { Generated_Types.id = (Generated_Types.TAdtId 0);\n                        generics =\n                        { Generated_Types.regions = []; types = [];\n                          const_generics = []; trait_refs = [] }\n                        })\n                    ];\n                  const_generics = []; trait_refs = [] }\n                })\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        { "EvLoopEnd": { "loop_id": 0 } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "rhs": { "SymLit": { "Bool": false } }
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 8,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_134_loop_shared_borrows::AVLNode",
+          "attr_info": null,
+          "source_text": "struct AVLNode {\n    child: Option<Box<AVLNode>>,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-134-loop-shared-borrows.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "child",
+              "ty": {
+                "Adt": {
+                  "id": { "Adt": 2 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "issue_134_loop_shared_borrows::AVLTreeSet",
+          "attr_info": null,
+          "source_text": "struct AVLTreeSet {\n    root: Option<Box<AVLNode>>,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-134-loop-shared-borrows.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "root",
+              "ty": {
+                "Adt": {
+                  "id": { "Adt": 2 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::option::Option",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Option",
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 600,
+            "beg_col": 0,
+            "end_line": 600,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "None",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Some",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_134_loop_shared_borrows::{issue_134_loop_shared_borrows::AVLNode}::find",
+          "attr_info": null,
+          "source_text": "pub fn find(self) -> bool {\n        let mut current_tree = &self.child; // This is the root of the problem in the computation of the fixed point\n\n        while let Some(current_node) = current_tree {\n            current_tree = &current_node.child;\n        }\n\n        false\n    }",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-134-loop-shared-borrows.rs",
+            "beg_line": 12,
+            "beg_col": 4,
+            "end_line": 20,
+            "end_col": 5
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/issue-134-loop-shared-borrows.rs",
+            "beg_line": 13,
+            "beg_col": 12,
+            "end_line": 20,
+            "end_col": 5
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                "beg_line": 13,
+                "beg_col": 31,
+                "end_line": 13,
+                "end_col": 42
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 2 },
+                            "generics": {
+                              "types": [
+                                {
+                                  "Adt": {
+                                    "id": { "Builtin": "Box" },
+                                    "generics": {
+                                      "types": [
+                                        {
+                                          "Adt": {
+                                            "id": { "Adt": 0 },
+                                            "generics": { "types": [] }
+                                          }
+                                        }
+                                      ]
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [
+                          { "Field": [ { "Adt": [ 0, null ] }, 0 ] }
+                        ],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                "beg_line": 15,
+                "beg_col": 8,
+                "end_line": 17,
+                "end_col": 9
+              },
+              "kind": {
+                "Loop": {
+                  "span": {
+                    "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                    "beg_line": 15,
+                    "beg_col": 8,
+                    "end_line": 17,
+                    "end_col": 9
+                  },
+                  "statements": [
+                    {
+                      "span": {
+                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                        "beg_line": 15,
+                        "beg_col": 8,
+                        "end_line": 17,
+                        "end_col": 9
+                      },
+                      "kind": {
+                        "Switch": {
+                          "Match": [
+                            {
+                              "local": 2,
+                              "projection": [ "Deref" ],
+                              "ty": {
+                                "Ref": [
+                                  0,
+                                  {
+                                    "Adt": {
+                                      "id": { "Adt": 2 },
+                                      "generics": {
+                                        "types": [
+                                          {
+                                            "Adt": {
+                                              "id": { "Builtin": "Box" },
+                                              "generics": {
+                                                "types": [
+                                                  {
+                                                    "Adt": {
+                                                      "id": { "Adt": 0 },
+                                                      "generics": {
+                                                        "types": []
+                                                      }
+                                                    }
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  },
+                                  "Shared"
+                                ]
+                              }
+                            },
+                            [
+                              [
+                                [ 1 ],
+                                {
+                                  "span": {
+                                    "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                    "beg_line": 15,
+                                    "beg_col": 8,
+                                    "end_line": 17,
+                                    "end_col": 9
+                                  },
+                                  "statements": [
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 15,
+                                        "beg_col": 23,
+                                        "end_line": 15,
+                                        "end_col": 35
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 3,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": {
+                                                      "Builtin": "Box"
+                                                    },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Adt": 0
+                                                            },
+                                                            "generics": {
+                                                              "types": []
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Ref": {
+                                              "place": {
+                                                "local": 2,
+                                                "projection": [
+                                                  "Deref",
+                                                  {
+                                                    "Field": [
+                                                      { "Adt": [ 2, 1 ] }, 0
+                                                    ]
+                                                  }
+                                                ],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": { "Adt": 2 },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Builtin": "Box"
+                                                                },
+                                                                "generics": {
+                                                                  "types": [
+                                                                    {
+                                                                    "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                    }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              },
+                                              "kind": "Shared",
+                                              "ptr_metadata": null
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 16,
+                                        "beg_col": 27,
+                                        "end_line": 16,
+                                        "end_col": 46
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 5,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": { "Adt": 2 },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Builtin": "Box"
+                                                            },
+                                                            "generics": {
+                                                              "types": [
+                                                                {
+                                                                  "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Ref": {
+                                              "place": {
+                                                "local": 3,
+                                                "projection": [
+                                                  "Deref",
+                                                  "Deref",
+                                                  {
+                                                    "Field": [
+                                                      { "Adt": [ 0, null ] },
+                                                      0
+                                                    ]
+                                                  }
+                                                ],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": {
+                                                          "Builtin": "Box"
+                                                        },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Adt": 0
+                                                                },
+                                                                "generics": {
+                                                                  "types": []
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              },
+                                              "kind": "Shared",
+                                              "ptr_metadata": null
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 16,
+                                        "beg_col": 27,
+                                        "end_line": 16,
+                                        "end_col": 46
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 4,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": { "Adt": 2 },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Builtin": "Box"
+                                                            },
+                                                            "generics": {
+                                                              "types": [
+                                                                {
+                                                                  "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Ref": {
+                                              "place": {
+                                                "local": 5,
+                                                "projection": [ "Deref" ],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": { "Adt": 2 },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Builtin": "Box"
+                                                                },
+                                                                "generics": {
+                                                                  "types": [
+                                                                    {
+                                                                    "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                    }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              },
+                                              "kind": "Shared",
+                                              "ptr_metadata": null
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 16,
+                                        "beg_col": 12,
+                                        "end_line": 16,
+                                        "end_col": 46
+                                      },
+                                      "kind": {
+                                        "Assign": [
+                                          {
+                                            "local": 2,
+                                            "projection": [],
+                                            "ty": {
+                                              "Ref": [
+                                                0,
+                                                {
+                                                  "Adt": {
+                                                    "id": { "Adt": 2 },
+                                                    "generics": {
+                                                      "types": [
+                                                        {
+                                                          "Adt": {
+                                                            "id": {
+                                                              "Builtin": "Box"
+                                                            },
+                                                            "generics": {
+                                                              "types": [
+                                                                {
+                                                                  "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                  }
+                                                                }
+                                                              ]
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    }
+                                                  }
+                                                },
+                                                "Shared"
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "Use": {
+                                              "Move": {
+                                                "local": 4,
+                                                "projection": [],
+                                                "ty": {
+                                                  "Ref": [
+                                                    0,
+                                                    {
+                                                      "Adt": {
+                                                        "id": { "Adt": 2 },
+                                                        "generics": {
+                                                          "types": [
+                                                            {
+                                                              "Adt": {
+                                                                "id": {
+                                                                  "Builtin": "Box"
+                                                                },
+                                                                "generics": {
+                                                                  "types": [
+                                                                    {
+                                                                    "Adt": {
+                                                                    "id": {
+                                                                    "Adt": 0
+                                                                    },
+                                                                    "generics": {
+                                                                    "types": []
+                                                                    }
+                                                                    }
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    },
+                                                    "Shared"
+                                                  ]
+                                                }
+                                              }
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 16,
+                                        "beg_col": 45,
+                                        "end_line": 16,
+                                        "end_col": 46
+                                      },
+                                      "kind": { "StorageDead": 4 }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 16,
+                                        "beg_col": 46,
+                                        "end_line": 16,
+                                        "end_col": 47
+                                      },
+                                      "kind": { "StorageDead": 5 }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 17,
+                                        "beg_col": 8,
+                                        "end_line": 17,
+                                        "end_col": 9
+                                      },
+                                      "kind": { "StorageDead": 3 }
+                                    },
+                                    {
+                                      "span": {
+                                        "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                        "beg_line": 15,
+                                        "beg_col": 8,
+                                        "end_line": 17,
+                                        "end_col": 9
+                                      },
+                                      "kind": { "Continue": 0 }
+                                    }
+                                  ]
+                                }
+                              ]
+                            ],
+                            {
+                              "span": {
+                                "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                "beg_line": 15,
+                                "beg_col": 18,
+                                "end_line": 15,
+                                "end_col": 36
+                              },
+                              "statements": [
+                                {
+                                  "span": {
+                                    "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                                    "beg_line": 15,
+                                    "beg_col": 18,
+                                    "end_line": 15,
+                                    "end_col": 36
+                                  },
+                                  "kind": { "Break": 0 }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                "beg_line": 19,
+                "beg_col": 8,
+                "end_line": 19,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": { "Literal": { "Bool": false } },
+                        "ty": { "Literal": "Bool" }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                "beg_line": 20,
+                "beg_col": 4,
+                "end_line": 20,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                "beg_line": 20,
+                "beg_col": 4,
+                "end_line": 20,
+                "end_col": 5
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-134-loop-shared-borrows.rs",
+                "beg_line": 20,
+                "beg_col": 5,
+                "end_line": 20,
+                "end_col": 5
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 2 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Adt": 0 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 2 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 2 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Builtin": "Box" },
+                          "generics": {
+                            "types": [
+                              {
+                                "Adt": {
+                                  "id": { "Adt": 0 },
+                                  "generics": { "types": [] }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

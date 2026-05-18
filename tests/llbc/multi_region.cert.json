@@ -1,5 +1,5 @@
 {
-  "fmt_version": 4,
+  "fmt_version": 6,
   "crate_hash": "ed5d31f9d0325b504ba97d61803275e4",
   "functions": [
     {
@@ -162,7 +162,10 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null
+      ]
     },
     {
       "fn_id": 1,
@@ -432,7 +435,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null
+      ]
     }
   ],
   "llbc_program": {

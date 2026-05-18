@@ -160,7 +160,18 @@ partial def parseSymExpr (j : Json) : Result SymExpr := do
 
 def parseRestoreInfo (j : Json) : Result RestoreInfo := do
   let gb ← parseSymExpr (← field j "given_back")
-  return { givenBack := gb }
+  -- M10.x.0 (cert v6): `holder_local` is the env local whose
+  -- `mutLoan` token an end-borrow restores. Required in v6 by
+  -- emission discipline; defensively accept JSON `null` /
+  -- absence as `none` to keep parsing tolerant of pre-population
+  -- emitter regressions. Not yet consumed by the replayer.
+  let holderLocal : Option Nat ← match (j.getObjVal? "holder_local").toOption with
+    | some hj =>
+      match hj with
+      | .null => pure none
+      | _ => do let n ← asNat hj; pure (some n)
+    | none => pure none
+  return { givenBack := gb, holderLocal := holderLocal }
 
 /-! ## M9.6 (Option C) hint parsers
 
@@ -237,11 +248,38 @@ def parseJoinRule (j : Json) : Result JoinRule := do
     | "JoinOtherBottom" => return .joinOtherBottom (← asNat (← field payload "abs"))
     | _ => fail s!"unknown JoinRule tag: {tag}"
 
-/-- M9.6: parse one `JoinEntry`. -/
+/-- M10.x.0 (cert v6): parse a `JoinEntryDelta`. Mirrors the
+    OCaml [json_cert_join_entry_delta] encoding: nullary
+    [Trivial] as the bare string; payload variants as
+    single-key objects. -/
+def parseJoinEntryDelta (j : Json) : Result JoinEntryDelta := do
+  match j with
+  | .str "Trivial" => return .trivial
+  | .str s => fail s!"unknown nullary JoinEntryDelta: {s}"
+  | _ =>
+    let (tag, payload) ← asTaggedObj j
+    match tag with
+    | "Trivial" => return .trivial
+    | "Symbolic" => return .symbolic (← asNat (← field payload "fresh_sv"))
+    | "MutBorrows" => do
+      let f ← asNat (← field payload "fresh")
+      let a ← asNat (← field payload "abs_id")
+      return .mutBorrows f a
+    | "BottomOther" => return .bottomOther (← asNat (← field payload "abs"))
+    | "OtherBottom" => return .otherBottom (← asNat (← field payload "abs"))
+    | _ => fail s!"unknown JoinEntryDelta tag: {tag}"
+
+/-- M9.6: parse one `JoinEntry`.
+
+    M10.x.0 (cert v6): also parses the parallel `delta` field;
+    defensively defaults to `.trivial` if absent. -/
 def parseJoinEntry (j : Json) : Result JoinEntry := do
   let localId ← asNat (← field j "local")
   let rule ← parseJoinRule (← field j "rule")
-  return { localId, rule }
+  let delta ← match (j.getObjVal? "delta").toOption with
+    | some dj => parseJoinEntryDelta dj
+    | none => pure .trivial
+  return { localId, rule, delta }
 
 /-- M9.6: parse an optional hint field. Returns `default` when the
     key is absent (back-compat); otherwise runs `f` on the value. -/
@@ -417,6 +455,21 @@ def parseSourceSpan (j : Json) : Result SourceSpan := do
   let endCol ← asNat (← field j "end_col")
   return { file, begLine, begCol, endLine, endCol }
 
+/-- M10.x.0 (cert v6): parse a `StmtRef` JSON object. -/
+def parseStmtRef (j : Json) : Result StmtRef := do
+  let funId ← asNat (← field j "fun_id")
+  let bpArr ← asArr (← field j "body_path")
+  let bodyPath ← bpArr.mapM asNat
+  return { funId, bodyPath }
+
+/-- M10.x.0 (cert v6): parse one entry of `fc_stmt_refs`. JSON
+    `null` flows through as `none`; a `{...}` object is parsed as
+    `some StmtRef`. -/
+def parseStmtRefOpt (j : Json) : Result (Option StmtRef) := do
+  match j with
+  | .null => pure none
+  | _ => do let r ← parseStmtRef j; pure (some r)
+
 def parseFunCert (j : Json) : Result FunCert := do
   let fnId ← asNat (← field j "fn_id")
   let fnName ← asStr (← field j "fn_name")
@@ -435,7 +488,13 @@ def parseFunCert (j : Json) : Result FunCert := do
   let prettyName : Option String ← match (j.getObjVal? "pretty_name").toOption with
     | some pj => do let s ← asStr pj; pure (some s)
     | none => pure none
-  return { fnId, fnName, sourceSpan, events, finalState, prettyName }
+  -- M10.x.0 (cert v6): `stmt_refs` is a parallel-to-events array of
+  -- `Option StmtRef`. Required in v6, defensively accept absence
+  -- as `#[]` so the parser stays tolerant of emitter regressions.
+  let stmtRefs : Array (Option StmtRef) ← match (j.getObjVal? "stmt_refs").toOption with
+    | some sj => do let arr ← asArr sj; arr.mapM parseStmtRefOpt
+    | none => pure #[]
+  return { fnId, fnName, sourceSpan, events, finalState, prettyName, stmtRefs }
 
 /-! ## M9.7b: LLBC program parser
 
@@ -1499,29 +1558,30 @@ def parseLlbcProgram (j : Json) : Result LlbcProgram := do
 
 def parseCrateCert (j : Json) : Result CrateCert := do
   let fmtVersion ← asNat (← field j "fmt_version")
-  -- M9.8: cert v4 is the only supported format. v4 promotes
-  -- `JrJoinMutBorrows.abs` from a bare `abs_id` to a full
-  -- `cert_abs_shape` (id + parents + roles) so the replayer can
-  -- install the Collapse-Dup-MutBorrow fresh abs in `absRegistry`
-  -- from the cert directly. v3 (M9.7d) was the prior schema —
-  -- structurally identical but with the bare-id JoinMutBorrows.abs;
-  -- regenerate v3 certs with the current `aeneas -emit-cert`.
-  -- M9.7o-E5a: v2 / v1 were retired at the cert v3 cutover.
-  -- Local widening (diff-test branch): accept v4 OR v6. v6 (parent
-  -- M10.x.0 bump) is structurally a superset of v4 — adds optional
-  -- fields holderLocal/JoinEntryDelta/stmtRefs which this parser
-  -- ignores. Keeps the diff-test harness working against the v6
-  -- aeneas binary the parent campaign produces.
-  if fmtVersion ≠ 4 ∧ fmtVersion ≠ 6 then
-    fail s!"cert v{fmtVersion} is no longer supported (M9.8); regenerate with current aeneas -emit-cert"
+  -- M10.x.0: cert v6 is the only supported format. v6 adds three
+  -- orthogonal fields aimed at closing the 12 remaining
+  -- `CertGen_faithful.*` axioms:
+  --  * `RestoreInfo.holderLocal` — env local whose `mutLoan` token
+  --    an end-borrow restores (consumed by M10.x.9);
+  --  * `JoinEntry.delta` — parallel `JoinEntryStep` premise carrier
+  --    (consumed by M10.x.10);
+  --  * `FunCert.stmtRefs` — Phase-E2 LLBC body-tree back-pointers
+  --    (M10.x.0 ships all-`none`; M10.x.0b populates).
+  -- v5 was skipped to avoid confusion with the audit's earlier
+  -- one-field "cert v5 holderLocal" sketch. v4 (M9.8) promoted
+  -- `JoinMutBorrows.abs` to a full `AbsShape`; regenerate v4/v5
+  -- certs with the current `aeneas -emit-cert`. M9.7o-E5a: v3 /
+  -- v2 / v1 were retired at earlier cutovers.
+  if fmtVersion ≠ 6 then
+    fail s!"cert v{fmtVersion} is no longer supported (M10.x.0); regenerate with current aeneas -emit-cert"
   else
     let crateHash ← asStr (← field j "crate_hash")
     let fnArr ← asArr (← field j "functions")
     let functions ← fnArr.mapM parseFunCert
-    -- M9.7c: `llbc_program` is required (kept under v4).
+    -- M9.7c: `llbc_program` is required (kept under v6).
     let llbcProgram : LlbcProgram ← match (j.getObjVal? "llbc_program").toOption with
       | some lj => parseLlbcProgram lj
-      | none => fail "cert v4/v6 missing required field 'llbc_program'"
+      | none => fail "cert v6 missing required field 'llbc_program'"
     return { fmtVersion, crateHash, functions, llbcProgram }
 
 /-- Top-level entry: parse a cert JSON string. -/

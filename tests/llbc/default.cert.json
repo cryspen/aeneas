@@ -1,0 +1,1030 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "9f05a9f9e8a37961c6b5c3768b10c5d3",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "default::f0",
+      "source_span": {
+        "file": "tests/src/default.rs",
+        "beg_line": 3,
+        "beg_col": 0,
+        "end_line": 5,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "core::array::{core::default::Default for [T@0; 0usize]}::default",
+            "call_id": 1,
+            "args": [],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 0))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "default::f1",
+      "source_span": {
+        "file": "tests/src/default.rs",
+        "beg_line": 7,
+        "beg_col": 0,
+        "end_line": 9,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 4,
+            "fn_name": "core::array::{core::default::Default for [T@0; C@0]}::default",
+            "call_id": 1,
+            "args": [],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 1))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "default::f2",
+      "source_span": {
+        "file": "tests/src/default.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 13,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 4,
+            "fn_name": "core::array::{core::default::Default for [T@0; C@0]}::default",
+            "call_id": 1,
+            "args": [],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 2))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "default::f0",
+          "attr_info": null,
+          "source_text": "fn f0() {\n    let _: [u32; 0] = Default::default();\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/default.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/default.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 4,
+                "beg_col": 22,
+                "end_line": 4,
+                "end_col": 40
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U32" } },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 4,
+                "beg_col": 40,
+                "end_line": 4,
+                "end_col": 41
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 3,
+                "beg_col": 8,
+                "end_line": 5,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 5,
+                "beg_col": 1,
+                "end_line": 5,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U32" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "0" ] } }
+                }
+              }
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "default::f1",
+          "attr_info": null,
+          "source_text": "fn f1() {\n    let _: [u32; 1] = Default::default();\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/default.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/default.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 8,
+                "beg_col": 22,
+                "end_line": 8,
+                "end_col": 40
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 4 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U32" } },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "1" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 8,
+                "beg_col": 40,
+                "end_line": 8,
+                "end_col": 41
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 7,
+                "beg_col": 8,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 9,
+                "beg_col": 1,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U32" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "1" ] } }
+                }
+              }
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "default::f2",
+          "attr_info": null,
+          "source_text": "fn f2() {\n    let _: [u32; 2] = Default::default();\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/default.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/default.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 12,
+                "beg_col": 22,
+                "end_line": 12,
+                "end_col": 40
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 4 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U32" } },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "2" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 12,
+                "beg_col": 40,
+                "end_line": 12,
+                "end_col": 41
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 11,
+                "beg_col": 8,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/default.rs",
+                "beg_line": 13,
+                "beg_col": 1,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U32" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "2" ] } }
+                }
+              }
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::array::{core::default::Default for [T; 0usize]}::default",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 502,
+            "beg_col": 12,
+            "end_line": 502,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": {
+            "Array": [
+              { "TypeVar": { "Free": 0 } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "0" ] } }
+                }
+              }
+            ]
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::array::{core::default::Default for [T; N]}::default",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 493,
+            "beg_col": 12,
+            "end_line": 493,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": {
+            "Array": [
+              { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+            ]
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": [
+              { "trait": "core::default::Default", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::default::Default::default",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "default_fn",
+          "span": {
+            "file": "/rustc/library/core/src/default.rs",
+            "beg_line": 139,
+            "beg_col": 4,
+            "end_line": 139,
+            "end_col": 25
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::default::Default", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::default::{core::default::Default for u32}::default",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/default.rs",
+            "beg_line": 157,
+            "beg_col": 12,
+            "end_line": 157,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::default::Default",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Default",
+          "span": {
+            "file": "/rustc/library/core/src/default.rs",
+            "beg_line": 107,
+            "beg_col": 0,
+            "end_line": 107,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "default",
+            "signature": {
+              "inputs": [],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::default::Default", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::array::{core::default::Default for [T; 0usize]}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 501,
+            "beg_col": 8,
+            "end_line": 501,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Array": [
+            { "TypeVar": { "Free": 0 } },
+            {
+              "kind": {
+                "Literal": { "Scalar": { "Unsigned": [ "Usize", "0" ] } }
+              }
+            }
+          ]
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "default", "fn_id": 3 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::array::{core::default::Default for [T; N]}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 492,
+            "beg_col": 8,
+            "end_line": 492,
+            "end_col": 52
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Array": [
+            { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+          ]
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [ { "name": "N" } ],
+          "trait_clauses": [
+            { "trait": "core::default::Default", "type_param": 0 }
+          ]
+        },
+        "methods": [ { "name": "default", "fn_id": 4 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::default::{core::default::Default for u32}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/default.rs",
+            "beg_line": 154,
+            "beg_col": 8,
+            "end_line": 154,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "U32" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "default", "fn_id": 7 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

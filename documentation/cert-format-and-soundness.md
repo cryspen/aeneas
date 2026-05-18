@@ -60,24 +60,49 @@ The authoritative schema lives in
 `aeneas-lean-checker/AeneasCheck/Raw/CertEvent.lean`. This section
 describes the constructs and the LLBC# rule each one witnesses.
 
-### 2.1 Top-level: `CrateCert` (cert v4)
+### 2.1 Top-level: `CrateCert` (cert v6)
 
 ```
 structure CrateCert where
-  fmtVersion  : Nat                 -- must be 4 (M9.8 rejects all earlier versions)
+  fmtVersion  : Nat                 -- must be 6 (M10.x.0 rejects all earlier versions)
   crateHash   : String              -- digest of the source crate
   functions   : Array FunCert       -- the per-function execution traces
   llbcProgram : LlbcProgram         -- the post-pre-pass LLBC subtree
 ```
 
-The cert v4 format (introduced in M9.8) refines v3's
-`JrJoinMutBorrows` rule to carry the full `AbsShape` (id + parents +
-roles) of the fresh region abstraction created by the
-Collapse-Dup-MutBorrow join rule (paper Fig. 11), so the Lean
-replayer can install the abs in `SymState.absRegistry` from cert
-data alone — closing the C23 "fresh abs" soundness gap that the
-M10 LLBC# soundness campaign had escalated. All other v3 shape is
-preserved verbatim.
+The cert v6 format (introduced in M10.x.0) layers three orthogonal
+schema additions onto v4, aimed at closing the 12 remaining
+`CertGen_faithful.*` axioms (see audit
+`.claude/plans/robust-swinging-walrus.md` §"Cert v6 design"):
+
+* `RestoreInfo.holderLocal : Option Nat` — env local whose `mutLoan`
+  token an `EvEndBorrow` restores. Populated by the OCaml emitter
+  for `.direct`/`.lazyExpand` kinds via an `eval_ctx.env` walk;
+  `none` for `.reborrow`/`.shared`. Consumed in M10.x.9 to invert
+  `stepEndBorrow`'s env-scan loop into a direct `setLocal`.
+* `JoinEntry.delta : JoinEntryDelta` — per-witness paper-side
+  `JoinEntryStep` premise carrier (just a handful of ints per
+  entry; intermediate `Ω_i`'s are folded in Lean rather than
+  transmitted). Consumed in M10.x.10 to replace the bundled
+  `CertGen_faithful.join` axiom by a fold over `(rule, delta)`
+  pairs.
+* `FunCert.stmtRefs : Array (Option StmtRef)` — parallel-to-events
+  back-pointers into the embedded LLBC body tree (Phase-E2
+  enabler). M10.x.0 ships an all-`none` array; M10.x.0b will
+  thread real `StmtRef`s through the 23 emit sites.
+
+v5 was skipped to avoid confusion with the audit's earlier
+one-field "cert v5 holderLocal" sketch. Back-compat is a hard cut,
+mirroring M9.8's v3 → v4 cutover: v4 and v5 certs are rejected at
+parse time; regenerate with the current `aeneas -emit-cert`.
+
+The cert v4 format (M9.8) refined v3's `JrJoinMutBorrows` rule to
+carry the full `AbsShape` (id + parents + roles) of the fresh
+region abstraction created by the Collapse-Dup-MutBorrow join rule
+(paper Fig. 11), so the Lean replayer could install the abs in
+`SymState.absRegistry` from cert data alone — closing the C23
+"fresh abs" soundness gap that the M10 LLBC# soundness campaign
+had escalated.
 
 The cert v3 format (introduced in M9.7d) embeds the
 *post-pre-pass* LLBC program as a structured subtree under
@@ -117,6 +142,7 @@ structure FunCert where
   events      : Array Event        -- the LLBC# trace
   finalState  : StateSummary
   prettyName  : Option String
+  stmtRefs    : Array (Option StmtRef)  -- cert v6: parallel-to-events LLBC body-tree back-pointers
 ```
 
 The function's input/output types and trait obligations are *not*
@@ -191,7 +217,7 @@ the borrow body (`sv`). `Step.stepMutBorrow` checks freshness, parks a
   check tolerates it. The OCaml interpreter does not emit an explicit
   end for these; the loop's region abstraction owns their lifetime.
 
-##### `EvEndBorrow loan {givenBack}`
+##### `EvEndBorrow loan {givenBack, holderLocal}`
 
 LLBC# **Reorg-End-MutBorrow** (Fig. 3) reads:
 
@@ -206,6 +232,20 @@ symbolic value that flows back through the loan side (`givenBack`).
 `Step.stepEndBorrow` looks up the loan, evaluates the restoration value
 in the current state, and writes it back into whichever local currently
 holds the `mutLoan ℓ` token.
+
+**M10.x.0 (cert v6): `holderLocal` echoes the env local.** The
+OCaml emitter walks `eval_ctx.env` at the `EvEndBorrow` emit site
+(`InterpBorrows.ml:1050`) and stores the unique local whose value
+is `VLoan (VMutLoan loan)`. `none` for `.reborrow`/`.shared`
+kinds (which don't park a token in env) and as a sentinel when
+no local currently holds the token (lazy-expansion cases where
+the token was substituted through). The Lean replayer does not
+yet consume `holderLocal` at M10.x.0 — the field lands as schema
+plumbing. M10.x.9 inverts the env-scan loop in
+`stepEndBorrow .direct/.lazyExpand` into a direct
+`setLocal holderLocal givenBack`, which closes the
+`CertGen_faithful.endBorrow_direct_witness` axiom by `hStep`
+inversion.
 
 Two refinements:
 
@@ -320,6 +360,30 @@ canonical content). `Step.stepJoin` installs the shape in
 soundness side the paper's `JoinEntryStep.mutBorrows` lifts this
 same `AbsShape` via `liftAbsShape`, so `concretise st' = Ω'`
 follows by construction (no axiomatic-abs-creation needed).
+
+**M10.x.0 (cert v6): each `JoinEntry` carries a parallel
+`delta : JoinEntryDelta`.** The OCaml emitter at
+`InterpStatements.ml:1715` computes the delta alongside the
+`JoinRule` in the same witness-construction pass. The
+constructor names are parallel:
+
+| `JoinRule` | `JoinEntryDelta` | Payload |
+|---|---|---|
+| `JrJoinSame` | `JedTrivial` | — |
+| `JrJoinVar` | `JedTrivial` | — |
+| `JrJoinSymbolic sv` | `JedSymbolic sv` | The fresh symbolic value |
+| `JrJoinMutBorrows _ _ l_fresh abs` | `JedMutBorrows l_fresh abs.id` | Loan + abs freshness |
+| `JrJoinBottomOther a` | `JedBottomOther a` | Surviving abs id |
+| `JrJoinOtherBottom a` | `JedOtherBottom a` | Surviving abs id |
+
+`Step.stepJoin` cross-checks the pair in its v6 consistency
+check (`Step.lean`): if `rule` and `delta` name different
+constructors, the cert is rejected. The delta is not yet
+consumed by the chain-building proof at M10.x.0 — it lands as
+schema plumbing for M10.x.10, which replaces the bundled
+`CertGen_faithful.join` axiom by a fold over `(rule, delta)`
+pairs (using the per-entry `JoinLemmas.join<Rule>_step` helpers
+that already accept an arbitrary delta in their signature).
 
 ##### `EvLoopInv loopId invariant` and `EvLoopEnd loopId`
 

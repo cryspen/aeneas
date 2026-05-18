@@ -1,0 +1,2910 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "f0c9572546a43cba17fda6e617ff34c8",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "builtin::clone_bool",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 6,
+        "beg_col": 0,
+        "end_line": 8,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 9,
+            "fn_name": "core::clone::impls::{core::clone::Clone for bool}::clone",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral Generated_Values.TBool), Generated_Types.RShared\n   ))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "region_abs": [ 0 ],
+            "abs_sig": [
+              {
+                "abs_id": 0,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 0 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "builtin::clone_u32",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 10,
+        "beg_col": 0,
+        "end_line": 12,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 10,
+            "fn_name": "core::clone::impls::{core::clone::Clone for u32}::clone",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "region_abs": [ 0 ],
+            "abs_sig": [
+              {
+                "abs_id": 0,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 0 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "builtin::into_from",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 14,
+        "beg_col": 0,
+        "end_line": 16,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 11,
+            "fn_name": "core::convert::{core::convert::Into<U> for T}::into",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 1))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 1))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 1))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "builtin::into_same",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 18,
+        "beg_col": 0,
+        "end_line": 20,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 11,
+            "fn_name": "core::convert::{core::convert::Into<T@1> for T}::into",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 4,
+      "fn_name": "builtin::from_same",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 22,
+        "beg_col": 0,
+        "end_line": 24,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 13,
+            "fn_name": "core::convert::{core::convert::From<T> for T}::from",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 5,
+      "fn_name": "builtin::copy",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 26,
+        "beg_col": 0,
+        "end_line": 28,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 6,
+      "fn_name": "builtin::u32_from_le_bytes",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 30,
+        "beg_col": 0,
+        "end_line": 32,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 14,
+            "fn_name": "core::num::{u32}::from_le_bytes",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 7,
+      "fn_name": "builtin::u32_to_le_bytes",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 34,
+        "beg_col": 0,
+        "end_line": 36,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 15,
+            "fn_name": "core::num::{u32}::to_le_bytes",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind =\n     (Generated_Types.CLiteral\n        (Generated_Values.VScalar\n           (Generated_Values.UnsignedScalar (Generated_Values.Usize, 4))));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 8,
+      "fn_name": "builtin::use_debug_clause",
+      "source_span": {
+        "file": "tests/src/builtin.rs",
+        "beg_line": 38,
+        "beg_col": 0,
+        "end_line": 38,
+        "end_col": 49
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::fmt::Formatter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Formatter",
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 561,
+            "beg_col": 0,
+            "end_line": 561,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [ { "name": "'a" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::result::Result",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Result",
+          "span": {
+            "file": "/rustc/library/core/src/result.rs",
+            "beg_line": 557,
+            "beg_col": 0,
+            "end_line": 557,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "E" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Ok",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Err",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 1 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::fmt::Error",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 109,
+            "beg_col": 0,
+            "end_line": 109,
+            "end_col": 16
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "builtin::clone_bool",
+          "attr_info": null,
+          "source_text": "fn clone_bool(x: bool) -> bool {\n    x.clone()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 6,
+            "beg_col": 0,
+            "end_line": 8,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": "Bool" } ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 7,
+            "beg_col": 4,
+            "end_line": 8,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 9 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [ 0, { "Literal": "Bool" }, "Shared" ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 7,
+                "beg_col": 12,
+                "end_line": 7,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 8,
+                "beg_col": 1,
+                "end_line": 8,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          { "Literal": "Bool" },
+          { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "builtin::clone_u32",
+          "attr_info": null,
+          "source_text": "fn clone_u32(x: u32) -> u32 {\n    x.clone()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 10,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 11,
+            "beg_col": 4,
+            "end_line": 12,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 11,
+                "beg_col": 4,
+                "end_line": 11,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "U32" } }, "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 11,
+                "beg_col": 4,
+                "end_line": 11,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 10 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 11,
+                "beg_col": 12,
+                "end_line": 11,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 12,
+                "beg_col": 1,
+                "end_line": 12,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "builtin::into_from",
+          "attr_info": null,
+          "source_text": "fn into_from<T, U: From<T>>(x: T) -> U {\n    x.into()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 14,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 1 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" }, { "name": "U" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::convert::From", "type_param": 1 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 15,
+            "beg_col": 4,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 15,
+                "beg_col": 4,
+                "end_line": 15,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 15,
+                "beg_col": 4,
+                "end_line": 15,
+                "end_col": 12
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 11 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 1 } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 15,
+                "beg_col": 11,
+                "end_line": 15,
+                "end_col": 12
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 16,
+                "beg_col": 0,
+                "end_line": 16,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 16,
+                "beg_col": 1,
+                "end_line": 16,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 1 } },
+          { "TypeVar": { "Free": 0 } },
+          { "TypeVar": { "Free": 0 } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "builtin::into_same",
+          "attr_info": null,
+          "source_text": "fn into_same<T>(x: T) -> T {\n    x.into()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 19,
+            "beg_col": 4,
+            "end_line": 20,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 12
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 11 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 19,
+                "beg_col": 11,
+                "end_line": 19,
+                "end_col": 12
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 20,
+                "beg_col": 0,
+                "end_line": 20,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 20,
+                "beg_col": 1,
+                "end_line": 20,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 0 } },
+          { "TypeVar": { "Free": 0 } },
+          { "TypeVar": { "Free": 0 } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "builtin::from_same",
+          "attr_info": null,
+          "source_text": "fn from_same<T>(x: T) -> T {\n    T::from(x)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 22,
+            "beg_col": 0,
+            "end_line": 24,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 23,
+            "beg_col": 12,
+            "end_line": 24,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 23,
+                "beg_col": 12,
+                "end_line": 23,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 23,
+                "beg_col": 4,
+                "end_line": 23,
+                "end_col": 14
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 13 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 23,
+                "beg_col": 13,
+                "end_line": 23,
+                "end_col": 14
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 24,
+                "beg_col": 0,
+                "end_line": 24,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 24,
+                "beg_col": 1,
+                "end_line": 24,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 0 } },
+          { "TypeVar": { "Free": 0 } },
+          { "TypeVar": { "Free": 0 } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "builtin::copy",
+          "attr_info": null,
+          "source_text": "fn copy<T: Copy>(x: &T) -> T {\n    *x\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 26,
+            "beg_col": 0,
+            "end_line": 28,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::marker::Copy", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 27,
+            "beg_col": 4,
+            "end_line": 28,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 27,
+                "beg_col": 4,
+                "end_line": 27,
+                "end_col": 6
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "TypeVar": { "Free": 0 } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 28,
+                "beg_col": 1,
+                "end_line": 28,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 0 } },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "builtin::u32_from_le_bytes",
+          "attr_info": null,
+          "source_text": "fn u32_from_le_bytes(x: [u8; 4]) -> u32 {\n    u32::from_le_bytes(x)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 30,
+            "beg_col": 0,
+            "end_line": 32,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Array": [
+                { "Literal": { "UInt": "U8" } },
+                {
+                  "kind": {
+                    "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                  }
+                }
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 31,
+            "beg_col": 23,
+            "end_line": 32,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 31,
+                "beg_col": 23,
+                "end_line": 31,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U8" } },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 31,
+                "beg_col": 4,
+                "end_line": 31,
+                "end_col": 25
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 14 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 31,
+                "beg_col": 24,
+                "end_line": 31,
+                "end_col": 25
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 32,
+                "beg_col": 1,
+                "end_line": 32,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                }
+              }
+            ]
+          },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                }
+              }
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "builtin::u32_to_le_bytes",
+          "attr_info": null,
+          "source_text": "fn u32_to_le_bytes(x: u32) -> [u8; 4] {\n    x.to_le_bytes()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 34,
+            "beg_col": 0,
+            "end_line": 36,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                }
+              }
+            ]
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 35,
+            "beg_col": 4,
+            "end_line": 36,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 35,
+                "beg_col": 4,
+                "end_line": 35,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 35,
+                "beg_col": 4,
+                "end_line": 35,
+                "end_col": 19
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 15 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U8" } },
+                        {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 35,
+                "beg_col": 18,
+                "end_line": 35,
+                "end_col": 19
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 36,
+                "beg_col": 1,
+                "end_line": 36,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                }
+              }
+            ]
+          },
+          { "Literal": { "UInt": "U32" } },
+          { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "builtin::use_debug_clause",
+          "attr_info": null,
+          "source_text": "fn use_debug_clause<T: core::fmt::Debug>(_: T) {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 38,
+            "beg_col": 0,
+            "end_line": 38,
+            "end_col": 49
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::fmt::Debug", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 38,
+            "end_col": 49
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 38,
+                "beg_col": 47,
+                "end_line": 38,
+                "end_col": 49
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 38,
+                "beg_col": 48,
+                "end_line": 38,
+                "end_col": 49
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin.rs",
+                "beg_line": 38,
+                "beg_col": 49,
+                "end_line": 38,
+                "end_col": 49
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "TypeVar": { "Free": 0 } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "core::clone::impls::{core::clone::Clone for bool}::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 614,
+            "beg_col": 20,
+            "end_line": 614,
+            "end_col": 43
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Ref": [ 0, { "Literal": "Bool" }, "Shared" ] } ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 10,
+        "item_meta": {
+          "name": "core::clone::impls::{core::clone::Clone for u32}::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 614,
+            "beg_col": 20,
+            "end_line": 614,
+            "end_col": 43
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 11,
+        "item_meta": {
+          "name": "core::convert::{core::convert::Into<U> for T}::into",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 777,
+            "beg_col": 4,
+            "end_line": 777,
+            "end_col": 22
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 1 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" }, { "name": "U" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::convert::From", "type_param": 1 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 13,
+        "item_meta": {
+          "name": "core::convert::{core::convert::From<T> for T}::from",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 788,
+            "beg_col": 4,
+            "end_line": 788,
+            "end_col": 22
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 14,
+        "item_meta": {
+          "name": "core::num::{u32}::from_le_bytes",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/uint_macros.rs",
+            "beg_line": 3925,
+            "beg_col": 8,
+            "end_line": 3925,
+            "end_col": 74
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Array": [
+                { "Literal": { "UInt": "U8" } },
+                {
+                  "kind": {
+                    "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                  }
+                }
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 15,
+        "item_meta": {
+          "name": "core::num::{u32}::to_le_bytes",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/uint_macros.rs",
+            "beg_line": 3828,
+            "beg_col": 8,
+            "end_line": 3828,
+            "end_col": 65
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "U32" } } ],
+          "output": {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              {
+                "kind": {
+                  "Literal": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+                }
+              }
+            ]
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 17,
+        "item_meta": {
+          "name": "core::clone::Clone::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone_fn",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 236,
+            "beg_col": 4,
+            "end_line": 236,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 20,
+        "item_meta": {
+          "name": "core::convert::From::from",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "from_fn",
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 592,
+            "beg_col": 4,
+            "end_line": 592,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 1 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" }, { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::convert::From", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 21,
+        "item_meta": {
+          "name": "core::fmt::Debug::fmt",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 1083,
+            "beg_col": 4,
+            "end_line": 1083,
+            "end_col": 51
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 2 },
+              "generics": {
+                "types": [
+                  { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 3 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::fmt::Debug", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 22,
+        "item_meta": {
+          "name": "core::convert::Into::into",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 455,
+            "beg_col": 4,
+            "end_line": 455,
+            "end_col": 23
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 1 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" }, { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::convert::Into", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::convert::From",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "From",
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 587,
+            "beg_col": 0,
+            "end_line": 587,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "from",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 1 } } ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" }, { "name": "T" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::convert::From", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::marker::Copy",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "copy",
+          "span": {
+            "file": "/rustc/library/core/src/marker.rs",
+            "beg_line": 457,
+            "beg_col": 0,
+            "end_line": 457,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::fmt::Debug",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Debug",
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 1052,
+            "beg_col": 0,
+            "end_line": 1052,
+            "end_col": 29
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "fmt",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                {
+                  "Ref": [
+                    0,
+                    {
+                      "Adt": {
+                        "id": { "Adt": 1 },
+                        "generics": { "types": [] }
+                      }
+                    },
+                    "Mut"
+                  ]
+                }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 2 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                      },
+                      {
+                        "Adt": {
+                          "id": { "Adt": 3 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::fmt::Debug", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::clone::Clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 194,
+            "beg_col": 0,
+            "end_line": 194,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "clone",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::clone::Clone", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::convert::Into",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Into",
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 451,
+            "beg_col": 0,
+            "end_line": 451,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "into",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 0 } } ],
+              "output": { "TypeVar": { "Free": 1 } },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" }, { "name": "T" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::convert::Into", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::clone::impls::{core::clone::Clone for bool}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 612,
+            "beg_col": 16,
+            "end_line": 612,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "trait_decl_id": 4,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": "Bool" },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "clone", "fn_id": 9 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::clone::impls::{core::clone::Clone for u32}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 612,
+            "beg_col": 16,
+            "end_line": 612,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "trait_decl_id": 4,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "U32" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "clone", "fn_id": 10 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::convert::{core::convert::Into<U> for T}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 767,
+            "beg_col": 0,
+            "end_line": 769,
+            "end_col": 23
+          },
+          "extra": null
+        },
+        "trait_decl_id": 5,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "TypeVar": { "Free": 0 } },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "U" } ],
+          "const_generics": [],
+          "trait_clauses": [
+            { "trait": "core::convert::From", "type_param": 1 }
+          ]
+        },
+        "methods": [ { "name": "into", "fn_id": 11 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::convert::{core::convert::From<T> for T}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 785,
+            "beg_col": 0,
+            "end_line": 785,
+            "end_col": 27
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "TypeVar": { "Free": 0 } },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "from", "fn_id": 13 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

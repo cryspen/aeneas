@@ -1,0 +1,2175 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "ce34075727ef6daca233e604e309f9bb",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "into::slice_to_array",
+      "source_span": {
+        "file": "tests/src/into.rs",
+        "beg_line": 4,
+        "beg_col": 0,
+        "end_line": 6,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 6,
+            "fn_name": "core::array::{core::convert::TryFrom<&'0 ([T@0]), core::array::TryFromSliceError> for &'0 ([T@0; C@0])}::try_from",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "core::result::{core::result::Result<T, E>}::unwrap",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 32))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [ { "abs_id": 2, "parent_abs": [], "roles": [] } ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 32))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 32))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "into::slice_to_array1",
+      "source_span": {
+        "file": "tests/src/into.rs",
+        "beg_line": 8,
+        "beg_col": 0,
+        "end_line": 10,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 6,
+            "fn_name": "core::array::{core::convert::TryFrom<&'0 ([T@0]), core::array::TryFromSliceError> for &'0 ([T@0; C@0])}::try_from",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8))),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymLit": { "Str": "Expected a slice of length 32" } }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 4,
+            "fn_name": "core::result::{core::result::Result<T, E>}::expect",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TRef (Generated_Types.RErased,\n           (Generated_Types.TArray (\n              (Generated_Types.TLiteral\n                 (Generated_Values.TUInt Generated_Values.U8)),\n              { Generated_Types.kind =\n                (Generated_Types.CLiteral\n                   (Generated_Values.VScalar\n                      (Generated_Values.UnsignedScalar (\n                         Generated_Values.Usize, 32))));\n                ty =\n                (Generated_Types.TLiteral\n                   (Generated_Values.TUInt Generated_Values.Usize))\n                }\n              )),\n           Generated_Types.RShared));\n         (Generated_Types.TAdt\n            { Generated_Types.id = (Generated_Types.TAdtId 1);\n              generics =\n              { Generated_Types.regions = []; types = [];\n                const_generics = []; trait_refs = [] }\n              })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 32))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 2, 3 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 1, "sb_id": 3 } } ]
+              },
+              { "abs_id": 3, "parent_abs": [], "roles": [] }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 32))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 32))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::result::Result",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Result",
+          "span": {
+            "file": "/rustc/library/core/src/result.rs",
+            "beg_line": 557,
+            "beg_col": 0,
+            "end_line": 557,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "E" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Ok",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Err",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 1 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::array::TryFromSliceError",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 182,
+            "beg_col": 0,
+            "end_line": 182,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::fmt::Formatter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Formatter",
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 561,
+            "beg_col": 0,
+            "end_line": 561,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [ { "name": "'a" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::fmt::Error",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 109,
+            "beg_col": 0,
+            "end_line": 109,
+            "end_col": 16
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "into::slice_to_array",
+          "attr_info": null,
+          "source_text": "fn slice_to_array(s: &[u8]) -> &[u8; 32] {\n    s.try_into().unwrap()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/into.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/into.rs",
+            "beg_line": 5,
+            "beg_col": 4,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 5,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U8" } } },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U8" } } },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 5,
+                "end_col": 16
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 6 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U8" } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [
+                            {
+                              "Ref": [
+                                0,
+                                {
+                                  "Array": [
+                                    { "Literal": { "UInt": "U8" } },
+                                    {
+                                      "kind": {
+                                        "Literal": {
+                                          "Scalar": {
+                                            "Unsigned": [ "Usize", "32" ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "Shared"
+                              ]
+                            },
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 5,
+                "beg_col": 15,
+                "end_line": 5,
+                "end_col": 16
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 5,
+                "end_col": 25
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [
+                                {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Array": [
+                                        { "Literal": { "UInt": "U8" } },
+                                        {
+                                          "kind": {
+                                            "Literal": {
+                                              "Scalar": {
+                                                "Unsigned": [ "Usize", "32" ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "Shared"
+                                  ]
+                                },
+                                {
+                                  "Adt": {
+                                    "id": { "Adt": 1 },
+                                    "generics": { "types": [] }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 5,
+                "beg_col": 24,
+                "end_line": 5,
+                "end_col": 25
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 6,
+                "beg_col": 1,
+                "end_line": 6,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+            ]
+          },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  {
+                    "Ref": [
+                      0,
+                      {
+                        "Array": [
+                          { "Literal": { "UInt": "U8" } },
+                          {
+                            "kind": {
+                              "Literal": {
+                                "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "Shared"
+                    ]
+                  },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 1 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "into::slice_to_array1",
+          "attr_info": null,
+          "source_text": "fn slice_to_array1(s: &[u8]) -> &[u8; 32] {\n    s.try_into().expect(\"Expected a slice of length 32\")\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/into.rs",
+            "beg_line": 8,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/into.rs",
+            "beg_line": 9,
+            "beg_col": 4,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U8" } } },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U8" } } },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 16
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 6 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U8" } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [
+                            {
+                              "Ref": [
+                                0,
+                                {
+                                  "Array": [
+                                    { "Literal": { "UInt": "U8" } },
+                                    {
+                                      "kind": {
+                                        "Literal": {
+                                          "Scalar": {
+                                            "Unsigned": [ "Usize", "32" ]
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "Shared"
+                              ]
+                            },
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": { "types": [] }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 15,
+                "end_line": 9,
+                "end_col": 16
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 24,
+                "end_line": 9,
+                "end_col": 55
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Str" },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Str": "Expected a slice of length 32"
+                          }
+                        },
+                        "ty": {
+                          "Adt": {
+                            "id": { "Builtin": "Str" },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 24,
+                "end_line": 9,
+                "end_col": 55
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Str" },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Builtin": "Str" },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 24,
+                "end_line": 9,
+                "end_col": 55
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Str" },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Str" },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 24,
+                "end_line": 9,
+                "end_col": 55
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Str" },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 5,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Str" },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 56
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 4 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [
+                                {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Array": [
+                                        { "Literal": { "UInt": "U8" } },
+                                        {
+                                          "kind": {
+                                            "Literal": {
+                                              "Scalar": {
+                                                "Unsigned": [ "Usize", "32" ]
+                                              }
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "Shared"
+                                  ]
+                                },
+                                {
+                                  "Adt": {
+                                    "id": { "Adt": 1 },
+                                    "generics": { "types": [] }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Str" },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 55,
+                "end_line": 9,
+                "end_col": 56
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 9,
+                "beg_col": 55,
+                "end_line": 9,
+                "end_col": 56
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 10,
+                "beg_col": 0,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/into.rs",
+                "beg_line": 10,
+                "beg_col": 1,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+            ]
+          },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  {
+                    "Ref": [
+                      0,
+                      {
+                        "Array": [
+                          { "Literal": { "UInt": "U8" } },
+                          {
+                            "kind": {
+                              "Literal": {
+                                "Scalar": { "Unsigned": [ "Usize", "32" ] }
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "Shared"
+                    ]
+                  },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 1 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Str" },
+                  "generics": { "types": [] }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Str" },
+                  "generics": { "types": [] }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Adt": {
+              "id": { "Builtin": "Str" },
+              "generics": { "types": [] }
+            }
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Str" },
+                  "generics": { "types": [] }
+                }
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::convert::{core::convert::TryInto<U, Clause0_Error> for T}::try_into",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 818,
+            "beg_col": 4,
+            "end_line": 818,
+            "end_col": 44
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  { "TypeVar": { "Free": 1 } }, { "TypeVar": { "Free": 2 } }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "T" }, { "name": "U" }, { "name": "Clause0_Error" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::convert::TryFrom", "type_param": 1 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::result::{core::result::Result<T, E>}::unwrap",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/result.rs",
+            "beg_line": 1227,
+            "beg_col": 4,
+            "end_line": 1229,
+            "end_col": 22
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": {
+                  "types": [
+                    { "TypeVar": { "Free": 0 } },
+                    { "TypeVar": { "Free": 1 } }
+                  ]
+                }
+              }
+            }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" }, { "name": "E" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::fmt::Debug", "type_param": 1 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::result::{core::result::Result<T, E>}::expect",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/result.rs",
+            "beg_line": 1179,
+            "beg_col": 4,
+            "end_line": 1181,
+            "end_col": 22
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": {
+                  "types": [
+                    { "TypeVar": { "Free": 0 } },
+                    { "TypeVar": { "Free": 1 } }
+                  ]
+                }
+              }
+            },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Str" },
+                    "generics": { "types": [] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" }, { "name": "E" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::fmt::Debug", "type_param": 1 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::convert::TryFrom::try_from",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "try_from_fn",
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 702,
+            "beg_col": 4,
+            "end_line": 702,
+            "end_col": 55
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 1 } } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  { "TypeVar": { "Free": 0 } }, { "TypeVar": { "Free": 2 } }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "T" },
+              { "name": "Clause0_Error" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::convert::TryFrom", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::array::{core::convert::TryFrom<&'a ([T]), core::array::TryFromSliceError> for &'a ([T; N])}::try_from",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 307,
+            "beg_col": 4,
+            "end_line": 307,
+            "end_col": 72
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  {
+                    "Ref": [
+                      0,
+                      {
+                        "Array": [
+                          { "TypeVar": { "Free": 0 } },
+                          { "kind": { "Opaque": "len" } }
+                        ]
+                      },
+                      "Shared"
+                    ]
+                  },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 1 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "'a" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::fmt::Debug::fmt",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 1083,
+            "beg_col": 4,
+            "end_line": 1083,
+            "end_col": 51
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 4 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::fmt::Debug", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "core::array::{core::fmt::Debug for core::array::TryFromSliceError}::fmt",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 181,
+            "beg_col": 9,
+            "end_line": 181,
+            "end_col": 14
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 4 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "core::convert::TryInto::try_into",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 622,
+            "beg_col": 4,
+            "end_line": 622,
+            "end_col": 48
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  { "TypeVar": { "Free": 1 } }, { "TypeVar": { "Free": 2 } }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "T" },
+              { "name": "Clause0_Error" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::convert::TryInto", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::convert::TryFrom",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "TryFrom",
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 694,
+            "beg_col": 0,
+            "end_line": 694,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" }, { "name": "T" }, { "name": "Self_Error" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "try_from",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 1 } } ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": {
+                    "types": [
+                      { "TypeVar": { "Free": 0 } },
+                      { "TypeVar": { "Free": 2 } }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "T" },
+                  { "name": "Clause0_Error" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::convert::TryFrom", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::fmt::Debug",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Debug",
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 1052,
+            "beg_col": 0,
+            "end_line": 1052,
+            "end_col": 29
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "fmt",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                {
+                  "Ref": [
+                    0,
+                    {
+                      "Adt": {
+                        "id": { "Adt": 3 },
+                        "generics": { "types": [] }
+                      }
+                    },
+                    "Mut"
+                  ]
+                }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                      },
+                      {
+                        "Adt": {
+                          "id": { "Adt": 4 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::fmt::Debug", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::convert::TryInto",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "TryInto",
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 615,
+            "beg_col": 0,
+            "end_line": 615,
+            "end_col": 33
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" }, { "name": "T" }, { "name": "Self_Error" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "try_into",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 0 } } ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": {
+                    "types": [
+                      { "TypeVar": { "Free": 1 } },
+                      { "TypeVar": { "Free": 2 } }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "T" },
+                  { "name": "Clause0_Error" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::convert::TryInto", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::convert::{core::convert::TryInto<U, Clause0_Error> for T}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/convert/mod.rs",
+            "beg_line": 811,
+            "beg_col": 0,
+            "end_line": 813,
+            "end_col": 26
+          },
+          "extra": null
+        },
+        "trait_decl_id": 2,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "TypeVar": { "Free": 0 } },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "T" }, { "name": "U" }, { "name": "Clause0_Error" }
+          ],
+          "const_generics": [],
+          "trait_clauses": [
+            { "trait": "core::convert::TryFrom", "type_param": 1 }
+          ]
+        },
+        "methods": [ { "name": "try_into", "fn_id": 2 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::array::{core::convert::TryFrom<&'a ([T]), core::array::TryFromSliceError> for &'a ([T; N])}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 303,
+            "beg_col": 0,
+            "end_line": 303,
+            "end_col": 65
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Ref": [
+            0,
+            {
+              "Array": [
+                { "TypeVar": { "Free": 0 } }, { "kind": { "Opaque": "len" } }
+              ]
+            },
+            "Shared"
+          ]
+        },
+        "generics": {
+          "regions": [ { "name": "'a" } ],
+          "types": [ { "name": "T" } ],
+          "const_generics": [ { "name": "N" } ],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "try_from", "fn_id": 6 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::array::{core::fmt::Debug for core::array::TryFromSliceError}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/array/mod.rs",
+            "beg_line": 181,
+            "beg_col": 9,
+            "end_line": 181,
+            "end_col": 14
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": 1,
+        "self_type": {
+          "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "fmt", "fn_id": 8 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}
