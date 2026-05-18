@@ -259,3 +259,164 @@ Priority order:
 - **One mid-session merge** of `aeneas-lean-certificate` (`04b675ff` `M10.x.5`) — pure soundness territory; clean merge, no conflicts in diff-test files.
 - **Pre-built binaries lesson honoured.** Rebuilt `aeneas-check` from this worktree's source at every regen point.
 - **No files under `aeneas-lean-soundness/` or `AeneasCheck/Theorems/` touched.** Changes localised to `RuntimeShim/`, `Backends/{RustEmit,Pretty}.lean`, the lean-diff harness, the differential proptest harness, and the docs.
+
+---
+
+## Session 5 (2026-05-18) — Phase 4b Items 1 + 2
+
+### What landed
+
+Two items closed, both inline (no agent dispatches). Pre-commit log:
+
+```
+(this-session, uncommitted)
+  + src/cert/LlbcJson.ml                      (OCaml cert serializer: preserve PlaceGlobal info)
+  + aeneas-lean-checker/AeneasCheck/Raw/LLBCProgram.lean   (+globalName on LlbcPlace)
+  + aeneas-lean-checker/AeneasCheck/Json/Parser.lean       (parse optional "global" field)
+  + aeneas-lean-checker/AeneasCheck/Translate/Forward.lean (seedGlobalRefsFromBlock)
+  + aeneas-lean-checker/AeneasCheck/Cli.lean               (findFlagsAll + --skip-decl plumbing)
+  + aeneas-lean-checker/AeneasCheck/Backends/LeanEmit.lean (skipNames filter in emitTranslatedCrate)
+  + aeneas-lean-checker/RuntimeShim/Aeneas/Std.lean        (U32.MAX/MIN/BITS, I32.MAX/MIN/BITS)
+  + tests/lean-checker/lean-diff/LeanDiff/{DemoRunner.lean,ConstantsRunner.lean,Main.lean}
+  + tests/lean-checker/lean-diff/{lakefile.lean,scripts/run-diff.sh,rust-runner/src/main.rs}
+  + tests/lean-checker/lean-diff/generated/{demo,constants,scalars}.lean   (regen)
+  + tests/llbc/{constants,scalars}.cert.json (regen — now carry `"global"` fields)
+```
+
+(Will be three commits at session close: Item 1 cert-serializer + walker fix, Item 1 shim/runner wiring, Item 2 demo wire-in.)
+
+### Item 1 outcome — cert-walker `S3`-class fix
+
+The cert was genuinely lossy: `src/cert/LlbcJson.ml::j_place` mapped `PlaceGlobal _` to a `{ local: 0, projection: [], ty }` shape, dropping the source global. Charon's `decompose_global_operands` pre-pass (in `src/PrePasses.ml`) rewrites every `PlaceGlobal g` into `*local L` after inserting `local L = RvRef(PlaceGlobal g)` upstream; the cert serializer then discarded `g`, leaving the cert walker no way to recover it.
+
+Two-sided fix:
+
+| Side | Change | File |
+|---|---|---|
+| OCaml cert serializer | `j_place` now takes `crate`, resolves `PlaceGlobal gref` to `Print.name_to_string env def.item_meta.name` via the crate's `global_decls`, and emits the qualified name as an optional `"global"` JSON field. `j_operand` / `j_rvalue` / `j_call` / `j_statement_kind` / `j_switch` thread `crate` down to `j_place`. | `src/cert/LlbcJson.ml` |
+| Lean parser | `LlbcPlace` gains `globalName : Option String := none`; `parseLlbcPlace` reads the optional `"global"` field. Pre-Session-5 certs (without the field) parse unchanged. | `Raw/LLBCProgram.lean`, `Json/Parser.lean` |
+| Lean forward translator | New `seedGlobalRefsFromBlock` walks the LLBC body before the event walker. For each `Assign(local L, RvRef(<place with globalName g>, _))` it (a) emits a `let gN ← <g>` monadic bind on the walk-state's `binds` queue, and (b) seeds `vm[L] := .var gN`. Re-borrow + use-passthrough clauses thread the seed through Charon's intermediates so `incr(S1)` and `Y.value` resolve. Globals whose name carries `<` (generic params, e.g. `V::LEN<T, N>`) are skipped — the cert events don't surface the caller's generic instantiation. | `Translate/Forward.lean` |
+| Shim | `core.num.{U32,I32}.{MAX,MIN,BITS}` added so the now-real global references typecheck. | `RuntimeShim/Aeneas/Std.lean` |
+
+Acceptance: previously placeholder-only consts now emit the correct shape.
+
+| Decl | Pre-fix emit | Post-fix emit |
+|---|---|---|
+| `X1` | `do ok 0#u32` | `do core.num.U32.MAX` |
+| `Q2` | `do ok 0#i32` | `do constants.Q1` (collapsed bind) |
+| `Q3` | `do (constants.add 0#i32 3#i32)` | `do let g1 ← constants.Q2 ; (constants.add g1 3#i32)` |
+| `S2` | `do (constants.incr 0#u32)` | `do let g4 ← constants.S1 ; (constants.incr g4)` |
+| `S3` | `do ok { x := 0#u32, y := 0#u32 }` | `do constants.P3` (reads the source global; cert-side placeholder for the dependency's value is unchanged but `S3` itself now reads `P3` rather than a typed-zero) |
+| `unwrap_y` | `do ok 0#i32` | `do let g2 ← constants.Y ; ok g2.value` |
+| `YVAL` | `do ok 0#i32` | `do constants.unwrap_y` (collapsed bind) |
+| `get_z1` | `do ok 0#i32` | `do constants.get_z1.Z1` (collapsed bind) |
+| `get_z2` | `do … (constants.add 0#i32 t1)` (placeholder for Q1/Q3) | `do let g3 ← constants.Q3 ; let g4 ← constants.Q1 ; let t0 ← constants.get_z1 ; let t1 ← (constants.add t0 g3) ; (constants.add g4 t1)` |
+
+`ConstantsRunner` adds 8 new vectors (X1, Q2, Q3, S2, get_z1, get_z2, unwrap_y, YVAL). The Rust oracle in `rust-runner/src/main.rs` mirrors `Wrap<T>`, `unwrap_y`, `get_z1`, `get_z2`, X1, Q2, Q3, S2, Y, YVAL.
+
+G_lean: 224 → 232 vectors, all byte-identical.
+
+### Item 2 outcome — `demo.lean` wire-in via `--skip-decl`
+
+The Session-4 deferral split into two paths; chose (b) per the Session 5 prompt's recommendation:
+
+| Plumbing layer | Change | File |
+|---|---|---|
+| CLI parse | `findFlagsAll : List String → String → List String` collects every `--flag value` occurrence (vs `findFlag`'s first-only). `--skip-decl <name>` is accumulated, repeatable. | `Cli.lean` |
+| Emit | `emitTranslatedCrate` gains `skipNames : List String := []`; filters `tc.decls` / `tc.structs` / `tc.enums` / `tc.traitDecls` / `tc.traitImpls` before grouping. Filter runs *before* the topo sort, so a retained decl pointing at a skipped sibling will fail at lake build — pick a coherent subset. | `Backends/LeanEmit.lean` |
+| Regen | `scripts/run-diff.sh` calls aeneas-check on `demo.cert.json` with 13 `--skip-decl` flags (per the table below). | `scripts/run-diff.sh` |
+
+Skipped demo decls (each has a documented emit-side gap):
+
+| Decl | Gap |
+|---|---|
+| `CList` (inductive) | `@[discriminant isize]` attr unknown to Lean |
+| `Counter` (trait decl) | Method signature mismatch with impl |
+| `Std.Usize.Insts.DemoCounter` (impl) | Field expects `Self → Result Std.Usize`, body emits `Self → Result (Std.Usize × (Unit → Std.Usize))` |
+| `Std.Usize.Insts.DemoCounter.incr` (method body) | Body matches the broken impl signature |
+| `choose` | Closure-returning (M12.2a placeholder) |
+| `list_nth`, `list_nth_mut`, `list_tail`, `list_nth1`, `list_nth1_loop`, `list_nth1_loop.body` | Broken bodies (`ok ()` where `T` expected, `if x1` on non-bool, undefined `s33` / `t3`, `partial_fixpoint` on non-recursive) |
+| `use_counter` | References broken `Counter` impl |
+| `i32_id` | Broken body (undefined free var) |
+
+Kept demo decls (all elaborate against the shim, oracle-mirrored):
+
+| Decl | Shape |
+|---|---|
+| `mul2_add1(x: u32)` | `x.wrapping_add(x).wrapping_add(1)` |
+| `use_mul2_add1(x: u32, y: u32)` | `mul2_add1(x).wrapping_add(y)` |
+| `incr(x: u32)` | `x.wrapping_add(1)` |
+| `use_incr()` | three discarded `incr(0)` calls, returns `()` |
+| `mod_add(x: u32, y: u32)` | Aeneas modular-add via `wrapping_sub(x+y, 3329)` + mask through `>> 16i32` |
+
+`LeanDiff.DemoRunner` adds 35 new vectors (9 + 8 + 9 + 1 + 8). The Rust oracle's `mod demo { ... }` block mirrors all five fns.
+
+G_lean: 232 → 267 vectors, all byte-identical.
+
+### Item 3 (cast keyword) and Item 4 (G_byte sweep) — deferred
+
+Time budget went to Item 1's deeper-than-expected fix (OCaml cert serializer change required, not just a Forward.lean walker tweak as the prompt's hypothesis predicted). Items 3 and 4 carry forward.
+
+### Coverage matrix snapshot (post-Session 5)
+
+| Fixture | G_rust | G_lean | C_lean (against shim) |
+|---|---|---|---|
+| incr_cert | ✓ 1/1 | ✓ 16/16 | ✓ |
+| compare_simple | ✓ 3/3 | ✓ 22/22 | ✓ |
+| calls | ✓ 2/2 | ✓ 22/22 | ✓ |
+| bitwise | ✓ 5/5 | ✓ 30/30 | ✓ |
+| constants | ✓ 5/5 | ✓ 37/37 | ✓ (X1/Q2/Q3/S2/S3/unwrap_y/YVAL/get_z1/get_z2 now real) |
+| aggregates_basic | ✓ 2/2 | (skip, ADT runner) | n/a |
+| reborrows | ✓ 1/1 | (skip, ADT runner) | n/a |
+| scalars | ✓ 13/13 | ✓ 105/105 | ✓ (`u32_use_bits` / `i32_use_bits` now real) |
+| demo | ✓ 4/4 | ✓ 35/35 | ✓ (subset via `--skip-decl`) |
+| enums_basic | ✓ 1/1 | — | n/a |
+| enums_payload | ✓ 3/3 | — | n/a |
+| **Total** | **39 proptests / 11 fixtures** | **267 vectors / 7 fixtures** | 7/89 |
+
+### Bugs found / changes by class (Session 5)
+
+| Class | Bug / change | Fix layer |
+|---|---|---|
+| OCaml cert format | `j_place` dropped `PlaceGlobal` info; the cert encoded every global as a self-ref to `local 0` (the return slot's placeholder), so the cert walker had no way to recover it. The Lean side previously masked this with typed-zero placeholders. | `src/cert/LlbcJson.ml` |
+| Lean cert walker | Forward translator didn't consume the LLBC body's `Assign(_, RvRef)` statements (the cert events drop them); needed a pre-event-walk seed pass to thread Charon's pre-pass-inserted borrow chain. | `Translate/Forward.lean` |
+| Shim gaps | `core.num.{U32,I32}.{MAX,MIN,BITS}` weren't provided — the cert walker's now-real reference to `u32::MAX` / `i32::BITS` would fail elaboration. The standard backend resolves the same names through `Std.U32.MAX` etc. | `RuntimeShim/Aeneas/Std.lean` |
+| Emit infrastructure | No per-decl skip mechanism existed; broken decls forced the entire fixture out of the harness. The new `--skip-decl` flag is a localised, opt-in escape hatch. | `Cli.lean`, `Backends/LeanEmit.lean` |
+| Known remaining cert-walker gaps | `V::LEN<T, N>` (generic globals — instantiation not surfaced by cert events); cast-op drops (`x as u16` emits as `x`); `get_max`-class branch-variable confusion. | Forward.lean / cert event walker |
+
+### Carry-forward into Session 6
+
+Priority order:
+
+1. **Cast keyword emit fix** (Item 3 carry-over, ~half day): the cert walker drops `as`-casts, producing ill-typed `x: u32 -> i32 { x }` Rust models. Companion `get_max::{u32,i32}` branch-variable bug (`if x1 { x1 } else { x2 }` where `t0 : bool` should be the scrutinee). Both `Forward.lean` cert-walker fixes, not RustEmit polish. Once fixed, unblocks `no_nested_borrows::{cast_*, get_max, test2, refs_test1}` and similar — ~6 new G_rust proptests.
+
+2. **Phase 2 (G_byte sweep)** (Item 4 carry-over, ~3 hours): extend `scripts/compare-backends.sh` from single-fixture interactive to `--sweep` mode with per-fixture allowed-divergence list. Goal: a single command that surfaces "how many of the 89 fixtures are byte-identical against mainline."
+
+3. **Generic-aware global propagation**: the Session 5 seed pass skips globals whose name carries `<` because the cert events don't surface the caller's generic instantiation. Threading generics through (likely on the OCaml side by surfacing the resolved `global_decl_ref.generics`) would unblock `use_v` and similar; this is OCaml work, not Forward.lean.
+
+4. **More mod-crate wraps**: `nested_borrows::call_inner_mut` (skipping closure-returning callees), `paper::ref_incr`; same pattern Session 4 used for demo's intra-crate calls.
+
+5. **More globals in other fixtures**: my Session 5 cert-format change benefits *every* fixture that reads globals. The Session 5 commits regen `constants` and `scalars` cert.json; other fixtures (`adt`, `aggregates_basic`, etc.) might also gain real global resolution if regen'd and re-emitted. Quick win: `bash scripts/regen-diff-models.sh` + rerun the lean-diff harness.
+
+### Operational notes (Session 5 specifics)
+- **No agent dispatches.** Inline work in `/Users/karthik/aeneas/.claude/worktrees/diff-test`. Worktree HEAD stayed on `aeneas-lean-certificate-diff-test`.
+- **OCaml build set up.** The diff-test worktree didn't have a `charon/` symlink (parent has `/Users/karthik/aeneas/charon -> /Users/karthik/charon`); added it as a one-time setup so `cd src && opam exec -- dune build` works inside the worktree. `tests/llbc/*.llbc` binaries copied from the parent (their generation is upstream of any diff-test work).
+- **Pre-built binaries lesson honoured.** Rebuilt both `main.exe` (aeneas) and `aeneas-check` from this worktree's source at every regen point. `bin/aeneas` symlink not created in the worktree; the built binary at `src/_build/default/main.exe` is invoked by absolute path during regen.
+- **`bin/aeneas` in the worktree absent.** The parent worktree has `bin/aeneas` (a copy from its build); the diff-test worktree doesn't. The regen invocations use the absolute path to `_build/default/main.exe`. If future sessions want a `bin/aeneas` shim in the worktree, copy after each `dune build`.
+- **Cert-format change is backward-compatible.** The `"global"` field is optional. Old cert files (without the field) parse unchanged. New cert files are accepted by both the Lean cert checker and the soundness side (the soundness side doesn't read LlbcPlace at all — its event-place encoding via `cert_place_of_place` already returned `None` for globals before this session).
+- **No files under `aeneas-lean-soundness/` or `AeneasCheck/Theorems/` touched.** Changes localised to `src/cert/`, `RuntimeShim/`, `Backends/LeanEmit.lean`, `Translate/Forward.lean`, the lean-diff harness, the proptest harness, and the docs.
+
+### Files touched (Session 5, high-level)
+
+- `src/cert/LlbcJson.ml` — `j_place` preserves `PlaceGlobal` info; threads `crate` through `j_operand`/`j_rvalue`/`j_call`.
+- `aeneas-lean-checker/AeneasCheck/Raw/LLBCProgram.lean` — `LlbcPlace.globalName : Option String`.
+- `aeneas-lean-checker/AeneasCheck/Json/Parser.lean` — read optional `"global"` field.
+- `aeneas-lean-checker/AeneasCheck/Translate/Forward.lean` — `seedGlobalRefsFromBlock` + `SeedAcc` accumulator; `translateFunWith` consumes the seed (binds + vm).
+- `aeneas-lean-checker/AeneasCheck/Cli.lean` — `findFlagsAll` + `--skip-decl` plumbing.
+- `aeneas-lean-checker/AeneasCheck/Backends/LeanEmit.lean` — `skipNames` filter on `emitTranslatedCrate`.
+- `aeneas-lean-checker/RuntimeShim/Aeneas/Std.lean` — `core.num.{U32,I32}.{MAX,MIN,BITS}`.
+- `tests/lean-checker/lean-diff/LeanDiff/{DemoRunner.lean, ConstantsRunner.lean, Main.lean}` — new + expanded runners.
+- `tests/lean-checker/lean-diff/{lakefile.lean, scripts/run-diff.sh, rust-runner/src/main.rs}` — wire demo in.
+- `tests/lean-checker/lean-diff/generated/{demo, constants, scalars}.lean` — regen output (the cert-format change is visible in `constants` + `scalars`; `demo` is a brand-new wire-in via `--skip-decl`).
+- `tests/llbc/{constants, scalars}.cert.json` — regen — now carry `"global"` fields. Other fixtures regen'd to identical bytes.
+- `documentation/plans/differential-testing-{plan, progress}.md` — updated counts + Session 5 note.
