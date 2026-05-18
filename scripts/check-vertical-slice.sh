@@ -30,6 +30,13 @@ echo "[3/6] lake build && aeneas-check ..."
     "$TESTS/llbc/incr_cert.cert.json" \
     --out "$CHECKER/tests/Generated/Incr.lean" \
     --rust-model "$DIFF/src/model.rs"
+# Phase 1C: also regenerate the ADT-bearing Rust models so the diff
+# harness picks up `Foo { f: v, ..base }` / `Foo { f1: e1, f2: e2 }`
+# updates from any RustEmit edits.
+touch "$DIFF/src/aggregates_basic_model.rs"
+"$CHECKER/.lake/build/bin/aeneas-check" \
+    "$TESTS/llbc/aggregates_basic.cert.json" \
+    --rust-model "$DIFF/src/aggregates_basic_model.rs"
 
 # 4. Lean smoke tests (checker logic)
 echo "[4/6] lean checker tests ..."
