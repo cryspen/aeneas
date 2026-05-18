@@ -745,8 +745,10 @@ let () =
       (* Translate or borrow-check the crate *)
       let extracted_opaque = ref false in
       if !borrow_check then begin
-        if !emit_cert then
+        if !emit_cert then begin
+          Aeneas.CertObserver.install ();
           Aeneas.CertGen.emit filename m marked_ids
+        end
         else Aeneas.BorrowCheck.borrow_check_crate m marked_ids
       end
       else

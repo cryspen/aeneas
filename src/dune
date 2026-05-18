@@ -36,7 +36,10 @@
   CertEvent
   CertGen
   CertJson
+  CertObserver
+  Event
   LlbcJson
+  Observer
   Collections
   Config
   ConstStrings
