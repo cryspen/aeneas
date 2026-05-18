@@ -1922,7 +1922,6 @@ let ctx_compute_trait_impl_name_raw (ctx : extraction_ctx)
               if !core_models_lib && not trait_impl.item_meta.is_local then
                 match trait_impl.item_meta.name with
                 | PeIdent (crate, _) :: _ ->
-                    let crate = rewrite_crate_for_core_models_lib crate in
                     let already_prefixed =
                       self_name = crate
                       || String.starts_with ~prefix:(crate ^ ".") self_name
