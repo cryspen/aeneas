@@ -471,7 +471,7 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
   for i in [0:cc.functions.size] do
     let f := cc.functions[i]!
     let lf := lookupLf f
-    match translateLoopFun f lf with
+    match translateLoopFun tdm f lf with
     | some loopDecls => decls := decls ++ loopDecls
     | none => decls := decls.push (translateFunWith tdm f lf traces[i]!)
   -- M9.5l: rewrite each Decl's body to use pretty names for any

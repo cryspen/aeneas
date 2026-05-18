@@ -152,7 +152,7 @@ def findBodyBranch (bodyEvs : Array Event) :
 
     For multi-state-var loops the state and continuation values are
     tuples; for single-state-var loops they are bare values. -/
-def buildLoopBody (fnName : String)
+def buildLoopBody (fnName : String) (typeParams : Array String)
     (numParams : Nat) (forwarded : Array Param)
     (stateLocals : Array Nat) (stateTys : Array PTy)
     (retTy : PTy)
@@ -194,6 +194,7 @@ def buildLoopBody (fnName : String)
       retTy := cfTy
       body := .ok (.app "cont" #[.var (stateNames.getD 0 "i")])
       sourceSpan
+      typeParams
       attributes := #["rust_loop_body"]
       note := some "loop body: no branch detected; M12.1 only supports while-loops" }
   | some (tIdx, fIdx, cond) =>
@@ -270,10 +271,11 @@ def buildLoopBody (fnName : String)
       retTy := cfTy
       body
       sourceSpan
+      typeParams
       attributes := #["rust_loop_body"] }
 
 /-- M12.1: build the `<fn>_loop` wrapper decl. -/
-def buildLoopWrapper (fnName : String)
+def buildLoopWrapper (fnName : String) (typeParams : Array String)
     (forwarded : Array Param)
     (stateLocals : Array Nat) (stateTys : Array PTy)
     (retTy : PTy) (sourceSpan : Option Raw.SourceSpan) : Decl :=
@@ -303,12 +305,13 @@ def buildLoopWrapper (fnName : String)
     retTy
     body := loopCall
     sourceSpan
+    typeParams
     attributes := #["rust_loop"] }
 
 /-- M12.1: build the top-level `<fn>` decl that calls the loop
     wrapper with the initial state. Walks pre-loop events to recover
     the initial state expression for each state local. -/
-def buildTopLevelLoopFn (fnName : String)
+def buildTopLevelLoopFn (fnName : String) (typeParams : Array String)
     (numParams : Nat) (params : Array Param)
     (forwarded : Array Param)
     (stateLocals : Array Nat) (preLoopEvs : Array Event)
@@ -343,18 +346,24 @@ def buildTopLevelLoopFn (fnName : String)
     qualifiedName := fnName
     params, retTy, body
     sourceSpan
+    typeParams
     attributes := #["reducible"] }
 
 /-- M12.1 / M9.7o-E5b: translate a function whose cert contains a
     loop. Sources signature + per-local types from the matching
     structured `LlbcFunDecl` (threaded by the Driver). Emits three
-    decls: the body, the wrapper, and the top-level function. -/
-def translateLoopFun (f : Raw.FunCert) (lf : Raw.LlbcFunDecl) :
-    Option (Array Decl) := do
+    decls: the body, the wrapper, and the top-level function.
+
+    Zero-Skip Step 5 (cluster `loop_body_undefined_locals`): the
+    `tdm` parameter is now threaded from the Driver so input / output
+    types that reference an ADT id resolve to the structured
+    `.adt name args` shape (e.g. `&CList<T>` → `CList T`) instead of
+    the catch-all `Std.U32` placeholder. -/
+def translateLoopFun (tdm : TypeDeclMap) (f : Raw.FunCert)
+    (lf : Raw.LlbcFunDecl) : Option (Array Decl) := do
   let (invIdx, endIdx, _loopId, inv) ← findLoopBracket f.events
   let lsig := lf.signature
   let typeParams := lsig.generics.types
-  let tdm : TypeDeclMap := {}
   let numParams := lsig.inputs.size
   -- Session 7 Item 1d: mirror translateFunWith's effectiveParamName.
   let effectiveParamName (i : Nat) : String :=
@@ -374,12 +383,13 @@ def translateLoopFun (f : Raw.FunCert) (lf : Raw.LlbcFunDecl) :
     stateLocals.map fun l => stateLocalTy tdm typeParams lf l
   let preLoopEvs := f.events.extract 0 invIdx
   let bodyDecl :=
-    buildLoopBody f.fnName numParams params stateLocals stateTys retTy
-      bodyEvs f.sourceSpan
+    buildLoopBody f.fnName typeParams numParams params stateLocals stateTys
+      retTy bodyEvs f.sourceSpan
   let wrapperDecl :=
-    buildLoopWrapper f.fnName params stateLocals stateTys retTy f.sourceSpan
+    buildLoopWrapper f.fnName typeParams params stateLocals stateTys retTy
+      f.sourceSpan
   let topDecl :=
-    buildTopLevelLoopFn f.fnName numParams params params stateLocals
+    buildTopLevelLoopFn f.fnName typeParams numParams params params stateLocals
       preLoopEvs retTy f.sourceSpan
   return #[bodyDecl, wrapperDecl, topDecl]
 
