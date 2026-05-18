@@ -12,6 +12,7 @@ import AeneasSoundness.Soundness.JoinLemmas
 import AeneasSoundness.Soundness.JoinChainFold
 import AeneasSoundness.Soundness.StepEventSound
 import AeneasSoundness.Soundness.InitialFinal
+import AeneasSoundness.Soundness.ReplayFunSound
 
 /-!
 Top-level module for the Aeneas LLBC# soundness package.
