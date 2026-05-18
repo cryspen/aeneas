@@ -234,4 +234,160 @@ theorem concretise_foldl_addAbsShape (st : SymState) (absSig : Array AbsShape) :
     rw [ih (st.addAbsShape shape), concretise_addAbsShape]
     rfl
 
+/-! ## M10.x.6 (endAbs preamble)
+
+The replayer's `stepEndAbs` body is a three-phase fold:
+
+1. `released.foldl loansEraseIfPresent` — erases each loan id from
+   `st.loans`. `concretise` doesn't read `loans` (loans live inside
+   `ctx` as `mutLoan` tokens; the separate `loans` map is a replayer-
+   only bookkeeping field), so this is a `concretise`-no-op.
+2. `tokenClearLocals.foldl tokenClearOne` — rewrites `env[l]?` from
+   `some (.mutLoan _)` to `some .bottom` (other shapes left alone).
+   This DOES change `concretise.ctx`; the paper-side mirror is the
+   `clearMutLoanToken` fold on `LLBCState`.
+3. `removeAbsShape absId` — closed by the existing
+   `concretise_removeAbsShape`. -/
+
+/-- `loansEraseIfPresent` is a `concretise`-no-op: erasing a loan id
+    from `st.loans` doesn't touch `env`, `absRegistry`, or either HWM,
+    and `concretise` only reads those four fields. -/
+theorem concretise_loansEraseIfPresent (st : SymState) (b : Nat) :
+    concretise (AeneasCheck.LLBCSharp.loansEraseIfPresent st b) =
+      concretise st := by
+  unfold AeneasCheck.LLBCSharp.loansEraseIfPresent
+  split
+  · rfl
+  · rfl
+
+/-- Fold-style: the entire `released.foldl loansEraseIfPresent` is a
+    `concretise`-no-op. -/
+theorem concretise_foldl_loansEraseIfPresent (st : SymState)
+    (released : Array Nat) :
+    concretise
+        (released.foldl (init := st) AeneasCheck.LLBCSharp.loansEraseIfPresent) =
+      concretise st := by
+  rw [show released.foldl (init := st) AeneasCheck.LLBCSharp.loansEraseIfPresent
+        = released.toList.foldl AeneasCheck.LLBCSharp.loansEraseIfPresent st from by
+          simp [Array.foldl_toList]]
+  induction released.toList generalizing st with
+  | nil => rfl
+  | cons b rest ih =>
+    simp only [List.foldl_cons]
+    rw [ih (AeneasCheck.LLBCSharp.loansEraseIfPresent st b),
+        concretise_loansEraseIfPresent]
+
+/-- Per-step token-clear commute: the replayer's `tokenClearOne` on
+    `st.env` mirrors the paper-side `clearMutLoanToken` on
+    `concretise st`. The case analysis matches arm-for-arm; the
+    `some (.mutLoan _)` arm uses `concretise_setLocal` plus
+    `liftVal .bottom = .bottom`. -/
+theorem concretise_env_tokenClearOne (st : SymState) (l : Nat) :
+    concretise { st with env := AeneasCheck.LLBCSharp.tokenClearOne st.env l } =
+      LLBCSharpPaper.LLBCState.clearMutLoanToken (concretise st) l := by
+  unfold AeneasCheck.LLBCSharp.tokenClearOne LLBCSharpPaper.LLBCState.clearMutLoanToken
+  -- The replayer matches on `env[l]?`; the paper-side matches on
+  -- `concretise.ctx l = (env[l]?).map liftVal`. The cases align
+  -- because `liftVal` preserves the `.mutLoan` constructor.
+  have hCtx : (concretise st).ctx l = (st.env[l]?).map liftVal := by
+    unfold concretise liftEnv; rfl
+  rw [hCtx]
+  cases hLook : st.env[l]? with
+  | none =>
+    -- replayer: env unchanged; paper: ctx l = none → no change.
+    simp
+  | some v =>
+    cases v with
+    | mutLoan b =>
+      -- replayer: env.insert l .bottom; paper: setLocal l .bottom.
+      simp only [liftVal, Option.map_some]
+      -- Goal: concretise { st with env := st.env.insert l .bottom }
+      --     = (concretise st).setLocal l .bottom
+      have : ({ st with env := st.env.insert l .bottom } : SymState)
+            = st.setLocal l .bottom := rfl
+      rw [this, concretise_setLocal]
+      rfl
+    | sym _ => rfl  -- non-mutLoan: both sides leave state alone
+    | lit _ => rfl
+    | mutBorrow _ _ => rfl
+    | bottom => rfl
+
+/-- Auxiliary fold-style commute over a list and a free env-start.
+    Reformulated to put the env-start under the inductive forall so
+    the cons-step `ih` recovers the right shape. -/
+private theorem concretise_env_foldl_tokenClearOne_aux
+    (st : SymState) :
+    ∀ (xs : List Nat) (env₀ : Std.HashMap Nat AeneasCheck.LLBCSharp.Val),
+      concretise ({ st with
+            env := xs.foldl AeneasCheck.LLBCSharp.tokenClearOne env₀ } : SymState)
+        = xs.foldl LLBCSharpPaper.LLBCState.clearMutLoanToken
+            (concretise ({ st with env := env₀ } : SymState))
+  | [], env₀ => by simp
+  | l :: rest, env₀ => by
+      simp only [List.foldl_cons]
+      have hIH := concretise_env_foldl_tokenClearOne_aux st rest
+                    (AeneasCheck.LLBCSharp.tokenClearOne env₀ l)
+      rw [hIH]
+      congr 1
+      -- Per-step commute on the auxiliary `{ st with env := env₀ }`.
+      have := concretise_env_tokenClearOne
+                ({ st with env := env₀ } : SymState) l
+      simpa using this
+
+/-- Fold-style: the `tokenClearLocals` fold on the replayer's env
+    mirrors the `clearMutLoanToken` fold on the paper-side state. -/
+theorem concretise_env_foldl_tokenClearOne (st : SymState)
+    (tokenClearLocals : Array Nat) :
+    let envFinal := tokenClearLocals.foldl
+        (init := st.env) AeneasCheck.LLBCSharp.tokenClearOne
+    concretise ({ st with env := envFinal } : SymState) =
+      tokenClearLocals.foldl (init := concretise st)
+        LLBCSharpPaper.LLBCState.clearMutLoanToken := by
+  have := concretise_env_foldl_tokenClearOne_aux st
+            tokenClearLocals.toList st.env
+  simp only [Array.foldl_toList] at this
+  exact this
+
+/-- Paper-side commute: `clearMutLoanToken` (which only updates `ctx`)
+    commutes with `removeAbs` (which only updates `abs`). Used by
+    `stepEndAbs_sound` to align the order of operations in the
+    paper-rule's post-state with the replayer's. -/
+theorem clearMutLoanToken_removeAbs_commute (Ω : LLBCSharpPaper.LLBCState)
+    (abs : Nat) (l : Nat) :
+    (Ω.removeAbs abs).clearMutLoanToken l =
+      (Ω.clearMutLoanToken l).removeAbs abs := by
+  unfold LLBCSharpPaper.LLBCState.clearMutLoanToken LLBCSharpPaper.LLBCState.removeAbs
+    LLBCSharpPaper.LLBCState.setLocal
+  -- The match scrutinee `(Ω.removeAbs abs).ctx l` is definitionally
+  -- the same as `Ω.ctx l` because removeAbs only updates `abs`.
+  show (match Ω.ctx l with
+        | some (.mutLoan _) => _ | _ => _) = _
+  cases h : Ω.ctx l with
+  | none => rfl
+  | some v =>
+    -- Both sides update `ctx` (only on `mutLoan _`) and `abs`; since
+    -- the two updates target distinct fields the order is irrelevant
+    -- and `rfl` closes regardless of which `Val` arm we're in.
+    cases v <;> rfl
+
+/-- Foldl-version: `tokenClearLocals.foldl clearMutLoanToken` commutes
+    with `removeAbs abs` over any starting state. -/
+theorem foldl_clearMutLoanToken_removeAbs_commute (Ω : LLBCSharpPaper.LLBCState)
+    (abs : Nat) (tokenClearLocals : Array Nat) :
+    (tokenClearLocals.foldl (init := Ω) LLBCSharpPaper.LLBCState.clearMutLoanToken).removeAbs abs =
+      tokenClearLocals.foldl (init := Ω.removeAbs abs)
+        LLBCSharpPaper.LLBCState.clearMutLoanToken := by
+  rw [show tokenClearLocals.foldl (init := Ω) LLBCSharpPaper.LLBCState.clearMutLoanToken
+        = tokenClearLocals.toList.foldl LLBCSharpPaper.LLBCState.clearMutLoanToken Ω from by
+        simp [Array.foldl_toList],
+      show tokenClearLocals.foldl (init := Ω.removeAbs abs)
+            LLBCSharpPaper.LLBCState.clearMutLoanToken
+        = tokenClearLocals.toList.foldl LLBCSharpPaper.LLBCState.clearMutLoanToken
+            (Ω.removeAbs abs) from by simp [Array.foldl_toList]]
+  induction tokenClearLocals.toList generalizing Ω with
+  | nil => rfl
+  | cons l rest ih =>
+    simp only [List.foldl_cons]
+    rw [ih (Ω.clearMutLoanToken l), clearMutLoanToken_removeAbs_commute]
+
 end AeneasSoundness.Soundness.Concretise

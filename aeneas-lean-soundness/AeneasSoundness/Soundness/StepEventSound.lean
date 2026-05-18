@@ -23,14 +23,15 @@ each lemma's Phase-D-dischargeable hypotheses via the
 `#print axioms stepEvent_sound` reports:
 
 * `propext`, `Quot.sound`, `Classical.choice` (Lean core).
-* `CertGen_faithful.{endAbs, symExpandMutBorrow, loopInv,
+* `CertGen_faithful.{symExpandMutBorrow, loopInv,
   endBorrow_direct_witness, join}` — the remaining OCaml-side honesty
-  axioms after M10.x.5. Plan §0.3 + `CertGen.lean`'s header note are
+  axioms after M10.x.6. Plan §0.3 + `CertGen.lean`'s header note are
   the audit surface. (Earlier-dropped extractors: `move` / `copy` in
   M10.x.3; `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned`
   / `reborrow` in M10.x.4; `mutBorrow_inAbsReborrow` in M10.x.5;
-  `call` / `endBorrow_takeOk` / `endBorrow_reborrow_witness` /
-  `endBorrow_shared_witness` in M10.4a-post.)
+  `endAbs` in M10.x.6; `call` / `endBorrow_takeOk` /
+  `endBorrow_reborrow_witness` / `endBorrow_shared_witness` in
+  M10.4a-post.)
 
 No `sorryAx`. No domain `axiom` from `LLBCSharpPaper/`. The four
 `paper_thm_*` axioms (Phase G placeholders) are not consumed by
@@ -751,65 +752,82 @@ theorem stepCall_sound
 
 /-! ### EndAbs (C16)
 
-`stepEndAbs` validates the released loans against the registered
-abstraction's role list, drops each released loan from `st.loans`,
-clears the named `tokenClearLocals` (those holding `mutLoan _` tokens
-become `.bottom`), then erases the abstraction's registry entry. On
-the paper side `LStep.endAbs`'s post-state is `Ω.removeAbs abs`,
-mirrored by the `concretise_removeAbsShape` commute. The intermediate
-state pre-removal is folded into a single `stPre` argument plus a
-Phase-D-dischargeable `hConcPre : concretise stPre = concretise st`
-hypothesis (the loan-erase + token-clear together preserve
-concretise; the token-clear's `.mutLoan → .bottom` substitution is
-the part that needs `LoanTokenInvariant`-style discipline to be
-sound at the deep-Val level — Phase D territory).
+`stepEndAbs` (M10.x.6 refactor) factors as
+`stepEndAbsValidate ; stepEndAbsBody`. On success the validation
+returns `()`; the body deterministically computes the post-state via
+three folds: `loansEraseIfPresent` (concretise-no-op),
+`tokenClearOne` on env (paper-mirrored by `clearMutLoanToken`), and
+`removeAbsShape`.
 
-The `hShape` hypothesis pins `stepEvent` to `.ok (stPre.removeAbsShape
-absId)`, matching the C11-C13 result-shape pattern. -/
+The paper-side `LStep.endAbs` post-state was strengthened in M10.x.6
+to include the token-clear fold (replacing the previous vestigial
+`Ω.abs abs = some r` premise + bare `Ω.removeAbs abs` post-state):
+without it, the two sides genuinely diverge on fixtures whose env
+holds `.mutLoan b` tokens for `b ∈ releasedLoans` (the replayer
+clears them, the paper rule didn't). -/
 
-/-- C16 / M10.2p — `EvEndAbs absId finalValues released tokenClearLocals`
-    triggers `Reorg-End-Abs` (paper Fig. 8). Two Phase-D-dischargeable
-    hypotheses: `hAbsInRegistry` lifts the abs entry to the paper
-    side via `concretise.abs = liftAbsRegistry`, and the
-    `(stPre, hConcPre, hShape)` triple folds the loan-erase plus
-    token-clear preamble into one `concretise`-preserving step.
+/-- M10.x.6 — pull `concretise` through `stepEndAbsBody` as a fold of
+    paper-side `clearMutLoanToken` over `(concretise st).removeAbs absId`.
+    Chains three commutes: `removeAbsShape` ↦ `removeAbs`; env-fold
+    mirror; loan-erase fold = concretise-no-op. -/
+private theorem concretise_stepEndAbsBody_eq
+    (st : SymState) (absId : Nat) (released tokenClearLocals : Array Nat) :
+    concretise
+        (AeneasCheck.LLBCSharp.stepEndAbsBody st absId released tokenClearLocals) =
+      tokenClearLocals.foldl (init := (concretise st).removeAbs absId)
+        LLBCSharpPaper.LLBCState.clearMutLoanToken := by
+  -- Stage 1: `removeAbsShape` ↦ `removeAbs`. Use simp to push past
+  -- the let-bindings introduced by `stepEndAbsBody`'s body.
+  simp only [AeneasCheck.LLBCSharp.stepEndAbsBody,
+             Concretise.concretise_removeAbsShape,
+             Concretise.concretise_env_foldl_tokenClearOne,
+             Concretise.concretise_foldl_loansEraseIfPresent]
+  -- Goal: `(foldl clearMutLoanToken (concretise st) tokenClearLocals).removeAbs absId
+  --      = foldl clearMutLoanToken ((concretise st).removeAbs absId) tokenClearLocals`.
+  exact Concretise.foldl_clearMutLoanToken_removeAbs_commute
+          (concretise st) absId tokenClearLocals
 
-    Post-state matches `Ω.removeAbs absId` via
-    `concretise_removeAbsShape` (M10.1i) ; `hConcPre` ; `hRep`. -/
+/-- C16 / M10.2p (M10.x.6 revision) — `EvEndAbs absId finalValues
+    released tokenClearLocals` triggers `Reorg-End-Abs` (paper Fig. 8).
+    No Phase-D hypotheses after M10.x.6: the `(shape, hAbsInRegistry,
+    stPre, hConcPre, hShape)` triple is replaced by direct inversion
+    of the replayer's `stepEndAbsValidate >>= stepEndAbsBody` factor
+    plus the M10.x.6 commute lemmas in `Concretise/Lemmas.lean`. -/
 theorem stepEndAbs_sound
   (hRep : concretise st = Ω)
   (absId : Nat) (finalValues : Array SymExpr) (releasedLoans : Array Nat)
-  (tokenClearLocals : Array Nat)
-  (shape : AbsShape)
-  (hAbsInRegistry : st.absRegistry[absId]? = some shape)
-  (stPre : SymState)
-  (hConcPre : concretise stPre = concretise st)
-  (hShape : stepEvent st
-            (.endAbs absId finalValues releasedLoans tokenClearLocals) =
-            .ok (stPre.removeAbsShape absId)) :
+  (tokenClearLocals : Array Nat) :
   stepEvent st (.endAbs absId finalValues releasedLoans tokenClearLocals) = .ok st' →
   ∃ Ω', Valid (.endAbs absId finalValues releasedLoans tokenClearLocals) Ω ∧
         LStep Ω (.endAbs absId finalValues releasedLoans tokenClearLocals) Ω' ∧
         concretise st' = Ω' := by
   intro hStep
-  -- Result-shape collapses st' = stPre.removeAbsShape absId.
-  rw [hShape] at hStep
-  simp only [Except.ok.injEq] at hStep
-  subst hStep
-  -- Lift the registry lookup to the paper-side via hRep ; concretise.abs.
-  have hAbsLifted : Ω.abs absId = some (LLBCSharpPaper.liftAbsShape shape) := by
-    subst hRep
-    simp [Concretise.concretise, Concretise.liftAbsRegistry, hAbsInRegistry]
-  refine ⟨Ω.removeAbs absId,
-          ⟨_, hAbsLifted⟩,
-          LStep.endAbs hAbsLifted,
-          ?_⟩
-  -- concretise (stPre.removeAbsShape absId)
-  --   = (concretise stPre).removeAbs absId  -- M10.1i commute
-  --   = (concretise st).removeAbs absId     -- hConcPre
-  --   = Ω.removeAbs absId                    -- hRep
-  exact (Concretise.concretise_removeAbsShape stPre absId).trans
-    (congrArg (·.removeAbs absId) (hConcPre.trans hRep))
+  -- Unfold the replayer body into `validate >>= body`.
+  simp only [stepEvent, AeneasCheck.LLBCSharp.stepEndAbs, bind, Except.bind,
+    pure, Except.pure] at hStep
+  -- Extract `st' = stepEndAbsBody …`. The validation result is
+  -- `.ok ()` (success) or `.error _` (failure); only `.ok ()`
+  -- continues to `return body`. Both branches reduce by `cases`
+  -- on the validation result.
+  set v := AeneasCheck.LLBCSharp.stepEndAbsValidate st absId releasedLoans
+    with hv
+  cases hVal : v with
+  | error e =>
+    rw [hVal] at hStep
+    cases hStep
+  | ok u =>
+    rw [hVal] at hStep
+    simp only [Except.ok.injEq] at hStep
+    subst hStep
+    -- Now `st' = stepEndAbsBody st absId releasedLoans tokenClearLocals`.
+    -- Build the paper-side witness and chain the commute lemma.
+    refine ⟨tokenClearLocals.foldl (init := Ω.removeAbs absId)
+              LLBCSharpPaper.LLBCState.clearMutLoanToken,
+            trivial,
+            LStep.endAbs,
+            ?_⟩
+    -- The body-level commute lemma does the whole chain.
+    rw [concretise_stepEndAbsBody_eq, ← hRep]
 
 /-! ### SymExpandMutBorrow (C17, no-substitution subset)
 
@@ -1131,10 +1149,13 @@ theorem stepEvent_sound :
     exact stepCall_sound st st' Ω hRep fn callId fnName args dst regionAbs absSig
       hDstInBounds hStep
   | endAbs absId finalValues releasedLoans tokenClearLocals =>
-    obtain ⟨shape, stPre, hAbsInRegistry, hConcPre, hShape⟩ :=
-      CertGen_faithful.endAbs st st' absId finalValues releasedLoans tokenClearLocals hStep
+    -- M10.x.6: `CertGen_faithful.endAbs` retired. The previous
+    -- (shape, hAbsInRegistry, stPre, hConcPre, hShape) bundle is
+    -- replaced by the `stepEndAbsValidate`/`stepEndAbsBody` factor
+    -- + M10.x.6 commute lemmas; the per-event lemma now takes only
+    -- `hRep` and `hStep`.
     exact stepEndAbs_sound st st' Ω hRep absId finalValues releasedLoans tokenClearLocals
-      shape hAbsInRegistry stPre hConcPre hShape hStep
+      hStep
   | proj absId p sv =>
     -- The replayer rejects `.proj` events with `.error`; `hStep`'s
     -- `.error _ = .ok st'` is a contradiction. (`Valid (.proj _ _ _)

@@ -482,18 +482,29 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       tracked loans are released and any `tokenClearLocals` are
       reset.
 
-      Premises (baseline): `Ω.abs abs = some r` — the abs exists.
-      Phase C strengthens with the matching-loan-release condition
-      (every id in `releasedLoans` is in `r.roles` as a mutLoan).
+      Premises (M10.x.6, post-vestigial-existential drop): none.
+      The previous `Ω.abs abs = some r` premise bound `r` which was
+      never used in the post-state (vestigial-existential, same
+      pattern as M10.x.4 / M10.x.5). Phase C-strengthening with a
+      matching-loan-release condition (every id in `releasedLoans`
+      is in `r.roles` as a mutLoan) is still future work.
 
-      Post-state: drop the abs from `Ω.abs`. The `tokenClearLocals`
-      reset is folded into the local-clear step. -/
+      Post-state (M10.x.6 strengthening): drop the abs from `Ω.abs`
+      then fold `clearMutLoanToken` over `tokenClearLocals`. This
+      matches the replayer's `stepEndAbs` exactly: loans-erase on
+      the replayer side is `concretise`-no-op (loans aren't in
+      `LLBCState`), token-clear is the env-rewrite of `mutLoan _`
+      slots to `bottom`, removeAbsShape is `removeAbs`. Without
+      the fold the paper-side ctx would still carry stale
+      `.mutLoan b` tokens for loans the abs released, which
+      `concretise` reflects directly. Phase C may further refine
+      the conditional (currently any `.mutLoan _` is cleared; a
+      stricter `b ∈ releasedLoans` guard would also be sound and
+      mirror the replayer's pattern match). -/
   | endAbs {Ω : LLBCState} {abs : AbsId} {finalValues : Array SymExpr}
-      {releasedLoans : Array LoanId} {tokenClearLocals : Array LocalId}
-      {r : RegionAbs} :
-      Ω.abs abs = some r →
+      {releasedLoans : Array LoanId} {tokenClearLocals : Array LocalId} :
       LStep Ω (.endAbs abs finalValues releasedLoans tokenClearLocals)
-        (Ω.removeAbs abs)
+        (tokenClearLocals.foldl (init := Ω.removeAbs abs) LLBCState.clearMutLoanToken)
 
   /-- Lazy mut-borrow expansion (paper §4.1 rewriting). The OCaml
       interpreter just replaced symbolic value `svId` with a

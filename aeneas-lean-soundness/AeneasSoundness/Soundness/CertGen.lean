@@ -28,7 +28,6 @@ by one Phase-C lemma:
 
 | Extractor | Discharges (for stepX_sound) |
 |---|---|
-| `endAbs` | abs-registry-lookup + (stPre, hConcPre, hShape) preamble triple |
 | `symExpandMutBorrow` | `substLocals = #[] ∧ substLoans = #[]` + `bid` freshness |
 | `loopInv` | `loanRegistry = #[]` (paper LStep.loopInv is a no-op) |
 | `endBorrow_direct_witness` | for `LoanKind ∈ {.direct, .lazyExpand}`: holder local `x` + result value `v` + `hShape` |
@@ -42,6 +41,7 @@ by one Phase-C lemma:
 | `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned` | dropped M10.x.4 — paper-side rules' `Ω.resolvePlace p = some v` premises were vestigial (the bound `v` was not in the post-state); freshness clauses are replayer-discharged via M10.x.2's reject paths |
 | `reborrow` | dropped M10.x.4 — paper-side rule split into `LStep.reborrow` (tracked-parent) + `LStep.reborrow_untracked` (untracked-parent pre-add), mirroring the replayer's two-branch shape; `hChildFresh` is replayer-discharged via M10.x.2 |
 | `mutBorrow_inAbsReborrow` | dropped M10.x.5 — paper-side rule's `Ω.abs absId = some r` premise was vestigial (the bound `r` was not in the post-state); HWM clause replayer-discharged via M10.x.2 |
+| `endAbs` | dropped M10.x.6 — paper-side rule's `Ω.abs abs = some r` premise was vestigial; post-state strengthened with `tokenClearLocals.foldl clearMutLoanToken` so the replayer's env-clearing is mirrored honestly; the previous "ugly triple" axiom existentially bound an `stPre` that did NOT satisfy `concretise stPre = concretise st` in general |
 
 ## What's NOT here
 
@@ -142,21 +142,32 @@ per-event lemma picks the matching constructor by `by_cases` on
 `st.loans.contains parent`. No paper-side parent-HWM premise
 remains. -/
 
-/-! ### EndAbs — abs-in-registry + (stPre, hConcPre, hShape) preamble
+/-! ### EndAbs — dropped (M10.x.6)
 
-C16's `stepEndAbs_sound` collapses the replayer's loan-erase +
-token-clear preambles into a single `concretise`-preserving step
-parameterised by `stPre`. The CertGen_faithful promise carries the
-matching abs-registry entry and the preamble-result-shape. -/
+The previous extractor packaged the (abs-in-registry, preamble-`stPre`,
+preamble-concretise-preserves, preamble-result-shape) triple. The
+abs-in-registry clause was vestigial (the bound `shape` never
+appeared in the post-state). The remaining triple was a fiction:
+`concretise stPre = concretise st` is FALSE in general because the
+replayer's token-clear loop rewrites `env[l] = .mutLoan _` to
+`.bottom`, which `liftEnv` reflects (different `liftVal` outputs).
 
-axiom endAbs (st st' : SymState) (absId : Nat) (finalValues : Array SymExpr)
-    (releasedLoans : Array Nat) (tokenClearLocals : Array Nat)
-    (hStep : stepEvent st (.endAbs absId finalValues releasedLoans tokenClearLocals) = .ok st') :
-    ∃ (shape : AbsShape) (stPre : SymState),
-      st.absRegistry[absId]? = some shape ∧
-      concretise stPre = concretise st ∧
-      stepEvent st (.endAbs absId finalValues releasedLoans tokenClearLocals) =
-        .ok (stPre.removeAbsShape absId)
+M10.x.6 closes the gap honestly via three steps:
+
+1. Refactored `stepEndAbs` into `stepEndAbsValidate >>=
+   stepEndAbsBody`, with `stepEndAbsBody` the deterministic
+   three-fold body (loan-erase / token-clear env / removeAbsShape).
+2. Added M10.x.6 commute lemmas in `Concretise/Lemmas.lean`:
+   `concretise_loansEraseIfPresent` (no-op), `concretise_env_*_tokenClearOne`
+   (paper-side mirror), `foldl_clearMutLoanToken_removeAbs_commute`
+   (`clearMutLoanToken` ⊥ `removeAbs` updates target distinct fields).
+3. Strengthened `LStep.endAbs`'s post-state from `Ω.removeAbs abs`
+   to `tokenClearLocals.foldl clearMutLoanToken (Ω.removeAbs abs)`,
+   matching the replayer pointwise. Dropped the vestigial
+   `Ω.abs abs = some r` premise.
+
+With the paper rule's post-state honestly mirroring the replayer's
+behaviour, `stepEndAbs_sound` closes from `hStep` + `hRep` alone. -/
 
 /-! ### SymExpandMutBorrow — no-substitution subset + bid fresh
 

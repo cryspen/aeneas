@@ -107,7 +107,14 @@ def Valid (e : Event) (Ω : LLBCState) : Prop :=
   | .reborrow child _ _ _ _ => Ω.loanIdFresh child
   -- `call` existentially picks a fresh σ; always realisable.
   | .call _ _ _ _ _ _ _ => ∃ σ, Ω.symValIdFresh σ
-  | .endAbs abs _ _ _ => ∃ r, Ω.abs abs = some r
+  -- M10.x.6 — the `∃ r, Ω.abs abs = some r` premise was vestigial in
+  -- `LStep.endAbs` (the bound `r` did not appear in the post-state).
+  -- The previous existential was tolerated by the replayer (silent
+  -- skip on `absRegistry[abs]?.isNone`); keeping it would falsify
+  -- `CertGen_faithful` on ambient-abs fixtures. The post-state was
+  -- strengthened with a `tokenClearLocals.foldl` over
+  -- `clearMutLoanToken`; the rule itself is now premise-free.
+  | .endAbs _ _ _ _ => True
   | .symExpandMutBorrow _ bid innerSv _ _ _ =>
       Ω.loanIdFresh bid ∧ Ω.symValIdFresh innerSv
   -- `proj` has no `LStep` constructor at M10 — `EvProj` revival is
