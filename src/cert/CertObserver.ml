@@ -36,6 +36,111 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
              child; parent; place = cp; parent_live; parent_abs;
            })
        | None -> None)
+  | Event.EndBorrow { loan; borrowed_value } ->
+      (* M9.6 (Option C, plan §4.1.6): dedupe against
+         [cert_ended_loans] so the M9.5x redundant post-join
+         EvEndBorrow on the same loan id collapses to a single
+         emit. The OCaml join machinery linearises each branch's
+         cleanup separately and may re-walk the same loan during
+         reconciliation. The on_event suppression guard above ensures
+         loop-fixpoint speculative iterations don't poison the set. *)
+      if BorrowId.Set.mem loan !(ctx.cert_ended_loans) then None
+      else begin
+        ctx.cert_ended_loans :=
+          BorrowId.Set.add loan !(ctx.cert_ended_loans);
+        let given_back : CertEvent.cert_sym_expr =
+          match borrowed_value with
+          | Some bv -> (
+              match bv.value with
+              | VSymbolic sv -> CertEvent.SymVal sv.sv_id
+              | VLiteral lit -> CertEvent.SymLit lit
+              | _ -> CertEvent.SymMutBorrowTok loan)
+          | None -> CertEvent.SymMutBorrowTok loan
+        in
+        (* M10.x.0 (cert v6 #11): record which env local holds the
+           [VMutLoan loan] token. Observer fires *pre*-give-back so
+           the token is still present. -*)
+        let ri_holder_local : LocalId.id option =
+          let found = ref None in
+          List.iter
+            (fun (e : env_elem) ->
+              if Option.is_none !found then
+                match e with
+                | EBinding (BVar bv, v) ->
+                  (match v.value with
+                   | VLoan (VMutLoan b) when b = loan ->
+                     found := Some bv.index
+                   | _ -> ())
+                | _ -> ())
+            ctx.env;
+          !found
+        in
+        Some (CertEvent.EvEndBorrow {
+          loan;
+          restore = { ri_given_back = given_back; ri_holder_local };
+        })
+      end
+  | Event.EndAbs { abs_id; abs_value; pre_end_env } ->
+      let cert_final_values, cert_released_loans =
+        match abs_value with
+        | None -> ([], [])
+        | Some abs ->
+            let fvs = ref [] in
+            let rls = ref [] in
+            let visitor =
+              object
+                inherit [_] iter_abs as super
+
+                method! visit_AEndedMutBorrow env meta child =
+                  fvs := CertEvent.SymVal meta.given_back.sv_id :: !fvs;
+                  (* M9.5s: abstraction-internal borrow id whose
+                     lifetime ends implicitly here. -*)
+                  rls := meta.bid :: !rls;
+                  super#visit_AEndedMutBorrow env meta child
+
+                method! visit_AEndedProjBorrows env aproj =
+                  fvs :=
+                    CertEvent.SymVal aproj.mvalues.given_back.sv_id :: !fvs;
+                  super#visit_AEndedProjBorrows env aproj
+              end
+            in
+            visitor#visit_abs () abs;
+            (List.rev !fvs, List.rev !rls)
+      in
+      (* M9.6 (Option C): collect locals holding [VMutLoan bid] for
+         each [bid] in [cert_released_loans]. Scan [pre_end_env]
+         (the ctx0 snapshot from the top of [end_abs_aux]) because
+         [end_abs_borrows] has already substituted those tokens
+         away by emit time. -*)
+      let cert_token_clear_locals : LocalId.id list =
+        if cert_released_loans = [] then []
+        else begin
+          let released = BorrowId.Set.of_list cert_released_loans in
+          let acc = ref [] in
+          List.iter
+            (fun (e : env_elem) ->
+              match e with
+              | EBinding (BVar bv, v) ->
+                let visitor = object
+                  inherit [_] iter_tvalue as super
+                  method! visit_VMutLoan env bid =
+                    if BorrowId.Set.mem bid released then
+                      if not (List.mem bv.index !acc) then
+                        acc := bv.index :: !acc;
+                    super#visit_VMutLoan env bid
+                end in
+                visitor#visit_tvalue () v
+              | _ -> ())
+            pre_end_env;
+          List.rev !acc
+        end
+      in
+      Some (CertEvent.EvEndAbs {
+        abs = abs_id;
+        final_values = cert_final_values;
+        released_loans = cert_released_loans;
+        token_clear_locals = cert_token_clear_locals;
+      })
   | Event.SymExpandMutBorrow
       { sv_id; bid; inner_sv; parent_abs; subst_locals; subst_loans } ->
       Some (CertEvent.EvSymExpandMutBorrow {

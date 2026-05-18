@@ -1006,81 +1006,21 @@ let rec end_borrow_aux (config : config) (span : Meta.span) ~(snapshots : bool)
       | Concrete (VMutBorrow (_, bv)) ->
           [%sanity_check] span (Option.is_none (get_first_loan_in_value bv))
       | _ -> ());
-      (* Cert: emit EvEndBorrow for mutable borrows.
-         For [UShared] we will emit a separate event in M9 (shared borrows).
-         The [given_back] symbolic expression carries the value that flows
-         back to the loan. For the direct-borrow subset (concrete or single
-         symbolic value), we approximate it as the symbolic id of the borrow
-         body, with a literal fallback. *)
+      (* Cert: emit EndBorrow for mutable borrows. For [UShared] we
+         will emit a separate event in M9 (shared borrows). The
+         observer derives the [given_back] cert expression from the
+         borrowed value, walks [ctx.env] for the loan-token holder
+         (this fires *pre*-[give_back_concrete]), and dedupes against
+         its [cert_ended_loans] set. -*)
       (match l with
       | UMut loan_bid ->
-          (* M9.6 (Option C, plan §4.1.6): drop the M9.5x
-             redundant post-join EvEndBorrow on the same loan id.
-             The OCaml join machinery linearises each branch's
-             cleanup separately and may re-walk the same loan
-             during reconciliation; the second walk is a no-op
-             at the LLBC# level but used to confuse the Lean
-             replayer (which leaned on the [joinDedupe] fallback,
-             removed in commit #20). The borrow_id allocator is
-             monotonic per fun-decl so a "duplicate" id always
-             means redundant emit, never id reuse.
-
-             We only touch [cert_ended_loans] when emission is
-             actually live — during a loop fixpoint's speculative
-             iterations (wrapped in [ctx_with_cert_events_suppressed])
-             we must NOT poison the set, otherwise the canonical
-             iteration's emits would themselves be dropped. *)
-          if !(ctx.cert_events_suppressed) then ()
-          else if Values.BorrowId.Set.mem loan_bid
-                    !(ctx.cert_ended_loans)
-          then ()
-          else begin
-            ctx.cert_ended_loans :=
-              Values.BorrowId.Set.add loan_bid
-                !(ctx.cert_ended_loans);
-            let given_back : CertEvent.cert_sym_expr =
-              match bc with
-              | Concrete (VMutBorrow (_, bv)) -> (
-                  match bv.value with
-                  | VSymbolic sv -> CertEvent.SymVal sv.sv_id
-                  | VLiteral lit -> CertEvent.SymLit lit
-                  | _ -> CertEvent.SymMutBorrowTok loan_bid)
-              | _ -> CertEvent.SymMutBorrowTok loan_bid
-            in
-            (* M10.x.0 (cert v6, plan §"Cert v6 design" #11):
-               record which env local holds the [VMutLoan loan_bid]
-               token. The Lean replayer's `stepEndBorrow .direct /
-               .lazyExpand` arm currently scans env for the holder
-               (`Step.lean:192-208`); M10.x.9 inverts that scan into
-               a direct [setLocal] using this hint, closing the
-               `endBorrow_direct_witness` axiom by [hStep] inversion.
-               Walks the *pre-give-back* env: the loan token is still
-               present here, and gets consumed by [give_back_concrete]
-               below. [None] when no env local holds the token
-               (reborrow/shared kinds, or lazy-expansion cases where
-               the token was substituted through). *)
-            let ri_holder_local : Expressions.LocalId.id option =
-              let found = ref None in
-              List.iter
-                (fun (e : env_elem) ->
-                  if Option.is_none !found then
-                    match e with
-                    | EBinding (BVar bv, v) ->
-                      (match v.value with
-                       | VLoan (VMutLoan b) when b = loan_bid ->
-                         found := Some bv.index
-                       | _ -> ())
-                    | _ -> ())
-                ctx.env;
-              !found
-            in
-            ctx_emit_event ctx
-              (CertEvent.EvEndBorrow
-                 { loan = loan_bid;
-                   restore =
-                     { ri_given_back = given_back;
-                       ri_holder_local } })
-          end
+          let borrowed_value =
+            match bc with
+            | Concrete (VMutBorrow (_, bv)) -> Some bv
+            | _ -> None
+          in
+          Observer.notify ctx
+            (Event.EndBorrow { loan = loan_bid; borrowed_value })
       | UShared _ -> ());
       (* Give back the value *)
       let ctx = give_back_concrete span l bc ctx in
@@ -1313,83 +1253,12 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
         comp cc (end_abs_borrows config span ~snapshots chain abs_id level ctx)
       in
 
-      (* M10.2b: capture the per-region post-state values flowing out of
-         the abstraction. We do this *after* [end_abs_borrows] has
-         replaced each [AMutBorrow] in the abs with [AEndedMutBorrow
-         { meta = { given_back; _ }; _ }], and *before*
-         [end_abs_synthesize] removes the abstraction from the context.
-
-         The pattern we look for is one [AEndedMutBorrow] per region
-         group: its [meta.given_back] is the freshly-generated symbolic
-         value that replaces the borrowed input upon termination. For a
-         single-region helper like [incr_inner(&mut u32)], we get a
-         singleton list whose sole entry is the post-state symbolic
-         value the caller should bind. For helpers that don't end any
-         concrete borrows (e.g. all-symbolic projector flows; M10.2b
-         doesn't yet thread those), the list is empty — the Lean side
-         falls back to its M10.1 placeholder shape. *)
-      let (cert_final_values, cert_released_loans) :
-          CertEvent.cert_sym_expr list * BorrowId.id list =
-        match ctx_lookup_abs_opt ctx abs_id with
-        | None -> ([], [])
-        | Some abs ->
-            let fvs = ref [] in
-            let rls = ref [] in
-            let visitor =
-              object
-                inherit [_] iter_abs as super
-
-                method! visit_AEndedMutBorrow env meta child =
-                  fvs := CertEvent.SymVal meta.given_back.sv_id :: !fvs;
-                  (* M9.5s: collect the abstraction-internal borrow
-                     id whose lifetime ends implicitly here (no paired
-                     EvEndBorrow gets emitted by [give_back_value]).
-                     The Lean replayer drops each released id from
-                     [SymState.loans] / [TC.liveLoans] if it's tracked
-                     there — silent no-op otherwise. *)
-                  rls := meta.bid :: !rls;
-                  super#visit_AEndedMutBorrow env meta child
-
-                method! visit_AEndedProjBorrows env aproj =
-                  fvs :=
-                    CertEvent.SymVal aproj.mvalues.given_back.sv_id :: !fvs;
-                  super#visit_AEndedProjBorrows env aproj
-              end
-            in
-            visitor#visit_abs () abs;
-            (List.rev !fvs, List.rev !rls)
-      in
-
-      (* M9.6 (Option C): collect the locals holding [VMutLoan bid]
-         for each [bid] in [cert_released_loans]. Scan against
-         [ctx0] (the original env captured at the top of
-         [end_abs_aux]) because [end_abs_borrows] above has
-         already substituted those tokens away in the current
-         [ctx]. The Lean strict path (commit #16) clears these
-         tokens directly; the fallback scans env. -*)
-      let cert_token_clear_locals : Expressions.LocalId.id list =
-        if cert_released_loans = [] then []
-        else begin
-          let released = BorrowId.Set.of_list cert_released_loans in
-          let acc = ref [] in
-          List.iter
-            (fun (e : env_elem) ->
-              match e with
-              | EBinding (BVar bv, v) ->
-                let visitor = object
-                  inherit [_] iter_tvalue as super
-                  method! visit_VMutLoan env bid =
-                    if BorrowId.Set.mem bid released then
-                      if not (List.mem bv.index !acc) then
-                        acc := bv.index :: !acc;
-                    super#visit_VMutLoan env bid
-                end in
-                visitor#visit_tvalue () v
-              | _ -> ())
-            ctx0.env;
-          List.rev !acc
-        end
-      in
+      (* Capture the abs post-[end_abs_borrows] (which has replaced
+         each [AMutBorrow] with [AEndedMutBorrow]) and *before*
+         [end_abs_synthesize] removes it from the context. The
+         observer walks this for cert [final_values] /
+         [released_loans] / [token_clear_locals]. -*)
+      let abs_value_for_obs = ctx_lookup_abs_opt ctx abs_id in
 
       (* End the regions owned by the abstraction - note that we don't need to
          relookup the abstraction: the set of regions in an abstraction never
@@ -1408,21 +1277,17 @@ and end_abs_aux (config : config) (span : Meta.span) ~(snapshots : bool)
          context all-together. *)
       let ctx, cc = comp cc (end_abs_synthesize config span abs_id level ctx) in
 
-      (* Cert: emit EvEndAbs marking the abstraction as closed. The
-         [final_values] list — populated in M10.2b — carries one
-         symbolic-value reference per [AEndedMutBorrow] in the
-         abstraction, in left-to-right order matching the call site's
-         [region_abs] field. The Lean translator pairs the most recent
-         [EvCall] with this list and binds each entry as the post-state
-         of the corresponding [&mut] input. *)
-      ctx_emit_event ctx
-        (CertEvent.EvEndAbs
-           {
-             abs = abs_id;
-             final_values = cert_final_values;
-             released_loans = cert_released_loans;
-             token_clear_locals = cert_token_clear_locals;
-           });
+      (* Cert: emit EndAbs marking the abstraction as closed. The
+         observer extracts [final_values] (one symbolic-value
+         reference per [AEndedMutBorrow] / [AEndedProjBorrows] in
+         [abs_value], in left-to-right order matching the call site's
+         [region_abs] field), [released_loans] (their bids), and
+         [token_clear_locals] (locals in [ctx0.env] holding the
+         [VMutLoan] tokens). -*)
+      Observer.notify ctx
+        (Event.EndAbs {
+           abs_id; abs_value = abs_value_for_obs; pre_end_env = ctx0.env;
+         });
 
       (* Debugging *)
       [%ltrace

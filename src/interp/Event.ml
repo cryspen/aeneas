@@ -24,8 +24,7 @@ type t =
   | Copy of { src : place; dst : place }
   | EndBorrow of {
       loan : borrow_id;
-      given_back : tvalue;
-      holder_local : local_id option;
+      borrowed_value : tvalue option;
     }
   | Assert of { cond_value : tvalue; expected : bool }
   | Panic
@@ -55,9 +54,9 @@ type t =
       freshened_abs : abs list;
     }
   | EndAbs of {
-      abs : abs;
-      final_values : tvalue list;
-      released_loans : borrow_id list;
+      abs_id : abs_id;
+      abs_value : abs option;
+      pre_end_env : env;
     }
   | SymExpandMutBorrow of {
       sv_id : symbolic_value_id;

@@ -41,12 +41,13 @@ type t =
   | Copy of { src : place; dst : place }
   | EndBorrow of {
       loan : borrow_id;
-      given_back : tvalue;
-      holder_local : local_id option;
-          (** The local that holds the [VMutLoan loan] at the moment
-              the loan ends. Computed *pre*-[give_back_concrete] by
-              the emit site; the observer cannot recompute this
-              post-fact (the loan binding has been rewritten). -*)
+      borrowed_value : tvalue option;
+          (** [Some bv] when the underlying [borrow_content] is
+              [Concrete (VMutBorrow (_, bv))]; [None] otherwise.
+              Observers extract the cert-side [given_back] expression
+              from [bv] or fall back to a loan-token reference when
+              [None]. The observer fires *pre*-[give_back_concrete] so
+              the [VMutLoan loan] holder is still in [ctx.env]. -*)
     }
   | Assert of { cond_value : tvalue; expected : bool }
   | Panic
@@ -78,9 +79,19 @@ type t =
               walk these to derive cert-side role / shape data. -*)
     }
   | EndAbs of {
-      abs : abs;
-      final_values : tvalue list;
-      released_loans : borrow_id list;
+      abs_id : abs_id;
+      abs_value : abs option;
+          (** [Some abs] when the abs is still in the context at
+              emit-time (just after [end_abs_borrows] replaced its
+              [AMutBorrow] / [AProjBorrows] entries with the
+              [AEnded*] forms); [None] when the lookup failed (the
+              original site emitted an event with empty payload). -*)
+      pre_end_env : env;
+          (** Snapshot of [ctx.env] captured at the top of
+              [end_abs_aux], before any sub-loan ends substituted the
+              [VMutLoan] tokens. Observers walk this to derive
+              [token_clear_locals]; the live [ctx.env] at observer-fire
+              time has already had those tokens rewritten. -*)
     }
   | SymExpandMutBorrow of {
       sv_id : symbolic_value_id;
