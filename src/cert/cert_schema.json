@@ -402,7 +402,6 @@
             }
           }
         },
-        { "type": "object", "required": ["EvProj"] },
         {
           "type": "object",
           "required": ["EvSymExpandMutBorrow"],

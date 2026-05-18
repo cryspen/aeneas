@@ -138,7 +138,6 @@ private def eventPlaceRefs : Event → Array (String × Place)
   | .reborrow _ _ p _ _ => #[("reborrow.place", p)]
   | .call _ _ _ _ d _ _ => #[("call.dst", d)]
   | .binop _ _ _ d => #[("binop.dst", d)]
-  | .proj _ p _ => #[("proj.place", p)]
   | _ => #[]
 
 /-- M9.7i: collect the (label, place) pairs that a `SymExpr` reaches.

@@ -204,11 +204,6 @@ type event =
           back to today's scan-env behaviour while empty. -*)
       token_clear_locals : local_id list;
     }
-  | EvProj of {
-      abs : abs_id;
-      place : cert_place;
-      symval : symbolic_value_id;
-    }
   | EvSymExpandMutBorrow of {
       sv_id : symbolic_value_id;
       bid : borrow_id;

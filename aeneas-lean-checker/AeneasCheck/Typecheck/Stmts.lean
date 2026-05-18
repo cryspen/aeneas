@@ -106,7 +106,6 @@ def checkEvent (ev : Event) : TC Unit := do
           liveLoans := st.liveLoans.erase loan
           endedLoans := st.endedLoans.insert loan }
     set st
-  | .proj _ _ _ => emitErr "EvProj: not supported until M10"
   | .join left right result _ => do
     -- M11.1: structural check on the join witness. We bounds-check
     -- the SymExprs in each side's env (so a malformed cert is

@@ -462,17 +462,6 @@ let json_event (e : event) : Yojson.Basic.t =
                   `List (List.map json_local_id token_clear_locals);
               ] );
         ]
-  | EvProj { abs; place; symval } ->
-      `Assoc
-        [
-          ( "EvProj",
-            `Assoc
-              [
-                "abs", json_abs_id abs;
-                "place", json_cert_place place;
-                "symval", json_symbolic_value_id symval;
-              ] );
-        ]
   | EvSymExpandMutBorrow
       { sv_id; bid; inner_sv; parent_abs; subst_locals; subst_loans } ->
       let pa_kv : (string * Yojson.Basic.t) list =

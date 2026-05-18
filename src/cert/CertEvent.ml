@@ -355,11 +355,6 @@ type event =
               under fmt_version 2 until commit #8 — the Lean side
               falls back to today's scan-env behaviour while empty. *)
     }
-  | EvProj of {
-      abs : abs_id;
-      place : cert_place;
-      symval : symbolic_value_id;
-    }
   | EvSymExpandMutBorrow of {
       sv_id : symbolic_value_id;
       bid : borrow_id;

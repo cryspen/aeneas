@@ -290,7 +290,6 @@ inductive Event
   | endAbs (abs : Nat) (finalValues : Array SymExpr)
            (releasedLoans : Array Nat := #[])
            (tokenClearLocals : Array Nat := #[])
-  | proj (abs : Nat) (place : Place) (symval : Nat)
   /-- M9.5r: lazy mut-borrow expansion. The OCaml interpreter just
       replaced symbolic value `svId` (some [&mut T]-typed value) with
       a concrete mut-borrow whose id is `bid` and whose inner value is

@@ -1447,7 +1447,6 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
   -- (the branch-marker pair has already been consumed); `.join` is
   -- only reached if the [findBranchEnd] lookahead failed (malformed
   -- cert), in which case ignoring it is the safest fallback.
-  | .proj _ _ _
   | .join _ _ _ _ | .loopInv _ _ _ | .loopEnd _ => st
   -- M9.5d: match-arm markers are consumed by the outer [walkEvents]
   -- loop (it groups arms into a `PExpr.matchE`). Hitting one here
