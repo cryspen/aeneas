@@ -14,7 +14,7 @@ repo_root="$(cd "$here/../../.." && pwd)"
 aeneas_check="$repo_root/aeneas-lean-checker/.lake/build/bin/aeneas-check"
 llbc_dir="$repo_root/tests/llbc"
 
-fixtures=(incr_cert compare_simple calls bitwise)
+fixtures=(incr_cert compare_simple calls bitwise constants)
 
 echo "[lean-diff] regenerating Lean fixtures via aeneas-check"
 for fx in "${fixtures[@]}"; do

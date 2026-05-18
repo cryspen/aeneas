@@ -79,6 +79,29 @@ mod bitwise {
     pub fn and_u32(a: u32, b: u32) -> u32 { a & b }
 }
 
+mod constants {
+    // Mirrors the subset of tests/src/constants.rs that the
+    // ConstantsRunner exercises. Only the scalar-returning + tuple
+    // functions and the four nullary const initialisers whose Lean
+    // emit is non-placeholder.
+    pub const fn incr(n: u32) -> u32 {
+        n.wrapping_add(1)
+    }
+    pub const fn add(a: i32, b: i32) -> i32 {
+        a.wrapping_add(b)
+    }
+    pub const fn mk_pair0(x: u32, y: u32) -> (u32, u32) {
+        (x, y)
+    }
+    pub const X0: u32 = 0;
+    pub const X2: u32 = 3;
+    pub const X3: u32 = incr(32);
+    pub const Q1: i32 = 5;
+    pub const P0: (u32, u32) = mk_pair0(0, 1);
+    pub const P2: (u32, u32) = (0, 1);
+    pub static S1: u32 = 6;
+}
+
 // ---------------------------------------------------------------------------
 // Line formatting — must match `LeanDiff/Common.lean::mkLine` exactly.
 // ---------------------------------------------------------------------------
@@ -91,6 +114,17 @@ fn ok_i32(fixture: &str, fn_name: &str, args: &[String], v: i32) {
     // The Lean side's `Show1 Int32` instance prints the signed decimal
     // via `Int32.toInt`; match that here with Rust's signed `Display`.
     println!("{}::{}({}) = ok {}", fixture, fn_name, args.join(","), v);
+}
+
+fn ok_tuple_u32(fixture: &str, fn_name: &str, args: &[String], v: (u32, u32)) {
+    println!(
+        "{}::{}({}) = ok {},{}",
+        fixture,
+        fn_name,
+        args.join(","),
+        v.0,
+        v.1
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -139,6 +173,39 @@ const PICK_TRIPLES: &[(bool, u32, u32)] = &[
     (false, 0xFFFFFFFF, 0),
     (true, 0, 0xFFFFFFFF),
     (false, 0, 0xFFFFFFFF),
+];
+
+// Constants fixture vectors. Must agree with
+// `LeanDiff/ConstantsRunner.lean` order.
+const CONSTANTS_U32: [u32; 9] = [
+    0,
+    1,
+    2,
+    41,
+    100,
+    0xFFFFFFFE,
+    0xFFFFFFFF,
+    0x7FFFFFFF,
+    0x80000000,
+];
+
+const CONSTANTS_ADD_I32: &[(i32, i32)] = &[
+    (0, 0),
+    (1, 1),
+    (1, -1),
+    (-1, 1),
+    (0x7FFFFFFF, 1),
+    (-0x80000000, -1),
+    (100, 200),
+    (-100, -200),
+];
+
+const CONSTANTS_MK_PAIR_U32: &[(u32, u32)] = &[
+    (0, 0),
+    (1, 2),
+    (42, 7),
+    (0xFFFFFFFF, 1),
+    (0x7FFFFFFF, 0x80000000),
 ];
 
 // Bitwise fixture vectors. Must agree with
@@ -281,4 +348,37 @@ fn main() {
             bitwise::and_u32(a, b),
         );
     }
+
+    // constants
+    for &x in &CONSTANTS_U32 {
+        ok_u32(
+            "constants",
+            "incr",
+            &[x.to_string()],
+            constants::incr(x),
+        );
+    }
+    for &(a, b) in CONSTANTS_ADD_I32 {
+        ok_i32(
+            "constants",
+            "add",
+            &[a.to_string(), b.to_string()],
+            constants::add(a, b),
+        );
+    }
+    for &(x, y) in CONSTANTS_MK_PAIR_U32 {
+        ok_tuple_u32(
+            "constants",
+            "mk_pair0",
+            &[x.to_string(), y.to_string()],
+            constants::mk_pair0(x, y),
+        );
+    }
+    ok_u32("constants", "X0", &[], constants::X0);
+    ok_u32("constants", "X2", &[], constants::X2);
+    ok_u32("constants", "X3", &[], constants::X3);
+    ok_u32("constants", "S1", &[], constants::S1);
+    ok_i32("constants", "Q1", &[], constants::Q1);
+    ok_tuple_u32("constants", "P0", &[], constants::P0);
+    ok_tuple_u32("constants", "P2", &[], constants::P2);
 }

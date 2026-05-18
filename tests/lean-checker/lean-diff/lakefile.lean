@@ -37,10 +37,16 @@ lean_lib «RuntimeShim» where
     `#isize` (alongside `#i32` and `#i64`), so the emitter's
     `16#isize` shift-amount literal in `shift_i32` typechecks
     without the hand-patch the committed
-    `aeneas-lean-checker/tests/Generated/Bitwise.lean` used to need. -/
+    `aeneas-lean-checker/tests/Generated/Bitwise.lean` used to need.
+
+    Phase 4a: `constants` wired in. Requires the Phase 4a-1
+    `HAdd I32 (Result I32)` shim instance (used by the i32 `add` def),
+    the Phase 4a-2 brace sanitiser in LeanEmit (decorated def names),
+    the Phase 4a-3 ADT placeholder + Phase 4a-5 topo sort
+    (`Wrap.new` must precede `Y`'s call site). -/
 lean_lib «Generated» where
   srcDir := "generated"
-  roots := #[`incr_cert, `compare_simple, `calls, `bitwise]
+  roots := #[`incr_cert, `compare_simple, `calls, `bitwise, `constants]
 
 /-- Common formatting + the per-fixture runners. -/
 lean_lib «LeanDiff» where
@@ -48,7 +54,8 @@ lean_lib «LeanDiff» where
              `LeanDiff.IncrRunner,
              `LeanDiff.CompareSimpleRunner,
              `LeanDiff.CallsRunner,
-             `LeanDiff.BitwiseRunner]
+             `LeanDiff.BitwiseRunner,
+             `LeanDiff.ConstantsRunner]
 
 /-- The differential entry point. Calls each runner's `runAll` so a
     single invocation produces the full expected-line stream. -/
