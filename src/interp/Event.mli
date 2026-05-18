@@ -20,17 +20,17 @@ type t =
   | MutBorrow of {
       loan : borrow_id;
       place : place;
-      symval : symbolic_value;
+      value : tvalue;
     }
       (** Fires when a fresh [&mut p] creates loan [loan] over [place]
-          backed by symbolic value [symval]. Observers compute the
-          [kind_hint] (direct / loop-owned / in-abs-reborrow) from the
-          place's projection and their own loop stack. -*)
+          with the borrowed [value]. Observers extract whatever
+          they need ([symbolic_value_id], cert kind_hint) from the
+          tvalue and their own loop stack. -*)
   | SharedBorrow of {
       loan : borrow_id;
       sb_id : shared_borrow_id;
       place : place;
-      symval : symbolic_value;
+      value : tvalue;
     }
   | Assign of {
       dst : place;

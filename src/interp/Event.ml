@@ -7,13 +7,13 @@ type t =
   | MutBorrow of {
       loan : borrow_id;
       place : place;
-      symval : symbolic_value;
+      value : tvalue;
     }
   | SharedBorrow of {
       loan : borrow_id;
       sb_id : shared_borrow_id;
       place : place;
-      symval : symbolic_value;
+      value : tvalue;
     }
   | Assign of {
       dst : place;

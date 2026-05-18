@@ -556,14 +556,11 @@ let eval_operand_no_reorganize (config : config) (span : Meta.span)
       in
       (* Update the original value *)
       let ctx = write_place span access p updated_value ctx in
-      (* Cert: emit EvCopy. We use [p] as both src and dst: the LLBC#
+      (* Cert: emit Copy. We use [p] as both src and dst: the LLBC#
          rule for Copy is "place read into a temp"; the temp does not
          have a place of its own. M7 collapses Copy events into the
          enclosing Assign's RHS. *)
-      (match CertEvent.cert_place_of_place p with
-      | Some cp ->
-          ctx_emit_event ctx (CertEvent.EvCopy { src = cp; dst = cp })
-      | None -> ());
+      Observer.notify ctx (Event.Copy { src = p; dst = p });
       (copied_value, ctx, cc)
   | Move p ->
       (* Access the value *)
@@ -576,11 +573,8 @@ let eval_operand_no_reorganize (config : config) (span : Meta.span)
       (* Move the value *)
       let bottom : tvalue = { value = VBottom; ty = v.ty } in
       let ctx = write_place span access p bottom ctx in
-      (* Cert: emit EvMove. Same caveat as EvCopy. *)
-      (match CertEvent.cert_place_of_place p with
-      | Some cp ->
-          ctx_emit_event ctx (CertEvent.EvMove { src = cp; dst = cp })
-      | None -> ());
+      (* Cert: emit Move. Same caveat as Copy. *)
+      Observer.notify ctx (Event.Move { src = p; dst = p });
       (v, ctx, fun e -> e)
 
 let eval_operand (config : config) (span : Meta.span) (op : operand)
@@ -1243,91 +1237,52 @@ let eval_rvalue_ref (config : config) (span : Meta.span) (p : place)
       let nv = { v with value = VLoan (VMutLoan bid) } in
       (* Update the value in the context to replace it with the loan *)
       let ctx = write_place span access p nv ctx in
-      (* Cert: emit EvReborrow if [p] is the deref of an existing
+      (* Cert: emit Reborrow if [p] is the deref of an existing
          (mut/shared) borrow — i.e. the new borrow is a child of an
-         existing parent loan — otherwise emit a plain EvMutBorrow.
+         existing parent loan — otherwise emit a plain MutBorrow. The
+         observer derives the cert kind_hint (direct / loop-owned /
+         in-abs-reborrow) from the place's projection and its loop
+         stack; we only forward what the interpreter already knows.
 
          Detection: [p] has outer projection [Deref] and the prefix
          place reads to a [VBorrow]. We look up the parent borrow id
          from the original context (before the write that replaced
-         the parent's loan with [VMutLoan bid]).
-
-         The symbolic value id on EvMutBorrow records the symbolic
-         value held by the loan at the moment of the borrow; concrete
-         (non-symbolic) values use a 0 placeholder. *)
-      (match CertEvent.cert_place_of_place p with
-      | None -> ()
-      | Some cp ->
-          let symval =
-            match v.value with
-            | VSymbolic sv -> sv.sv_id
-            | _ -> Values.SymbolicValueId.of_int 0
+         the parent's loan with [VMutLoan bid]). *)
+      let parent_bid_opt =
+        match p.kind with
+        | PlaceProjection (parent_p, Deref) ->
+            let _, parent_v = read_place span Read parent_p ctx in
+            (match parent_v.value with
+            | VBorrow (VMutBorrow (pbid, _))
+            | VBorrow (VSharedBorrow (pbid, _))
+            | VBorrow (VReservedMutBorrow (pbid, _)) -> Some pbid
+            | _ -> None)
+        | _ -> None
+      in
+      (match parent_bid_opt with
+      | Some parent ->
+          (* M9.6 (Option C): walk the borrow graph to decide
+             whether the parent's loan side is still live, and
+             (when so) which abstraction owns it. The Lean
+             strict path uses these to skip the pragmatic
+             "pre-add a fake .reborrow parent if missing"
+             fallback in [Step.stepReborrow]. *)
+          let parent_live, parent_abs =
+            match
+              InterpBorrowsCore.ctx_lookup_loan_opt span
+                InterpBorrowsCore.ek_all parent ctx
+            with
+            | Some (AbsId aid, _) -> (true, Some aid)
+            | Some _ -> (true, None)
+            | None -> (false, None)
           in
-          let parent_bid_opt =
-            match p.kind with
-            | PlaceProjection (parent_p, Deref) ->
-                let _, parent_v = read_place span Read parent_p ctx in
-                (match parent_v.value with
-                | VBorrow (VMutBorrow (pbid, _))
-                | VBorrow (VSharedBorrow (pbid, _))
-                | VBorrow (VReservedMutBorrow (pbid, _)) -> Some pbid
-                | _ -> None)
-            | _ -> None
-          in
-          match parent_bid_opt with
-          | Some parent ->
-              (* M9.6 (Option C): walk the borrow graph to decide
-                 whether the parent's loan side is still live, and
-                 (when so) which abstraction owns it. The Lean
-                 strict path uses these to skip the pragmatic
-                 "pre-add a fake .reborrow parent if missing"
-                 fallback in [Step.stepReborrow]. *)
-              let parent_live, parent_abs =
-                match
-                  InterpBorrowsCore.ctx_lookup_loan_opt span
-                    InterpBorrowsCore.ek_all parent ctx
-                with
-                | Some (AbsId aid, _) -> (true, Some aid)
-                | Some _ -> (true, None)
-                | None -> (false, None)
-              in
-              ctx_emit_event ctx
-                (CertEvent.EvReborrow {
-                  child = bid; parent; place = cp;
-                  parent_live; parent_abs;
-                })
-          | None ->
-              (* M9.6 (Option C) — subsumes M9.5w + M9.5aa.
-                 * Place projection contains a [Deref] but didn't
-                   resolve to the EvReborrow shape above
-                   ⇒ MbkInAbsReborrow (caller-input abs owns the
-                   borrow's lifetime). The Lean strict path
-                   classifies this as reborrow-class. The exact
-                   absId stays a placeholder (0) until commit #19
-                   wires the AbsRegistry.
-                 * No [Deref] but we're inside an open loop body
-                   ⇒ MbkLoopOwned with the topmost loop id from
-                   [cert_loop_id_stack].
-                 * Otherwise ⇒ MbkDirect (in-body, must be
-                   explicitly ended). *)
-              let has_deref =
-                List.exists
-                  (fun (pe : projection_elem) ->
-                    match pe with Deref -> true | _ -> false)
-                  cp.cp_projection
-              in
-              let kind_hint : CertEvent.cert_mut_borrow_kind =
-                if has_deref then
-                  CertEvent.MbkInAbsReborrow (AbsId.of_int 0)
-                else
-                  match !(ctx.cert_loop_id_stack) with
-                  | top :: _ -> CertEvent.MbkLoopOwned top
-                  | [] -> CertEvent.MbkDirect
-              in
-              ctx_emit_event ctx
-                (CertEvent.EvMutBorrow {
-                  loan = bid; place = cp; symval; kind_hint;
-                }));
+          Observer.notify ctx
+            (Event.Reborrow {
+              child = bid; parent; place = p; parent_live; parent_abs;
+            })
+      | None ->
+          Observer.notify ctx
+            (Event.MutBorrow { loan = bid; place = p; value = v }));
       (* Return *)
       (rv, ctx, cc)
 
