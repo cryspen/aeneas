@@ -45,27 +45,61 @@ def mk_pair0 (x1 : Std.U32) (x2 : Std.U32) : Result (Std.U32 × Std.U32) := do
 def mk_pair1 (x1 : Std.U32) (x2 : Std.U32) : Result (Pair Std.U32 Std.U32) := do
   ok { x := x1, y := x2 }
 
+/-- [constants::{constants::Wrap<T>}::new]:
+    Source: 'tests/src/constants.rs', lines 55:4-57:5 -/
+def Wrap.new {T : Type} (x1 : T) : Result (Wrap T) := do
+  ok { value := x1 }
+
+/-- [constants::Y]:
+    Source: 'tests/src/constants.rs', lines 42:0-42:38 -/
+def Y : Result (Wrap Std.I32) := do
+  (constants.Wrap.new 2#i32)
+
 /-- [constants::unwrap_y]:
     Source: 'tests/src/constants.rs', lines 44:0-46:1 -/
 def unwrap_y : Result Std.I32 := do
-  ok 0#i32
+  let g2 ← constants.Y
+  ok g2.value
+
+/-- [constants::get_z1::Z1]:
+    Source: 'tests/src/constants.rs', lines 63:4-63:22 -/
+def get_z1.Z1 : Result Std.I32 := do
+  ok 3#i32
 
 /-- [constants::get_z1]:
     Source: 'tests/src/constants.rs', lines 62:0-65:1 -/
 def get_z1 : Result Std.I32 := do
-  ok 0#i32
+  constants.get_z1.Z1
 
 /-- [constants::add]:
     Source: 'tests/src/constants.rs', lines 67:0-69:1 -/
 def add (x1 : Std.I32) (x2 : Std.I32) : Result Std.I32 := do
   (x1 + x2)
 
+/-- [constants::Q1]:
+    Source: 'tests/src/constants.rs', lines 75:0-75:22 -/
+def Q1 : Result Std.I32 := do
+  ok 5#i32
+
+/-- [constants::Q2]:
+    Source: 'tests/src/constants.rs', lines 76:0-76:23 -/
+def Q2 : Result Std.I32 := do
+  constants.Q1
+
+/-- [constants::Q3]:
+    Source: 'tests/src/constants.rs', lines 77:0-77:31 -/
+def Q3 : Result Std.I32 := do
+  let g1 ← constants.Q2
+  (constants.add g1 3#i32)
+
 /-- [constants::get_z2]:
     Source: 'tests/src/constants.rs', lines 71:0-73:1 -/
 def get_z2 : Result Std.I32 := do
+  let g3 ← constants.Q3
+  let g4 ← constants.Q1
   let t0 ← constants.get_z1
-  let t1 ← (constants.add t0 0#i32)
-  (constants.add t1 t1)
+  let t1 ← (constants.add t0 g3)
+  (constants.add g4 t1)
 
 /-- [constants::use_v]:
     Source: 'tests/src/constants.rs', lines 95:0-97:1 -/
@@ -80,7 +114,7 @@ def X0 : Result Std.U32 := do
 /-- [constants::X1]:
     Source: 'tests/src/constants.rs', lines 8:0-8:29 -/
 def X1 : Result Std.U32 := do
-  ok 0#u32
+  core.num.U32.MAX
 
 /-- [constants::X2]:
     Source: 'tests/src/constants.rs', lines 11:0-14:2 -/
@@ -112,35 +146,10 @@ def P2 : Result (Std.U32 × Std.U32) := do
 def P3 : Result (Pair Std.U32 Std.U32) := do
   ok { x := 0#u32, y := 1#u32 }
 
-/-- [constants::{constants::Wrap<T>}::new]:
-    Source: 'tests/src/constants.rs', lines 55:4-57:5 -/
-def Wrap.new {T : Type} (x1 : T) : Result (Wrap T) := do
-  ok { value := x1 }
-
-/-- [constants::Y]:
-    Source: 'tests/src/constants.rs', lines 42:0-42:38 -/
-def Y : Result (Wrap Std.I32) := do
-  (constants.Wrap.new 2#i32)
-
 /-- [constants::YVAL]:
     Source: 'tests/src/constants.rs', lines 48:0-48:33 -/
 def YVAL : Result Std.I32 := do
   constants.unwrap_y
-
-/-- [constants::Q1]:
-    Source: 'tests/src/constants.rs', lines 75:0-75:22 -/
-def Q1 : Result Std.I32 := do
-  ok 5#i32
-
-/-- [constants::Q2]:
-    Source: 'tests/src/constants.rs', lines 76:0-76:23 -/
-def Q2 : Result Std.I32 := do
-  ok 0#i32
-
-/-- [constants::Q3]:
-    Source: 'tests/src/constants.rs', lines 77:0-77:31 -/
-def Q3 : Result Std.I32 := do
-  (constants.add 0#i32 3#i32)
 
 /-- [constants::S1]:
     Source: 'tests/src/constants.rs', lines 81:0-81:23 -/
@@ -150,22 +159,18 @@ def S1 : Result Std.U32 := do
 /-- [constants::S2]:
     Source: 'tests/src/constants.rs', lines 82:0-82:30 -/
 def S2 : Result Std.U32 := do
-  (constants.incr 0#u32)
+  let g4 ← constants.S1
+  (constants.incr g4)
 
 /-- [constants::S3]:
     Source: 'tests/src/constants.rs', lines 83:0-83:35 -/
 def S3 : Result (Pair Std.U32 Std.U32) := do
-  ok { x := 0#u32, y := 0#u32 }
+  constants.P3
 
 /-- [constants::S4]:
     Source: 'tests/src/constants.rs', lines 84:0-84:47 -/
 def S4 : Result (Pair Std.U32 Std.U32) := do
   (constants.mk_pair1 7#u32 8#u32)
-
-/-- [constants::get_z1::Z1]:
-    Source: 'tests/src/constants.rs', lines 63:4-63:22 -/
-def get_z1.Z1 : Result Std.I32 := do
-  ok 3#i32
 
 /-- [constants::{constants::V<T, N>}::LEN]:
     Source: 'tests/src/constants.rs', lines 92:4-92:29 -/

@@ -2880,7 +2880,8 @@
                               "types": [ { "Literal": { "Int": "I32" } } ]
                             }
                           }
-                        }
+                        },
+                        "global": "constants::Y"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -3079,7 +3080,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "Int": "I32" } }
+                        "ty": { "Literal": { "Int": "I32" } },
+                        "global": "constants::get_z1::Z1"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -3418,7 +3420,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "Int": "I32" } }
+                        "ty": { "Literal": { "Int": "I32" } },
+                        "global": "constants::Q3"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -3503,7 +3506,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "Int": "I32" } }
+                        "ty": { "Literal": { "Int": "I32" } },
+                        "global": "constants::Q1"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -3647,7 +3651,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "Usize" } }
+                        "ty": { "Literal": { "UInt": "Usize" } },
+                        "global": "constants::{constants::V<T, N>}::LEN"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -3846,7 +3851,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "U32" } }
+                        "ty": { "Literal": { "UInt": "U32" } },
+                        "global": "core::num::{u32}::MAX"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -5118,7 +5124,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "Int": "I32" } }
+                        "ty": { "Literal": { "Int": "I32" } },
+                        "global": "constants::Q1"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -5234,7 +5241,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "Int": "I32" } }
+                        "ty": { "Literal": { "Int": "I32" } },
+                        "global": "constants::Q2"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -5449,7 +5457,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "U32" } }
+                        "ty": { "Literal": { "UInt": "U32" } },
+                        "global": "constants::S1"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -5727,7 +5736,8 @@
                               ]
                             }
                           }
-                        }
+                        },
+                        "global": "constants::P3"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null

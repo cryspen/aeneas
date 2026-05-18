@@ -108,11 +108,48 @@ mod scalars {
     pub fn i32_use_rotate_left(x: i32) -> i32 { x.rotate_left(2) }
 }
 
+mod demo {
+    // Session 5 (Item 2): mirrors the well-emitted subset of
+    // tests/src/demo.rs. The skipped decls (Counter trait + impl,
+    // list_nth*, choose, i32_id) are documented in
+    // `LeanDiff/DemoRunner.lean`.
+    pub fn mul2_add1(x: u32) -> u32 {
+        x.wrapping_add(x).wrapping_add(1)
+    }
+    pub fn use_mul2_add1(x: u32, y: u32) -> u32 {
+        mul2_add1(x).wrapping_add(y)
+    }
+    pub fn incr(x: u32) -> u32 {
+        x.wrapping_add(1)
+    }
+    pub fn use_incr() {
+        let _ = incr(0);
+        let _ = incr(0);
+        let _ = incr(0);
+    }
+    // Aeneas modular-add: `(x + y) - 3329` then mask via `>> 16i32`.
+    // The shim renders `>>` as a wrapping shift; we mirror with
+    // `wrapping_shr`. The `wrapping_sub(x + y, 3329)` produces the
+    // 2-complement of the diff when underflow occurs; the high bits
+    // turn 0xFFFF_FFFF when negative, 0x0000_0000 when non-negative.
+    // Masking with 3329 gives 3329 (to add back) or 0 (to keep).
+    pub fn mod_add(x: u32, y: u32) -> u32 {
+        let t2 = x.wrapping_add(y);
+        let t3 = t2.wrapping_sub(3329);
+        // shim emit: `(t3 >>> 16#i32)` — `>>>` is `core.num.U32.shiftRight`
+        // (wrapping); the rhs is u32. `wrapping_shr` matches.
+        let t4 = t3.wrapping_shr(16);
+        let t5 = 3329u32 & t4;
+        t3.wrapping_add(t5)
+    }
+}
+
 mod constants {
     // Mirrors the subset of tests/src/constants.rs that the
     // ConstantsRunner exercises. Only the scalar-returning + tuple
-    // functions and the four nullary const initialisers whose Lean
-    // emit is non-placeholder.
+    // functions and the nullary const/static initialisers whose Lean
+    // emit is non-placeholder. Session 5 Item 1 added X1, Q2, Q3,
+    // S2, get_z1, get_z2, unwrap_y, YVAL.
     pub const fn incr(n: u32) -> u32 {
         n.wrapping_add(1)
     }
@@ -122,13 +159,37 @@ mod constants {
     pub const fn mk_pair0(x: u32, y: u32) -> (u32, u32) {
         (x, y)
     }
+    pub struct Wrap<T> {
+        pub value: T,
+    }
+    impl<T> Wrap<T> {
+        pub const fn new(value: T) -> Wrap<T> {
+            Wrap { value }
+        }
+    }
+    pub const fn unwrap_y() -> i32 {
+        Y.value
+    }
+    pub const fn get_z1() -> i32 {
+        const Z1: i32 = 3;
+        Z1
+    }
+    pub const fn get_z2() -> i32 {
+        add(Q1, add(get_z1(), Q3))
+    }
     pub const X0: u32 = 0;
+    pub const X1: u32 = u32::MAX;
     pub const X2: u32 = 3;
     pub const X3: u32 = incr(32);
+    pub const Y: Wrap<i32> = Wrap::new(2);
+    pub const YVAL: i32 = unwrap_y();
     pub const Q1: i32 = 5;
+    pub const Q2: i32 = Q1;
+    pub const Q3: i32 = add(Q2, 3);
     pub const P0: (u32, u32) = mk_pair0(0, 1);
     pub const P2: (u32, u32) = (0, 1);
     pub static S1: u32 = 6;
+    pub static S2: u32 = incr(S1);
 }
 
 // ---------------------------------------------------------------------------
@@ -311,6 +372,31 @@ const SCALARS_PAIRS_I32: &[(i32, i32)] = &[
     (-100, -200),
 ];
 
+// Session 5 (Item 2): demo fixture vectors. Must agree with
+// `LeanDiff/DemoRunner.lean` order.
+const DEMO_U32: [u32; 9] = [
+    0,
+    1,
+    2,
+    41,
+    0xDEADBEEF,
+    0xFFFFFFFE,
+    0xFFFFFFFF,
+    0x7FFFFFFF,
+    0x80000000,
+];
+
+const DEMO_PAIRS_U32: &[(u32, u32)] = &[
+    (0, 0),
+    (1, 2),
+    (42, 7),
+    (0xFFFFFFFF, 1),
+    (0x7FFFFFFF, 0x80000000),
+    (1000, 2329),
+    (3328, 1),
+    (3329, 3329),
+];
+
 // ---------------------------------------------------------------------------
 // main
 // ---------------------------------------------------------------------------
@@ -455,6 +541,18 @@ fn main() {
     ok_i32("constants", "Q1", &[], constants::Q1);
     ok_tuple_u32("constants", "P0", &[], constants::P0);
     ok_tuple_u32("constants", "P2", &[], constants::P2);
+    // Session 5 (Item 1): the cert walker now recovers the source
+    // global through Charon's pre-pass-inserted borrow chain. The
+    // previously-skipped const/static initialisers below are wired
+    // in here against the Rust-source reference values.
+    ok_u32("constants", "X1", &[], constants::X1);
+    ok_i32("constants", "Q2", &[], constants::Q2);
+    ok_i32("constants", "Q3", &[], constants::Q3);
+    ok_u32("constants", "S2", &[], constants::S2);
+    ok_i32("constants", "get_z1", &[], constants::get_z1());
+    ok_i32("constants", "get_z2", &[], constants::get_z2());
+    ok_i32("constants", "unwrap_y", &[], constants::unwrap_y());
+    ok_i32("constants", "YVAL", &[], constants::YVAL);
 
     // scalars
     for &(a, b) in SCALARS_PAIRS_U32 {
@@ -513,5 +611,25 @@ fn main() {
     for &x in &SCALARS_I32 {
         ok_i32("scalars", "i32_use_rotate_left", &[x.to_string()],
             scalars::i32_use_rotate_left(x));
+    }
+
+    // demo (Session 5 Item 2)
+    for &x in &DEMO_U32 {
+        ok_u32("demo", "mul2_add1", &[x.to_string()],
+            demo::mul2_add1(x));
+    }
+    for &(a, b) in DEMO_PAIRS_U32 {
+        ok_u32("demo", "use_mul2_add1", &[a.to_string(), b.to_string()],
+            demo::use_mul2_add1(a, b));
+    }
+    for &x in &DEMO_U32 {
+        ok_u32("demo", "incr", &[x.to_string()],
+            demo::incr(x));
+    }
+    demo::use_incr();
+    println!("demo::use_incr() = ok ()");
+    for &(a, b) in DEMO_PAIRS_U32 {
+        ok_u32("demo", "mod_add", &[a.to_string(), b.to_string()],
+            demo::mod_add(a, b));
     }
 }

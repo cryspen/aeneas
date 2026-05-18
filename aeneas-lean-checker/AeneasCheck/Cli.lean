@@ -22,6 +22,7 @@ open AeneasCheck Json Typecheck LLBCSharp Translate Backends
 
 def usage : String :=
   "Usage: aeneas-check <cert.json> [--out <generated.lean>] [--rust-model <model.rs>]\n" ++
+  "                    [--skip-decl <name> ...]\n" ++
   "       aeneas-check <llbc.json> <cert.json> [--out …] [--rust-model …]    (legacy, llbc.json ignored)"
 
 /-- Find `--flag value` in args, return value if present. -/
@@ -31,6 +32,18 @@ def findFlag (args : List String) (flag : String) : Option String :=
   | f :: v :: rest =>
     if f = flag then some v else findFlag (v :: rest) flag
   | [_] => none
+
+/-- Session 5 (Item 2): collect every `--flag value` occurrence into
+    a list. Used by `--skip-decl <name>` to drop named decls from the
+    Lean emit so a fixture's well-emitted subset can ship without
+    dragging the broken siblings along. -/
+def findFlagsAll (args : List String) (flag : String) : List String :=
+  match args with
+  | [] => []
+  | f :: v :: rest =>
+    if f = flag then v :: findFlagsAll rest flag
+    else findFlagsAll (v :: rest) flag
+  | [_] => []
 
 /-- M9.7f: pick the cert path and the remaining args from the CLI tail.
 
@@ -79,9 +92,10 @@ def main (args : List String) : IO UInt32 := do
           let parts := f.fnName.splitOn "::"
           parts.headD "crate"
         | [] => "crate"
+      let skipNames := findFlagsAll rest "--skip-decl"
       match findFlag rest "--out" with
       | some outPath =>
-        let src := emitTranslatedCrate crateName tc
+        let src := emitTranslatedCrate crateName tc skipNames
         IO.FS.writeFile outPath src
         IO.println s!"  wrote Lean source: {outPath}"
       | none => pure ()

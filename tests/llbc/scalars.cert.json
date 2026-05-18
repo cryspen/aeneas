@@ -5949,7 +5949,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "U32" } }
+                        "ty": { "Literal": { "UInt": "U32" } },
+                        "global": "core::num::{u32}::BITS"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null
@@ -6067,7 +6068,8 @@
                       "place": {
                         "local": 0,
                         "projection": [],
-                        "ty": { "Literal": { "UInt": "U32" } }
+                        "ty": { "Literal": { "UInt": "U32" } },
+                        "global": "core::num::{i32}::BITS"
                       },
                       "kind": "Shared",
                       "ptr_metadata": null

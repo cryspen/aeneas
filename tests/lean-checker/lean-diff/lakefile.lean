@@ -43,11 +43,18 @@ lean_lib «RuntimeShim» where
     `HAdd I32 (Result I32)` shim instance (used by the i32 `add` def),
     the Phase 4a-2 brace sanitiser in LeanEmit (decorated def names),
     the Phase 4a-3 ADT placeholder + Phase 4a-5 topo sort
-    (`Wrap.new` must precede `Y`'s call site). -/
+    (`Wrap.new` must precede `Y`'s call site).
+
+    Session 5 (Item 2): `demo` wired in. Regen passes a `--skip-decl`
+    list to drop the four classes of emit-broken decls (`CList`'s
+    `@[discriminant isize]` attr, `Counter` trait + impl signature
+    mismatch, closure-returning `choose`, broken `list_nth*` /
+    `i32_id` bodies). The kept subset is `mul2_add1` / `use_mul2_add1`
+    / `incr` / `use_incr` / `mod_add`. -/
 lean_lib «Generated» where
   srcDir := "generated"
   roots := #[`incr_cert, `compare_simple, `calls, `bitwise, `constants,
-             `scalars]
+             `scalars, `demo]
 
 /-- Common formatting + the per-fixture runners. -/
 lean_lib «LeanDiff» where
@@ -57,7 +64,8 @@ lean_lib «LeanDiff» where
              `LeanDiff.CallsRunner,
              `LeanDiff.BitwiseRunner,
              `LeanDiff.ConstantsRunner,
-             `LeanDiff.ScalarsRunner]
+             `LeanDiff.ScalarsRunner,
+             `LeanDiff.DemoRunner]
 
 /-- The differential entry point. Calls each runner's `runAll` so a
     single invocation produces the full expected-line stream. -/

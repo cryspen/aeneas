@@ -2,37 +2,34 @@ import LeanDiff.Common
 import constants
 
 /-!
-Differential runner for `constants` (Phase 4a wire-in).
+Differential runner for `constants` (Phase 4a wire-in, extended in
+Session 5 Item 1).
 
 Constants in `tests/src/constants.rs` exercise:
   - `pub const fn incr(u32)` — wraps; same as `incr_cert::incr`
   - `pub const fn mk_pair0(u32, u32) -> (u32, u32)` — tuple ctor
   - `pub const fn add(i32, i32) -> i32` — signed wraps; needs the
     Phase 4a-1 `HAdd I32 I32 (Result I32)` shim instance
-  - Nullary `const`/`static` initialisers (`X0`, `X2`, `X3`, `S1`,
-    `Q1`, `P0`, `P2`) — constant evaluation against the cert's
-    serialised value
+  - Nullary `const`/`static` initialisers whose body the cert walker
+    now resolves to the source-true reference rather than a typed
+    placeholder. Session 5 Item 1 unblocked `X1`, `Q2`, `Q3`, `S2`,
+    `YVAL`, `unwrap_y`, `get_z1`, `get_z2` by preserving Charon's
+    `PlaceGlobal` info through the cert serializer and seeding the
+    forward translator's var-map from it.
 
-We deliberately skip the constants whose body the cert walker emits
-as a typed placeholder rather than the source-true value, because
-the differential gate would flag the divergence as a fixture error
-when it's really a known cert-translator gap. The skipped set:
+We still skip the constants whose body the cert walker emits as a
+typed placeholder rather than the source-true value, because the
+differential gate would flag the divergence as a fixture error when
+it's really a known cert-translator gap. The skipped set after
+Session 5 Item 1:
 
-  - `unwrap_y`, `YVAL`     (cert never threads `Y.value` through)
   - `Y`                    (returns `Wrap`, no `Show1 Wrap` here)
   - `mk_pair1`, `P1`, `P3`,
     `S3`, `S4`              (returns `Pair`, no `Show1 Pair` here)
-  - `X1`                    (`u32::MAX` const, placeholder = 0)
-  - `Q2`, `Q3`              (chained const eval through placeholders)
-  - `S2`                    (`incr(S1)` — S1 read is placeholder)
-  - `get_z1`, `get_z2`,
-    `get_z1.Z1`             (const-block inner def chains break)
-  - `use_v`, `V.LEN`        (const-generic flow unsupported)
-
-The wire-up still exercises the four-bullet Phase 4a fixes end-to-
-end: HAdd I32 (`add`), brace sanitisation (`Wrap.new` ordering), ADT
-placeholder (`S3` typechecks even though its value is wrong), and
-the topo-sort that put `Wrap.new` before `Y` in the emit.
+  - `use_v`, `V.LEN`        (const-generic flow — seed pass skips
+                             globals carrying generic args like
+                             `<T, N>` because the cert doesn't surface
+                             the caller's generic instantiation)
 
 Pair-returning + Wrap-returning functions are a candidate for the
 next session: add a `Show1` instance for `constants.Pair Std.U32 Std.U32`
@@ -89,5 +86,23 @@ def runAll : IO Unit := do
   IO.println (mkLine "constants" "Q1" [] constants.Q1)
   IO.println (mkTupleLineU32 "P0" [] constants.P0)
   IO.println (mkTupleLineU32 "P2" [] constants.P2)
+  -- Session 5 (Item 1): constants whose body now reads another global.
+  -- Each line exercises a different walk-path:
+  --   X1     — `u32::MAX` (cross-crate builtin global, shim-provided)
+  --   Q2     — `Q1` (intra-crate i32 global, tail position)
+  --   Q3     — `add(Q2, 3)` (global as call arg, requires let-bind)
+  --   S2     — `incr(S1)` (global as call arg through a re-borrow temp)
+  --   get_z1 — `Z1` (local-const-block tail position)
+  --   get_z2 — chained `add(Q1, add(get_z1(), Q3))` (three globals)
+  --   unwrap_y — `Y.value` (field access through a Result-typed global)
+  --   YVAL   — `unwrap_y()` (call returning a Result, tail position)
+  IO.println (mkLine "constants" "X1" [] constants.X1)
+  IO.println (mkLine "constants" "Q2" [] constants.Q2)
+  IO.println (mkLine "constants" "Q3" [] constants.Q3)
+  IO.println (mkLine "constants" "S2" [] constants.S2)
+  IO.println (mkLine "constants" "get_z1" [] constants.get_z1)
+  IO.println (mkLine "constants" "get_z2" [] constants.get_z2)
+  IO.println (mkLine "constants" "unwrap_y" [] constants.unwrap_y)
+  IO.println (mkLine "constants" "YVAL" [] constants.YVAL)
 
 end LeanDiff.ConstantsRunner

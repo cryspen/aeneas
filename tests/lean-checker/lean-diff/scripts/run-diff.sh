@@ -22,6 +22,27 @@ for fx in "${fixtures[@]}"; do
     | tail -2
 done
 
+# Session 5 (Item 2): `demo` regen with the skip list. The 11
+# skipped decls each have a documented emit-side gap (see
+# `LeanDiff/DemoRunner.lean`'s file-level doc). The 5 well-emitted
+# fns are exercised by the runner.
+echo "[lean-diff] regenerating demo.lean (with --skip-decl filter)"
+"$aeneas_check" "$llbc_dir/demo.cert.json" --out "$here/generated/demo.lean" \
+  --skip-decl CList \
+  --skip-decl Counter \
+  --skip-decl "Std.Usize.Insts.DemoCounter" \
+  --skip-decl "Std.Usize.Insts.DemoCounter.incr" \
+  --skip-decl choose \
+  --skip-decl list_nth \
+  --skip-decl list_nth_mut \
+  --skip-decl list_tail \
+  --skip-decl list_nth1 \
+  --skip-decl list_nth1_loop \
+  --skip-decl list_nth1_loop.body \
+  --skip-decl use_counter \
+  --skip-decl i32_id \
+  | tail -2
+
 echo "[lean-diff] building Lean runner (lake build)"
 ( cd "$here" && lake build )
 

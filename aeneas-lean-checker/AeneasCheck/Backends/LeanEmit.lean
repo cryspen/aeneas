@@ -284,13 +284,32 @@ def emitNamespace (c : String) (traits : Array TraitDecl)
 
     M9.5l: trait decls come BEFORE structs/enums; trait impls go
     between impl method body `def`s and caller `def`s — see
-    `emitNamespace` for the full ordering. -/
-def emitTranslatedCrate (crateName : String) (tc : TranslatedCrate) : String :=
-  let groups := groupByCrate tc.decls
-  let structBuckets := groupStructsByCrate tc.structs
-  let enumBuckets := groupEnumsByCrate tc.enums
-  let traitDeclBuckets := groupTraitDeclsByCrate tc.traitDecls
-  let traitImplBuckets := groupTraitImplsByCrate tc.traitImpls
+    `emitNamespace` for the full ordering.
+
+    Session 5 (Item 2): `skipNames` drops every Decl / StructDecl /
+    EnumDecl / TraitDecl / TraitImpl whose `.name` matches an entry.
+    Matching is exact-string against the sanitized inner name (the
+    same form the emitter prints in `def …`). Used by the diff
+    harness to wire in a fixture's well-emitted subset while leaving
+    the broken siblings out (e.g. `demo.lean`'s `choose`/`list_nth*`
+    /`Counter` impl have emit-side gaps that block a clean build).
+
+    The filter applies *before* topo sort + cross-decl dep tracking,
+    so a kept decl referencing a dropped decl will fail at lake build
+    — pick a coherent subset. -/
+def emitTranslatedCrate (crateName : String) (tc : TranslatedCrate)
+    (skipNames : List String := []) : String :=
+  let shouldSkip (n : String) : Bool := skipNames.contains n
+  let decls := tc.decls.filter (fun d => !shouldSkip d.name)
+  let structs := tc.structs.filter (fun s => !shouldSkip s.name)
+  let enums := tc.enums.filter (fun e => !shouldSkip e.name)
+  let traitDecls := tc.traitDecls.filter (fun t => !shouldSkip t.name)
+  let traitImpls := tc.traitImpls.filter (fun i => !shouldSkip i.name)
+  let groups := groupByCrate decls
+  let structBuckets := groupStructsByCrate structs
+  let enumBuckets := groupEnumsByCrate enums
+  let traitDeclBuckets := groupTraitDeclsByCrate traitDecls
+  let traitImplBuckets := groupTraitImplsByCrate traitImpls
   let header := emitHeader crateName
   -- M9.5b: a crate may have type decls but no function decls (rare).
   -- For now the grouping iterates only crates that have function
