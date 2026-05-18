@@ -3,12 +3,124 @@ open Values
 open Expressions
 open Contexts
 
-(** Per-function observer state — owned by this module rather than by
-    [eval_ctx]. Plan §"Design decisions / cert_ended_loans reset
-    point" (audit Q2) confirms cert generation is sequential per
-    fun_decl ([CertGen.generate_crate_cert] iterates via
-    [List.filter_map]), so module-level refs are safe. [reset] / [flush]
-    are called by [CertGen.collect_for_fun] per function. -*)
+(** {1 Cert-side translation helpers}
+
+    These helpers used to live in [CertEvent.ml] but are
+    consumed only here, so the relocation keeps [CertEvent.{ml,mli}]
+    as a pure vocabulary file. -*)
+
+(** Convert a Charon [place] into a flat [cert_place]. [None] for
+    [PlaceGlobal]: globals don't appear in the direct-borrow subset
+    and the trace would be ambiguous if we silently elided them. -*)
+let cert_place_of_place (p : place) : CertEvent.cert_place option =
+  let rec collect (acc : projection_elem list) (p : place) :
+      (local_id * projection_elem list * ty) option =
+    match p.kind with
+    | PlaceLocal lid -> Some (lid, acc, p.ty)
+    | PlaceProjection (sub, pe) -> collect (pe :: acc) sub
+    | PlaceGlobal _ -> None
+  in
+  match collect [] p with
+  | None -> None
+  | Some (lid, proj, ty) ->
+      Some { CertEvent.cp_local = lid; cp_projection = proj; cp_ty = ty }
+
+(** Convert a Charon operand into a [cert_sym_expr]. [None] when the
+    operand references a global or when place flattening fails. -*)
+let cert_sym_expr_of_operand (op : operand) : CertEvent.cert_sym_expr option =
+  match op with
+  | Copy p ->
+      (match cert_place_of_place p with
+       | Some cp -> Some (CertEvent.SymCopy cp)
+       | None -> None)
+  | Move p ->
+      (match cert_place_of_place p with
+       | Some cp -> Some (CertEvent.SymMove cp)
+       | None -> None)
+  | Constant ce ->
+      (match ce.kind with
+       | CLiteral lit -> Some (CertEvent.SymLit lit)
+       | _ -> None)
+
+(** Best-effort flat summary of a [tvalue] as a [cert_sym_expr].
+    Used by [EvJoin] state summaries. ADTs and [⊥] return [None]. -*)
+let rec cert_sym_expr_of_tvalue (v : tvalue) : CertEvent.cert_sym_expr option =
+  match v.value with
+  | VLiteral lit -> Some (CertEvent.SymLit lit)
+  | VSymbolic sv -> Some (CertEvent.SymVal sv.sv_id)
+  | VBorrow (VMutBorrow (bid, _)) -> Some (CertEvent.SymMutBorrowTok bid)
+  | VBorrow (VSharedBorrow (bid, _) | VReservedMutBorrow (bid, _)) ->
+      Some (CertEvent.SymMutBorrowTok bid)
+  | VLoan (VMutLoan bid) -> Some (CertEvent.SymMutBorrowTok bid)
+  | VLoan (VSharedLoan (_, v')) -> cert_sym_expr_of_tvalue v'
+  | VAdt _ | VBottom -> None
+
+(** Collect live loan ids (mut + shared) visible in a [tvalue]. -*)
+let cert_live_loans_of_tvalue (v : tvalue) : borrow_id list =
+  let acc = ref [] in
+  let visitor =
+    object
+      inherit [_] iter_tvalue as super
+      method! visit_VMutLoan env bid =
+        acc := bid :: !acc;
+        super#visit_VMutLoan env bid
+      method! visit_VSharedLoan env bid v =
+        acc := bid :: !acc;
+        super#visit_VSharedLoan env bid v
+    end
+  in
+  visitor#visit_tvalue () v;
+  List.rev !acc
+
+(** Build a [cert_state_summary] from an eval ctx's [env]. Bindings
+    whose values can't be flattened to a [cert_sym_expr] are dropped
+    from [cs_env] — the Lean side treats absence as "no observation,"
+    sufficient for M11's pragmatic ≤ check. Live loan ids are deduped
+    across the env. -*)
+let cert_state_summary_of_env (env : env) : CertEvent.cert_state_summary =
+  let cs_env = ref [] in
+  let cs_live_loans = ref [] in
+  let visit_value v =
+    cs_live_loans :=
+      List.rev_append (cert_live_loans_of_tvalue v) !cs_live_loans
+  in
+  List.iter
+    (fun (e : env_elem) ->
+      match e with
+      | EBinding (BVar bv, v) ->
+          (match cert_sym_expr_of_tvalue v with
+           | Some se -> cs_env := (bv.index, se) :: !cs_env
+           | None -> ());
+          visit_value v
+      | EBinding (BDummy _, v) -> visit_value v
+      | EAbs abs ->
+          List.iter
+            (fun (av : tavalue) -> ignore av)
+            abs.avalues
+      | EFrame -> ())
+    env;
+  let dedup_int_list xs =
+    let seen = Hashtbl.create 8 in
+    List.filter
+      (fun x ->
+        let k = BorrowId.to_int x in
+        if Hashtbl.mem seen k then false
+        else (Hashtbl.add seen k (); true))
+      xs
+  in
+  {
+    CertEvent.cs_env = List.rev !cs_env;
+    cs_live_loans = dedup_int_list (List.rev !cs_live_loans);
+  }
+
+(** {1 Per-function observer state}
+
+    Owned by this module rather than by [eval_ctx]. Plan
+    §"Design decisions / cert_ended_loans reset point" (audit Q2)
+    confirms cert generation is sequential per fun_decl
+    ([CertGen.generate_crate_cert] iterates via [List.filter_map]),
+    so module-level refs are safe. [reset] / [flush] are called by
+    [CertGen.collect_for_fun] per function. -*)
 let event_buffer : CertEvent.event list ref = ref []
 
 let loop_id_stack : LoopId.id list ref = ref []
@@ -33,13 +145,13 @@ let flush () : CertEvent.event list =
 let assign_to_cert (ctx : eval_ctx) (dst : place) (rvalue : rvalue)
     : CertEvent.event option =
   let mk_evassign rhs : CertEvent.event option =
-    match CertEvent.cert_place_of_place dst with
+    match cert_place_of_place dst with
     | Some cp -> Some (CertEvent.EvAssign { dst = cp; rhs })
     | None -> None
   in
   match rvalue with
   | Use operand ->
-      (match CertEvent.cert_sym_expr_of_operand operand with
+      (match cert_sym_expr_of_operand operand with
        | Some rhs -> mk_evassign rhs
        | None -> None)
   | Aggregate
@@ -62,7 +174,7 @@ let assign_to_cert (ctx : eval_ctx) (dst : place) (rvalue : rvalue)
             match acc with
             | None -> None
             | Some xs ->
-                (match CertEvent.cert_sym_expr_of_operand op with
+                (match cert_sym_expr_of_operand op with
                  | Some e -> Some (e :: xs)
                  | None -> None))
           operands (Some [])
@@ -87,7 +199,7 @@ let assign_to_cert (ctx : eval_ctx) (dst : place) (rvalue : rvalue)
             match acc with
             | None -> None
             | Some xs ->
-                (match CertEvent.cert_sym_expr_of_operand op with
+                (match cert_sym_expr_of_operand op with
                  | Some e -> Some (e :: xs)
                  | None -> None))
           operands (Some [])
@@ -121,7 +233,7 @@ let assign_to_cert (ctx : eval_ctx) (dst : place) (rvalue : rvalue)
           match names, ops with
           | [], [] -> Some []
           | n :: ns, op :: rest ->
-              (match CertEvent.cert_sym_expr_of_operand op with
+              (match cert_sym_expr_of_operand op with
                | None -> None
                | Some e ->
                    (match pair_up ns rest with
@@ -157,14 +269,14 @@ let assign_to_cert (ctx : eval_ctx) (dst : place) (rvalue : rvalue)
         | TChar -> "char"
         | TFloat _ -> "float"
       in
-      (match CertEvent.cert_sym_expr_of_operand operand with
+      (match cert_sym_expr_of_operand operand with
        | Some inner ->
            mk_evassign (CertEvent.SymCast { target_ty; inner })
        | None -> None)
   | RvRef (rp, (BMut | BTwoPhaseMut | BUniqueImmutable), _) ->
       (* M12.2a: reborrow assignment carries the dst place so the
          walker's `vm` learns vm[N] := lookup(rp). *)
-      (match CertEvent.cert_place_of_place rp with
+      (match cert_place_of_place rp with
        | Some crp -> mk_evassign (CertEvent.SymCopy crp)
        | None -> None)
   | _ -> None
@@ -185,19 +297,19 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
          already paired. Translation fails when the place references a
          global; the inline emit site used to elide it then, so we do
          the same. *)
-      (match CertEvent.cert_place_of_place src,
-             CertEvent.cert_place_of_place dst with
+      (match cert_place_of_place src,
+             cert_place_of_place dst with
        | Some cp_src, Some cp_dst ->
            Some (CertEvent.EvCopy { src = cp_src; dst = cp_dst })
        | _ -> None)
   | Event.Move { src; dst } ->
-      (match CertEvent.cert_place_of_place src,
-             CertEvent.cert_place_of_place dst with
+      (match cert_place_of_place src,
+             cert_place_of_place dst with
        | Some cp_src, Some cp_dst ->
            Some (CertEvent.EvMove { src = cp_src; dst = cp_dst })
        | _ -> None)
   | Event.Reborrow { child; parent; place; parent_live; parent_abs } ->
-      (match CertEvent.cert_place_of_place place with
+      (match cert_place_of_place place with
        | Some cp ->
            Some (CertEvent.EvReborrow {
              child; parent; place = cp; parent_live; parent_abs;
@@ -332,9 +444,9 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
       })
   | Event.Binop { op; lhs; rhs; dst; result = _ } ->
       (match
-         ( CertEvent.cert_place_of_place dst,
-           CertEvent.cert_sym_expr_of_operand lhs,
-           CertEvent.cert_sym_expr_of_operand rhs )
+         ( cert_place_of_place dst,
+           cert_sym_expr_of_operand lhs,
+           cert_sym_expr_of_operand rhs )
        with
        | Some cp, Some lhs_se, Some rhs_se ->
            Some (CertEvent.EvBinop {
@@ -350,12 +462,12 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
          original site did the same so the trace stays internally
          consistent. -*)
       let cert_args : CertEvent.cert_sym_expr list option =
-        let xs = List.map CertEvent.cert_sym_expr_of_operand args in
+        let xs = List.map cert_sym_expr_of_operand args in
         if List.for_all Option.is_some xs then Some (List.map Option.get xs)
         else None
       in
       let cert_dst : CertEvent.cert_place option =
-        CertEvent.cert_place_of_place dst
+        cert_place_of_place dst
       in
       (match cert_args, cert_dst with
        | Some args_e, Some dst_e ->
@@ -443,13 +555,13 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
        | _ -> None)
   | Event.Join { ctx_left; ctx_right; ctx_joined } ->
       let left_summary =
-        CertEvent.cert_state_summary_of_env ctx_left.env
+        cert_state_summary_of_env ctx_left.env
       in
       let right_summary =
-        CertEvent.cert_state_summary_of_env ctx_right.env
+        cert_state_summary_of_env ctx_right.env
       in
       let result_summary =
-        CertEvent.cert_state_summary_of_env ctx_joined.env
+        cert_state_summary_of_env ctx_joined.env
       in
       (* M9.6 (Option C): per-result-env-local witness of which
          Fig. 11 rule the join algebra fired. Commit #10 shipped
@@ -624,7 +736,7 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
       loop_id_stack := loop_id :: !loop_id_stack;
       Some (CertEvent.EvLoopInv {
         loop_id;
-        invariant = CertEvent.cert_state_summary_of_env fp_env;
+        invariant = cert_state_summary_of_env fp_env;
         loan_registry;
       })
   | Event.LoopEnd { loop_id } ->
@@ -639,7 +751,7 @@ let event_to_cert (ctx : eval_ctx) (ev : Event.t) : CertEvent.event option =
         sv_id; bid; inner_sv; parent_abs; subst_locals; subst_loans;
       })
   | Event.MutBorrow { loan; place; value } ->
-      (match CertEvent.cert_place_of_place place with
+      (match cert_place_of_place place with
        | Some cp ->
            let symval : symbolic_value_id =
              match value.value with
