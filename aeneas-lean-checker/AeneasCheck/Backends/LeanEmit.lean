@@ -296,15 +296,33 @@ def emitNamespace (c : String) (traits : Array TraitDecl)
 
     The filter applies *before* topo sort + cross-decl dep tracking,
     so a kept decl referencing a dropped decl will fail at lake build
-    — pick a coherent subset. -/
+    — pick a coherent subset.
+
+    Phase C (meta-harness): `onlyNames` is a *Charon-path* allowlist
+    matched against each decl's `qualifiedName`. When non-empty, only
+    decls whose qualifiedName equals an entry or starts with
+    `<entry>::` are kept. The prefix match retains synthetic
+    `loop_body` / `loop` siblings the translator emits for loop-bearing
+    functions. `skipNames` and `onlyNames` compose: a decl must pass
+    both filters to be emitted. -/
 def emitTranslatedCrate (crateName : String) (tc : TranslatedCrate)
-    (skipNames : List String := []) : String :=
+    (skipNames : List String := []) (onlyNames : List String := []) : String :=
   let shouldSkip (n : String) : Bool := skipNames.contains n
-  let decls := tc.decls.filter (fun d => !shouldSkip d.name)
-  let structs := tc.structs.filter (fun s => !shouldSkip s.name)
-  let enums := tc.enums.filter (fun e => !shouldSkip e.name)
-  let traitDecls := tc.traitDecls.filter (fun t => !shouldSkip t.name)
-  let traitImpls := tc.traitImpls.filter (fun i => !shouldSkip i.name)
+  -- Phase C: `onlyNames` is a Charon-path allowlist (matched against
+  -- `qualifiedName`). When non-empty, drop every decl whose
+  -- qualifiedName neither equals nor is prefixed by an entry. The
+  -- prefix-match lets `--only-decl crate::foo` retain the synthetic
+  -- `crate::foo::loop_body` / `crate::foo::loop` decls emitted for
+  -- loop-bearing functions.
+  let matchesOnly (qn : String) : Bool :=
+    onlyNames.any fun p => qn == p || qn.startsWith (p ++ "::")
+  let shouldKeep (qn : String) : Bool :=
+    onlyNames.isEmpty || matchesOnly qn
+  let decls := tc.decls.filter (fun d => !shouldSkip d.name && shouldKeep d.qualifiedName)
+  let structs := tc.structs.filter (fun s => !shouldSkip s.name && shouldKeep s.qualifiedName)
+  let enums := tc.enums.filter (fun e => !shouldSkip e.name && shouldKeep e.qualifiedName)
+  let traitDecls := tc.traitDecls.filter (fun t => !shouldSkip t.name && shouldKeep t.qualifiedName)
+  let traitImpls := tc.traitImpls.filter (fun i => !shouldSkip i.name && shouldKeep i.qualifiedName)
   let groups := groupByCrate decls
   let structBuckets := groupStructsByCrate structs
   let enumBuckets := groupEnumsByCrate enums

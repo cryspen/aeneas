@@ -22,7 +22,7 @@ open AeneasCheck Json Typecheck LLBCSharp Translate Backends
 
 def usage : String :=
   "Usage: aeneas-check <cert.json> [--out <generated.lean>] [--rust-model <model.rs>]\n" ++
-  "                    [--skip-decl <name> ...]\n" ++
+  "                    [--skip-decl <name> ...] [--only-decl <crate::path> ...]\n" ++
   "       aeneas-check <llbc.json> <cert.json> [--out …] [--rust-model …]    (legacy, llbc.json ignored)"
 
 /-- Find `--flag value` in args, return value if present. -/
@@ -93,9 +93,10 @@ def main (args : List String) : IO UInt32 := do
           parts.headD "crate"
         | [] => "crate"
       let skipNames := findFlagsAll rest "--skip-decl"
+      let onlyNames := findFlagsAll rest "--only-decl"
       match findFlag rest "--out" with
       | some outPath =>
-        let src := emitTranslatedCrate crateName tc skipNames
+        let src := emitTranslatedCrate crateName tc skipNames onlyNames
         IO.FS.writeFile outPath src
         IO.println s!"  wrote Lean source: {outPath}"
       | none => pure ()
