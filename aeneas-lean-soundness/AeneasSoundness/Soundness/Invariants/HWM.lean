@@ -466,45 +466,57 @@ theorem hwm_preserved_stepEvent
     by_cases hC : st.loans.contains loan = true
     · rw [if_pos hC] at hStep; cases hStep
     · rw [if_neg hC] at hStep
-      by_cases hB : placeRootLocal place ≥ st.numLocals
-      · rw [if_pos hB] at hStep; cases hStep
-      · rw [if_neg hB] at hStep
-        cases kindHint with
-        | direct =>
-          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
-          subst hStep
-          refine ⟨HwmInvariant.preserve_addLoan
-                    (HwmInvariant.preserve_setLocal hInv _ _) _ _ _, ?_, ?_⟩
-          · exact Nat.le_trans (Nat.le_of_eq (setLocal_loanIdHwm _ _ _).symm)
-                    (addLoan_loanIdHwm_le _ _ _ _)
-          · simp [addLoan_absIdHwm, setLocal_absIdHwm]
-        | inAbsReborrow _ =>
-          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
-          subst hStep
-          refine ⟨HwmInvariant.preserve_addLoan hInv _ _ _, ?_, ?_⟩
-          · exact addLoan_loanIdHwm_le _ _ _ _
-          · simp [addLoan_absIdHwm]
-        | loopOwned _ =>
-          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
-          subst hStep
-          refine ⟨HwmInvariant.preserve_addLoan
-                    (HwmInvariant.preserve_setLocal hInv _ _) _ _ _, ?_, ?_⟩
-          · exact Nat.le_trans (Nat.le_of_eq (setLocal_loanIdHwm _ _ _).symm)
-                    (addLoan_loanIdHwm_le _ _ _ _)
-          · simp [addLoan_absIdHwm, setLocal_absIdHwm]
+      -- M10.x.2: HWM monotone-allocator strengthening; both branches dispatch.
+      by_cases hHwm : st.loanIdHwm > loan
+      · rw [if_pos hHwm] at hStep; cases hStep
+      · rw [if_neg hHwm] at hStep
+        by_cases hB : placeRootLocal place ≥ st.numLocals
+        · rw [if_pos hB] at hStep; cases hStep
+        · rw [if_neg hB] at hStep
+          cases kindHint with
+          | direct =>
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            refine ⟨HwmInvariant.preserve_addLoan
+                      (HwmInvariant.preserve_setLocal hInv _ _) _ _ _, ?_, ?_⟩
+            · exact Nat.le_trans (Nat.le_of_eq (setLocal_loanIdHwm _ _ _).symm)
+                      (addLoan_loanIdHwm_le _ _ _ _)
+            · simp [addLoan_absIdHwm, setLocal_absIdHwm]
+          | inAbsReborrow _ =>
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            refine ⟨HwmInvariant.preserve_addLoan hInv _ _ _, ?_, ?_⟩
+            · exact addLoan_loanIdHwm_le _ _ _ _
+            · simp [addLoan_absIdHwm]
+          | loopOwned _ =>
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            refine ⟨HwmInvariant.preserve_addLoan
+                      (HwmInvariant.preserve_setLocal hInv _ _) _ _ _, ?_, ?_⟩
+            · exact Nat.le_trans (Nat.le_of_eq (setLocal_loanIdHwm _ _ _).symm)
+                      (addLoan_loanIdHwm_le _ _ _ _)
+            · simp [addLoan_absIdHwm, setLocal_absIdHwm]
   | sharedBorrow loan _sbId place _symval =>
     simp only [stepSharedBorrow] at hStep
     by_cases hC : st.loans.contains loan = true
     · rw [if_pos hC] at hStep; cases hStep
     · rw [if_neg hC] at hStep
-      by_cases hB : placeRootLocal place ≥ st.numLocals
-      · rw [if_pos hB] at hStep; cases hStep
-      · rw [if_neg hB] at hStep
-        simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
-        subst hStep
-        refine ⟨HwmInvariant.preserve_addLoan hInv _ _ _, ?_, ?_⟩
-        · exact addLoan_loanIdHwm_le _ _ _ _
-        · simp [addLoan_absIdHwm]
+      -- M10.x.2: HWM monotone-allocator strengthening.
+      by_cases hHwm : st.loanIdHwm > loan
+      · rw [if_pos hHwm] at hStep; cases hStep
+      · rw [if_neg hHwm] at hStep
+        -- M10.x.2: projection-empty strengthening.
+        by_cases hProj : place.projection.size ≠ 0
+        · rw [if_pos hProj] at hStep; cases hStep
+        · rw [if_neg hProj] at hStep
+          by_cases hB : placeRootLocal place ≥ st.numLocals
+          · rw [if_pos hB] at hStep; cases hStep
+          · rw [if_neg hB] at hStep
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            refine ⟨HwmInvariant.preserve_addLoan hInv _ _ _, ?_, ?_⟩
+            · exact addLoan_loanIdHwm_le _ _ _ _
+            · simp [addLoan_absIdHwm]
   | assign dst rhs =>
     simp only [stepAssign, bind, Except.bind] at hStep
     cases hEval : evalSymExpr st rhs with
@@ -593,22 +605,26 @@ theorem hwm_preserved_stepEvent
     by_cases hC : st.loans.contains child = true
     · rw [if_pos hC] at hStep; cases hStep
     · rw [if_neg hC] at hStep
-      by_cases hB : placeRootLocal place ≥ st.numLocals
-      · rw [if_pos hB] at hStep; cases hStep
-      · rw [if_neg hB] at hStep
-        simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
-        subst hStep
-        by_cases hP : st.loans.contains parent = true
-        · rw [if_pos hP]
-          refine ⟨HwmInvariant.preserve_addLoan hInv _ _ _, ?_, ?_⟩
-          · exact addLoan_loanIdHwm_le _ _ _ _
-          · simp [addLoan_absIdHwm]
-        · rw [if_neg hP]
-          have hInv1 := HwmInvariant.preserve_addLoan hInv parent .bottom .reborrow
-          refine ⟨HwmInvariant.preserve_addLoan hInv1 _ _ _, ?_, ?_⟩
-          · exact Nat.le_trans (addLoan_loanIdHwm_le _ _ _ _)
-                    (addLoan_loanIdHwm_le _ _ _ _)
-          · simp [addLoan_absIdHwm]
+      -- M10.x.2: HWM monotone-allocator strengthening on the child id.
+      by_cases hHwm : st.loanIdHwm > child
+      · rw [if_pos hHwm] at hStep; cases hStep
+      · rw [if_neg hHwm] at hStep
+        by_cases hB : placeRootLocal place ≥ st.numLocals
+        · rw [if_pos hB] at hStep; cases hStep
+        · rw [if_neg hB] at hStep
+          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+          subst hStep
+          by_cases hP : st.loans.contains parent = true
+          · rw [if_pos hP]
+            refine ⟨HwmInvariant.preserve_addLoan hInv _ _ _, ?_, ?_⟩
+            · exact addLoan_loanIdHwm_le _ _ _ _
+            · simp [addLoan_absIdHwm]
+          · rw [if_neg hP]
+            have hInv1 := HwmInvariant.preserve_addLoan hInv parent .bottom .reborrow
+            refine ⟨HwmInvariant.preserve_addLoan hInv1 _ _ _, ?_, ?_⟩
+            · exact Nat.le_trans (addLoan_loanIdHwm_le _ _ _ _)
+                      (addLoan_loanIdHwm_le _ _ _ _)
+            · simp [addLoan_absIdHwm]
   | call _fn _callId _fnName _args dst _regionAbs absSig =>
     simp only [stepCall] at hStep
     by_cases hB : placeRootLocal dst ≥ st.numLocals

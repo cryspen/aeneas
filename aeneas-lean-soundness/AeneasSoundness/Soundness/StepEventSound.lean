@@ -349,7 +349,16 @@ theorem stepSharedBorrow_sound
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
-    -- Guard 2: `place.local_ < st.numLocals` (on success).
+    -- Guard 2 (M10.x.2): `st.loanIdHwm ≤ loan` discharges the
+    -- monotone-allocator strengthening; `hLoanFresh` is exactly the
+    -- negation of the reject path's condition.
+    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
+    rw [if_neg hHwm] at h
+    -- Guard 3 (M10.x.2): projection-empty strengthening.
+    have hProj : ¬ place.projection.size ≠ 0 := by
+      intro hne; exact hne (by simp [hPlaceProj])
+    rw [if_neg hProj] at h
+    -- Guard 4: `place.local_ < st.numLocals` (on success).
     by_cases hB : place.local_ ≥ st.numLocals
     · rw [if_pos hB] at h; cases h
     · rw [if_neg hB] at h
@@ -402,6 +411,9 @@ theorem stepMutBorrow_direct_sound
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
+    -- M10.x.2: HWM monotone-allocator strengthening; discharged by `hLoanFresh`.
+    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
+    rw [if_neg hHwm] at h
     by_cases hB : place.local_ ≥ st.numLocals
     · rw [if_pos hB] at h; cases h
     · rw [if_neg hB] at h
@@ -455,6 +467,9 @@ theorem stepMutBorrow_inAbsReborrow_sound
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
+    -- M10.x.2: HWM monotone-allocator strengthening; discharged by `hLoanFresh`.
+    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
+    rw [if_neg hHwm] at h
     by_cases hB : place.local_ ≥ st.numLocals
     · rw [if_pos hB] at h; cases h
     · rw [if_neg hB] at h
@@ -501,6 +516,9 @@ theorem stepMutBorrow_loopOwned_sound
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
+    -- M10.x.2: HWM monotone-allocator strengthening; discharged by `hLoanFresh`.
+    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
+    rw [if_neg hHwm] at h
     by_cases hB : place.local_ ≥ st.numLocals
     · rw [if_pos hB] at h; cases h
     · rw [if_neg hB] at h
@@ -675,7 +693,11 @@ theorem stepReborrow_sound
   by_cases hC : st.loans.contains child = true
   · rw [if_pos hC] at hStep; cases hStep
   · rw [if_neg hC] at hStep
-    -- Guard 2: place's root local is in bounds.
+    -- Guard 2 (M10.x.2): HWM monotone-allocator strengthening on the
+    -- child id; discharged by `hChildFresh`.
+    have hHwm : ¬ st.loanIdHwm > child := Nat.not_lt.mpr hChildFresh
+    rw [if_neg hHwm] at hStep
+    -- Guard 3: place's root local is in bounds.
     by_cases hB : place.local_ ≥ st.numLocals
     · rw [if_pos hB] at hStep; cases hStep
     · rw [if_neg hB] at hStep
