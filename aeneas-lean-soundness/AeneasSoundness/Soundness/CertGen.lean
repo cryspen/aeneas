@@ -28,7 +28,6 @@ by one Phase-C lemma:
 
 | Extractor | Discharges (for stepX_sound) |
 |---|---|
-| `move` / `copy` | place-projection-empty + `st.env[src.local_]?.isSome` |
 | `sharedBorrow` | place-projection-empty + env-some + `st.loanIdHwm ≤ loan` |
 | `mutBorrow_direct` / `mutBorrow_loopOwned` | as `sharedBorrow` |
 | `mutBorrow_inAbsReborrow` | `∃ r, st.absRegistry[absId]? = some r` + loan-fresh |
@@ -43,6 +42,7 @@ by one Phase-C lemma:
 | `endBorrow_takeOk` | dropped M10.4a-post — provable by `hStep` inversion |
 | `endBorrow_reborrow_witness` | dropped M10.4a-post — provable by `hStep` inversion |
 | `endBorrow_shared_witness` | dropped M10.4a-post — provable by `hStep` inversion |
+| `move` / `copy` | dropped M10.x.3 — paper-side `LStep.move`/`.copy` were reshaped via `resolvePlaceRoot` to mirror the replayer's root-local semantics; no extractor needed |
 
 ## What's NOT here
 
@@ -75,24 +75,23 @@ private abbrev concretise : SymState → LLBCState := Concretise.concretise
 
 namespace CertGen_faithful
 
-/-! ### Move / copy — place-projection + env-resident-src
+/-! ### Move / copy — dropped (M10.x.3)
 
-The replayer's `stepMove` / `stepCopy` operate on the *root* local
-of `src` / `dst` (the place's projection is ignored). The paper-side
-`LStep.move` / `.copy` operate on the full place via
-`resolvePlace`. Cert-emission discipline enforces projection-empty
-places for these events; the env-resident clause covers the
-"`src.local_` was already declared by a prior event" obligation. -/
+The previous extractors promised `projection = #[]` and
+`st.env[src.local_]?.isSome` so that the paper-side rule's
+`Ω.resolvePlace src = some v` premise could fire. Neither
+clause is guaranteed by cert emission: the M10.x.2 fixture-corpus
+scan found 1187/2000 fixtures with non-empty projections on
+Move/Copy and 1181/2000 with never-env-bound src locals
+(function arguments, which `SymState.empty` does not pre-populate).
 
-axiom move (st st' : SymState) (src dst : Place)
-    (hStep : stepEvent st (.move src dst) = .ok st') :
-    src.projection = #[] ∧ dst.projection = #[] ∧
-    ∃ v, st.env[src.local_]? = some v
-
-axiom copy (st st' : SymState) (src dst : Place)
-    (hStep : stepEvent st (.copy src dst) = .ok st') :
-    src.projection = #[] ∧ dst.projection = #[] ∧
-    ∃ v, st.env[src.local_]? = some v
+M10.x.3's fix re-shaped `LStep.move` / `LStep.copy` to mirror the
+replayer's root-local semantics via
+`LLBCState.resolvePlaceRoot` — a projection-tolerant read of the
+root local, defaulted to `.bottom` for undeclared locals. With
+the rule premise-free, the extractors are no longer needed; the
+per-event lemmas `stepMove_sound` / `stepCopy_sound` close from
+`hStep` + `hRep` alone. -/
 
 /-! ### Borrow events — place-projection + env-resident + loan-id-fresh
 

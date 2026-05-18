@@ -83,8 +83,11 @@ def Valid (e : Event) (Ω : LLBCState) : Prop :=
   -- some (.mutLoan ℓ)), endBorrow_reborrow (no premise), and
   -- endBorrow_shared (no premise). The disjunction is `True`.
   | .endBorrow _ _ => True
-  | .move src _ => ∃ v, Ω.resolvePlace src = some v
-  | .copy src _ => ∃ v, Ω.resolvePlace src = some v
+  -- M10.x.3 — `.move` / `.copy` are premise-free in `LStep` after
+  -- the `resolvePlaceRoot` refactor (the rule reads the root local
+  -- with `.bottom` default rather than walking a projection chain).
+  | .move _ _ => True
+  | .copy _ _ => True
   -- `assign`'s rhs reduces to `v` existentially in LStep; no
   -- baseline premise on Ω.
   | .assign _ _ => True

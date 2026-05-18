@@ -306,18 +306,28 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       LStep Ω (.endBorrow ℓ restore) Ω
 
   /-- `E-Move` (Fig. 3). The source local's value moves into the
-      dst; the source is left as `bottom`. -/
-  | move {Ω : LLBCState} {src dst : Place} {v : Val} :
-      Ω.resolvePlace src = some v →
+      dst; the source is left as `bottom`.
+
+      M10.x.3 — the previous `Ω.resolvePlace src = some v` premise
+      assumed projection-empty places and env-resident sources
+      (`CertGen_faithful.move`). Replayer-side `stepMove` operates
+      on the root local regardless of projection and defaults
+      undeclared locals to `.bottom`; the rule mirrors that via
+      `resolvePlaceRoot`, dropping the cert-honesty extractor. -/
+  | move {Ω : LLBCState} {src dst : Place} :
       LStep Ω (.move src dst)
-        ((Ω.setLocal src.local_ .bottom).setLocal dst.local_ v)
+        ((Ω.setLocal src.local_ .bottom).setLocal dst.local_
+          (Ω.resolvePlaceRoot src))
 
   /-- `E-Copy` (Fig. 3 sugar; paper trivial). For `Copy`-bounded
       types only — the cert's emission is the witness that the
-      source's type implements `Copy`. The source is *not* cleared. -/
-  | copy {Ω : LLBCState} {src dst : Place} {v : Val} :
-      Ω.resolvePlace src = some v →
-      LStep Ω (.copy src dst) (Ω.setLocal dst.local_ v)
+      source's type implements `Copy`. The source is *not* cleared.
+
+      M10.x.3 — premise-free for the same reason as
+      `LStep.move`. -/
+  | copy {Ω : LLBCState} {src dst : Place} :
+      LStep Ω (.copy src dst)
+        (Ω.setLocal dst.local_ (Ω.resolvePlaceRoot src))
 
   /-- `E-Assign` (Fig. 3). The rhs `SymExpr` is reduced to a value
       `v` and placed at the dst. The rhs reduction is opaque to
