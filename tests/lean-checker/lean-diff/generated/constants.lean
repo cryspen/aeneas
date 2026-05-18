@@ -115,7 +115,7 @@ def P3 : Result (Pair Std.U32 Std.U32) := do
 /-- [constants::Y]:
     Source: 'tests/src/constants.rs', lines 42:0-42:38 -/
 def Y : Result (Wrap Std.I32) := do
-  (constants.{constants.Wrap<T>}.new 2#i32)
+  (constants.Wrap.new 2#i32)
 
 /-- [constants::YVAL]:
     Source: 'tests/src/constants.rs', lines 48:0-48:33 -/
@@ -124,7 +124,7 @@ def YVAL : Result Std.I32 := do
 
 /-- [constants::{constants::Wrap<T>}::new]:
     Source: 'tests/src/constants.rs', lines 55:4-57:5 -/
-def {constants.Wrap<T>}.new {T : Type} (x1 : T) : Result (Wrap T) := do
+def Wrap.new {T : Type} (x1 : T) : Result (Wrap T) := do
   ok { value := x1 }
 
 /-- [constants::Q1]:
@@ -169,7 +169,7 @@ def get_z1.Z1 : Result Std.I32 := do
 
 /-- [constants::{constants::V<T, N>}::LEN]:
     Source: 'tests/src/constants.rs', lines 92:4-92:29 -/
-def {constants.V<T, N>}.LEN {T : Type} : Result Std.Usize := do
+def V.LEN {T : Type} : Result Std.Usize := do
   ok 0#u32
 
 end constants

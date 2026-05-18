@@ -141,22 +141,83 @@ def binopWrappingName : String → Option String
     `core::num::{u32}::wrapping_add` into a Lean-valid path
     `core.num.U32.wrapping_add`. Rules:
     * `::` becomes `.`
-    * `{…}` braces strip to their content
-    * primitive integer-type segments `u8` / `u16` / … / `i32` / … are
-      capitalised (`u32` → `U32`) to match the standard Aeneas
-      backend's namespace casing. -/
-def sanitizeCallName (n : String) : String :=
+    * `{…}` brace groups collapse to a single Lean-valid identifier
+      derived from their inner text — the last `::`-or-`.`-segment,
+      with any `<…>` generic-arg suffix stripped, capitalised when
+      it matches a bare integer type (`u32` → `U32`).
+    * primitive integer-type segments outside braces are likewise
+      capitalised to match the standard Aeneas backend's namespace
+      casing.
+
+    Phase 4a-2: brace groups in Charon paths frequently span more than
+    one `::`-segment (`constants::{constants::Wrap<T>}::new`,
+    `core::clone::impls::{core::clone::Clone for bool}::clone`). The
+    previous per-segment `stripBraces` only handled the degenerate
+    one-segment case (`{u32}`) and left mid-path braces decorated
+    (`constants.{constants.Wrap<T>}.new`), producing names Lean rejects.
+    Walk the input balancing `{` / `}` like `RustEmit.sanitizeRustPath`
+    does, so the brace-inner text can be processed as a unit. -/
+def sanitizeCallName (n : String) : String := Id.run do
   let bareInts :=
     ["u8","u16","u32","u64","u128","usize",
      "i8","i16","i32","i64","i128","isize"]
-  let stripBraces (p : String) : String :=
-    if p.startsWith "{" && p.endsWith "}" then
-      ((p.drop 1).dropEnd 1).toString
-    else p
-  let parts := (n.splitOn "::").map fun p =>
-    let p := stripBraces p
-    if bareInts.contains p then p.capitalize else p
-  String.intercalate "." parts
+  -- Fast path: no brace decoration, keep the legacy per-segment shape
+  -- so existing fixtures remain byte-identical.
+  if !n.contains '{' then
+    let parts := (n.splitOn "::").map fun p =>
+      if bareInts.contains p then p.capitalize else p
+    return String.intercalate "." parts
+  -- Split into balanced top-level chunks of "outside" text vs `{…}`
+  -- groups. Mirrors `RustEmit.sanitizeRustPath`'s walker.
+  let cs := n.toList
+  let mut chunks : Array (Bool × String) := #[]  -- (isBrace, text)
+  let mut buf : String := ""
+  let mut depth : Nat := 0
+  for c in cs do
+    if c == '{' then
+      if depth == 0 then
+        if !buf.isEmpty then chunks := chunks.push (false, buf)
+        buf := ""
+      else
+        buf := buf.push c
+      depth := depth + 1
+    else if c == '}' then
+      depth := depth - 1
+      if depth == 0 then
+        chunks := chunks.push (true, buf)
+        buf := ""
+      else
+        buf := buf.push c
+    else
+      buf := buf.push c
+  if !buf.isEmpty then chunks := chunks.push (false, buf)
+  -- Reduce a brace-inner string to a single Lean identifier: prefer
+  -- the segment after the last ` for ` (Charon's
+  -- `{Trait for Self}::method` shape), then drop everything before
+  -- the last `::` or `.`, then drop any `<…>` generic-arg suffix,
+  -- then capitalise if it matches a bare integer type.
+  let pickType (inner : String) : String :=
+    let after := match inner.splitOn " for " with
+      | [] => inner
+      | xs => xs.getLast!
+    -- Normalise the separator so an inner that uses `.` (`Wrap<T>`
+    -- when the call-name was already lowered) and one that uses
+    -- `::` (`constants::Wrap<T>` straight from Charon) both reduce
+    -- the same way.
+    let normalized := (after.trimAscii.toString).replace "::" "."
+    let lastSeg := (normalized.splitOn ".").getLast?.getD normalized
+    let cleanSeg := (lastSeg.splitOn "<").headD lastSeg
+    let trimmed := cleanSeg.trimAscii.toString
+    if bareInts.contains trimmed then trimmed.capitalize else trimmed
+  let mut out : String := ""
+  for (isBrace, txt) in chunks do
+    if isBrace then
+      out := out ++ pickType txt
+    else
+      let parts := (txt.splitOn "::").map fun p =>
+        if bareInts.contains p then p.capitalize else p
+      out := out ++ String.intercalate "." parts
+  return out
 
 /-- M12.1: a sub-expression used as a function-application argument
     needs to render with surrounding parens when its Lean form would
@@ -467,11 +528,18 @@ def Decl.toLean (d : Decl) : String :=
   -- Result …` with a single space before `:`; concatenating `params`
   -- naively would yield `def zero  :` (double space). Build the
   -- signature head explicitly so both shapes are byte-clean.
+  --
+  -- Phase 4a-2: the Forward translator stores impl-method names with
+  -- Charon's brace decoration intact (`{constants.Wrap<T>}.new`,
+  -- `{constants.V<T, N>}.LEN`) — invalid Lean identifiers. Run the
+  -- same `sanitizeCallName` we apply to call-site heads so the
+  -- def-side name matches what the call site will resolve to.
+  let leanName := sanitizeCallName d.name
   let sigHead :=
     if d.params.isEmpty then
-      s!"def {d.name} {typeBinders}{traitBoundBinders}: Result {retParens}"
+      s!"def {leanName} {typeBinders}{traitBoundBinders}: Result {retParens}"
     else
-      s!"def {d.name} {typeBinders}{traitBoundBinders}{params} : Result {retParens}"
+      s!"def {leanName} {typeBinders}{traitBoundBinders}{params} : Result {retParens}"
   -- M9.5j: optional trailer keyword line (`partial_fixpoint`, etc.)
   -- attaches at column 0 after the do-block. The standard Aeneas
   -- backend emits this for recursive functions where Lean's
