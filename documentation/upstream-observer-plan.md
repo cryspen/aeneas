@@ -212,21 +212,21 @@ independently verifiable against gate `G_cert`. The cert wire format
 changes only at commit #0 (the `EvProj` removal); afterwards it
 never changes during the refactor.
 
-| # | Commit | Files | Gate |
+| # | Commit | Status | Tip |
 |---|---|---|---|
-| 0 | Drop dead `EvProj` variant. Touches the cert wire format (removes the variant from the schema); fixture certs are unaffected since none contain `EvProj`. | `src/cert/CertEvent.{ml,mli}`, `src/cert/CertJson.ml`, `src/cert/cert_schema.json`, `aeneas-lean-checker/AeneasCheck/Typecheck/Stmts.lean`, `aeneas-lean-checker/AeneasCheck/Json/Parser.lean` | `G_cert`, `G_build`, `G_lean` |
-| 1 | Land `Event.ml{,i}` + `Observer.ml{,i}` with no-op default. | `src/interp/Event.{ml,mli}`, `src/interp/Observer.{ml,mli}`, `src/dune` | `G_build` |
-| 2 | Land `CertObserver.ml` skeleton: registers as `Observer.current`, owns the four state refs, implements an empty `event_to_cert`. Wire `Main.ml:748` to register it under `-emit-cert`. Cert output drops to empty until commit 3+. | `src/cert/CertObserver.{ml,mli}`, `src/cert/dune`, `src/Main.ml` | `G_build` |
-| 3 | Migrate `InterpExpressions.ml`'s 4 sites (`EvCopy`, `EvMove`, `EvReborrow`, `EvMutBorrow`). Extend `event_to_cert` with the matching cases. After this commit, certs for fixtures exercising only copy/move/borrow/reborrow restore byte-equality. | `src/interp/InterpExpressions.ml`, `src/cert/CertObserver.ml` | `G_cert` (partial: copy-only fixtures), `G_build` |
-| 4 | Migrate `InterpExpansion.ml`'s 1 site (`EvSymExpandMutBorrow`). | `src/interp/InterpExpansion.ml`, `src/cert/CertObserver.ml` | `G_cert` (partial) |
-| 5 | Migrate `InterpBorrows.ml`'s 2 sites (`EvEndBorrow`, `EvEndAbs`). The `cert_ended_loans` dedupe state moves into the observer's `on_event` for `EndBorrow`. The `ri_holder_local` env-walk runs inside the observer (the observer fires pre-`give_back_concrete`). | `src/interp/InterpBorrows.ml`, `src/cert/CertObserver.ml` | `G_cert` (partial) |
-| 6 | Migrate `InterpLoops.ml`'s 2 sites (`EvLoopInv`, `EvLoopEnd`) + 2 `ctx_with_cert_events_suppressed` calls. The `cert_loop_id_stack` push/pop moves into the observer's `on_event` for `LoopInv`/`LoopEnd`. The loan-registry walk runs inside the observer. | `src/interp/InterpLoops.ml`, `src/cert/CertObserver.ml` | `G_cert` (partial) |
-| 7 | Migrate the 11 simple sites in `InterpStatements.ml` (`EvAssert`×3, `EvPanic`, `EvReturn`, `EvMatchArm`, the 5 `EvAssign`/`EvBinop` rvalue cases). | `src/interp/InterpStatements.ml`, `src/cert/CertObserver.ml` | `G_cert` (partial) |
-| 8 | Migrate `InterpStatements.ml`'s `EvCall` site (line 2213) + the `cert_abs_shape` extraction (lines 2138–2204). The role-walk visitor moves verbatim into `CertObserver`. | `src/interp/InterpStatements.ml`, `src/cert/CertObserver.ml` | `G_cert` (partial) |
-| 9 | Migrate `InterpStatements.ml`'s `EvJoin` site (lines 1728-1735) + the `cert_witnesses` derivation (lines 1616-1725). Both `je_rule` and `je_delta` constructor selection moves into `CertObserver`. | `src/interp/InterpStatements.ml`, `src/cert/CertObserver.ml` | `G_cert` (full sweep) |
-| 10 | Strip `cert_event_buffer` / `cert_events_suppressed` / `cert_loop_id_stack` / `cert_ended_loans` / `ctx_emit_event` / `ctx_with_cert_events_suppressed` / `ctx_take_events` from `Contexts.ml`; strip the corresponding init from `InterpUtils.ml`. Move `CertGen.ml:62` (which reads `ctx.cert_event_buffer`) to read from `CertObserver.flush`. | `src/llbc/Contexts.ml`, `src/interp/InterpUtils.ml`, `src/cert/CertGen.ml` | `G_eval_ctx`, `G_cert` |
-| 11 | Move the `CertEvent.cert_*_of_*` helpers from `CertEvent.ml` to `CertObserver.ml` (close-of-life relocation; `CertEvent.ml{,i}` becomes a pure vocabulary file). | `src/cert/CertEvent.{ml,mli}`, `src/cert/CertObserver.ml` | `G_cert`, `G_build` |
-| 12 | Verify `grep -rn 'CertEvent\.' src/ | grep -v '^src/cert/'` is empty. Final `G_perf` measurement against pre-refactor tag. | (no source changes) | `G_perf`, `G_build` |
+| 0 | Drop dead `EvProj` variant. | ✓ | `e5a59550` |
+| 1 | Land `Event.{ml,mli}` + `Observer.{ml,mli}` skeleton (no-op default). | ✓ | `b7a23fab` |
+| 2 | Land `CertObserver.{ml,mli}` skeleton + Main.ml registration. | ✓ | `ab29c2ed` |
+| 3 | Migrate `InterpExpressions.ml`'s 4 sites. | ✓ | `fe8c18c2` |
+| 4 | Migrate `InterpExpansion.ml`'s 1 site. | ✓ | `7f7411d8` |
+| 5 | Migrate `InterpBorrows.ml`'s 2 sites + holder env-walk + cert_ended_loans dedupe. | ✓ | `d9205121` |
+| 6 | Migrate `InterpLoops.ml`'s 2 sites + 2 `ctx_with_cert_events_suppressed`. | ✓ | `48de6436` |
+| 7 | Migrate 11 simple `InterpStatements.ml` sites (Assert×3, Panic, Return, MatchArm, Binop, 5 Assign cases). | ✓ | `1976e1b1` |
+| 8 | Migrate `InterpStatements.ml`'s EvCall + abs_sig role walk. | ✓ | `8be3499d` |
+| 9 | Migrate `InterpStatements.ml`'s EvJoin + witness derivation (full sweep). | ✓ | `c141e6c2` |
+| 10 | Strip cert state from `eval_ctx` / `InterpUtils` / `Contexts`. | ✓ | `b0866b54` |
+| 11 | Relocate `cert_*_of_*` helpers from `CertEvent` to `CertObserver`. | ✓ | `edaa4990` |
+| 12 | Final `G_build` / `G_perf` verification. | ✓ | (this commit) |
 
 **Rollback story per commit.** Commits 3–9 are revertible
 file-by-file: each restores the inline emit at the corresponding
