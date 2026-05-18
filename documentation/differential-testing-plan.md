@@ -52,8 +52,8 @@ gates** and treat the implied pairs as bonus coverage if cheap.
 
 | Pair | Comparison | What it tells us | Status today |
 |---|---|---|---|
-| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 11 proptests / 5 fixtures (in `tests/lean-checker/differential/`); needs scaling |
-| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 60 vectors / 3 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
+| **G_rust** | R₀ ↔ R₁ | Cert pipeline's Rust output matches developer intent | 18 proptests / 7 fixtures (in `tests/lean-checker/differential/`); needs scaling |
+| **G_lean** | R₀ ↔ L₁ | Cert pipeline's Lean output matches developer intent (semantic check, end-to-end) | 90 vectors / 4 fixtures (in `tests/lean-checker/lean-diff/`); needs scaling |
 | **G_byte** | L₀ ↔ L₁ (byte-equal) | Our Lean backend produces the same source as mainline (cheap syntactic check) | `scripts/compare-backends.sh` exists; per-fixture, opt-in; no allowed-divergence list |
 | **G_rfl** | L₀ ↔ L₁ (definitional equality, `rfl`) | Our Lean's *meaning* matches mainline's, even where syntax differs (e.g. binder order, beta-equivalence) | Does not exist; this plan adds it |
 | (implied) | R₀ ↔ L₀ | Mainline Aeneas's Lean matches developer intent | Trusted via upstream test suite; we don't add separate coverage |
@@ -95,10 +95,11 @@ with a one-sentence reason.
 
 **Known unblockers.** Emitter quirks (RustEmit) that currently block
 fixtures from passing should be filed as separate emitter-bug tickets.
-The brace-decorated-path fix on this branch (commit `3d086b79`)
-unblocks `compare_simple::add_u32`, `calls::pick`, and parts of
-`builtin`. Two more emitter gaps remain (generic binders on `<T,U>`
-functions; ADT placeholders `record_lit { … }` / `with_<field>`).
+Resolved on this branch:
+- `3d086b79` — brace-decorated paths (`core::num::{u32}::wrapping_add`); unblocks `compare_simple::add_u32`, `calls::pick`, parts of `builtin`.
+- `ac176ee3` + `df1441cd` (Phase 1C) — ADT placeholders: `record_lit { … }` and `with_<field>(base, value)` now render as real `Foo { f: e, … }` and `Foo { f: v, ..base }` syntax via plumbed `adtName` on `PExpr.recordLit` / `PExpr.structUpdate`. Unblocks `aggregates_basic`, `reborrows::set_fst` and other ADT-heavy fixtures.
+
+Remaining: generic binders on `<T,U>` functions; `Array.update` rendered as Lean dot-notation instead of `Array::update(…)` (surfaces in `reborrows::set_idx_model`).
 
 ### G_lean — Source Rust ↔ Our Lean (executed)
 
@@ -127,11 +128,11 @@ JSON-stdin proptest if the per-fixture variant explosion warrants it.
 the source has at least 4 vectors covered (or its full input domain
 if smaller). Same exclusion list as G_rust for non-testable functions.
 
-**Known unblockers.** Surfaced by the Lean-diff agent: `RuntimeShim`
-is missing the `#isize` macro (blocks `bitwise.rs`); `LeanEmit`
-generates ill-typed constants in `constants.lean` (return type
-`Result Std.I32` with body `ok 0#u32.value` — `Z1::Z1::Y`, `S1`/`S2`
-constant rendering). File these as separate emitter / shim bugs.
+**Known unblockers.** Resolved on this branch:
+- `6438a751` (Phase 1A) — `RuntimeShim` gained `#isize` / `#i32` / `#i64` macros; the hand-patch in `tests/Generated/Bitwise.lean` was reverted. `bitwise.rs` is now wired into the lean-diff harness (30 vectors passing, byte-identical).
+- `ac176ee3` + `f26cc772` (Phase 1B) — `LeanEmit` now emits a type-correct zero of the field type when the root expression is a default `0#u32` placeholder and the projected field type is a literal int/bool. `unwrap_y` and `get_z1` are well-typed (`ok 0#i32` instead of `ok 0#u32.value`).
+
+Remaining in `constants.lean` (filed as separate Phase 1B follow-ups, not wired into lean-diff yet): bare `(x1 + x2)` on i32 `add` (no `HAdd I32 I32 (Result I32)` shim instance); brace-decorated identifier `def {constants.Wrap<T>}.new`; `Pair`-typed record literal `ok`-applied as a scalar; `V` struct shape `Array T 0#usize` length encoding.
 
 ### G_byte — Mainline Lean ↔ Our Lean (byte diff)
 
