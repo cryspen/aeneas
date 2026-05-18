@@ -176,7 +176,13 @@ and json_cert_state_summary (s : cert_state_summary) : Yojson.Basic.t =
     ]
 
 let json_restore_info (r : cert_restore_info) : Yojson.Basic.t =
-  `Assoc [ "given_back", json_cert_sym_expr r.ri_given_back ]
+  let holder_kv : (string * Yojson.Basic.t) list =
+    match r.ri_holder_local with
+    | None -> [ "holder_local", `Null ]
+    | Some l -> [ "holder_local", json_local_id l ]
+  in
+  `Assoc
+    ([ "given_back", json_cert_sym_expr r.ri_given_back ] @ holder_kv)
 
 let json_cert_source_span (s : cert_source_span) : Yojson.Basic.t =
   `Assoc
@@ -265,12 +271,52 @@ let json_cert_join_rule (r : cert_join_rule) : Yojson.Basic.t =
   | JrJoinOtherBottom abs ->
       `Assoc [ "JoinOtherBottom", `Assoc [ "abs", json_abs_id abs ] ]
 
+(** [M10.x.0 — cert v6] Encode [cert_join_entry_delta] as a Serde-tagged
+    sum: nullary [JedTrivial] as the bare string ["Trivial"], payload
+    variants as single-key objects (mirrors [json_cert_join_rule]'s
+    shape). The Lean parser's [parseJoinEntryDelta] consumes this. *)
+let json_cert_join_entry_delta (d : cert_join_entry_delta) : Yojson.Basic.t =
+  match d with
+  | JedTrivial -> `String "Trivial"
+  | JedSymbolic sv ->
+      `Assoc
+        [ "Symbolic", `Assoc [ "fresh_sv", json_symbolic_value_id sv ] ]
+  | JedMutBorrows { l_fresh; abs_id } ->
+      `Assoc
+        [
+          ( "MutBorrows",
+            `Assoc
+              [ "fresh", json_borrow_id l_fresh; "abs_id", json_abs_id abs_id ]
+          );
+        ]
+  | JedBottomOther a ->
+      `Assoc [ "BottomOther", `Assoc [ "abs", json_abs_id a ] ]
+  | JedOtherBottom a ->
+      `Assoc [ "OtherBottom", `Assoc [ "abs", json_abs_id a ] ]
+
 let json_cert_join_entry (e : cert_join_entry) : Yojson.Basic.t =
   `Assoc
     [
       "local", json_local_id e.je_local;
       "rule", json_cert_join_rule e.je_rule;
+      (* M10.x.0 (cert v6) — parallel JoinEntryStep premise carrier. *)
+      "delta", json_cert_join_entry_delta e.je_delta;
     ]
+
+(** [M10.x.0 — cert v6] Serialise a [cert_stmt_ref]. *)
+let json_cert_stmt_ref (s : cert_stmt_ref) : Yojson.Basic.t =
+  `Assoc
+    [
+      "fun_id", `Int s.sr_fun_id;
+      "body_path", `List (Array.to_list (Array.map (fun i -> `Int i) s.sr_body_path));
+    ]
+
+(** [M10.x.0 — cert v6] Serialise one entry of [fc_stmt_refs]: [None]
+    flows through as JSON [null], [Some r] as the object. *)
+let json_cert_stmt_ref_opt (sr : cert_stmt_ref option) : Yojson.Basic.t =
+  match sr with
+  | None -> `Null
+  | Some r -> json_cert_stmt_ref r
 
 (* [M9.7o-E5b] The [json_cert_signature] emitter was deleted alongside
    the [cert_signature] type; the per-function trace no longer carries
@@ -521,6 +567,10 @@ let json_fun_cert (fc : fun_cert) : Yojson.Basic.t =
     @ [
         "events", `List (List.map json_event fc.fc_events);
         "final_state", json_cert_state_summary fc.fc_final_state;
+        (* M10.x.0 (cert v6) — parallel-to-events back-pointer array.
+           Currently all-None at every site; the field shape is in
+           place so the Lean parser already accepts it. *)
+        "stmt_refs", `List (List.map json_cert_stmt_ref_opt fc.fc_stmt_refs);
       ])
 
 let json_crate_cert (cc : crate_cert) : Yojson.Basic.t =

@@ -1,0 +1,1328 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "32f6f56075a18613f4840e0aaeb72be3",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "options::test_unwrap_or",
+      "source_span": {
+        "file": "tests/src/options.rs",
+        "beg_line": 3,
+        "beg_col": 0,
+        "end_line": 5,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "core::option::{core::option::Option<T>}::unwrap_or",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "options::test_expect",
+      "source_span": {
+        "file": "tests/src/options.rs",
+        "beg_line": 7,
+        "beg_col": 0,
+        "end_line": 9,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "core::option::{core::option::Option<T>}::expect",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TStr);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 1, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TVar (Generated_Types.Free 0))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "options::test_is_some",
+      "source_span": {
+        "file": "tests/src/options.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 13,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 6,
+            "fn_name": "core::option::{core::option::Option<T>}::is_some",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "region_abs": [ 0 ],
+            "abs_sig": [
+              {
+                "abs_id": 0,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 0 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::option::Option",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Option",
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 600,
+            "beg_col": 0,
+            "end_line": 600,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "None",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Some",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "options::test_unwrap_or",
+          "attr_info": null,
+          "source_text": "fn test_unwrap_or<T>(x: Option<T>, default: T) -> T {\n    x.unwrap_or(default)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/options.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+              }
+            },
+            { "TypeVar": { "Free": 0 } }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/options.rs",
+            "beg_line": 4,
+            "beg_col": 4,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 4,
+                "beg_col": 4,
+                "end_line": 4,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "TypeVar": { "Free": 0 } } ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 4,
+                "beg_col": 16,
+                "end_line": 4,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 4,
+                "beg_col": 4,
+                "end_line": 4,
+                "end_col": 24
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": { "TypeVar": { "Free": 0 } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 4,
+                "beg_col": 23,
+                "end_line": 4,
+                "end_col": 24
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 4,
+                "beg_col": 23,
+                "end_line": 4,
+                "end_col": 24
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 5,
+                "beg_col": 0,
+                "end_line": 5,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 5,
+                "beg_col": 0,
+                "end_line": 5,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "TypeVar": { "Free": 0 } } ]
+                        }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 5,
+                "beg_col": 1,
+                "end_line": 5,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 0 } },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          { "TypeVar": { "Free": 0 } },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          { "TypeVar": { "Free": 0 } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "options::test_expect",
+          "attr_info": null,
+          "source_text": "fn test_expect<T>(x: Option<T>, msg: &str) -> T {\n    x.expect(msg)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/options.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+              }
+            },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Str" },
+                    "generics": { "types": [] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/options.rs",
+            "beg_line": 8,
+            "beg_col": 4,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "TypeVar": { "Free": 0 } } ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 8,
+                "beg_col": 13,
+                "end_line": 8,
+                "end_col": 16
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Str" },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Str" },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 17
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Str" },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "TypeVar": { "Free": 0 } }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 8,
+                "beg_col": 16,
+                "end_line": 8,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 8,
+                "beg_col": 16,
+                "end_line": 8,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 9,
+                "beg_col": 0,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "TypeVar": { "Free": 0 } } ]
+                        }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 9,
+                "beg_col": 1,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "TypeVar": { "Free": 0 } },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Str" },
+                  "generics": { "types": [] }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Str" },
+                  "generics": { "types": [] }
+                }
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "options::test_is_some",
+          "attr_info": null,
+          "source_text": "fn test_is_some<T>(x: Option<T>) -> bool {\n    x.is_some()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/options.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+              }
+            }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/options.rs",
+            "beg_line": 12,
+            "beg_col": 4,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 15
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 6 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 12,
+                "beg_col": 14,
+                "end_line": 12,
+                "end_col": 15
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 13,
+                "beg_col": 0,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "TypeVar": { "Free": 0 } } ]
+                        }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/options.rs",
+                "beg_line": 13,
+                "beg_col": 1,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::option::{core::option::Option<T>}::unwrap_or",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 1038,
+            "beg_col": 4,
+            "end_line": 1040,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+              }
+            },
+            { "TypeVar": { "Free": 0 } }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::option::{core::option::Option<T>}::expect",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "option_expect",
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 968,
+            "beg_col": 4,
+            "end_line": 968,
+            "end_col": 45
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Adt": {
+                "id": { "Adt": 0 },
+                "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+              }
+            },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Str" },
+                    "generics": { "types": [] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::option::{core::option::Option<T>}::is_some",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 635,
+            "beg_col": 4,
+            "end_line": 635,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 0 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

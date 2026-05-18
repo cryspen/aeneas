@@ -1,0 +1,389 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "071bf6114a14f9c3a7454a90fabced8d",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "issue_815_global_referencing_fallible_global::INNER",
+      "source_span": {
+        "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+        "beg_line": 4,
+        "beg_col": 0,
+        "end_line": 4,
+        "end_col": 25
+      },
+      "events": [
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "rhs": { "SymLit": { "Scalar": { "Unsigned": [ "U32", "1" ] } } },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "issue_815_global_referencing_fallible_global::OUTER",
+      "source_span": {
+        "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+        "beg_line": 5,
+        "beg_col": 0,
+        "end_line": 5,
+        "end_col": 29
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32)),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U32))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_815_global_referencing_fallible_global::INNER",
+          "attr_info": null,
+          "source_text": "const INNER: u32 = 1 + 1;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 4,
+            "end_col": 25
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 4,
+            "end_col": 25
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+                "beg_line": 4,
+                "beg_col": 19,
+                "end_line": 4,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "AddPanic",
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "U32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "U32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+                "beg_line": 4,
+                "beg_col": 19,
+                "end_line": 4,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+                "beg_line": 4,
+                "beg_col": 0,
+                "end_line": 4,
+                "end_col": 25
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } }, { "Literal": { "UInt": "U32" } }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "issue_815_global_referencing_fallible_global::OUTER",
+          "attr_info": null,
+          "source_text": "pub const OUTER: u32 = INNER;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+            "beg_line": 5,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 29
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "U32" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+            "beg_line": 5,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 29
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+                "beg_line": 5,
+                "beg_col": 23,
+                "end_line": 5,
+                "end_col": 28
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "U32" } }, "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 0,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "U32" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+                "beg_line": 5,
+                "beg_col": 23,
+                "end_line": 5,
+                "end_col": 28
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "U32" } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-815-global-referencing-fallible-global.rs",
+                "beg_line": 5,
+                "beg_col": 0,
+                "end_line": 5,
+                "end_col": 29
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U32" } },
+          { "Ref": [ 0, { "Literal": { "UInt": "U32" } }, "Shared" ] }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

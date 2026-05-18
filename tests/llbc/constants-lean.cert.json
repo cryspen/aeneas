@@ -1,0 +1,2914 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "a666fb48b5098e4026902a3220789ad4",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "constants_lean::use_params",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 8,
+        "beg_col": 0,
+        "end_line": 10,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 10,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 1,
+            "fn_name": "core::cmp::impls::{core::cmp::PartialEq<&'0 (T@1)> for &'1 (P)}::eq",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TRef (Generated_Types.RErased,\n      (Generated_Types.TLiteral\n         (Generated_Values.TUInt Generated_Values.Usize)),\n      Generated_Types.RShared)),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "region_abs": [ 0, 1, 2, 3 ],
+            "abs_sig": [
+              {
+                "abs_id": 0,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 1, "sb_id": 4 } } ]
+              },
+              { "abs_id": 1, "parent_abs": [ 0 ], "roles": [] },
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              },
+              { "abs_id": 3, "parent_abs": [ 2 ], "roles": [] }
+            ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 2,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvEndAbs": {
+            "abs": 3,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null
+      ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "constants_lean::N",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 12,
+        "beg_col": 0,
+        "end_line": 12,
+        "end_col": 19
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "Usize", "3" ] } }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "constants_lean::M",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 13,
+        "beg_col": 0,
+        "end_line": 13,
+        "end_col": 19
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "Usize", "4" ] } }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    },
+    {
+      "fn_id": 4,
+      "fn_name": "constants_lean::NM",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 14,
+        "beg_col": 0,
+        "end_line": 14,
+        "end_col": 24
+      },
+      "events": [
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 3,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "MulPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize)),\n   Generated_Types.RShared))"
+              }
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize)),\n   Generated_Types.RShared))"
+              }
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 11,
+      "fn_name": "constants_lean::{constants_lean::Wrapper<N, M>}::NM",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 19,
+        "beg_col": 4,
+        "end_line": 19,
+        "end_col": 28
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 12,
+      "fn_name": "constants_lean::{constants_lean::Trait for constants_lean::Wrapper<N, M>}::NM",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 27,
+        "beg_col": 4,
+        "end_line": 27,
+        "end_col": 28
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 13,
+      "fn_name": "constants_lean::Trait1::NM",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 33,
+        "beg_col": 4,
+        "end_line": 33,
+        "end_col": 40
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 14,
+      "fn_name": "constants_lean::{constants_lean::Trait1 for bool}::N",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 37,
+        "beg_col": 4,
+        "end_line": 37,
+        "end_col": 23
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "Usize", "0" ] } }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    },
+    {
+      "fn_id": 15,
+      "fn_name": "constants_lean::{constants_lean::Trait1 for bool}::M",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 38,
+        "beg_col": 4,
+        "end_line": 38,
+        "end_col": 23
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "Usize", "1" ] } }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null ]
+    },
+    {
+      "fn_id": 16,
+      "fn_name": "constants_lean::Params1::PACKED_LEN",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 45,
+        "beg_col": 4,
+        "end_line": 45,
+        "end_col": 57
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "DivPanic",
+            "lhs": {
+              "SymMove": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            },
+            "rhs": {
+              "SymLit": { "Scalar": { "Unsigned": [ "Usize", "8" ] } }
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 17,
+      "fn_name": "constants_lean::Params1::CT1_LEN",
+      "source_span": {
+        "file": "tests/src/constants-lean.rs",
+        "beg_line": 46,
+        "beg_col": 4,
+        "end_line": 46,
+        "end_col": 44
+      },
+      "events": [
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "constants_lean::Wrapper",
+          "attr_info": null,
+          "source_text": "struct Wrapper<const N: usize, const M: usize>([u8; N], [u8; N]);",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 16,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 65
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [ { "name": "N" }, { "name": "M" } ],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": null,
+              "ty": {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  { "kind": { "Opaque": "len" } }
+                ]
+              },
+              "attr_info": null
+            },
+            {
+              "idx": 1,
+              "name": null,
+              "ty": {
+                "Array": [
+                  { "Literal": { "UInt": "U8" } },
+                  { "kind": { "Opaque": "len" } }
+                ]
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "constants_lean::use_params",
+          "attr_info": null,
+          "source_text": "fn use_params<P: Params>(n: usize) -> bool {\n    &n == &(P::N * P::M)\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 8,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "Usize" } } ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "P" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "constants_lean::Params", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 6
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 6
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 11,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulPanic",
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 11,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 10,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulWrap",
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 11,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 9,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 10,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 10,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 8,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 9,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 10,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 8,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 10,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Ref": [
+                                0,
+                                { "Literal": { "UInt": "Usize" } },
+                                "Shared"
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 10,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Ref": [
+                            0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 6,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Ref": [
+                                0,
+                                { "Literal": { "UInt": "Usize" } },
+                                "Shared"
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 1 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Ref": [
+                                0,
+                                { "Literal": { "UInt": "Usize" } },
+                                "Shared"
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Ref": [
+                                0,
+                                { "Literal": { "UInt": "Usize" } },
+                                "Shared"
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 23,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 9,
+                "beg_col": 23,
+                "end_line": 9,
+                "end_col": 24
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 10,
+                "beg_col": 0,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 10,
+                "beg_col": 1,
+                "end_line": 10,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": "Bool" },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [
+              0,
+              { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+              "Shared"
+            ]
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+          {
+            "Ref": [
+              0,
+              { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+              "Shared"
+            ]
+          },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Ref": [
+              0,
+              { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+              "Shared"
+            ]
+          },
+          { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<&0 (B)> for &1 (A)}::eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 2114,
+            "beg_col": 8,
+            "end_line": 2114,
+            "end_col": 40
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                "Shared"
+              ]
+            },
+            {
+              "Ref": [
+                0,
+                { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [
+              { "name": "" }, { "name": "" }, { "name": "" }, { "name": "" }
+            ],
+            "types": [ { "name": "A" }, { "name": "B" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::PartialEq", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "constants_lean::N",
+          "attr_info": null,
+          "source_text": "const N: usize = 3;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 12,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 19
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 12,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 19
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 12,
+                "beg_col": 17,
+                "end_line": 12,
+                "end_col": 18
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "3" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 12,
+                "beg_col": 0,
+                "end_line": 12,
+                "end_col": 19
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "constants_lean::M",
+          "attr_info": null,
+          "source_text": "const M: usize = 4;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 13,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 19
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 13,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 19
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 13,
+                "beg_col": 17,
+                "end_line": 13,
+                "end_col": 18
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "4" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 13,
+                "beg_col": 0,
+                "end_line": 13,
+                "end_col": 19
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "constants_lean::NM",
+          "attr_info": null,
+          "source_text": "const NM: usize = N * M;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 14,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 14,
+            "beg_col": 0,
+            "end_line": 14,
+            "end_col": 24
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 14,
+                "beg_col": 18,
+                "end_line": 14,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 0,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 14,
+                "beg_col": 18,
+                "end_line": 14,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 0,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 14,
+                "beg_col": 18,
+                "end_line": 14,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulPanic",
+                      {
+                        "Copy": {
+                          "local": 2,
+                          "projection": [ "Deref" ],
+                          "ty": {
+                            "Ref": [
+                              0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        "Copy": {
+                          "local": 3,
+                          "projection": [ "Deref" ],
+                          "ty": {
+                            "Ref": [
+                              0, { "Literal": { "UInt": "Usize" } }, "Shared"
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 14,
+                "beg_col": 18,
+                "end_line": 14,
+                "end_col": 23
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 14,
+                "beg_col": 0,
+                "end_line": 14,
+                "end_col": 24
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } },
+          { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+          { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::cmp::PartialEq::eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "cmp_partialeq_eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 256,
+            "beg_col": 4,
+            "end_line": 256,
+            "end_col": 38
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::PartialEq", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<usize> for usize}::eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1870,
+            "beg_col": 16,
+            "end_line": 1870,
+            "end_col": 50
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 11,
+        "item_meta": {
+          "name": "constants_lean::{constants_lean::Wrapper<N, M>}::NM",
+          "attr_info": null,
+          "source_text": "const NM: usize = N * M;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 19,
+            "beg_col": 4,
+            "end_line": 19,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [ { "name": "N" }, { "name": "M" } ],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 19,
+            "beg_col": 4,
+            "end_line": 19,
+            "end_col": 28
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 19,
+                "beg_col": 22,
+                "end_line": 19,
+                "end_col": 27
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulPanic",
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 19,
+                "beg_col": 22,
+                "end_line": 19,
+                "end_col": 27
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 28
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 12,
+        "item_meta": {
+          "name": "constants_lean::{constants_lean::Trait for constants_lean::Wrapper<N, M>}::NM",
+          "attr_info": null,
+          "source_text": "const NM: usize = N * M;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 27,
+            "beg_col": 4,
+            "end_line": 27,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [ { "name": "N" }, { "name": "M" } ],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 27,
+            "beg_col": 4,
+            "end_line": 27,
+            "end_col": 28
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 27,
+                "beg_col": 22,
+                "end_line": 27,
+                "end_col": 27
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulPanic",
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 27,
+                "beg_col": 22,
+                "end_line": 27,
+                "end_col": 27
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 27,
+                "beg_col": 4,
+                "end_line": 27,
+                "end_col": 28
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 13,
+        "item_meta": {
+          "name": "constants_lean::Trait1::NM",
+          "attr_info": null,
+          "source_text": "const NM: usize = Self::N * Self::M;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 33,
+            "beg_col": 4,
+            "end_line": 33,
+            "end_col": 40
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "constants_lean::Trait1", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 33,
+            "beg_col": 4,
+            "end_line": 33,
+            "end_col": 40
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 33,
+                "beg_col": 22,
+                "end_line": 33,
+                "end_col": 39
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulPanic",
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 33,
+                "beg_col": 22,
+                "end_line": 33,
+                "end_col": 39
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 33,
+                "beg_col": 4,
+                "end_line": 33,
+                "end_col": 40
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 14,
+        "item_meta": {
+          "name": "constants_lean::{constants_lean::Trait1 for bool}::N",
+          "attr_info": null,
+          "source_text": "const N: usize = 0;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 37,
+            "beg_col": 4,
+            "end_line": 37,
+            "end_col": 23
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 37,
+            "beg_col": 4,
+            "end_line": 37,
+            "end_col": 23
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 37,
+                "beg_col": 21,
+                "end_line": 37,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 37,
+                "beg_col": 4,
+                "end_line": 37,
+                "end_col": 23
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 15,
+        "item_meta": {
+          "name": "constants_lean::{constants_lean::Trait1 for bool}::M",
+          "attr_info": null,
+          "source_text": "const M: usize = 1;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 38,
+            "beg_col": 4,
+            "end_line": 38,
+            "end_col": 23
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 38,
+            "beg_col": 4,
+            "end_line": 38,
+            "end_col": 23
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 38,
+                "beg_col": 21,
+                "end_line": 38,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "1" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 38,
+                "beg_col": 4,
+                "end_line": 38,
+                "end_col": 23
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 16,
+        "item_meta": {
+          "name": "constants_lean::Params1::PACKED_LEN",
+          "attr_info": null,
+          "source_text": "const PACKED_LEN: usize = (Self::N * Self::LOGQ) / 8;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 45,
+            "beg_col": 4,
+            "end_line": 45,
+            "end_col": 57
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "constants_lean::Params1", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 45,
+            "beg_col": 4,
+            "end_line": 45,
+            "end_col": 57
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 45,
+                "beg_col": 30,
+                "end_line": 45,
+                "end_col": 52
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "MulPanic",
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": { "Opaque": "constant" },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 45,
+                "beg_col": 30,
+                "end_line": 45,
+                "end_col": 52
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 45,
+                "beg_col": 30,
+                "end_line": 45,
+                "end_col": 56
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "BinaryOp": [
+                      "DivPanic",
+                      {
+                        "Move": {
+                          "local": 1,
+                          "projection": [],
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "UInt": "Usize" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 45,
+                "beg_col": 55,
+                "end_line": 45,
+                "end_col": 56
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 45,
+                "beg_col": 4,
+                "end_line": 45,
+                "end_col": 57
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "UInt": "Usize" } }
+        ],
+        "is_global_initializer": true,
+        "src": null
+      },
+      {
+        "id": 17,
+        "item_meta": {
+          "name": "constants_lean::Params1::CT1_LEN",
+          "attr_info": null,
+          "source_text": "const CT1_LEN: usize = Self::PACKED_LEN;",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 46,
+            "beg_col": 4,
+            "end_line": 46,
+            "end_col": 44
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "constants_lean::Params1", "type_param": 0 }
+            ]
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 46,
+            "beg_col": 4,
+            "end_line": 46,
+            "end_col": 44
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 46,
+                "beg_col": 27,
+                "end_line": 46,
+                "end_col": 43
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": { "Opaque": "constant" },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/constants-lean.rs",
+                "beg_line": 46,
+                "beg_col": 4,
+                "end_line": 46,
+                "end_col": 44
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [ { "Literal": { "UInt": "Usize" } } ],
+        "is_global_initializer": true,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "constants_lean::Params",
+          "attr_info": null,
+          "source_text": "trait Params {\n    const N: usize;\n    const M: usize;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "constants_lean::Trait",
+          "attr_info": null,
+          "source_text": "trait Trait {\n    const NM: usize;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 22,
+            "beg_col": 0,
+            "end_line": 24,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "constants_lean::Trait1",
+          "attr_info": null,
+          "source_text": "trait Trait1 {\n    const N: usize;\n    const M: usize;\n    const NM: usize = Self::N * Self::M;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 30,
+            "beg_col": 0,
+            "end_line": 34,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "constants_lean::Params1",
+          "attr_info": null,
+          "source_text": "trait Params1 {\n    const N: usize;\n    const LOGQ: usize;\n\n    const PACKED_LEN: usize = (Self::N * Self::LOGQ) / 8;\n    const CT1_LEN: usize = Self::PACKED_LEN;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 41,
+            "beg_col": 0,
+            "end_line": 47,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::cmp::PartialEq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 251,
+            "beg_col": 0,
+            "end_line": 251,
+            "end_col": 65
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "eq",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+              ],
+              "output": { "Literal": "Bool" },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::cmp::PartialEq", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "constants_lean::{constants_lean::Trait for constants_lean::Wrapper<N, M>}",
+          "attr_info": null,
+          "source_text": "impl<const N: usize, const M: usize> Trait for Wrapper<N, M> {\n    const NM: usize = N * M;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 26,
+            "beg_col": 0,
+            "end_line": 28,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": 0,
+        "self_type": {
+          "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [ { "name": "N" }, { "name": "M" } ],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "constants_lean::{constants_lean::Trait1 for bool}",
+          "attr_info": null,
+          "source_text": "impl Trait1 for bool {\n    const N: usize = 0;\n    const M: usize = 1;\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/constants-lean.rs",
+            "beg_line": 36,
+            "beg_col": 0,
+            "end_line": 39,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "trait_decl_id": 2,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": "Bool" },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<&0 (B)> for &1 (A)}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 2109,
+            "beg_col": 4,
+            "end_line": 2111,
+            "end_col": 32
+          },
+          "extra": null
+        },
+        "trait_decl_id": 4,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+        "generics": {
+          "regions": [ { "name": "" }, { "name": "" } ],
+          "types": [ { "name": "A" }, { "name": "B" } ],
+          "const_generics": [],
+          "trait_clauses": [
+            { "trait": "core::cmp::PartialEq", "type_param": 0 }
+          ]
+        },
+        "methods": [ { "name": "eq", "fn_id": 1 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<usize> for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1868,
+            "beg_col": 12,
+            "end_line": 1868,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "trait_decl_id": 4,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "eq", "fn_id": 9 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

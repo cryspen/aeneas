@@ -1,0 +1,2105 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "6e6fc094dbeae50cd7b1b236d048bfe1",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "builtin_auto::make",
+      "source_span": {
+        "file": "tests/src/builtin-auto.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 15,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCall": {
+            "fn": 1,
+            "fn_name": "core::ptr::null",
+            "call_id": 1,
+            "args": [],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymRecord": {
+                "adt_id": 0,
+                "fields": [
+                  {
+                    "name": "ptr",
+                    "value": {
+                      "SymMove": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   Generated_Types.RShared))"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "alloc::boxed::Box::new",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 1,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "builtin_auto::Inner",
+          "attr_info": null,
+          "source_text": "struct Inner {\n    ptr: *const u8,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin-auto.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "ptr",
+              "ty": {
+                "RawPtr": [ { "Literal": { "UInt": "U8" } }, "Shared" ]
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::fmt::Formatter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Formatter",
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 561,
+            "beg_col": 0,
+            "end_line": 561,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [ { "name": "'a" } ],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::result::Result",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Result",
+          "span": {
+            "file": "/rustc/library/core/src/result.rs",
+            "beg_line": 557,
+            "beg_col": 0,
+            "end_line": 557,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "E" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Ok",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Err",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 1 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::fmt::Error",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 109,
+            "beg_col": 0,
+            "end_line": 109,
+            "end_col": 16
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "core::cmp::Ordering",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Ordering",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 396,
+            "beg_col": 0,
+            "end_line": 396,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Less",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "I8", "-1" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Equal",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "I8", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 2,
+              "name": "Greater",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "I8", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 12,
+        "item_meta": {
+          "name": "core::option::Option",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Option",
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 600,
+            "beg_col": 0,
+            "end_line": 600,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "None",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Some",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 13,
+        "item_meta": {
+          "name": "core::ops::control_flow::ControlFlow",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "ControlFlow",
+          "span": {
+            "file": "/rustc/library/core/src/ops/control_flow.rs",
+            "beg_line": 89,
+            "beg_col": 0,
+            "end_line": 89,
+            "end_col": 31
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "B" }, { "name": "C" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Continue",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 1 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Break",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "builtin_auto::make",
+          "attr_info": null,
+          "source_text": "pub fn make() -> Box<Inner> {\n    Box::new(Inner {\n        ptr: std::ptr::null(),\n    })\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin-auto.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 0 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/builtin-auto.rs",
+            "beg_line": 12,
+            "beg_col": 13,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/builtin-auto.rs",
+                "beg_line": 13,
+                "beg_col": 13,
+                "end_line": 13,
+                "end_col": 29
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 1 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "RawPtr": [ { "Literal": { "UInt": "U8" } }, "Shared" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin-auto.rs",
+                "beg_line": 12,
+                "beg_col": 13,
+                "end_line": 14,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": { "Adt": 0 }, "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 2,
+                            "projection": [],
+                            "ty": {
+                              "RawPtr": [
+                                { "Literal": { "UInt": "U8" } }, "Shared"
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin-auto.rs",
+                "beg_line": 14,
+                "beg_col": 4,
+                "end_line": 14,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin-auto.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 14,
+                "end_col": 6
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin-auto.rs",
+                "beg_line": 14,
+                "beg_col": 5,
+                "end_line": 14,
+                "end_col": 6
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/builtin-auto.rs",
+                "beg_line": 15,
+                "beg_col": 1,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 0 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          { "RawPtr": [ { "Literal": { "UInt": "U8" } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::ptr::null",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "ptr_null",
+          "span": {
+            "file": "/rustc/library/core/src/ptr/mod.rs",
+            "beg_line": 837,
+            "beg_col": 0,
+            "end_line": 837,
+            "end_col": 55
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "RawPtr": [ { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::fmt::Debug::fmt",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 1083,
+            "beg_col": 4,
+            "end_line": 1083,
+            "end_col": 51
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 4 },
+              "generics": {
+                "types": [
+                  { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 5 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::fmt::Debug", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::fmt::{core::fmt::Debug for ()}::fmt",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 3123,
+            "beg_col": 4,
+            "end_line": 3123,
+            "end_col": 50
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            },
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 3 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 4 },
+              "generics": {
+                "types": [
+                  { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 5 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::clone::Clone::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone_fn",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 236,
+            "beg_col": 4,
+            "end_line": 236,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::cmp::Ord::cmp",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "ord_cmp_method",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 991,
+            "beg_col": 4,
+            "end_line": 991,
+            "end_col": 44
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": { "id": { "Adt": 8 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::Ord", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 10,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::Ord for ()}::cmp",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 2033,
+            "beg_col": 8,
+            "end_line": 2033,
+            "end_col": 46
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            },
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": { "id": { "Adt": 8 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 14,
+        "item_meta": {
+          "name": "core::hash::Hash::hash",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/hash/mod.rs",
+            "beg_line": 198,
+            "beg_col": 4,
+            "end_line": 198,
+            "end_col": 45
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "H" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::hash::Hash", "type_param": 0 },
+              { "trait": "core::hash::Hasher", "type_param": 1 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 16,
+        "item_meta": {
+          "name": "core::hash::impls::{core::hash::Hash for ()}::hash",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/hash/mod.rs",
+            "beg_line": 882,
+            "beg_col": 16,
+            "end_line": 882,
+            "end_col": 57
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            },
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "H" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::hash::Hasher", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 19,
+        "item_meta": {
+          "name": "core::cmp::PartialOrd::partial_cmp",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "cmp_partialord_cmp",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1387,
+            "beg_col": 4,
+            "end_line": 1387,
+            "end_col": 59
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 12 },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 8 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::PartialOrd", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 29,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialOrd<()> for ()}::partial_cmp",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1967,
+            "beg_col": 8,
+            "end_line": 1967,
+            "end_col": 57
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            },
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 12 },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 8 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 38,
+        "item_meta": {
+          "name": "core::hash::Hasher::finish",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/hash/mod.rs",
+            "beg_line": 334,
+            "beg_col": 4,
+            "end_line": 334,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "Literal": { "UInt": "U64" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::hash::Hasher", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 39,
+        "item_meta": {
+          "name": "core::hash::Hasher::write",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/hash/mod.rs",
+            "beg_line": 357,
+            "beg_col": 4,
+            "end_line": 357,
+            "end_col": 38
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+            {
+              "Ref": [
+                0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+              ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::hash::Hasher", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 54,
+        "item_meta": {
+          "name": "core::cmp::PartialEq::eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "cmp_partialeq_eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 256,
+            "beg_col": 4,
+            "end_line": 256,
+            "end_col": 38
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::PartialEq", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 56,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<()> for ()}::eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1881,
+            "beg_col": 8,
+            "end_line": 1881,
+            "end_col": 41
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            },
+            {
+              "Ref": [
+                0,
+                { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "builtin_auto::SuperPointee",
+          "attr_info": null,
+          "source_text": "trait SuperPointee: Pointee {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin-auto.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::fmt::Debug",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Debug",
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 1052,
+            "beg_col": 0,
+            "end_line": 1052,
+            "end_col": 29
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "fmt",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                {
+                  "Ref": [
+                    0,
+                    {
+                      "Adt": {
+                        "id": { "Adt": 3 },
+                        "generics": { "types": [] }
+                      }
+                    },
+                    "Mut"
+                  ]
+                }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 4 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                      },
+                      {
+                        "Adt": {
+                          "id": { "Adt": 5 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::fmt::Debug", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::marker::Copy",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "copy",
+          "span": {
+            "file": "/rustc/library/core/src/marker.rs",
+            "beg_line": 457,
+            "beg_col": 0,
+            "end_line": 457,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::clone::Clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 194,
+            "beg_col": 0,
+            "end_line": 194,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "clone",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::clone::Clone", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "core::cmp::Ord",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Ord",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 973,
+            "beg_col": 0,
+            "end_line": 973,
+            "end_col": 73
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "cmp",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": {
+                "Adt": { "id": { "Adt": 8 }, "generics": { "types": [] } }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::cmp::Ord", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "core::hash::Hash",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Hash",
+          "span": {
+            "file": "/rustc/library/core/src/hash/mod.rs",
+            "beg_line": 185,
+            "beg_col": 0,
+            "end_line": 185,
+            "end_col": 36
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "hash",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Mut" ] }
+              ],
+              "output": {
+                "Adt": { "id": "Tuple", "generics": { "types": [] } }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "H" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::hash::Hash", "type_param": 0 },
+                  { "trait": "core::hash::Hasher", "type_param": 1 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 11,
+        "item_meta": {
+          "name": "core::marker::Freeze",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "freeze",
+          "span": {
+            "file": "/rustc/library/core/src/marker.rs",
+            "beg_line": 909,
+            "beg_col": 0,
+            "end_line": 909,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 12,
+        "item_meta": {
+          "name": "core::cmp::Eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 338,
+            "beg_col": 0,
+            "end_line": 338,
+            "end_col": 58
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 13,
+        "item_meta": {
+          "name": "core::cmp::PartialOrd",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "partial_ord",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1358,
+            "beg_col": 0,
+            "end_line": 1359,
+            "end_col": 41
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "partial_cmp",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 12 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Adt": 8 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::cmp::PartialOrd", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 14,
+        "item_meta": {
+          "name": "core::hash::Hasher",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/hash/mod.rs",
+            "beg_line": 312,
+            "beg_col": 0,
+            "end_line": 312,
+            "end_col": 16
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "finish",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "Literal": { "UInt": "U64" } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::hash::Hasher", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          },
+          {
+            "name": "write",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+                {
+                  "Ref": [
+                    0, { "Slice": { "Literal": { "UInt": "U8" } } }, "Shared"
+                  ]
+                }
+              ],
+              "output": {
+                "Adt": { "id": "Tuple", "generics": { "types": [] } }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::hash::Hasher", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 15,
+        "item_meta": {
+          "name": "core::cmp::PartialEq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 251,
+            "beg_col": 0,
+            "end_line": 251,
+            "end_col": 65
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "eq",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+              ],
+              "output": { "Literal": "Bool" },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::cmp::PartialEq", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "builtin_auto::{builtin_auto::SuperPointee for u32}",
+          "attr_info": null,
+          "source_text": "impl SuperPointee for u32 {}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/builtin-auto.rs",
+            "beg_line": 19,
+            "beg_col": 0,
+            "end_line": 19,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "U32" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::fmt::{core::fmt::Debug for ()}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/fmt/mod.rs",
+            "beg_line": 3121,
+            "beg_col": 0,
+            "end_line": 3121,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "trait_decl_id": 3,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": { "id": "Tuple", "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "fmt", "fn_id": 3 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::Ord for ()}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 2031,
+            "beg_col": 4,
+            "end_line": 2031,
+            "end_col": 25
+          },
+          "extra": null
+        },
+        "trait_decl_id": 8,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": { "id": "Tuple", "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "cmp", "fn_id": 10 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::hash::impls::{core::hash::Hash for ()}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/hash/mod.rs",
+            "beg_line": 880,
+            "beg_col": 12,
+            "end_line": 880,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "trait_decl_id": 9,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": { "id": "Tuple", "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "hash", "fn_id": 16 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::Eq for ()}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1898,
+            "beg_col": 12,
+            "end_line": 1898,
+            "end_col": 32
+          },
+          "extra": null
+        },
+        "trait_decl_id": 12,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": { "id": "Tuple", "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialOrd<()> for ()}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1965,
+            "beg_col": 4,
+            "end_line": 1965,
+            "end_col": 32
+          },
+          "extra": null
+        },
+        "trait_decl_id": 13,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": { "id": "Tuple", "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "partial_cmp", "fn_id": 29 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<()> for ()}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1879,
+            "beg_col": 4,
+            "end_line": 1879,
+            "end_col": 31
+          },
+          "extra": null
+        },
+        "trait_decl_id": 15,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": { "id": "Tuple", "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "eq", "fn_id": 56 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

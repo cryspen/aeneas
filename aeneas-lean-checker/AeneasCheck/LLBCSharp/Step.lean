@@ -528,6 +528,21 @@ def stepJoin (st : SymState) (left right result : StateSummary)
       match joinEntryStrictOk leftMap rightMap resultMap entry with
       | none => pure ()
       | some msg => fail msg
+      -- M10.x.0 (cert v6): cross-check that `rule` and `delta`
+      -- name the same constructor. The OCaml emitter at
+      -- `InterpStatements.ml:1715` computes both in the same
+      -- pass; a mismatch here means cert-side drift between
+      -- the two encodings (either an emitter bug or a manually
+      -- crafted cert). Failing fast prevents M10.x.10's chain
+      -- fold from observing inconsistent witnesses.
+      match entry.rule, entry.delta with
+      | .joinSame, .trivial => pure ()
+      | .joinVar, .trivial => pure ()
+      | .joinSymbolic _, .symbolic _ => pure ()
+      | .joinMutBorrows _ _ _ _, .mutBorrows _ _ => pure ()
+      | .joinBottomOther _, .bottomOther _ => pure ()
+      | .joinOtherBottom _, .otherBottom _ => pure ()
+      | _, _ => fail s!"E-Join v6: rule {repr entry.rule} and delta {repr entry.delta} name different constructors for local {entry.localId}"
   -- M9.8 (cert v4): install the Collapse-Dup-MutBorrow fresh
   -- region abstraction in `absRegistry` from the cert's
   -- `AbsShape` payload. Mirrors `stepCall`'s `absSig.foldl

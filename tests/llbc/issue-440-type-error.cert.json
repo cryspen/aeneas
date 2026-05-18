@@ -1,0 +1,1059 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "969e9dcb6a64c8ba04be5f6eccb7582f",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "issue_440_type_error::f",
+      "source_span": {
+        "file": "tests/src/issue-440-type-error.rs",
+        "beg_line": 8,
+        "beg_col": 0,
+        "end_line": 15,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 2,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 2 },
+            "adt_id": 0,
+            "variant_id": 0,
+            "variant_name": "Zero"
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 2 },
+            "adt_id": 0,
+            "variant_id": 1,
+            "variant_name": "Succ"
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymVariant": {
+                "adt_id": 0,
+                "variant_id": 0,
+                "variant_name": "Zero",
+                "fields": []
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "alloc::boxed::Box::new",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 7,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymVariant": {
+                "adt_id": 0,
+                "variant_id": 1,
+                "variant_name": "Succ",
+                "fields": [
+                  {
+                    "SymMove": {
+                      "local": 6,
+                      "projection": [],
+                      "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = []; types = []; const_generics = [];\n               trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 2,
+            "fn_name": "core::mem::replace",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = []; types = []; const_generics = [];\n          trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              },
+              {
+                "SymMove": {
+                  "local": 5,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_440_type_error::PeanoNum",
+          "attr_info": null,
+          "source_text": "enum PeanoNum {\n    Zero,\n    Succ(Box<PeanoNum>),\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-440-type-error.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 6,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Zero",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Succ",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": {
+                    "Adt": {
+                      "id": { "Builtin": "Box" },
+                      "generics": {
+                        "types": [
+                          {
+                            "Adt": {
+                              "id": { "Adt": 0 },
+                              "generics": { "types": [] }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "issue_440_type_error::f",
+          "attr_info": null,
+          "source_text": "fn f(x: &mut PeanoNum, value: isize) {\n    match x {\n        PeanoNum::Zero => {\n            std::mem::replace(x, PeanoNum::Succ(Box::new(PeanoNum::Zero)));\n        }\n        PeanoNum::Succ { .. } => {}\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/issue-440-type-error.rs",
+            "beg_line": 8,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } }
+                },
+                "Mut"
+              ]
+            },
+            { "Literal": { "Int": "Isize" } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/issue-440-type-error.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 9,
+                "beg_col": 4,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": {
+                "Switch": {
+                  "Match": [
+                    {
+                      "local": 1,
+                      "projection": [ "Deref" ],
+                      "ty": {
+                        "Ref": [
+                          0,
+                          {
+                            "Adt": {
+                              "id": { "Adt": 0 },
+                              "generics": { "types": [] }
+                            }
+                          },
+                          "Mut"
+                        ]
+                      }
+                    },
+                    [
+                      [
+                        [ 0 ],
+                        {
+                          "span": {
+                            "file": "tests/src/issue-440-type-error.rs",
+                            "beg_line": 9,
+                            "beg_col": 4,
+                            "end_line": 9,
+                            "end_col": 11
+                          },
+                          "statements": []
+                        }
+                      ],
+                      [
+                        [ 1 ],
+                        {
+                          "span": {
+                            "file": "tests/src/issue-440-type-error.rs",
+                            "beg_line": 13,
+                            "beg_col": 33,
+                            "end_line": 15,
+                            "end_col": 1
+                          },
+                          "statements": [
+                            {
+                              "span": {
+                                "file": "tests/src/issue-440-type-error.rs",
+                                "beg_line": 13,
+                                "beg_col": 33,
+                                "end_line": 13,
+                                "end_col": 35
+                              },
+                              "kind": {
+                                "Assign": [
+                                  {
+                                    "local": 0,
+                                    "projection": [],
+                                    "ty": {
+                                      "Adt": {
+                                        "id": "Tuple",
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "Aggregate": [
+                                      {
+                                        "Adt": [
+                                          {
+                                            "id": "Tuple",
+                                            "generics": { "types": [] }
+                                          },
+                                          null,
+                                          null
+                                        ]
+                                      },
+                                      []
+                                    ]
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "span": {
+                                "file": "tests/src/issue-440-type-error.rs",
+                                "beg_line": 15,
+                                "beg_col": 1,
+                                "end_line": 15,
+                                "end_col": 1
+                              },
+                              "kind": "Return"
+                            }
+                          ]
+                        }
+                      ]
+                    ],
+                    null
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 30,
+                "end_line": 11,
+                "end_col": 31
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 57,
+                "end_line": 11,
+                "end_col": 71
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": { "Adt": 0 }, "generics": { "types": [] } },
+                          0,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 48,
+                "end_line": 11,
+                "end_col": 72
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 7,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 71,
+                "end_line": 11,
+                "end_col": 72
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 33,
+                "end_line": 11,
+                "end_col": 73
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": { "Adt": 0 }, "generics": { "types": [] } },
+                          1,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 6,
+                            "projection": [],
+                            "ty": {
+                              "Adt": {
+                                "id": { "Builtin": "Box" },
+                                "generics": {
+                                  "types": [
+                                    {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": { "types": [] }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 72,
+                "end_line": 11,
+                "end_col": 73
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 72,
+                "end_line": 11,
+                "end_col": 73
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 12,
+                "end_line": 11,
+                "end_col": 74
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 2 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": { "types": [] }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": { "types": [] }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 73,
+                "end_line": 11,
+                "end_col": 74
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 73,
+                "end_line": 11,
+                "end_col": 74
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 74,
+                "end_line": 11,
+                "end_col": 75
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": { "types": [] }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 11,
+                "beg_col": 74,
+                "end_line": 11,
+                "end_col": 75
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 10,
+                "beg_col": 26,
+                "end_line": 12,
+                "end_col": 9
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/issue-440-type-error.rs",
+                "beg_line": 15,
+                "beg_col": 1,
+                "end_line": 15,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Literal": { "Int": "Isize" } },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+              "Mut"
+            ]
+          },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } },
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 0 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          { "Adt": { "id": { "Adt": 0 }, "generics": { "types": [] } } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::mem::replace",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "mem_replace",
+          "span": {
+            "file": "/rustc/library/core/src/mem/mod.rs",
+            "beg_line": 887,
+            "beg_col": 0,
+            "end_line": 887,
+            "end_col": 50
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+            { "TypeVar": { "Free": 0 } }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

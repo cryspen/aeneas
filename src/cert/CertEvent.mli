@@ -33,7 +33,13 @@ type cert_state_summary = {
   cs_live_loans : borrow_id list;
 }
 
-type cert_restore_info = { ri_given_back : cert_sym_expr }
+type cert_restore_info = {
+  ri_given_back : cert_sym_expr;
+  (** [M10.x.0 — cert v6] env local that holds the [mutLoan]
+      token an end-borrow restores; populated for
+      [.direct]/[.lazyExpand] kinds, [None] otherwise. *)
+  ri_holder_local : local_id option;
+}
 
 type cert_source_span = {
   ss_file : string;
@@ -101,8 +107,36 @@ type cert_join_rule =
   | JrJoinBottomOther of abs_id
   | JrJoinOtherBottom of abs_id
 
-(** [M9.6 — Option C] One entry of [EvJoin.witnesses]. -*)
-type cert_join_entry = { je_local : local_id; je_rule : cert_join_rule }
+(** [M10.x.0 — cert v6] Per-[cert_join_entry] delta witness.
+    Carries the [JoinEntryStep] premise's content without
+    transmitting the full intermediate [Ω_i] state — Lean folds
+    the chain by walking these deltas. -*)
+type cert_join_entry_delta =
+  | JedTrivial
+  | JedSymbolic of symbolic_value_id
+  | JedMutBorrows of { l_fresh : borrow_id; abs_id : abs_id }
+  | JedBottomOther of abs_id
+  | JedOtherBottom of abs_id
+
+(** [M9.6 — Option C] One entry of [EvJoin.witnesses].
+
+    [M10.x.0 — cert v6] [je_delta] is the parallel paper-side
+    [JoinEntryStep] premise; the Lean replayer cross-checks that
+    [je_rule] and [je_delta] name the same constructor. -*)
+type cert_join_entry = {
+  je_local : local_id;
+  je_rule : cert_join_rule;
+  je_delta : cert_join_entry_delta;
+}
+
+(** [M10.x.0 — cert v6] Reference to a sub-statement in the cert's
+    embedded LLBC body tree. [sr_fun_id] indexes
+    [cc_llbc_program.fun_decls]; [sr_body_path] is the per-level
+    path from the function-body root. -*)
+type cert_stmt_ref = {
+  sr_fun_id : int;
+  sr_body_path : int array;
+}
 
 type event =
   | EvMutBorrow of {
@@ -213,6 +247,11 @@ type fun_cert = {
   fc_events : event list;
   fc_final_state : cert_state_summary;
   fc_pretty_name : string option;
+  (** [M10.x.0 — cert v6] Parallel-to-[fc_events] array of LLBC
+      body-tree back-pointers; [None] for synthetic events.
+      Threaded with [None] sentinels at M10.x.0; actual
+      population deferred to M10.x.0b. -*)
+  fc_stmt_refs : cert_stmt_ref option list;
 }
 
 (** [M9.7o-E5a] Top-level certificate. The flat ADT / trait decl
@@ -230,8 +269,9 @@ type crate_cert = {
 }
 
 val cert_fmt_version : int
-(** [M9.7d] Bumped to 3: cert v3 embeds the structured LLBC subtree
-    under the new top-level [llbc_program] key. *)
+(** [M10.x.0] Bumped to 6: cert v6 adds [ri_holder_local],
+    [je_delta], and [fc_stmt_refs] (v5 skipped; v4 was M9.8's
+    [JrJoinMutBorrows.abs] promotion to [cert_abs_shape]). *)
 
 val cert_binop_string : Expressions.binop -> string
 (** Flat string tag for an LLBC binop. See implementation for the

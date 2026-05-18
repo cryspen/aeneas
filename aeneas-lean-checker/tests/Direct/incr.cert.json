@@ -1,6 +1,6 @@
 {
-  "fmt_version": 4,
-  "crate_hash": "c1a5cda64df1dae960c5b748b2afe735",
+  "fmt_version": 6,
+  "crate_hash": "86355042071fdd6c7d6990ce813651a1",
   "functions": [
     {
       "fn_id": 0,
@@ -121,7 +121,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     },
     {
       "fn_id": 1,
@@ -255,13 +256,16 @@
         {
           "EvEndBorrow": {
             "loan": 1,
-            "restore": { "given_back": { "SymVal": 1 } }
+            "restore": {
+              "given_back": { "SymVal": 1 },
+              "holder_local": null
+            }
           }
         },
         {
           "EvEndBorrow": {
             "loan": 0,
-            "restore": { "given_back": { "SymVal": 1 } }
+            "restore": { "given_back": { "SymVal": 1 }, "holder_local": 1 }
           }
         },
         {
@@ -310,7 +314,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null
+      ]
     }
   ],
   "llbc_program": {

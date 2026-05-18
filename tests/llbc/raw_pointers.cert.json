@@ -1,0 +1,1500 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "0c685f0cc2e394acf6ccbe2cfa85eb46",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "raw_pointers::read_via_ptr",
+      "source_span": {
+        "file": "tests/src/raw_pointers.rs",
+        "beg_line": 4,
+        "beg_col": 0,
+        "end_line": 9,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayToSliceShared",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 2,
+            "fn_name": "core::slice::{[T]}::as_ptr",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 3,
+            "fn_name": "core::ptr::const_ptr::{*const T}::add",
+            "call_id": 3,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 6,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+                }
+              },
+              { "SymLit": { "Scalar": { "Unsigned": [ "Usize", "1" ] } } }
+            ],
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "raw_pointers::write_via_ptr",
+      "source_span": {
+        "file": "tests/src/raw_pointers.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 16,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayToSliceMut",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TArray (\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n      { Generated_Types.kind =\n        (Generated_Types.CLiteral\n           (Generated_Values.VScalar\n              (Generated_Values.UnsignedScalar (Generated_Values.Usize, 8))));\n        ty =\n        (Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n        }\n      )),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RMut))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 2,
+            "inner_sv": 3,
+            "subst_locals": [ 3 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 4,
+            "fn_name": "core::slice::{[T]}::as_mut_ptr",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice\n      (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16))),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+            },
+            "region_abs": [ 2 ],
+            "abs_sig": [
+              {
+                "abs_id": 2,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 2 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "core::ptr::mut_ptr::{*mut T}::add",
+            "call_id": 3,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 6,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+                }
+              },
+              { "SymLit": { "Scalar": { "Unsigned": [ "Usize", "2" ] } } }
+            ],
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRawPtr (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U16)),\n   Generated_Types.RMut))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "raw_pointers::read_via_ptr",
+          "attr_info": null,
+          "source_text": "fn read_via_ptr(data: &[u16; 8]) -> u16 {\n    unsafe {\n        let ptr = data.as_ptr();\n        *ptr.add(1)\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/raw_pointers.rs",
+            "beg_line": 4,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Array": [
+                    { "Literal": { "UInt": "U16" } },
+                    {
+                      "kind": {
+                        "Literal": {
+                          "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Literal": { "UInt": "U16" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/raw_pointers.rs",
+            "beg_line": 6,
+            "beg_col": 12,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 6,
+                "beg_col": 18,
+                "end_line": 6,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U16" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U16" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "8" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 6,
+                "beg_col": 18,
+                "end_line": 6,
+                "end_col": 22
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U16" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "8" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U16" } } },
+                        "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 6,
+                "beg_col": 21,
+                "end_line": 6,
+                "end_col": 22
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 6,
+                "beg_col": 18,
+                "end_line": 6,
+                "end_col": 31
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 2 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U16" } } },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "RawPtr": [
+                        { "Literal": { "UInt": "U16" } }, "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 6,
+                "beg_col": 30,
+                "end_line": 6,
+                "end_col": 31
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 7,
+                "beg_col": 9,
+                "end_line": 7,
+                "end_col": 12
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "RawPtr": [
+                        { "Literal": { "UInt": "U16" } }, "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "RawPtr": [
+                            { "Literal": { "UInt": "U16" } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 7,
+                "beg_col": 9,
+                "end_line": 7,
+                "end_col": 19
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 3 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "RawPtr": [
+                            { "Literal": { "UInt": "U16" } }, "Shared"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "1" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "RawPtr": [
+                        { "Literal": { "UInt": "U16" } }, "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 7,
+                "beg_col": 18,
+                "end_line": 7,
+                "end_col": 19
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 7,
+                "beg_col": 8,
+                "end_line": 7,
+                "end_col": 19
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "U16" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 5,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "RawPtr": [
+                            { "Literal": { "UInt": "U16" } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 8,
+                "beg_col": 4,
+                "end_line": 8,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 9,
+                "beg_col": 0,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 9,
+                "beg_col": 1,
+                "end_line": 9,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Literal": { "UInt": "U16" } },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U16" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Shared" ] },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U16" } } }, "Shared"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U16" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Shared"
+            ]
+          },
+          { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Shared" ] },
+          { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Shared" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "raw_pointers::write_via_ptr",
+          "attr_info": null,
+          "source_text": "fn write_via_ptr(data: &mut [u16; 8]) {\n    unsafe {\n        let ptr = data.as_mut_ptr();\n        *ptr.add(2) = 42;\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/raw_pointers.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Array": [
+                    { "Literal": { "UInt": "U16" } },
+                    {
+                      "kind": {
+                        "Literal": {
+                          "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/raw_pointers.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 13,
+                "beg_col": 18,
+                "end_line": 13,
+                "end_col": 22
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Array": [
+                            { "Literal": { "UInt": "U16" } },
+                            {
+                              "kind": {
+                                "Literal": {
+                                  "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U16" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "8" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 13,
+                "beg_col": 18,
+                "end_line": 13,
+                "end_col": 22
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U16" } },
+                                {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": {
+                                        "Unsigned": [ "Usize", "8" ]
+                                      }
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "Literal": { "UInt": "U16" } } },
+                        "Mut"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 13,
+                "beg_col": 21,
+                "end_line": 13,
+                "end_col": 22
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 13,
+                "beg_col": 18,
+                "end_line": 13,
+                "end_col": 35
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 4 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "Literal": { "UInt": "U16" } } },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 13,
+                "beg_col": 34,
+                "end_line": 13,
+                "end_col": 35
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 14,
+                "beg_col": 9,
+                "end_line": 14,
+                "end_col": 12
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "RawPtr": [
+                            { "Literal": { "UInt": "U16" } }, "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 14,
+                "beg_col": 9,
+                "end_line": 14,
+                "end_col": 19
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": {
+                          "RawPtr": [
+                            { "Literal": { "UInt": "U16" } }, "Mut"
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "Usize", "2" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 14,
+                "beg_col": 18,
+                "end_line": 14,
+                "end_col": 19
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 14,
+                "beg_col": 8,
+                "end_line": 14,
+                "end_col": 24
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U16", "42" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U16" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 14,
+                "beg_col": 24,
+                "end_line": 14,
+                "end_col": 25
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 15,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 15,
+                "beg_col": 4,
+                "end_line": 15,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/raw_pointers.rs",
+                "beg_line": 16,
+                "beg_col": 1,
+                "end_line": 16,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U16" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          },
+          { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ] },
+          {
+            "Ref": [
+              0, { "Slice": { "Literal": { "UInt": "U16" } } }, "Mut"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Array": [
+                  { "Literal": { "UInt": "U16" } },
+                  {
+                    "kind": {
+                      "Literal": {
+                        "Scalar": { "Unsigned": [ "Usize", "8" ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              "Mut"
+            ]
+          },
+          { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ] },
+          { "RawPtr": [ { "Literal": { "UInt": "U16" } }, "Mut" ] }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::slice::{[T]}::as_ptr",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/slice/mod.rs",
+            "beg_line": 726,
+            "beg_col": 4,
+            "end_line": 726,
+            "end_col": 42
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared"
+              ]
+            }
+          ],
+          "output": { "RawPtr": [ { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::ptr::const_ptr::{*const T}::add",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/ptr/const_ptr.rs",
+            "beg_line": 829,
+            "beg_col": 4,
+            "end_line": 831,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "RawPtr": [ { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": { "RawPtr": [ { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::slice::{[T]}::as_mut_ptr",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/slice/mod.rs",
+            "beg_line": 757,
+            "beg_col": 4,
+            "end_line": 757,
+            "end_col": 48
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ]
+            }
+          ],
+          "output": { "RawPtr": [ { "TypeVar": { "Free": 0 } }, "Mut" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::ptr::mut_ptr::{*mut T}::add",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/ptr/mut_ptr.rs",
+            "beg_line": 927,
+            "beg_col": 4,
+            "end_line": 929,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "RawPtr": [ { "TypeVar": { "Free": 0 } }, "Mut" ] },
+            { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": { "RawPtr": [ { "TypeVar": { "Free": 0 } }, "Mut" ] },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

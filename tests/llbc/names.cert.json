@@ -1,0 +1,84 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "3942d2537155d7a4a5405372d96c374c",
+  "functions": [],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "names::Struct",
+          "attr_info": null,
+          "source_text": "struct Struct {\n    name: String,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/names.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "name",
+              "ty": {
+                "Adt": { "id": { "Adt": 1 }, "generics": { "types": [] } }
+              },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::string::String",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "String",
+          "span": {
+            "file": "/rustc/library/alloc/src/string.rs",
+            "beg_line": 353,
+            "beg_col": 0,
+            "end_line": 353,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

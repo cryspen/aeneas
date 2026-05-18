@@ -1047,9 +1047,39 @@ let rec end_borrow_aux (config : config) (span : Meta.span) ~(snapshots : bool)
                   | _ -> CertEvent.SymMutBorrowTok loan_bid)
               | _ -> CertEvent.SymMutBorrowTok loan_bid
             in
+            (* M10.x.0 (cert v6, plan §"Cert v6 design" #11):
+               record which env local holds the [VMutLoan loan_bid]
+               token. The Lean replayer's `stepEndBorrow .direct /
+               .lazyExpand` arm currently scans env for the holder
+               (`Step.lean:192-208`); M10.x.9 inverts that scan into
+               a direct [setLocal] using this hint, closing the
+               `endBorrow_direct_witness` axiom by [hStep] inversion.
+               Walks the *pre-give-back* env: the loan token is still
+               present here, and gets consumed by [give_back_concrete]
+               below. [None] when no env local holds the token
+               (reborrow/shared kinds, or lazy-expansion cases where
+               the token was substituted through). *)
+            let ri_holder_local : Expressions.LocalId.id option =
+              let found = ref None in
+              List.iter
+                (fun (e : env_elem) ->
+                  if Option.is_none !found then
+                    match e with
+                    | EBinding (BVar bv, v) ->
+                      (match v.value with
+                       | VLoan (VMutLoan b) when b = loan_bid ->
+                         found := Some bv.index
+                       | _ -> ())
+                    | _ -> ())
+                ctx.env;
+              !found
+            in
             ctx_emit_event ctx
               (CertEvent.EvEndBorrow
-                 { loan = loan_bid; restore = { ri_given_back = given_back } })
+                 { loan = loan_bid;
+                   restore =
+                     { ri_given_back = given_back;
+                       ri_holder_local } })
           end
       | UShared _ -> ());
       (* Give back the value *)

@@ -116,6 +116,18 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
               ss_end_col = span_data.end_loc.col;
             }
         in
+        (* M10.x.0 (cert v6): [fc_stmt_refs] is a parallel-to-events
+           array carrying one [Option cert_stmt_ref] per event. At
+           M10.x.0 we ship a length-matched array of [None]
+           sentinels — the threading at the 23 emit sites is
+           deferred to M10.x.0b (audit §"OCaml emit-site changes",
+           blocker-policy fallback). The shape is in place so the
+           Lean parser already accepts the field and the Phase-E2
+           consumer ([replayFun_event_induct]) can land alongside
+           the population work without a second schema bump. *)
+        let stmt_refs : CertEvent.cert_stmt_ref option list =
+          List.map (fun _ -> None) events
+        in
         Some
           {
             CertEvent.fc_fn_id = fdef.def_id;
@@ -128,6 +140,7 @@ let collect_for_fun (trans_ctx : trans_ctx) (marked_ids : marked_ids)
             (* M9.5l: pretty name is filled in by [generate_crate_cert]
                from the trait-impl table, after this record is built. *)
             fc_pretty_name = None;
+            fc_stmt_refs = stmt_refs;
           }
       with _ -> None
     end

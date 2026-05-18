@@ -48,9 +48,20 @@ inductive SymExpr
   | symRecord (adtId : Nat) (fields : Array (String × SymExpr))
   deriving Repr
 
-/-- Restoration info for an EvEndBorrow event. -/
+/-- Restoration info for an EvEndBorrow event.
+
+    M10.x.0 (cert v6): `holderLocal` names the env local whose
+    `mutLoan` token the end-borrow restores. Populated by the
+    OCaml emitter for `.direct`/`.lazyExpand` kinds (via an
+    `eval_ctx.env` walk at `InterpBorrows.ml:1050`); `none` for
+    `.reborrow`/`.shared` kinds and as a sentinel when no local
+    holds the token. Not yet consumed by the replayer at
+    M10.x.0 — it lands here as schema plumbing for M10.x.9,
+    which inverts the env-walk in `stepEndBorrow .direct /
+    .lazyExpand` into a direct `setLocal`. -/
 structure RestoreInfo where
   givenBack : SymExpr
+  holderLocal : Option Nat := none
   deriving Repr
 
 /-- A coarse summary of state at a point in evaluation. -/
@@ -159,10 +170,41 @@ inductive JoinRule
   | joinOtherBottom (abs : Nat)
   deriving Repr, Inhabited
 
-/-- M9.6: one entry of `EvJoin.witnesses`. -/
+/-- M10.x.0 (cert v6): per-`JoinEntry` delta witness. Captures only
+    the `JoinEntryStep` premise the paper-side constructor needs —
+    never the full intermediate `Ω_i` state. Intermediate states
+    are rebuilt in Lean by folding deltas
+    (`Soundness/JoinLemmas.joinChain_of_witnesses`, landing at
+    M10.x.10). The constructor names are parallel to `JoinRule`;
+    the replayer cross-checks the pair in `stepJoin`. -/
+inductive JoinEntryDelta
+  /-- Matches `JoinSame` / `JoinVar`: no state change, no
+      freshness premise. -/
+  | trivial
+  /-- Matches `JoinSymbolic n`: post-state introduces `SymVal n`;
+      the freshness premise is the HWM fact `Ω_i.symValIdFresh n`. -/
+  | symbolic (freshSv : Nat)
+  /-- Matches `JoinMutBorrows`: the freshness premise is
+      `Ω_i.loanIdFresh l_fresh ∧ Ω_i.absIdFresh absId`. -/
+  | mutBorrows (l_fresh : Nat) (absId : Nat)
+  /-- Matches `JoinBottomOther abs`: the abs must be live in
+      `Ω_i.abs`. -/
+  | bottomOther (absId : Nat)
+  /-- Mirror of `bottomOther`. -/
+  | otherBottom (absId : Nat)
+  deriving Repr, Inhabited
+
+/-- M9.6: one entry of `EvJoin.witnesses`.
+
+    M10.x.0 (cert v6): `delta` is the parallel `JoinEntryStep`
+    premise carrier. The replayer cross-checks that `rule` and
+    `delta` name the same constructor; the redundancy lets
+    Lean perform the chain fold in `JoinLemmas` without
+    case-matching on `JoinRule` from outside that module. -/
 structure JoinEntry where
   localId : Nat
   rule : JoinRule
+  delta : JoinEntryDelta := .trivial
   deriving Repr, Inhabited
 
 /-- LLBC# trace events. Constructor names match `CertEvent.event`
@@ -312,6 +354,23 @@ structure TraitClause where
   typeParamIdx : Nat
   deriving Repr, Inhabited
 
+/-- M10.x.0 (cert v6): reference to a sub-statement in the cert's
+    embedded LLBC body tree. `funId` indexes
+    `cc.llbcProgram.funDecls`; `bodyPath` is the per-level path
+    from the function-body root (e.g. `#[0, 2, 1]` = then-branch of
+    stmt 0, nested stmt 2, sub-stmt 1).
+
+    Carried by `FunCert.stmtRefs` as a parallel-to-events array of
+    `Option StmtRef`. Phase-E2's `replayFun_event_induct` consumes
+    this to interleave with the LLBC body tree rather than the flat
+    event list. Not load-bearing for the v6 axiom-elimination
+    campaign; lands at M10.x.0 alongside `JoinEntryDelta` /
+    `RestoreInfo.holderLocal` so the schema bump only happens once. -/
+structure StmtRef where
+  funId : Nat
+  bodyPath : Array Nat
+  deriving Repr, Inhabited
+
 /-- Per-function cert trace.
 
     M9.7o-E5b: the flat `signature : FnSignature` field was deleted
@@ -335,6 +394,14 @@ structure FunCert where
       `fnName`. The translator threads this through the `EvCall`
       callee lookup so caller sites see the same pretty name. -/
   prettyName : Option String := none
+  /-- M10.x.0 (cert v6): parallel-to-`events` array of LLBC body-tree
+      back-pointers; `none` for synthetic events (loop-fixpoint
+      markers, frame-pop end-borrows, etc.). The OCaml emitter
+      currently populates with all-`none` sentinels; M10.x.0b will
+      thread real `StmtRef`s through the 23 emit sites. Consumed
+      by Phase-E2's `replayFun_event_induct`; not load-bearing for
+      the v6 axiom-elimination campaign. -/
+  stmtRefs : Array (Option StmtRef) := #[]
   deriving Repr, Inhabited
 
 /- M9.7c: `CrateCert` lives in `Raw/LLBCProgram.lean` — moved there to

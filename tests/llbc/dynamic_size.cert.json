@@ -1,0 +1,1070 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "33d1a193ac59a0d6438942278ca470d1",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "dynamic_size::alloc_slice",
+      "source_span": {
+        "file": "tests/src/dynamic_size.rs",
+        "beg_line": 3,
+        "beg_col": 0,
+        "end_line": 5,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayRepeat",
+            "call_id": 1,
+            "args": [
+              { "SymLit": { "Scalar": { "Unsigned": [ "U8", "0" ] } } }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "alloc::boxed::Box::new",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TSlice\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TSlice\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "dynamic_size::alloc_wrapper",
+      "source_span": {
+        "file": "tests/src/dynamic_size.rs",
+        "beg_line": 11,
+        "beg_col": 0,
+        "end_line": 13,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "@ArrayRepeat",
+            "call_id": 1,
+            "args": [
+              { "SymLit": { "Scalar": { "Unsigned": [ "U8", "0" ] } } }
+            ],
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymRecord": {
+                "adt_id": 0,
+                "fields": [
+                  {
+                    "name": "data",
+                    "value": {
+                      "SymMove": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": "(Generated_Types.TArray (\n   (Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.U8)),\n   { Generated_Types.kind = (Generated_Types.CVar (Generated_Types.Free 0));\n     ty =\n     (Generated_Types.TLiteral\n        (Generated_Values.TUInt Generated_Values.Usize))\n     }\n   ))"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "alloc::boxed::Box::new",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 2,
+                  "projection": [],
+                  "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TArray (\n           (Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.U8)),\n           { Generated_Types.kind =\n             (Generated_Types.CVar (Generated_Types.Free 0));\n             ty =\n             (Generated_Types.TLiteral\n                (Generated_Values.TUInt Generated_Values.Usize))\n             }\n           ))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+                }
+              }
+            ],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TArray (\n                   (Generated_Types.TLiteral\n                      (Generated_Values.TUInt Generated_Values.U8)),\n                   { Generated_Types.kind =\n                     (Generated_Types.CVar (Generated_Types.Free 0));\n                     ty =\n                     (Generated_Types.TLiteral\n                        (Generated_Values.TUInt Generated_Values.Usize))\n                     }\n                   ))\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TArray (\n                   (Generated_Types.TLiteral\n                      (Generated_Values.TUInt Generated_Values.U8)),\n                   { Generated_Types.kind =\n                     (Generated_Types.CVar (Generated_Types.Free 0));\n                     ty =\n                     (Generated_Types.TLiteral\n                        (Generated_Values.TUInt Generated_Values.Usize))\n                     }\n                   ))\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TArray (\n                   (Generated_Types.TLiteral\n                      (Generated_Values.TUInt Generated_Values.U8)),\n                   { Generated_Types.kind =\n                     (Generated_Types.CVar (Generated_Types.Free 0));\n                     ty =\n                     (Generated_Types.TLiteral\n                        (Generated_Values.TUInt Generated_Values.Usize))\n                     }\n                   ))\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TSlice\n                   (Generated_Types.TLiteral\n                      (Generated_Values.TUInt Generated_Values.U8)))\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TAdt\n           { Generated_Types.id = (Generated_Types.TAdtId 0);\n             generics =\n             { Generated_Types.regions = [];\n               types =\n               [(Generated_Types.TSlice\n                   (Generated_Types.TLiteral\n                      (Generated_Values.TUInt Generated_Values.U8)))\n                 ];\n               const_generics = []; trait_refs = [] }\n             })\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "dynamic_size::Wrapper",
+          "attr_info": null,
+          "source_text": "pub struct Wrapper<T: ?Sized> {\n    data: T,\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/dynamic_size.rs",
+            "beg_line": 7,
+            "beg_col": 0,
+            "end_line": 9,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "data",
+              "ty": { "TypeVar": { "Free": 0 } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "dynamic_size::alloc_slice",
+          "attr_info": null,
+          "source_text": "fn alloc_slice<const N: usize>() -> Box<[u8]> {\n    Box::new([0; N])\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/dynamic_size.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [ { "Slice": { "Literal": { "UInt": "U8" } } } ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/dynamic_size.rs",
+            "beg_line": 4,
+            "beg_col": 4,
+            "end_line": 5,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 4,
+                "beg_col": 13,
+                "end_line": 4,
+                "end_col": 19
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U8", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U8" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U8" } },
+                        { "kind": { "Opaque": "len" } }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 4,
+                "beg_col": 4,
+                "end_line": 4,
+                "end_col": 20
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Array": [
+                            { "Literal": { "UInt": "U8" } },
+                            { "kind": { "Opaque": "len" } }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 4,
+                "beg_col": 4,
+                "end_line": 4,
+                "end_col": 20
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            { "Slice": { "Literal": { "UInt": "U8" } } }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "UnaryOp": [
+                      "Cast",
+                      {
+                        "Move": {
+                          "local": 1,
+                          "projection": [],
+                          "ty": {
+                            "Adt": {
+                              "id": { "Builtin": "Box" },
+                              "generics": {
+                                "types": [
+                                  {
+                                    "Array": [
+                                      { "Literal": { "UInt": "U8" } },
+                                      { "kind": { "Opaque": "len" } }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 4,
+                "beg_col": 19,
+                "end_line": 4,
+                "end_col": 20
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 4,
+                "beg_col": 19,
+                "end_line": 4,
+                "end_col": 20
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 4,
+                "beg_col": 19,
+                "end_line": 4,
+                "end_col": 20
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 5,
+                "beg_col": 1,
+                "end_line": 5,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [ { "Slice": { "Literal": { "UInt": "U8" } } } ]
+              }
+            }
+          },
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Array": [
+                      { "Literal": { "UInt": "U8" } },
+                      { "kind": { "Opaque": "len" } }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              { "kind": { "Opaque": "len" } }
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "dynamic_size::alloc_wrapper",
+          "attr_info": null,
+          "source_text": "fn alloc_wrapper<const N: usize>() -> Box<Wrapper<[u8]>> {\n    Box::new(Wrapper { data: [0; N] })\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/dynamic_size.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 0 },
+                      "generics": {
+                        "types": [
+                          { "Slice": { "Literal": { "UInt": "U8" } } }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [ { "name": "N" } ],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/dynamic_size.rs",
+            "beg_line": 12,
+            "beg_col": 4,
+            "end_line": 13,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 29,
+                "end_line": 12,
+                "end_col": 35
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Unsigned": [ "U8", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "UInt": "U8" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Array": [
+                        { "Literal": { "UInt": "U8" } },
+                        { "kind": { "Opaque": "len" } }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 13,
+                "end_line": 12,
+                "end_col": 37
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [
+                            {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [
+                                {
+                                  "Array": [
+                                    { "Literal": { "UInt": "U8" } },
+                                    { "kind": { "Opaque": "len" } }
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Move": {
+                            "local": 3,
+                            "projection": [],
+                            "ty": {
+                              "Array": [
+                                { "Literal": { "UInt": "U8" } },
+                                { "kind": { "Opaque": "len" } }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 36,
+                "end_line": 12,
+                "end_col": 37
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 38
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 2,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [
+                                {
+                                  "Array": [
+                                    { "Literal": { "UInt": "U8" } },
+                                    { "kind": { "Opaque": "len" } }
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": {
+                                  "types": [
+                                    {
+                                      "Array": [
+                                        { "Literal": { "UInt": "U8" } },
+                                        { "kind": { "Opaque": "len" } }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 4,
+                "end_line": 12,
+                "end_col": 38
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": {
+                                  "types": [
+                                    {
+                                      "Slice": {
+                                        "Literal": { "UInt": "U8" }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "UnaryOp": [
+                      "Cast",
+                      {
+                        "Move": {
+                          "local": 1,
+                          "projection": [],
+                          "ty": {
+                            "Adt": {
+                              "id": { "Builtin": "Box" },
+                              "generics": {
+                                "types": [
+                                  {
+                                    "Adt": {
+                                      "id": { "Adt": 0 },
+                                      "generics": {
+                                        "types": [
+                                          {
+                                            "Array": [
+                                              { "Literal": { "UInt": "U8" } },
+                                              { "kind": { "Opaque": "len" } }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 37,
+                "end_line": 12,
+                "end_col": 38
+              },
+              "kind": {
+                "Drop": [
+                  {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [
+                            {
+                              "Adt": {
+                                "id": { "Adt": 0 },
+                                "generics": {
+                                  "types": [
+                                    {
+                                      "Array": [
+                                        { "Literal": { "UInt": "U8" } },
+                                        { "kind": { "Opaque": "len" } }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  null,
+                  null
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 37,
+                "end_line": 12,
+                "end_col": 38
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 12,
+                "beg_col": 37,
+                "end_line": 12,
+                "end_col": 38
+              },
+              "kind": { "StorageDead": 1 }
+            },
+            {
+              "span": {
+                "file": "tests/src/dynamic_size.rs",
+                "beg_line": 13,
+                "beg_col": 1,
+                "end_line": 13,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 0 },
+                      "generics": {
+                        "types": [
+                          { "Slice": { "Literal": { "UInt": "U8" } } }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 0 },
+                      "generics": {
+                        "types": [
+                          {
+                            "Array": [
+                              { "Literal": { "UInt": "U8" } },
+                              { "kind": { "Opaque": "len" } }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": {
+                "types": [
+                  {
+                    "Array": [
+                      { "Literal": { "UInt": "U8" } },
+                      { "kind": { "Opaque": "len" } }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "Array": [
+              { "Literal": { "UInt": "U8" } },
+              { "kind": { "Opaque": "len" } }
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [],
+    "trait_impls": [],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

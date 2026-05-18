@@ -1,0 +1,3136 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "58dfa3af237cde47e7080920061d5060",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "deref::use_deref_box",
+      "source_span": {
+        "file": "tests/src/deref.rs",
+        "beg_line": 6,
+        "beg_col": 0,
+        "end_line": 8,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "alloc::boxed::{core::ops::deref::Deref<T> for alloc::boxed::Box<T>}::deref",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RShared))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 1,
+      "fn_name": "deref::use_deref_mut_box",
+      "source_span": {
+        "file": "tests/src/deref.rs",
+        "beg_line": 10,
+        "beg_col": 0,
+        "end_line": 12,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 6,
+            "fn_name": "alloc::boxed::{core::ops::deref::DerefMut<T> for alloc::boxed::Box<T>}::deref_mut",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 2,
+            "inner_sv": 3,
+            "subst_locals": [ 3 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvReborrow": {
+            "child": 3,
+            "parent": 2,
+            "place": {
+              "local": 3,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+            },
+            "parent_live": true,
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvReborrow": {
+            "child": 4,
+            "parent": 3,
+            "place": {
+              "local": 2,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+            },
+            "parent_live": true
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TVar (Generated_Types.Free 0)), Generated_Types.RMut))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null
+      ]
+    },
+    {
+      "fn_id": 2,
+      "fn_name": "deref::test_deref_box",
+      "source_span": {
+        "file": "tests/src/deref.rs",
+        "beg_line": 14,
+        "beg_col": 0,
+        "end_line": 22,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 0,
+            "fn_name": "alloc::boxed::Box::new",
+            "call_id": 1,
+            "args": [
+              { "SymLit": { "Scalar": { "Signed": [ "I32", "0" ] } } }
+            ],
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TInt Generated_Values.I32))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [],
+            "abs_sig": []
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TInt Generated_Values.I32))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TInt Generated_Values.I32))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TInt Generated_Values.I32))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TInt Generated_Values.I32))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 6,
+            "fn_name": "alloc::boxed::{core::ops::deref::DerefMut<T@0> for alloc::boxed::Box<T@0>}::deref_mut",
+            "call_id": 2,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TInt Generated_Values.I32))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n   Generated_Types.RMut))"
+            },
+            "region_abs": [ 0 ],
+            "abs_sig": [
+              {
+                "abs_id": 0,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 0 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 1,
+            "bid": 1,
+            "inner_sv": 2,
+            "subst_locals": [ 2 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n   Generated_Types.RMut))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "1" ] } } }
+          }
+        },
+        {
+          "EvEndBorrow": {
+            "loan": 1,
+            "restore": {
+              "given_back": {
+                "SymLit": { "Scalar": { "Signed": [ "I32", "1" ] } }
+              },
+              "holder_local": null
+            }
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 0,
+            "final_values": [ { "SymVal": 3 } ],
+            "released_loans": [ 0 ],
+            "token_clear_locals": [ 1 ]
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TInt Generated_Values.I32))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TInt Generated_Values.I32))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 5,
+            "fn_name": "alloc::boxed::{core::ops::deref::Deref<T@0> for alloc::boxed::Box<T@0>}::deref",
+            "call_id": 3,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 5,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TBuiltin Generated_Types.TBox);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TInt Generated_Values.I32))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 4,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 4,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32)),\n   Generated_Types.RShared))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "Eq",
+            "lhs": {
+              "SymMove": {
+                "local": 7,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "1" ] } } },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            },
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral Generated_Values.TBool)"
+            }
+          }
+        },
+        { "EvAssert": { "cond": { "SymVal": 6 }, "expected": true } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 1,
+            "final_values": [],
+            "released_loans": [],
+            "token_clear_locals": []
+          }
+        },
+        "EvReturn",
+        { "EvAssert": { "cond": { "SymVal": 6 }, "expected": false } },
+        "EvPanic",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null
+      ]
+    },
+    {
+      "fn_id": 3,
+      "fn_name": "deref::use_deref_vec",
+      "source_span": {
+        "file": "tests/src/deref.rs",
+        "beg_line": 24,
+        "beg_col": 0,
+        "end_line": 26,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 8,
+            "fn_name": "alloc::vec::{core::ops::deref::Deref<[T]> for alloc::vec::Vec<T>}::deref",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 3,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RShared))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "SharedBorrow": { "arg_idx": 0, "sb_id": 1 } } ]
+              }
+            ]
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RShared))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
+    },
+    {
+      "fn_id": 4,
+      "fn_name": "deref::use_deref_mut_vec",
+      "source_span": {
+        "file": "tests/src/deref.rs",
+        "beg_line": 28,
+        "beg_col": 0,
+        "end_line": 30,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 0,
+            "bid": 0,
+            "inner_sv": 1,
+            "subst_locals": [ 1 ],
+            "subst_loans": [],
+            "parent_abs": 0
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 9,
+            "fn_name": "alloc::vec::{core::ops::deref::DerefMut<[T]> for alloc::vec::Vec<T>}::deref_mut",
+            "call_id": 1,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 4,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 1);\n        generics =\n        { Generated_Types.regions = [];\n          types = [(Generated_Types.TVar (Generated_Types.Free 0))];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+            },
+            "region_abs": [ 1 ],
+            "abs_sig": [
+              {
+                "abs_id": 1,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 1 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvSymExpandMutBorrow": {
+            "sv_id": 2,
+            "bid": 2,
+            "inner_sv": 3,
+            "subst_locals": [ 3 ],
+            "subst_loans": [],
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvReborrow": {
+            "child": 3,
+            "parent": 2,
+            "place": {
+              "local": 3,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+            },
+            "parent_live": true,
+            "parent_abs": 1
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 3,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvReborrow": {
+            "child": 4,
+            "parent": 3,
+            "place": {
+              "local": 2,
+              "projection": [ "Deref" ],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+            },
+            "parent_live": true
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TSlice (Generated_Types.TVar (Generated_Types.Free 0))),\n   Generated_Types.RMut))"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "alloc::alloc::Global",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "global_alloc_ty",
+          "span": {
+            "file": "/rustc/library/alloc/src/alloc.rs",
+            "beg_line": 52,
+            "beg_col": 0,
+            "end_line": 52,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": { "Struct": [] },
+        "is_tuple_struct": true,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::vec::Vec",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Vec",
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 440,
+            "beg_col": 0,
+            "end_line": 440,
+            "end_col": 96
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "deref::use_deref_box",
+          "attr_info": null,
+          "source_text": "pub fn use_deref_box<T>(x: &Box<T>) -> &T {\n    x.deref()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 6,
+            "beg_col": 0,
+            "end_line": 8,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Box" },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 7,
+            "beg_col": 4,
+            "end_line": 8,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Box" },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Box" },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Box" },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "TypeVar": { "Free": 0 } }, "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 7,
+                "beg_col": 12,
+                "end_line": 7,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 8,
+                "beg_col": 0,
+                "end_line": 8,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 8,
+                "beg_col": 1,
+                "end_line": 8,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Shared"
+            ]
+          },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "deref::use_deref_mut_box",
+          "attr_info": null,
+          "source_text": "pub fn use_deref_mut_box<T>(x: &mut Box<T>) -> &mut T {\n    x.deref_mut()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 10,
+            "beg_col": 0,
+            "end_line": 12,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Box" },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 11,
+            "beg_col": 4,
+            "end_line": 12,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 11,
+                "beg_col": 4,
+                "end_line": 11,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Box" },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Box" },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 11,
+                "beg_col": 4,
+                "end_line": 11,
+                "end_col": 17
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 6 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Box" },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 11,
+                "beg_col": 4,
+                "end_line": 11,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 3,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 11,
+                "beg_col": 16,
+                "end_line": 11,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 11,
+                "beg_col": 4,
+                "end_line": 11,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 12,
+                "beg_col": 0,
+                "end_line": 12,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 12,
+                "beg_col": 0,
+                "end_line": 12,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 12,
+                "beg_col": 1,
+                "end_line": 12,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Mut"
+            ]
+          },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+          { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Mut"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "deref::test_deref_box",
+          "attr_info": null,
+          "source_text": "pub fn test_deref_box() {\n    use std::ops::Deref;\n    use std::ops::DerefMut;\n    let mut b: Box<i32> = Box::new(0);\n    let x = b.deref_mut();\n    *x = 1;\n    let x = b.deref();\n    assert!(*x == 1);\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 14,
+            "beg_col": 0,
+            "end_line": 22,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 22,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 17,
+                "beg_col": 26,
+                "end_line": 17,
+                "end_col": 37
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Builtin": null } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Signed": [ "I32", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "Int": "I32" } }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 1,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Builtin": "Box" },
+                        "generics": {
+                          "types": [ { "Literal": { "Int": "I32" } } ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 18,
+                "beg_col": 12,
+                "end_line": 18,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Box" },
+                            "generics": {
+                              "types": [ { "Literal": { "Int": "I32" } } ]
+                            }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Builtin": "Box" },
+                            "generics": {
+                              "types": [ { "Literal": { "Int": "I32" } } ]
+                            }
+                          }
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 18,
+                "beg_col": 12,
+                "end_line": 18,
+                "end_col": 25
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 6 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Box" },
+                                "generics": {
+                                  "types": [
+                                    { "Literal": { "Int": "I32" } }
+                                  ]
+                                }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Mut" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 18,
+                "beg_col": 24,
+                "end_line": 18,
+                "end_col": 25
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 19,
+                "beg_col": 4,
+                "end_line": 19,
+                "end_col": 10
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [ "Deref" ],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Mut" ]
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Signed": [ "I32", "1" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "Int": "I32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 20,
+                "beg_col": 12,
+                "end_line": 20,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Builtin": "Box" },
+                            "generics": {
+                              "types": [ { "Literal": { "Int": "I32" } } ]
+                            }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Builtin": "Box" },
+                            "generics": {
+                              "types": [ { "Literal": { "Int": "I32" } } ]
+                            }
+                          }
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 20,
+                "beg_col": 12,
+                "end_line": 20,
+                "end_col": 21
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 5 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Builtin": "Box" },
+                                "generics": {
+                                  "types": [
+                                    { "Literal": { "Int": "I32" } }
+                                  ]
+                                }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 20,
+                "beg_col": 20,
+                "end_line": 20,
+                "end_col": 21
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 21,
+                "beg_col": 12,
+                "end_line": 21,
+                "end_col": 14
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 7,
+                    "projection": [],
+                    "ty": { "Literal": { "Int": "I32" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 4,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0, { "Literal": { "Int": "I32" } }, "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 21,
+                "beg_col": 12,
+                "end_line": 21,
+                "end_col": 19
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": { "Literal": "Bool" }
+                  },
+                  {
+                    "BinaryOp": [
+                      "Eq",
+                      {
+                        "Move": {
+                          "local": 7,
+                          "projection": [],
+                          "ty": { "Literal": { "Int": "I32" } }
+                        }
+                      },
+                      {
+                        "Const": {
+                          "kind": {
+                            "Literal": {
+                              "Scalar": { "Signed": [ "I32", "1" ] }
+                            }
+                          },
+                          "ty": { "Literal": { "Int": "I32" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 21,
+                "beg_col": 4,
+                "end_line": 21,
+                "end_col": 20
+              },
+              "kind": {
+                "Switch": {
+                  "If": [
+                    {
+                      "Move": {
+                        "local": 6,
+                        "projection": [],
+                        "ty": { "Literal": "Bool" }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/deref.rs",
+                        "beg_line": 21,
+                        "beg_col": 12,
+                        "end_line": 21,
+                        "end_col": 19
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 21,
+                            "beg_col": 18,
+                            "end_line": 21,
+                            "end_col": 19
+                          },
+                          "kind": { "StorageDead": 7 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 21,
+                            "beg_col": 19,
+                            "end_line": 21,
+                            "end_col": 20
+                          },
+                          "kind": { "StorageDead": 6 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 14,
+                            "beg_col": 24,
+                            "end_line": 22,
+                            "end_col": 1
+                          },
+                          "kind": {
+                            "Assign": [
+                              {
+                                "local": 0,
+                                "projection": [],
+                                "ty": {
+                                  "Adt": {
+                                    "id": "Tuple",
+                                    "generics": { "types": [] }
+                                  }
+                                }
+                              },
+                              {
+                                "Aggregate": [
+                                  {
+                                    "Adt": [
+                                      {
+                                        "id": "Tuple",
+                                        "generics": { "types": [] }
+                                      },
+                                      null,
+                                      null
+                                    ]
+                                  },
+                                  []
+                                ]
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 22,
+                            "beg_col": 0,
+                            "end_line": 22,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 4 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 22,
+                            "beg_col": 0,
+                            "end_line": 22,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 2 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 22,
+                            "beg_col": 0,
+                            "end_line": 22,
+                            "end_col": 1
+                          },
+                          "kind": {
+                            "Drop": [
+                              {
+                                "local": 1,
+                                "projection": [],
+                                "ty": {
+                                  "Adt": {
+                                    "id": { "Builtin": "Box" },
+                                    "generics": {
+                                      "types": [
+                                        { "Literal": { "Int": "I32" } }
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              null,
+                              null
+                            ]
+                          }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 22,
+                            "beg_col": 0,
+                            "end_line": 22,
+                            "end_col": 1
+                          },
+                          "kind": { "StorageDead": 1 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 22,
+                            "beg_col": 1,
+                            "end_line": 22,
+                            "end_col": 1
+                          },
+                          "kind": "Return"
+                        }
+                      ]
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/deref.rs",
+                        "beg_line": 21,
+                        "beg_col": 4,
+                        "end_line": 21,
+                        "end_col": 20
+                      },
+                      "statements": [
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 21,
+                            "beg_col": 18,
+                            "end_line": 21,
+                            "end_col": 19
+                          },
+                          "kind": { "StorageDead": 7 }
+                        },
+                        {
+                          "span": {
+                            "file": "tests/src/deref.rs",
+                            "beg_line": 21,
+                            "beg_col": 4,
+                            "end_line": 21,
+                            "end_col": 20
+                          },
+                          "kind": "Nop"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          {
+            "Adt": {
+              "id": { "Builtin": "Box" },
+              "generics": { "types": [ { "Literal": { "Int": "I32" } } ] }
+            }
+          },
+          { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Mut" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": {
+                    "types": [ { "Literal": { "Int": "I32" } } ]
+                  }
+                }
+              },
+              "Mut"
+            ]
+          },
+          { "Ref": [ 0, { "Literal": { "Int": "I32" } }, "Shared" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Builtin": "Box" },
+                  "generics": {
+                    "types": [ { "Literal": { "Int": "I32" } } ]
+                  }
+                }
+              },
+              "Shared"
+            ]
+          },
+          { "Literal": "Bool" },
+          { "Literal": { "Int": "I32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "deref::use_deref_vec",
+          "attr_info": null,
+          "source_text": "pub fn use_deref_vec<T>(x: &Vec<T>) -> &[T] {\n    x.deref()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 24,
+            "beg_col": 0,
+            "end_line": 26,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 1 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 25,
+            "beg_col": 4,
+            "end_line": 26,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 25,
+                "beg_col": 4,
+                "end_line": 25,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 1 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 25,
+                "beg_col": 4,
+                "end_line": 25,
+                "end_col": 13
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 8 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Shared"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "TypeVar": { "Free": 0 } } },
+                        "Shared"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 25,
+                "beg_col": 4,
+                "end_line": 25,
+                "end_col": 13
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        { "Slice": { "TypeVar": { "Free": 0 } } },
+                        "Shared"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Shared"
+                          ]
+                        }
+                      },
+                      "kind": "Shared",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 25,
+                "beg_col": 12,
+                "end_line": 25,
+                "end_col": 13
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 26,
+                "beg_col": 0,
+                "end_line": 26,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 26,
+                "beg_col": 1,
+                "end_line": 26,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Shared"
+            ]
+          },
+          {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Shared"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "deref::use_deref_mut_vec",
+          "attr_info": null,
+          "source_text": "pub fn use_deref_mut_vec<T>(x: &mut Vec<T>) -> &mut [T] {\n    x.deref_mut()\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 28,
+            "beg_col": 0,
+            "end_line": 30,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 1 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/deref.rs",
+            "beg_line": 29,
+            "beg_col": 4,
+            "end_line": 30,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 29,
+                "beg_col": 4,
+                "end_line": 29,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0,
+                        {
+                          "Adt": {
+                            "id": { "Adt": 1 },
+                            "generics": {
+                              "types": [ { "TypeVar": { "Free": 0 } } ]
+                            }
+                          }
+                        },
+                        "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 1,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "TwoPhaseMut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 29,
+                "beg_col": 4,
+                "end_line": 29,
+                "end_col": 17
+              },
+              "kind": {
+                "Call": {
+                  "func": {
+                    "Regular": {
+                      "kind": { "Fun": { "Regular": 9 } },
+                      "generics": null
+                    }
+                  },
+                  "args": [
+                    {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": {
+                                  "types": [ { "TypeVar": { "Free": 0 } } ]
+                                }
+                              }
+                            },
+                            "Mut"
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  "dest": {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 29,
+                "beg_col": 4,
+                "end_line": 29,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 3,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 29,
+                "beg_col": 16,
+                "end_line": 29,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 29,
+                "beg_col": 4,
+                "end_line": 29,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Ref": [
+                        0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut"
+                      ]
+                    }
+                  },
+                  {
+                    "Ref": {
+                      "place": {
+                        "local": 2,
+                        "projection": [ "Deref" ],
+                        "ty": {
+                          "Ref": [
+                            0,
+                            { "Slice": { "TypeVar": { "Free": 0 } } },
+                            "Mut"
+                          ]
+                        }
+                      },
+                      "kind": "Mut",
+                      "ptr_metadata": null
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 30,
+                "beg_col": 0,
+                "end_line": 30,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 30,
+                "beg_col": 0,
+                "end_line": 30,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/deref.rs",
+                "beg_line": 30,
+                "beg_col": 1,
+                "end_line": 30,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Mut"
+            ]
+          },
+          { "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ] },
+          { "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ] },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "Mut"
+            ]
+          }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "alloc::boxed::{core::ops::deref::Deref<T> for alloc::boxed::Box<T>}::deref",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/boxed.rs",
+            "beg_line": 2183,
+            "beg_col": 4,
+            "end_line": 2183,
+            "end_col": 25
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Box" },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" }, { "name": "A" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "alloc::boxed::{core::ops::deref::DerefMut<T> for alloc::boxed::Box<T>}::deref_mut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/boxed.rs",
+            "beg_line": 2190,
+            "beg_col": 4,
+            "end_line": 2190,
+            "end_col": 37
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Builtin": "Box" },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" }, { "name": "A" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "alloc::vec::{core::ops::deref::Deref<[T]> for alloc::vec::Vec<T>}::deref",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 3663,
+            "beg_col": 4,
+            "end_line": 3663,
+            "end_col": 27
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 1 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Shared" ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" }, { "name": "A" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "alloc::vec::{core::ops::deref::DerefMut<[T]> for alloc::vec::Vec<T>}::deref_mut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 3671,
+            "beg_col": 4,
+            "end_line": 3671,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 1 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Ref": [ 0, { "Slice": { "TypeVar": { "Free": 0 } } }, "Mut" ]
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "T" }, { "name": "A" } ],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 11,
+        "item_meta": {
+          "name": "core::ops::deref::Deref::deref",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "deref_method",
+          "span": {
+            "file": "/rustc/library/core/src/ops/deref.rs",
+            "beg_line": 150,
+            "beg_col": 4,
+            "end_line": 150,
+            "end_col": 37
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "Clause0_Target" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::deref::Deref", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 12,
+        "item_meta": {
+          "name": "core::ops::deref::DerefMut::deref_mut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "deref_mut_method",
+          "span": {
+            "file": "/rustc/library/core/src/ops/deref.rs",
+            "beg_line": 274,
+            "beg_col": 4,
+            "end_line": 274,
+            "end_col": 49
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] } ],
+          "output": { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Mut" ] },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [
+              { "name": "Self" }, { "name": "Clause0_Clause0_Target" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::deref::DerefMut", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::ops::deref::Deref",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "deref",
+          "span": {
+            "file": "/rustc/library/core/src/ops/deref.rs",
+            "beg_line": 139,
+            "beg_col": 0,
+            "end_line": 139,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Self_Target" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "deref",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": {
+                "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ]
+              },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "Clause0_Target" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::deref::Deref", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::ops::deref::DerefMut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "deref_mut",
+          "span": {
+            "file": "/rustc/library/core/src/ops/deref.rs",
+            "beg_line": 270,
+            "beg_col": 0,
+            "end_line": 270,
+            "end_col": 54
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Self_Clause0_Target" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "deref_mut",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
+              ],
+              "output": { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Mut" ] },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [
+                  { "name": "Self" }, { "name": "Clause0_Clause0_Target" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::deref::DerefMut", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "alloc::boxed::{core::ops::deref::Deref<T> for alloc::boxed::Box<T>}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/boxed.rs",
+            "beg_line": 2180,
+            "beg_col": 0,
+            "end_line": 2180,
+            "end_col": 49
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": {
+            "id": { "Builtin": "Box" },
+            "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+          }
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "deref", "fn_id": 5 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "alloc::boxed::{core::ops::deref::DerefMut<T> for alloc::boxed::Box<T>}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/boxed.rs",
+            "beg_line": 2189,
+            "beg_col": 0,
+            "end_line": 2189,
+            "end_col": 52
+          },
+          "extra": null
+        },
+        "trait_decl_id": 2,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": {
+          "Adt": {
+            "id": { "Builtin": "Box" },
+            "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+          }
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "deref_mut", "fn_id": 6 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "alloc::vec::{core::ops::deref::Deref<[T]> for alloc::vec::Vec<T>}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 3659,
+            "beg_col": 0,
+            "end_line": 3659,
+            "end_col": 46
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": 1,
+        "self_type": {
+          "Adt": {
+            "id": { "Adt": 1 },
+            "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+          }
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "deref", "fn_id": 8 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "alloc::vec::{core::ops::deref::DerefMut<[T]> for alloc::vec::Vec<T>}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/alloc/src/vec/mod.rs",
+            "beg_line": 3669,
+            "beg_col": 0,
+            "end_line": 3669,
+            "end_col": 49
+          },
+          "extra": null
+        },
+        "trait_decl_id": 2,
+        "impl_trait": null,
+        "self_type_decl_id": 1,
+        "self_type": {
+          "Adt": {
+            "id": { "Adt": 1 },
+            "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+          }
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "deref_mut", "fn_id": 9 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}

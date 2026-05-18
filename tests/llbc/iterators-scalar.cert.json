@@ -1,0 +1,5222 @@
+{
+  "fmt_version": 6,
+  "crate_hash": "ff1491adbe18846598b79281a09e8b48",
+  "functions": [
+    {
+      "fn_id": 0,
+      "fn_name": "iterators_scalar::iter",
+      "source_span": {
+        "file": "tests/src/iterators-scalar.rs",
+        "beg_line": 3,
+        "beg_col": 0,
+        "end_line": 8,
+        "end_col": 1
+      },
+      "events": [
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "0" ] } } }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 1,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 1,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "dst": {
+              "local": 5,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymRecord": {
+                "adt_id": 0,
+                "fields": [
+                  {
+                    "name": "start",
+                    "value": {
+                      "SymLit": {
+                        "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                      }
+                    }
+                  },
+                  {
+                    "name": "end",
+                    "value": {
+                      "SymMove": {
+                        "local": 5,
+                        "projection": [],
+                        "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 4,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 4,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 3,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 3,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvLoopInv": {
+            "loop_id": 0,
+            "invariant": {
+              "env": [
+                { "local": 6, "value": { "SymVal": 12 } },
+                { "local": 2, "value": { "SymVal": 11 } },
+                { "local": 1, "value": { "SymVal": 0 } }
+              ],
+              "live_loans": []
+            },
+            "loan_registry": []
+          }
+        },
+        {
+          "EvMutBorrow": {
+            "loan": 6,
+            "place": {
+              "local": 6,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "symval": 12,
+            "kind_hint": { "LoopOwned": { "loop": 0 } }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 9,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 6,
+                "projection": [],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 0);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 9,
+                "projection": [ "Deref" ],
+                "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+              }
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            },
+            "dst": {
+              "local": 8,
+              "projection": [],
+              "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+            }
+          }
+        },
+        {
+          "EvCall": {
+            "fn": 2,
+            "fn_name": "core::iter::range::{core::iter::traits::iterator::Iterator<T@0> for core::ops::range::Range<T@0>}::next",
+            "call_id": 4,
+            "args": [
+              {
+                "SymMove": {
+                  "local": 8,
+                  "projection": [],
+                  "ty": "(Generated_Types.TRef (Generated_Types.RErased,\n   (Generated_Types.TAdt\n      { Generated_Types.id = (Generated_Types.TAdtId 0);\n        generics =\n        { Generated_Types.regions = [];\n          types =\n          [(Generated_Types.TLiteral\n              (Generated_Values.TUInt Generated_Values.Usize))\n            ];\n          const_generics = []; trait_refs = [] }\n        }),\n   Generated_Types.RMut))"
+                }
+              }
+            ],
+            "dst": {
+              "local": 7,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 1);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "region_abs": [ 3 ],
+            "abs_sig": [
+              {
+                "abs_id": 3,
+                "parent_abs": [],
+                "roles": [ { "MutBorrow": { "arg_idx": 0, "loan": 7 } } ]
+              }
+            ]
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 22 },
+            "adt_id": 1,
+            "variant_id": 0,
+            "variant_name": "None"
+          }
+        },
+        {
+          "EvMatchArm": {
+            "scrutinee": { "SymVal": 22 },
+            "adt_id": 1,
+            "variant_id": 1,
+            "variant_name": "Some"
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 7,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 1);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 7,
+              "projection": [ { "Field": 0 } ],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 1);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 10,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TUInt Generated_Values.Usize))"
+            },
+            "rhs": {
+              "SymCopy": {
+                "local": 7,
+                "projection": [ { "Field": 0 } ],
+                "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = (Generated_Types.TAdtId 1);\n     generics =\n     { Generated_Types.regions = [];\n       types =\n       [(Generated_Types.TLiteral\n           (Generated_Values.TUInt Generated_Values.Usize))\n         ];\n       const_generics = []; trait_refs = [] }\n     })"
+              }
+            }
+          }
+        },
+        {
+          "EvCopy": {
+            "src": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            }
+          }
+        },
+        {
+          "EvBinop": {
+            "op": "AddPanic",
+            "lhs": {
+              "SymCopy": {
+                "local": 2,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+              }
+            },
+            "rhs": { "SymLit": { "Scalar": { "Signed": [ "I32", "1" ] } } },
+            "dst": {
+              "local": 11,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            }
+          }
+        },
+        {
+          "EvMove": {
+            "src": {
+              "local": 11,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "dst": {
+              "local": 11,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            }
+          }
+        },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 2,
+              "projection": [],
+              "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+            },
+            "rhs": {
+              "SymMove": {
+                "local": 11,
+                "projection": [],
+                "ty": "(Generated_Types.TLiteral (Generated_Values.TInt Generated_Values.I32))"
+              }
+            }
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 3,
+            "final_values": [ { "SymVal": 25 } ],
+            "released_loans": [ 7 ],
+            "token_clear_locals": [ 9 ]
+          }
+        },
+        {
+          "EvEndAbs": {
+            "abs": 3,
+            "final_values": [ { "SymVal": 26 } ],
+            "released_loans": [ 7 ],
+            "token_clear_locals": []
+          }
+        },
+        {
+          "EvEndBorrow": {
+            "loan": 6,
+            "restore": { "given_back": { "SymVal": 26 }, "holder_local": 6 }
+          }
+        },
+        { "EvLoopEnd": { "loop_id": 0 } },
+        {
+          "EvAssign": {
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "rhs": { "SymTuple": [] }
+          }
+        },
+        "EvReturn",
+        {
+          "EvMove": {
+            "src": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            },
+            "dst": {
+              "local": 0,
+              "projection": [],
+              "ty": "(Generated_Types.TAdt\n   { Generated_Types.id = Generated_Types.TTuple;\n     generics =\n     { Generated_Types.regions = []; types = []; const_generics = [];\n       trait_refs = [] }\n     })"
+            }
+          }
+        }
+      ],
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null
+      ]
+    }
+  ],
+  "llbc_program": {
+    "type_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::ops::range::Range",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Range",
+          "span": {
+            "file": "/rustc/library/core/src/ops/range.rs",
+            "beg_line": 82,
+            "beg_col": 0,
+            "end_line": 82,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Idx" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Struct": [
+            {
+              "idx": 0,
+              "name": "start",
+              "ty": { "TypeVar": { "Free": 0 } },
+              "attr_info": null
+            },
+            {
+              "idx": 1,
+              "name": "end",
+              "ty": { "TypeVar": { "Free": 0 } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::option::Option",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Option",
+          "span": {
+            "file": "/rustc/library/core/src/option.rs",
+            "beg_line": 600,
+            "beg_col": 0,
+            "end_line": 600,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "None",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Some",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::result::Result",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Result",
+          "span": {
+            "file": "/rustc/library/core/src/result.rs",
+            "beg_line": 557,
+            "beg_col": 0,
+            "end_line": 557,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "E" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Ok",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Err",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 1 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::array::iter::IntoIter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "ArrayIntoIter",
+          "span": {
+            "file": "/rustc/library/core/src/array/iter.rs",
+            "beg_line": 20,
+            "beg_col": 0,
+            "end_line": 20,
+            "end_col": 38
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [ { "name": "N" } ],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::num::nonzero::NonZero",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "NonZero",
+          "span": {
+            "file": "/rustc/library/core/src/num/nonzero.rs",
+            "beg_line": 127,
+            "beg_col": 0,
+            "end_line": 127,
+            "end_col": 40
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" }, { "name": "Clause0_NonZeroInner" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::iter::adapters::step_by::StepBy",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/step_by.rs",
+            "beg_line": 16,
+            "beg_col": 0,
+            "end_line": 16,
+            "end_col": 20
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::iter::adapters::chain::Chain",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/chain.rs",
+            "beg_line": 23,
+            "beg_col": 0,
+            "end_line": 23,
+            "end_col": 22
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "A" }, { "name": "B" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "core::iter::adapters::zip::Zip",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/zip.rs",
+            "beg_line": 15,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 20
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "A" }, { "name": "B" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "core::iter::adapters::intersperse::Intersperse",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/intersperse.rs",
+            "beg_line": 10,
+            "beg_col": 0,
+            "end_line": 10,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "Clause0_Item" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 10,
+        "item_meta": {
+          "name": "core::iter::adapters::intersperse::IntersperseWith",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/intersperse.rs",
+            "beg_line": 91,
+            "beg_col": 0,
+            "end_line": 91,
+            "end_col": 32
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "I" }, { "name": "G" }, { "name": "Clause0_Item" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 11,
+        "item_meta": {
+          "name": "core::iter::adapters::map::Map",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/map.rs",
+            "beg_line": 61,
+            "beg_col": 0,
+            "end_line": 61,
+            "end_col": 20
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "F" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 12,
+        "item_meta": {
+          "name": "core::iter::adapters::filter::Filter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/filter.rs",
+            "beg_line": 21,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 23
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "P" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 13,
+        "item_meta": {
+          "name": "core::iter::adapters::filter_map::FilterMap",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/filter_map.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 18,
+            "end_col": 26
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "F" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 14,
+        "item_meta": {
+          "name": "core::iter::adapters::enumerate::Enumerate",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Enumerate",
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/enumerate.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 18,
+            "end_col": 23
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 15,
+        "item_meta": {
+          "name": "core::iter::adapters::peekable::Peekable",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "IterPeekable",
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/peekable.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 32
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "Clause0_Item" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 16,
+        "item_meta": {
+          "name": "core::iter::adapters::skip_while::SkipWhile",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/skip_while.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 26
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "P" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 17,
+        "item_meta": {
+          "name": "core::iter::adapters::take_while::TakeWhile",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/take_while.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 26
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "P" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 18,
+        "item_meta": {
+          "name": "core::iter::adapters::map_while::MapWhile",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/map_while.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 25
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "P" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 19,
+        "item_meta": {
+          "name": "core::iter::adapters::skip::Skip",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/skip.rs",
+            "beg_line": 21,
+            "beg_col": 0,
+            "end_line": 21,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 20,
+        "item_meta": {
+          "name": "core::iter::adapters::take::Take",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/take.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 21,
+        "item_meta": {
+          "name": "core::iter::adapters::scan::Scan",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/scan.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 25
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "St" }, { "name": "F" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 22,
+        "item_meta": {
+          "name": "core::iter::adapters::flatten::FlatMap",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/flatten.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 41
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "I" },
+            { "name": "U" },
+            { "name": "F" },
+            { "name": "Clause0_Item" },
+            { "name": "Clause0_IntoIter" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 23,
+        "item_meta": {
+          "name": "core::iter::adapters::flatten::Flatten",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/flatten.rs",
+            "beg_line": 184,
+            "beg_col": 0,
+            "end_line": 184,
+            "end_col": 51
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "I" },
+            { "name": "Clause0_Item" },
+            { "name": "Clause1_Item" },
+            { "name": "Clause1_IntoIter" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 24,
+        "item_meta": {
+          "name": "core::iter::adapters::map_windows::MapWindows",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/map_windows.rs",
+            "beg_line": 11,
+            "beg_col": 0,
+            "end_line": 11,
+            "end_col": 53
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "I" }, { "name": "F" }, { "name": "Clause0_Item" }
+          ],
+          "const_generics": [ { "name": "N" } ],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 25,
+        "item_meta": {
+          "name": "core::iter::adapters::fuse::Fuse",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/fuse.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 18
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 26,
+        "item_meta": {
+          "name": "core::iter::adapters::inspect::Inspect",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/inspect.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 18,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "F" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 27,
+        "item_meta": {
+          "name": "core::cmp::Ordering",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Ordering",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 396,
+            "beg_col": 0,
+            "end_line": 396,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Less",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "I8", "-1" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Equal",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "I8", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 2,
+              "name": "Greater",
+              "fields": [],
+              "discriminant": { "Scalar": { "Signed": [ "I8", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 28,
+        "item_meta": {
+          "name": "core::iter::adapters::rev::Rev",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/rev.rs",
+            "beg_line": 15,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 17
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "T" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 29,
+        "item_meta": {
+          "name": "core::iter::adapters::copied::Copied",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/copied.rs",
+            "beg_line": 19,
+            "beg_col": 0,
+            "end_line": 19,
+            "end_col": 20
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 30,
+        "item_meta": {
+          "name": "core::iter::adapters::cloned::Cloned",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/cloned.rs",
+            "beg_line": 18,
+            "beg_col": 0,
+            "end_line": 18,
+            "end_col": 20
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 31,
+        "item_meta": {
+          "name": "core::iter::adapters::cycle::Cycle",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/cycle.rs",
+            "beg_line": 15,
+            "beg_col": 0,
+            "end_line": 15,
+            "end_col": 19
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 32,
+        "item_meta": {
+          "name": "core::iter::adapters::array_chunks::ArrayChunks",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/array_chunks.rs",
+            "beg_line": 19,
+            "beg_col": 0,
+            "end_line": 19,
+            "end_col": 51
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "Clause0_Item" } ],
+          "const_generics": [ { "name": "N" } ],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 34,
+        "item_meta": {
+          "name": "core::num::niche_types::NonZeroUsizeInner",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/niche_types.rs",
+            "beg_line": 22,
+            "beg_col": 8,
+            "end_line": 22,
+            "end_col": 32
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": "Opaque",
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      },
+      {
+        "id": 37,
+        "item_meta": {
+          "name": "core::ops::control_flow::ControlFlow",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "ControlFlow",
+          "span": {
+            "file": "/rustc/library/core/src/ops/control_flow.rs",
+            "beg_line": 89,
+            "beg_col": 0,
+            "end_line": 89,
+            "end_col": 31
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "B" }, { "name": "C" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "kind": {
+          "Enum": [
+            {
+              "id": 0,
+              "name": "Continue",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 1 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "0" ] } },
+              "attr_info": null
+            },
+            {
+              "id": 1,
+              "name": "Break",
+              "fields": [
+                {
+                  "idx": 0,
+                  "name": null,
+                  "ty": { "TypeVar": { "Free": 0 } },
+                  "attr_info": null
+                }
+              ],
+              "discriminant": { "Scalar": { "Signed": [ "Isize", "1" ] } },
+              "attr_info": null
+            }
+          ]
+        },
+        "is_tuple_struct": false,
+        "repr_options": null,
+        "ptr_metadata": null,
+        "src": null,
+        "is_global_initializer": false
+      }
+    ],
+    "fun_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "iterators_scalar::iter",
+          "attr_info": null,
+          "source_text": "fn iter(n: usize) {\n    let mut x = 0;\n    for i in 0..n {\n        x += 1;\n    }\n}",
+          "lang_item": null,
+          "span": {
+            "file": "tests/src/iterators-scalar.rs",
+            "beg_line": 3,
+            "beg_col": 0,
+            "end_line": 8,
+            "end_col": 1
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Literal": { "UInt": "Usize" } } ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": {
+          "span": {
+            "file": "tests/src/iterators-scalar.rs",
+            "beg_line": 0,
+            "beg_col": 0,
+            "end_line": 8,
+            "end_col": 1
+          },
+          "statements": [
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 0,
+                "beg_col": 0,
+                "end_line": 0,
+                "end_col": 0
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 4,
+                "beg_col": 16,
+                "end_line": 4,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 2,
+                    "projection": [],
+                    "ty": { "Literal": { "Int": "I32" } }
+                  },
+                  {
+                    "Use": {
+                      "Const": {
+                        "kind": {
+                          "Literal": {
+                            "Scalar": { "Signed": [ "I32", "0" ] }
+                          }
+                        },
+                        "ty": { "Literal": { "Int": "I32" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 16,
+                "end_line": 5,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 5,
+                    "projection": [],
+                    "ty": { "Literal": { "UInt": "Usize" } }
+                  },
+                  {
+                    "Use": {
+                      "Copy": {
+                        "local": 1,
+                        "projection": [],
+                        "ty": { "Literal": { "UInt": "Usize" } }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 13,
+                "end_line": 5,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 4,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "Literal": { "UInt": "Usize" } } ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "Literal": { "UInt": "Usize" } } ]
+                            }
+                          },
+                          null,
+                          null
+                        ]
+                      },
+                      [
+                        {
+                          "Const": {
+                            "kind": {
+                              "Literal": {
+                                "Scalar": { "Unsigned": [ "Usize", "0" ] }
+                              }
+                            },
+                            "ty": { "Literal": { "UInt": "Usize" } }
+                          }
+                        },
+                        {
+                          "Move": {
+                            "local": 5,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "Usize" } }
+                          }
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 16,
+                "end_line": 5,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 5 }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 13,
+                "end_line": 5,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 3,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "Literal": { "UInt": "Usize" } } ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 4,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "Literal": { "UInt": "Usize" } } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 16,
+                "end_line": 5,
+                "end_col": 17
+              },
+              "kind": { "StorageDead": 4 }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 13,
+                "end_line": 5,
+                "end_col": 17
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 6,
+                    "projection": [],
+                    "ty": {
+                      "Adt": {
+                        "id": { "Adt": 0 },
+                        "generics": {
+                          "types": [ { "Literal": { "UInt": "Usize" } } ]
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "Use": {
+                      "Move": {
+                        "local": 3,
+                        "projection": [],
+                        "ty": {
+                          "Adt": {
+                            "id": { "Adt": 0 },
+                            "generics": {
+                              "types": [ { "Literal": { "UInt": "Usize" } } ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": {
+                "Loop": {
+                  "span": {
+                    "file": "tests/src/iterators-scalar.rs",
+                    "beg_line": 5,
+                    "beg_col": 4,
+                    "end_line": 7,
+                    "end_col": 5
+                  },
+                  "statements": [
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 5,
+                        "beg_col": 13,
+                        "end_line": 5,
+                        "end_col": 17
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 9,
+                            "projection": [],
+                            "ty": {
+                              "Ref": [
+                                0,
+                                {
+                                  "Adt": {
+                                    "id": { "Adt": 0 },
+                                    "generics": {
+                                      "types": [
+                                        { "Literal": { "UInt": "Usize" } }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "Mut"
+                              ]
+                            }
+                          },
+                          {
+                            "Ref": {
+                              "place": {
+                                "local": 6,
+                                "projection": [],
+                                "ty": {
+                                  "Adt": {
+                                    "id": { "Adt": 0 },
+                                    "generics": {
+                                      "types": [
+                                        { "Literal": { "UInt": "Usize" } }
+                                      ]
+                                    }
+                                  }
+                                }
+                              },
+                              "kind": "Mut",
+                              "ptr_metadata": null
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 5,
+                        "beg_col": 13,
+                        "end_line": 5,
+                        "end_col": 17
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 8,
+                            "projection": [],
+                            "ty": {
+                              "Ref": [
+                                0,
+                                {
+                                  "Adt": {
+                                    "id": { "Adt": 0 },
+                                    "generics": {
+                                      "types": [
+                                        { "Literal": { "UInt": "Usize" } }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "Mut"
+                              ]
+                            }
+                          },
+                          {
+                            "Ref": {
+                              "place": {
+                                "local": 9,
+                                "projection": [ "Deref" ],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": {
+                                          "types": [
+                                            {
+                                              "Literal": { "UInt": "Usize" }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    "Mut"
+                                  ]
+                                }
+                              },
+                              "kind": "TwoPhaseMut",
+                              "ptr_metadata": null
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 5,
+                        "beg_col": 13,
+                        "end_line": 5,
+                        "end_col": 17
+                      },
+                      "kind": {
+                        "Call": {
+                          "func": {
+                            "Regular": {
+                              "kind": { "Fun": { "Regular": 2 } },
+                              "generics": null
+                            }
+                          },
+                          "args": [
+                            {
+                              "Move": {
+                                "local": 8,
+                                "projection": [],
+                                "ty": {
+                                  "Ref": [
+                                    0,
+                                    {
+                                      "Adt": {
+                                        "id": { "Adt": 0 },
+                                        "generics": {
+                                          "types": [
+                                            {
+                                              "Literal": { "UInt": "Usize" }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    "Mut"
+                                  ]
+                                }
+                              }
+                            }
+                          ],
+                          "dest": {
+                            "local": 7,
+                            "projection": [],
+                            "ty": {
+                              "Adt": {
+                                "id": { "Adt": 1 },
+                                "generics": {
+                                  "types": [
+                                    { "Literal": { "UInt": "Usize" } }
+                                  ]
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 5,
+                        "beg_col": 16,
+                        "end_line": 5,
+                        "end_col": 17
+                      },
+                      "kind": { "StorageDead": 8 }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 5,
+                        "beg_col": 13,
+                        "end_line": 5,
+                        "end_col": 17
+                      },
+                      "kind": {
+                        "Switch": {
+                          "Match": [
+                            {
+                              "local": 7,
+                              "projection": [],
+                              "ty": {
+                                "Adt": {
+                                  "id": { "Adt": 1 },
+                                  "generics": {
+                                    "types": [
+                                      { "Literal": { "UInt": "Usize" } }
+                                    ]
+                                  }
+                                }
+                              }
+                            },
+                            [
+                              [
+                                [ 0 ],
+                                {
+                                  "span": {
+                                    "file": "tests/src/iterators-scalar.rs",
+                                    "beg_line": 5,
+                                    "beg_col": 13,
+                                    "end_line": 5,
+                                    "end_col": 17
+                                  },
+                                  "statements": [
+                                    {
+                                      "span": {
+                                        "file": "tests/src/iterators-scalar.rs",
+                                        "beg_line": 5,
+                                        "beg_col": 13,
+                                        "end_line": 5,
+                                        "end_col": 17
+                                      },
+                                      "kind": { "Break": 0 }
+                                    }
+                                  ]
+                                }
+                              ],
+                              [
+                                [ 1 ],
+                                {
+                                  "span": {
+                                    "file": "tests/src/iterators-scalar.rs",
+                                    "beg_line": 5,
+                                    "beg_col": 13,
+                                    "end_line": 5,
+                                    "end_col": 17
+                                  },
+                                  "statements": []
+                                }
+                              ]
+                            ],
+                            null
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 5,
+                        "beg_col": 8,
+                        "end_line": 5,
+                        "end_col": 9
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 10,
+                            "projection": [],
+                            "ty": { "Literal": { "UInt": "Usize" } }
+                          },
+                          {
+                            "Use": {
+                              "Copy": {
+                                "local": 7,
+                                "projection": [
+                                  { "Field": [ { "Adt": [ 1, 1 ] }, 0 ] }
+                                ],
+                                "ty": {
+                                  "Adt": {
+                                    "id": { "Adt": 1 },
+                                    "generics": {
+                                      "types": [
+                                        { "Literal": { "UInt": "Usize" } }
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 6,
+                        "beg_col": 8,
+                        "end_line": 6,
+                        "end_col": 14
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 11,
+                            "projection": [],
+                            "ty": { "Literal": { "Int": "I32" } }
+                          },
+                          {
+                            "BinaryOp": [
+                              "AddPanic",
+                              {
+                                "Copy": {
+                                  "local": 2,
+                                  "projection": [],
+                                  "ty": { "Literal": { "Int": "I32" } }
+                                }
+                              },
+                              {
+                                "Const": {
+                                  "kind": {
+                                    "Literal": {
+                                      "Scalar": { "Signed": [ "I32", "1" ] }
+                                    }
+                                  },
+                                  "ty": { "Literal": { "Int": "I32" } }
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 6,
+                        "beg_col": 8,
+                        "end_line": 6,
+                        "end_col": 14
+                      },
+                      "kind": {
+                        "Assign": [
+                          {
+                            "local": 2,
+                            "projection": [],
+                            "ty": { "Literal": { "Int": "I32" } }
+                          },
+                          {
+                            "Use": {
+                              "Move": {
+                                "local": 11,
+                                "projection": [],
+                                "ty": { "Literal": { "Int": "I32" } }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 7,
+                        "beg_col": 4,
+                        "end_line": 7,
+                        "end_col": 5
+                      },
+                      "kind": { "StorageDead": 10 }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 7,
+                        "beg_col": 4,
+                        "end_line": 7,
+                        "end_col": 5
+                      },
+                      "kind": { "StorageDead": 9 }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 7,
+                        "beg_col": 4,
+                        "end_line": 7,
+                        "end_col": 5
+                      },
+                      "kind": { "StorageDead": 7 }
+                    },
+                    {
+                      "span": {
+                        "file": "tests/src/iterators-scalar.rs",
+                        "beg_line": 5,
+                        "beg_col": 4,
+                        "end_line": 7,
+                        "end_col": 5
+                      },
+                      "kind": { "Continue": 0 }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 5,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": {
+                "Assign": [
+                  {
+                    "local": 0,
+                    "projection": [],
+                    "ty": {
+                      "Adt": { "id": "Tuple", "generics": { "types": [] } }
+                    }
+                  },
+                  {
+                    "Aggregate": [
+                      {
+                        "Adt": [
+                          { "id": "Tuple", "generics": { "types": [] } },
+                          null,
+                          null
+                        ]
+                      },
+                      []
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 9 }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 7 }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 6 }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 7,
+                "beg_col": 4,
+                "end_line": 7,
+                "end_col": 5
+              },
+              "kind": { "StorageDead": 3 }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 8,
+                "beg_col": 0,
+                "end_line": 8,
+                "end_col": 1
+              },
+              "kind": { "StorageDead": 2 }
+            },
+            {
+              "span": {
+                "file": "tests/src/iterators-scalar.rs",
+                "beg_line": 8,
+                "beg_col": 1,
+                "end_line": 8,
+                "end_col": 1
+              },
+              "kind": "Return"
+            }
+          ]
+        },
+        "locals_types": [
+          { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "Int": "I32" } },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          { "Literal": { "UInt": "Usize" } },
+          {
+            "Adt": {
+              "id": { "Adt": 0 },
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": {
+                    "types": [ { "Literal": { "UInt": "Usize" } } ]
+                  }
+                }
+              },
+              "Mut"
+            ]
+          },
+          {
+            "Ref": [
+              0,
+              {
+                "Adt": {
+                  "id": { "Adt": 0 },
+                  "generics": {
+                    "types": [ { "Literal": { "UInt": "Usize" } } ]
+                  }
+                }
+              },
+              "Mut"
+            ]
+          },
+          { "Literal": { "UInt": "Usize" } },
+          { "Literal": { "Int": "I32" } }
+        ],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::iter::traits::collect::{core::iter::traits::collect::IntoIterator<Clause0_Item, I> for I}::into_iter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 322,
+            "beg_col": 4,
+            "end_line": 322,
+            "end_col": 27
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "I" }, { "name": "Clause0_Item" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::iter::traits::iterator::Iterator",
+                "type_param": 0
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}::next",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 856,
+            "beg_col": 4,
+            "end_line": 856,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": {
+                    "id": { "Adt": 0 },
+                    "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                  }
+                },
+                "Mut"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "A" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::iter::range::Step", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::iter::traits::iterator::Iterator::next",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "next",
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/iterator.rs",
+            "beg_line": 77,
+            "beg_col": 4,
+            "end_line": 77,
+            "end_col": 45
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "TypeVar": { "Free": 1 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "Clause0_Item" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::iter::traits::iterator::Iterator",
+                "type_param": 0
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 156,
+        "item_meta": {
+          "name": "core::iter::range::Step::steps_between",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 47,
+            "beg_col": 4,
+            "end_line": 47,
+            "end_col": 73
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  { "Literal": { "UInt": "Usize" } },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 1 },
+                      "generics": {
+                        "types": [ { "Literal": { "UInt": "Usize" } } ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::iter::range::Step", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 157,
+        "item_meta": {
+          "name": "core::iter::range::Step::forward_checked",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 65,
+            "beg_col": 4,
+            "end_line": 65,
+            "end_col": 66
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "TypeVar": { "Free": 0 } }, { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::iter::range::Step", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 160,
+        "item_meta": {
+          "name": "core::iter::range::Step::backward_checked",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 135,
+            "beg_col": 4,
+            "end_line": 135,
+            "end_col": 67
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "TypeVar": { "Free": 0 } }, { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::iter::range::Step", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 163,
+        "item_meta": {
+          "name": "core::iter::range::{core::iter::range::Step for usize}::steps_between",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 270,
+            "beg_col": 16,
+            "end_line": 270,
+            "end_col": 84
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": {
+              "id": "Tuple",
+              "generics": {
+                "types": [
+                  { "Literal": { "UInt": "Usize" } },
+                  {
+                    "Adt": {
+                      "id": { "Adt": 1 },
+                      "generics": {
+                        "types": [ { "Literal": { "UInt": "Usize" } } ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 164,
+        "item_meta": {
+          "name": "core::iter::range::{core::iter::range::Step for usize}::forward_checked",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 281,
+            "beg_col": 16,
+            "end_line": 281,
+            "end_col": 73
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "Usize" } },
+            { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 167,
+        "item_meta": {
+          "name": "core::iter::range::{core::iter::range::Step for usize}::backward_checked",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 289,
+            "beg_col": 16,
+            "end_line": 289,
+            "end_col": 74
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Literal": { "UInt": "Usize" } },
+            { "Literal": { "UInt": "Usize" } }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "Literal": { "UInt": "Usize" } } ] }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 170,
+        "item_meta": {
+          "name": "core::iter::traits::collect::IntoIterator::into_iter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "into_iter",
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 312,
+            "beg_col": 4,
+            "end_line": 312,
+            "end_col": 41
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": { "TypeVar": { "Free": 2 } },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "Clause0_Item" },
+              { "name": "Clause0_IntoIter" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::iter::traits::collect::IntoIterator",
+                "type_param": 0
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 171,
+        "item_meta": {
+          "name": "core::clone::Clone::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone_fn",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 236,
+            "beg_col": 4,
+            "end_line": 236,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::clone::Clone", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 173,
+        "item_meta": {
+          "name": "core::ops::function::FnMut::call_mut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 166,
+            "beg_col": 4,
+            "end_line": 166,
+            "end_col": 74
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+            { "TypeVar": { "Free": 1 } }
+          ],
+          "output": { "TypeVar": { "Free": 2 } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [
+              { "name": "Self" },
+              { "name": "Args" },
+              { "name": "Clause0_Clause0_Output" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::function::FnMut", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 174,
+        "item_meta": {
+          "name": "core::ops::function::FnOnce::call_once",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 250,
+            "beg_col": 4,
+            "end_line": 250,
+            "end_col": 70
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "TypeVar": { "Free": 0 } }, { "TypeVar": { "Free": 1 } }
+          ],
+          "output": { "TypeVar": { "Free": 2 } },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "Args" },
+              { "name": "Clause0_Output" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::function::FnOnce", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 175,
+        "item_meta": {
+          "name": "core::iter::traits::collect::FromIterator::from_iter",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "from_iter_fn",
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 152,
+            "beg_col": 4,
+            "end_line": 152,
+            "end_col": 61
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 2 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "A" },
+              { "name": "T" },
+              { "name": "Clause1_IntoIter" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::iter::traits::collect::FromIterator",
+                "type_param": 0
+              },
+              {
+                "trait": "core::iter::traits::collect::IntoIterator",
+                "type_param": 2
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 176,
+        "item_meta": {
+          "name": "core::ops::try_trait::Try::from_output",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "from_output",
+          "span": {
+            "file": "/rustc/library/core/src/ops/try_trait.rs",
+            "beg_line": 192,
+            "beg_col": 4,
+            "end_line": 192,
+            "end_col": 49
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 1 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "Clause0_Output" },
+              { "name": "Clause0_Residual" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::try_trait::Try", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 177,
+        "item_meta": {
+          "name": "core::ops::try_trait::Try::branch",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "branch",
+          "span": {
+            "file": "/rustc/library/core/src/ops/try_trait.rs",
+            "beg_line": 219,
+            "beg_col": 4,
+            "end_line": 219,
+            "end_col": 65
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 0 } } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 37 },
+              "generics": {
+                "types": [
+                  { "TypeVar": { "Free": 2 } }, { "TypeVar": { "Free": 1 } }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [],
+            "types": [
+              { "name": "Self" },
+              { "name": "Clause0_Output" },
+              { "name": "Clause0_Residual" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::ops::try_trait::Try", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 178,
+        "item_meta": {
+          "name": "core::iter::traits::collect::Extend::extend",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 416,
+            "beg_col": 4,
+            "end_line": 416,
+            "end_col": 61
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+            { "TypeVar": { "Free": 2 } }
+          ],
+          "output": { "Adt": { "id": "Tuple", "generics": { "types": [] } } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [
+              { "name": "Self" },
+              { "name": "A" },
+              { "name": "T" },
+              { "name": "Clause1_IntoIter" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::iter::traits::collect::Extend",
+                "type_param": 0
+              },
+              {
+                "trait": "core::iter::traits::collect::IntoIterator",
+                "type_param": 2
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 182,
+        "item_meta": {
+          "name": "core::default::Default::default",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "default_fn",
+          "span": {
+            "file": "/rustc/library/core/src/default.rs",
+            "beg_line": 139,
+            "beg_col": 4,
+            "end_line": 139,
+            "end_col": 25
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::default::Default", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 183,
+        "item_meta": {
+          "name": "core::iter::traits::double_ended::DoubleEndedIterator::next_back",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/double_ended.rs",
+            "beg_line": 94,
+            "beg_col": 4,
+            "end_line": 94,
+            "end_col": 50
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] } ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": { "types": [ { "TypeVar": { "Free": 1 } } ] }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [
+              { "name": "Self" }, { "name": "Clause0_Clause0_Item" }
+            ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::iter::traits::double_ended::DoubleEndedIterator",
+                "type_param": 0
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 191,
+        "item_meta": {
+          "name": "core::cmp::Ord::cmp",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "ord_cmp_method",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 991,
+            "beg_col": 4,
+            "end_line": 991,
+            "end_col": 44
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": { "id": { "Adt": 27 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::Ord", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 195,
+        "item_meta": {
+          "name": "core::iter::traits::accum::Sum::sum",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/accum.rs",
+            "beg_line": 21,
+            "beg_col": 4,
+            "end_line": 21,
+            "end_col": 51
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 2 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" }, { "name": "A" }, { "name": "I" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::iter::traits::accum::Sum", "type_param": 0 },
+              {
+                "trait": "core::iter::traits::iterator::Iterator",
+                "type_param": 2
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 196,
+        "item_meta": {
+          "name": "core::iter::traits::accum::Product::product",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/accum.rs",
+            "beg_line": 42,
+            "beg_col": 4,
+            "end_line": 42,
+            "end_col": 55
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 2 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" }, { "name": "A" }, { "name": "I" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::iter::traits::accum::Product",
+                "type_param": 0
+              },
+              {
+                "trait": "core::iter::traits::iterator::Iterator",
+                "type_param": 2
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 197,
+        "item_meta": {
+          "name": "core::cmp::PartialOrd::partial_cmp",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "cmp_partialord_cmp",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1387,
+            "beg_col": 4,
+            "end_line": 1387,
+            "end_col": 59
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 27 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::PartialOrd", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 206,
+        "item_meta": {
+          "name": "core::cmp::PartialEq::eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "cmp_partialeq_eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 256,
+            "beg_col": 4,
+            "end_line": 256,
+            "end_col": 38
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+            { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              { "trait": "core::cmp::PartialEq", "type_param": 0 }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 209,
+        "item_meta": {
+          "name": "core::clone::impls::{core::clone::Clone for usize}::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 614,
+            "beg_col": 20,
+            "end_line": 614,
+            "end_col": 43
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
+          ],
+          "output": { "Literal": { "UInt": "Usize" } },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 211,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialOrd<usize> for usize}::partial_cmp",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1991,
+            "beg_col": 16,
+            "end_line": 1991,
+            "end_col": 71
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
+          ],
+          "output": {
+            "Adt": {
+              "id": { "Adt": 1 },
+              "generics": {
+                "types": [
+                  {
+                    "Adt": {
+                      "id": { "Adt": 27 },
+                      "generics": { "types": [] }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 220,
+        "item_meta": {
+          "name": "core::ops::try_trait::FromResidual::from_residual",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "from_residual",
+          "span": {
+            "file": "/rustc/library/core/src/ops/try_trait.rs",
+            "beg_line": 333,
+            "beg_col": 4,
+            "end_line": 333,
+            "end_col": 42
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [ { "TypeVar": { "Free": 1 } } ],
+          "output": { "TypeVar": { "Free": 0 } },
+          "generics": {
+            "regions": [],
+            "types": [ { "name": "Self" }, { "name": "R" } ],
+            "const_generics": [],
+            "trait_clauses": [
+              {
+                "trait": "core::ops::try_trait::FromResidual",
+                "type_param": 0
+              }
+            ]
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 222,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<usize> for usize}::eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1870,
+            "beg_col": 16,
+            "end_line": 1870,
+            "end_col": 50
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] },
+            { "Ref": [ 0, { "Literal": { "UInt": "Usize" } }, "Shared" ] }
+          ],
+          "output": { "Literal": "Bool" },
+          "generics": {
+            "regions": [ { "name": "" }, { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      },
+      {
+        "id": 224,
+        "item_meta": {
+          "name": "core::num::niche_types::{core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}::clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/niche_types.rs",
+            "beg_line": 17,
+            "beg_col": 17,
+            "end_line": 17,
+            "end_col": 22
+          },
+          "extra": null
+        },
+        "signature": {
+          "inputs": [
+            {
+              "Ref": [
+                0,
+                {
+                  "Adt": { "id": { "Adt": 34 }, "generics": { "types": [] } }
+                },
+                "Shared"
+              ]
+            }
+          ],
+          "output": {
+            "Adt": { "id": { "Adt": 34 }, "generics": { "types": [] } }
+          },
+          "generics": {
+            "regions": [ { "name": "" } ],
+            "types": [],
+            "const_generics": [],
+            "trait_clauses": []
+          }
+        },
+        "body": null,
+        "locals_types": [],
+        "is_global_initializer": false,
+        "src": null
+      }
+    ],
+    "trait_decls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::iter::traits::iterator::Iterator",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "iterator",
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/iterator.rs",
+            "beg_line": 41,
+            "beg_col": 0,
+            "end_line": 41,
+            "end_col": 24
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Self_Item" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "next",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 1 } } ] }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "Clause0_Item" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::iter::traits::iterator::Iterator",
+                    "type_param": 0
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::iter::range::Step",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "range_step",
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 32,
+            "beg_col": 0,
+            "end_line": 32,
+            "end_col": 42
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "steps_between",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": {
+                "Adt": {
+                  "id": "Tuple",
+                  "generics": {
+                    "types": [
+                      { "Literal": { "UInt": "Usize" } },
+                      {
+                        "Adt": {
+                          "id": { "Adt": 1 },
+                          "generics": {
+                            "types": [ { "Literal": { "UInt": "Usize" } } ]
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::iter::range::Step", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          },
+          {
+            "name": "forward_checked",
+            "signature": {
+              "inputs": [
+                { "TypeVar": { "Free": 0 } },
+                { "Literal": { "UInt": "Usize" } }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::iter::range::Step", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          },
+          {
+            "name": "backward_checked",
+            "signature": {
+              "inputs": [
+                { "TypeVar": { "Free": 0 } },
+                { "Literal": { "UInt": "Usize" } }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+                }
+              },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::iter::range::Step", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::iter::traits::collect::IntoIterator",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "IntoIterator",
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 283,
+            "beg_col": 0,
+            "end_line": 283,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" },
+            { "name": "Self_Item" },
+            { "name": "Self_IntoIter" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "into_iter",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 0 } } ],
+              "output": { "TypeVar": { "Free": 2 } },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "Clause0_Item" },
+                  { "name": "Clause0_IntoIter" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::iter::traits::collect::IntoIterator",
+                    "type_param": 0
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::num::nonzero::ZeroablePrimitive",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/nonzero.rs",
+            "beg_line": 33,
+            "beg_col": 0,
+            "end_line": 33,
+            "end_col": 66
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Self_NonZeroInner" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::clone::Clone",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "clone",
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 194,
+            "beg_col": 0,
+            "end_line": 194,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "clone",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::clone::Clone", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::ops::function::FnMut",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "fn_mut",
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 163,
+            "beg_col": 0,
+            "end_line": 163,
+            "end_col": 48
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" },
+            { "name": "Args" },
+            { "name": "Self_Clause0_Output" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "call_mut",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+                { "TypeVar": { "Free": 1 } }
+              ],
+              "output": { "TypeVar": { "Free": 2 } },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "Args" },
+                  { "name": "Clause0_Clause0_Output" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::function::FnMut", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::ops::function::FnOnce",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "fn_once",
+          "span": {
+            "file": "/rustc/library/core/src/ops/function.rs",
+            "beg_line": 242,
+            "beg_col": 0,
+            "end_line": 242,
+            "end_col": 35
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" }, { "name": "Args" }, { "name": "Self_Output" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "call_once",
+            "signature": {
+              "inputs": [
+                { "TypeVar": { "Free": 0 } }, { "TypeVar": { "Free": 1 } }
+              ],
+              "output": { "TypeVar": { "Free": 2 } },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "Args" },
+                  { "name": "Clause0_Output" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::function::FnOnce", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::iter::traits::collect::FromIterator",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "FromIterator",
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 134,
+            "beg_col": 0,
+            "end_line": 134,
+            "end_col": 32
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "from_iter",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 2 } } ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "A" },
+                  { "name": "T" },
+                  { "name": "Clause1_IntoIter" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::iter::traits::collect::FromIterator",
+                    "type_param": 0
+                  },
+                  {
+                    "trait": "core::iter::traits::collect::IntoIterator",
+                    "type_param": 2
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "core::ops::try_trait::Try",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Try",
+          "span": {
+            "file": "/rustc/library/core/src/ops/try_trait.rs",
+            "beg_line": 133,
+            "beg_col": 0,
+            "end_line": 133,
+            "end_col": 41
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" },
+            { "name": "Self_Output" },
+            { "name": "Self_Residual" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "from_output",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 1 } } ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "Clause0_Output" },
+                  { "name": "Clause0_Residual" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::try_trait::Try", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          },
+          {
+            "name": "branch",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 0 } } ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 37 },
+                  "generics": {
+                    "types": [
+                      { "TypeVar": { "Free": 2 } },
+                      { "TypeVar": { "Free": 1 } }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "Clause0_Output" },
+                  { "name": "Clause0_Residual" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::ops::try_trait::Try", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "core::ops::try_trait::Residual",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/ops/try_trait.rs",
+            "beg_line": 364,
+            "beg_col": 0,
+            "end_line": 364,
+            "end_col": 34
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [
+            { "name": "Self" }, { "name": "O" }, { "name": "Self_TryType" }
+          ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 10,
+        "item_meta": {
+          "name": "core::iter::traits::collect::Extend",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 397,
+            "beg_col": 0,
+            "end_line": 397,
+            "end_col": 19
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "extend",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] },
+                { "TypeVar": { "Free": 2 } }
+              ],
+              "output": {
+                "Adt": { "id": "Tuple", "generics": { "types": [] } }
+              },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [
+                  { "name": "Self" },
+                  { "name": "A" },
+                  { "name": "T" },
+                  { "name": "Clause1_IntoIter" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::iter::traits::collect::Extend",
+                    "type_param": 0
+                  },
+                  {
+                    "trait": "core::iter::traits::collect::IntoIterator",
+                    "type_param": 2
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 11,
+        "item_meta": {
+          "name": "core::default::Default",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Default",
+          "span": {
+            "file": "/rustc/library/core/src/default.rs",
+            "beg_line": 107,
+            "beg_col": 0,
+            "end_line": 107,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "default",
+            "signature": {
+              "inputs": [],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::default::Default", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 12,
+        "item_meta": {
+          "name": "core::iter::traits::double_ended::DoubleEndedIterator",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "DoubleEndedIterator",
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/double_ended.rs",
+            "beg_line": 41,
+            "beg_col": 0,
+            "end_line": 41,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Self_Clause0_Item" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "next_back",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Mut" ] }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": { "types": [ { "TypeVar": { "Free": 1 } } ] }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" } ],
+                "types": [
+                  { "name": "Self" }, { "name": "Clause0_Clause0_Item" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::iter::traits::double_ended::DoubleEndedIterator",
+                    "type_param": 0
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 13,
+        "item_meta": {
+          "name": "core::iter::traits::exact_size::ExactSizeIterator",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/exact_size.rs",
+            "beg_line": 86,
+            "beg_col": 0,
+            "end_line": 86,
+            "end_col": 37
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Self_Clause0_Item" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 14,
+        "item_meta": {
+          "name": "core::cmp::Ord",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Ord",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 973,
+            "beg_col": 0,
+            "end_line": 973,
+            "end_col": 73
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "cmp",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] }
+              ],
+              "output": {
+                "Adt": { "id": { "Adt": 27 }, "generics": { "types": [] } }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::cmp::Ord", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 15,
+        "item_meta": {
+          "name": "core::marker::Copy",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "copy",
+          "span": {
+            "file": "/rustc/library/core/src/marker.rs",
+            "beg_line": 457,
+            "beg_col": 0,
+            "end_line": 457,
+            "end_col": 21
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 16,
+        "item_meta": {
+          "name": "core::iter::traits::accum::Sum",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/accum.rs",
+            "beg_line": 17,
+            "beg_col": 0,
+            "end_line": 17,
+            "end_col": 30
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "sum",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 2 } } ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" }, { "name": "A" }, { "name": "I" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::iter::traits::accum::Sum",
+                    "type_param": 0
+                  },
+                  {
+                    "trait": "core::iter::traits::iterator::Iterator",
+                    "type_param": 2
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 17,
+        "item_meta": {
+          "name": "core::iter::traits::accum::Product",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/accum.rs",
+            "beg_line": 38,
+            "beg_col": 0,
+            "end_line": 38,
+            "end_col": 34
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "product",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 2 } } ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [
+                  { "name": "Self" }, { "name": "A" }, { "name": "I" }
+                ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::iter::traits::accum::Product",
+                    "type_param": 0
+                  },
+                  {
+                    "trait": "core::iter::traits::iterator::Iterator",
+                    "type_param": 2
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 18,
+        "item_meta": {
+          "name": "core::cmp::PartialOrd",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "partial_ord",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1358,
+            "beg_col": 0,
+            "end_line": 1359,
+            "end_col": 41
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "partial_cmp",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+              ],
+              "output": {
+                "Adt": {
+                  "id": { "Adt": 1 },
+                  "generics": {
+                    "types": [
+                      {
+                        "Adt": {
+                          "id": { "Adt": 27 },
+                          "generics": { "types": [] }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::cmp::PartialOrd", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 19,
+        "item_meta": {
+          "name": "core::cmp::PartialEq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 251,
+            "beg_col": 0,
+            "end_line": 251,
+            "end_col": 65
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "eq",
+            "signature": {
+              "inputs": [
+                { "Ref": [ 0, { "TypeVar": { "Free": 0 } }, "Shared" ] },
+                { "Ref": [ 0, { "TypeVar": { "Free": 1 } }, "Shared" ] }
+              ],
+              "output": { "Literal": "Bool" },
+              "generics": {
+                "regions": [ { "name": "" }, { "name": "" } ],
+                "types": [ { "name": "Self" }, { "name": "Rhs" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  { "trait": "core::cmp::PartialEq", "type_param": 0 }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 20,
+        "item_meta": {
+          "name": "core::iter::adapters::zip::TrustedRandomAccessNoCoerce",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/adapters/zip.rs",
+            "beg_line": 585,
+            "beg_col": 0,
+            "end_line": 585,
+            "end_col": 51
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 21,
+        "item_meta": {
+          "name": "core::num::nonzero::private::Sealed",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/nonzero.rs",
+            "beg_line": 46,
+            "beg_col": 12,
+            "end_line": 46,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 22,
+        "item_meta": {
+          "name": "core::ops::try_trait::FromResidual",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "FromResidual",
+          "span": {
+            "file": "/rustc/library/core/src/ops/try_trait.rs",
+            "beg_line": 310,
+            "beg_col": 0,
+            "end_line": 310,
+            "end_col": 57
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" }, { "name": "R" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          {
+            "name": "from_residual",
+            "signature": {
+              "inputs": [ { "TypeVar": { "Free": 1 } } ],
+              "output": { "TypeVar": { "Free": 0 } },
+              "generics": {
+                "regions": [],
+                "types": [ { "name": "Self" }, { "name": "R" } ],
+                "const_generics": [],
+                "trait_clauses": [
+                  {
+                    "trait": "core::ops::try_trait::FromResidual",
+                    "type_param": 0
+                  }
+                ]
+              }
+            },
+            "has_default": false,
+            "default_fn_id": null
+          }
+        ],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      },
+      {
+        "id": 23,
+        "item_meta": {
+          "name": "core::cmp::Eq",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": "Eq",
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 338,
+            "beg_col": 0,
+            "end_line": 338,
+            "end_col": 58
+          },
+          "extra": null
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "Self" } ],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "types": [],
+        "consts": [],
+        "implied_clauses": [],
+        "vtable": null
+      }
+    ],
+    "trait_impls": [
+      {
+        "id": 0,
+        "item_meta": {
+          "name": "core::iter::traits::collect::{core::iter::traits::collect::IntoIterator<Clause0_Item, I> for I}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/traits/collect.rs",
+            "beg_line": 317,
+            "beg_col": 0,
+            "end_line": 317,
+            "end_col": 50
+          },
+          "extra": null
+        },
+        "trait_decl_id": 2,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "TypeVar": { "Free": 0 } },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "I" }, { "name": "Clause0_Item" } ],
+          "const_generics": [],
+          "trait_clauses": [
+            {
+              "trait": "core::iter::traits::iterator::Iterator",
+              "type_param": 0
+            }
+          ]
+        },
+        "methods": [ { "name": "into_iter", "fn_id": 1 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 1,
+        "item_meta": {
+          "name": "core::iter::range::{core::iter::traits::iterator::Iterator<A> for core::ops::range::Range<A>}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 852,
+            "beg_col": 0,
+            "end_line": 852,
+            "end_col": 40
+          },
+          "extra": null
+        },
+        "trait_decl_id": 0,
+        "impl_trait": null,
+        "self_type_decl_id": 0,
+        "self_type": {
+          "Adt": {
+            "id": { "Adt": 0 },
+            "generics": { "types": [ { "TypeVar": { "Free": 0 } } ] }
+          }
+        },
+        "generics": {
+          "regions": [],
+          "types": [ { "name": "A" } ],
+          "const_generics": [],
+          "trait_clauses": [
+            { "trait": "core::iter::range::Step", "type_param": 0 }
+          ]
+        },
+        "methods": [ { "name": "next", "fn_id": 2 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 2,
+        "item_meta": {
+          "name": "core::iter::range::{core::iter::range::Step for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/iter/range.rs",
+            "beg_line": 265,
+            "beg_col": 12,
+            "end_line": 265,
+            "end_col": 37
+          },
+          "extra": null
+        },
+        "trait_decl_id": 1,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [
+          { "name": "steps_between", "fn_id": 163 },
+          { "name": "forward_checked", "fn_id": 164 },
+          { "name": "backward_checked", "fn_id": 167 }
+        ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 3,
+        "item_meta": {
+          "name": "core::num::nonzero::{core::num::nonzero::ZeroablePrimitive<core::num::niche_types::NonZeroUsizeInner> for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/nonzero.rs",
+            "beg_line": 62,
+            "beg_col": 12,
+            "end_line": 62,
+            "end_col": 56
+          },
+          "extra": null
+        },
+        "trait_decl_id": 3,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 4,
+        "item_meta": {
+          "name": "core::clone::impls::{core::clone::Clone for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/clone.rs",
+            "beg_line": 612,
+            "beg_col": 16,
+            "end_line": 612,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "trait_decl_id": 4,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "clone", "fn_id": 209 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 5,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialOrd<usize> for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1989,
+            "beg_col": 12,
+            "end_line": 1989,
+            "end_col": 40
+          },
+          "extra": null
+        },
+        "trait_decl_id": 18,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "partial_cmp", "fn_id": 211 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 6,
+        "item_meta": {
+          "name": "core::marker::{core::marker::Copy for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/marker.rs",
+            "beg_line": 60,
+            "beg_col": 25,
+            "end_line": 60,
+            "end_col": 62
+          },
+          "extra": null
+        },
+        "trait_decl_id": 15,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 7,
+        "item_meta": {
+          "name": "core::num::nonzero::{core::num::nonzero::private::Sealed for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/nonzero.rs",
+            "beg_line": 55,
+            "beg_col": 12,
+            "end_line": 55,
+            "end_col": 47
+          },
+          "extra": null
+        },
+        "trait_decl_id": 21,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 8,
+        "item_meta": {
+          "name": "core::num::niche_types::{core::marker::Copy for core::num::niche_types::NonZeroUsizeInner}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/niche_types.rs",
+            "beg_line": 17,
+            "beg_col": 24,
+            "end_line": 17,
+            "end_col": 28
+          },
+          "extra": null
+        },
+        "trait_decl_id": 15,
+        "impl_trait": null,
+        "self_type_decl_id": 34,
+        "self_type": {
+          "Adt": { "id": { "Adt": 34 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 9,
+        "item_meta": {
+          "name": "core::cmp::impls::{core::cmp::PartialEq<usize> for usize}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/cmp.rs",
+            "beg_line": 1868,
+            "beg_col": 12,
+            "end_line": 1868,
+            "end_col": 39
+          },
+          "extra": null
+        },
+        "trait_decl_id": 19,
+        "impl_trait": null,
+        "self_type_decl_id": null,
+        "self_type": { "Literal": { "UInt": "Usize" } },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "eq", "fn_id": 222 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      },
+      {
+        "id": 10,
+        "item_meta": {
+          "name": "core::num::niche_types::{core::clone::Clone for core::num::niche_types::NonZeroUsizeInner}",
+          "attr_info": null,
+          "source_text": null,
+          "lang_item": null,
+          "span": {
+            "file": "/rustc/library/core/src/num/niche_types.rs",
+            "beg_line": 17,
+            "beg_col": 17,
+            "end_line": 17,
+            "end_col": 22
+          },
+          "extra": null
+        },
+        "trait_decl_id": 4,
+        "impl_trait": null,
+        "self_type_decl_id": 34,
+        "self_type": {
+          "Adt": { "id": { "Adt": 34 }, "generics": { "types": [] } }
+        },
+        "generics": {
+          "regions": [],
+          "types": [],
+          "const_generics": [],
+          "trait_clauses": []
+        },
+        "methods": [ { "name": "clone", "fn_id": 224 } ],
+        "consts": [],
+        "types": [],
+        "implied_trait_refs": null,
+        "vtable": null
+      }
+    ],
+    "global_decls": null,
+    "charon_version": "",
+    "extra": null
+  }
+}
