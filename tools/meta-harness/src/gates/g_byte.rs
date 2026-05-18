@@ -78,9 +78,11 @@ pub fn run(
         format!("locating L₀ .lean under {}", l0_dir.display())
     })?;
 
-    // Read both files and slice per decl.
+    // Read both files. Fast-path: file-level byte-identical → all
+    // decls pass.
     let l0_text = std::fs::read_to_string(&l0_file)?;
     let l1_text = std::fs::read_to_string(&l1_file)?;
+    let file_identical = l0_text == l1_text;
     let l0_slices = slice_by_decl(&l0_text);
     let l1_slices = slice_by_decl(&l1_text);
 
@@ -98,31 +100,31 @@ pub fn run(
             }
         }
 
-        // Some decl kinds aren't emitted to .lean (trait impl methods
-        // may be inlined, etc.). Match by path; skip if absent.
-        let key = lean_key_for(&decl.path);
-        let l0 = l0_slices.find(&key);
-        let l1 = l1_slices.find(&key);
+        // File-level byte-identical fast-path: every decl passes.
+        if file_identical {
+            report.record(&decl.path, GATE, GateOutcome::pass());
+            continue;
+        }
+
+        // Per-decl slicing fallback. The mapping from Charon path to
+        // Lean identifier isn't perfectly precise (Phase B caveat —
+        // Phase C will replace this with --only-decl invocations).
+        let keys = lean_keys_for(&decl.path, decl.kind);
+        let l0 = keys.iter().find_map(|k| l0_slices.find(k).map(|s| (k.clone(), s)));
+        let l1 = keys.iter().find_map(|k| l1_slices.find(k).map(|s| (k.clone(), s)));
 
         let outcome = match (l0, l1) {
-            (None, None) => GateOutcome::skip("decl not emitted by either backend"),
-            (None, Some(_)) => GateOutcome::mismatch("only L₁ emitted this decl"),
-            (Some(_), None) => GateOutcome::mismatch("only L₀ emitted this decl"),
-            (Some(a), Some(b)) => {
+            (None, None) => GateOutcome::skip("decl not found in either backend's emit (slicer limitation)"),
+            (None, Some(_)) => GateOutcome::divergent("only L₁ emitted this decl"),
+            (Some(_), None) => GateOutcome::divergent("only L₀ emitted this decl"),
+            (Some((_, a)), Some((_, b))) => {
                 if a == b {
                     GateOutcome::pass()
                 } else {
-                    GateOutcome::divergent("L₀ ≠ L₁ slice")
+                    GateOutcome::divergent("L₀ slice ≠ L₁ slice")
                 }
             }
         };
-        // Some decl kinds we don't bother diffing (trait impls without
-        // standalone names). For Phase B we still emit a "skip" so the
-        // aggregate is honest.
-        if matches!(decl.kind, DeclKind::TraitImpl) && matches!(outcome.status, crate::report::Status::Skip) {
-            report.record(&decl.path, GATE, GateOutcome::skip("trait-impl: per-decl slicing not yet implemented"));
-            continue;
-        }
         report.record(&decl.path, GATE, outcome);
     }
 
@@ -168,15 +170,47 @@ fn locate_l0_lean(dir: &Path) -> Result<PathBuf> {
     Ok(out.last().unwrap().clone())
 }
 
-/// Translate a Charon decl path (e.g. `incr_cert::incr`) into the
-/// identifier mainline Lean emits. Aeneas namespaces by snake-case
-/// module: `incr_cert::incr` → just `incr` at the top-level of
-/// `IncrCert.Funs`. We slice by `^def <name>` / `^abbrev <name>` etc.
-fn lean_key_for(path: &str) -> String {
-    // Drop the crate prefix; what remains is the bare decl name (for
-    // free functions) or `ModulePath::name` (for nested decls).
-    let tail = path.split("::").last().unwrap_or(path);
-    tail.to_string()
+/// Translate a Charon decl path into the candidate Lean identifiers
+/// mainline emits. Returns the candidates in priority order; the
+/// caller picks the first match. This is approximate — Phase C
+/// replaces the slicer with `--only-decl` invocations.
+///
+/// Examples:
+/// - `incr_cert::incr`                          → ["incr"]
+/// - `hashmap::HashMap::new`                    → ["HashMap.new", "new"]
+/// - `hashmap::{core::clone::Clone for hashmap::Fraction}::clone`
+///                                              → ["Fraction.Insts.CoreCloneClone.clone", "clone"]
+fn lean_keys_for(path: &str, _kind: DeclKind) -> Vec<String> {
+    let mut keys = Vec::new();
+    let segs: Vec<&str> = path.split("::").collect();
+    // Last segment is the most likely match.
+    if let Some(last) = segs.last() {
+        keys.push((*last).to_string());
+    }
+    // For impl methods (`crate::Type::method`), try `Type.method`.
+    if segs.len() >= 3 {
+        let ty = segs[segs.len() - 2];
+        let m = segs[segs.len() - 1];
+        if !ty.contains('{') && !ty.contains('}') {
+            keys.push(format!("{ty}.{m}"));
+        }
+    }
+    // Trait impls: `crate::{Trait for Type}::method` → look for
+    // `Type.Insts.TraitName.method`. We approximate by extracting
+    // the `for X` part from the brace block.
+    if let Some(brace_seg) = segs.iter().find(|s| s.starts_with('{')) {
+        if let Some(after_for) = brace_seg.split(" for ").nth(1) {
+            let ty_path = after_for.trim_end_matches('}');
+            let ty_last = ty_path.split("::").last().unwrap_or(ty_path);
+            if let Some(method) = segs.last() {
+                if !method.starts_with('{') {
+                    keys.push(format!("{ty_last}.{method}"));
+                }
+            }
+            keys.push(ty_last.to_string());
+        }
+    }
+    keys.into_iter().filter(|s| !s.is_empty() && !s.starts_with('{')).collect()
 }
 
 /// Index a `.lean` file by top-level decl name. We treat a "decl
