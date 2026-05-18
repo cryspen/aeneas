@@ -61,7 +61,17 @@ struct Cli {
     aeneas_check: Option<PathBuf>,
 }
 
-fn main() -> Result<()> {
+fn main() {
+    match run() {
+        Ok(code) => std::process::exit(code),
+        Err(e) => {
+            eprintln!("[meta-harness] structural error: {e:#}");
+            std::process::exit(2);
+        }
+    }
+}
+
+fn run() -> Result<i32> {
     let cli = Cli::parse();
     let cert_path = resolve_cert_input(&cli)?;
     let cert = Cert::load(&cert_path)
@@ -73,7 +83,15 @@ fn main() -> Result<()> {
 
     let mut report = Report::new(&cert);
 
-    let active_gates = cli.gates.clone().unwrap_or_else(default_gates);
+    let mut active_gates = cli.gates.clone().unwrap_or_else(default_gates);
+    // Manifest toggle: a gate marked `"skip"` in `[gates]` is dropped.
+    active_gates.retain(|g| match g.as_str() {
+        "g_byte" => manifest.gates.g_byte.as_deref() != Some("skip"),
+        "g_rust" => manifest.gates.g_rust.as_deref() != Some("skip"),
+        "g_lean" => manifest.gates.g_lean.as_deref() != Some("skip"),
+        "g_rfl" => manifest.gates.g_rfl.as_deref() != Some("skip"),
+        _ => true,
+    });
     eprintln!("[meta-harness] decls: {}  gates: {}", cert.decls.len(), active_gates.join(","));
 
     for gate in &active_gates {
@@ -112,7 +130,7 @@ fn main() -> Result<()> {
         cli.report_md.display()
     );
 
-    std::process::exit(report.exit_code());
+    Ok(report.exit_code())
 }
 
 fn default_gates() -> Vec<String> {

@@ -1,0 +1,33 @@
+# Example meta-harness manifest. Place this file at the root of a
+# Cargo crate to ratchet up the harness's gate behaviour. All fields
+# are optional; an empty file is valid.
+
+# --- Gate toggles ----------------------------------------------------
+# `skip` disables the gate entirely for this crate. `auto` (the
+# default) lets the harness run it.
+[gates]
+g_byte = "auto"
+g_rust = "auto"
+# g_lean and g_rfl are not yet implemented — leave as `auto`.
+
+# --- Per-decl overrides ---------------------------------------------
+# Path syntax matches Charon's name resolution (the same string the
+# cert's `item_meta.name` field carries).
+
+# Example: a decl whose API the emit reshapes incompatibly (e.g.
+# `fn(x: &mut u32) -> ()` becomes `fn(x: u32) -> u32`). The G_rust
+# gate skips it; G_byte still runs.
+[decls."mycrate::reshapes_api"]
+g_rust = { skip = "api_reshape (signature change)" }
+
+# Example: a fixture whose L₀ ≠ L₁ output is known and harmless
+# (e.g. whitespace or banner differences). Suppresses the
+# mismatch → divergent reclassification.
+[decls."mycrate::known_divergent_fn"]
+g_byte = { divergent = "whitespace + banner only" }
+
+# Future: per-decl test-vector specs for the swap-based G_rust path.
+# Currently unused — the source-tests-as-oracle workflow takes the
+# crate's own `cargo test` as the input source.
+# [decls."mycrate::needs_vectors"]
+# g_rust = { vectors = "vectors/needs_vectors.json" }
