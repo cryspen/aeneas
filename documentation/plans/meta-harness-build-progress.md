@@ -86,6 +86,49 @@ aeneas-check** so that future work can replace the slicer with
 single-decl invocations; the OCaml mainline side is still required
 for an apples-to-apples L₀ comparison and is deferred.
 
+## Multi-fixture validation (post-Phase F)
+
+After the PoC commit, the harness was swept across every fixture
+covered by a proptest in
+`tests/lean-checker/differential/tests/diff.rs` (12 fixtures, 198
+decls). All exit-0; **zero `mismatch` outcomes** anywhere.
+
+| Fixture            | decls | g_byte pass/div/skip | g_rust pass/skip |
+|--------------------|------:|---------------------:|-----------------:|
+| `incr_cert`        |     2 |     2 /  0 /  0      |    1 /  1        |
+| `constants`        |    32 |     0 / 29 /  3      |    3 / 29        |
+| `bitwise`          |     5 |     3 /  2 /  0      |    5 /  0        |
+| `compare_simple`   |     4 |     2 /  1 /  1      |    2 /  2        |
+| `calls`            |     6 |     1 /  4 /  1      |    2 /  4        |
+| `aggregates_basic` |     3 |     2 /  1 /  0      |    2 /  1        |
+| `reborrows`        |     4 |     3 /  1 /  0      |    1 /  3        |
+| `scalars`          |    39 |     4 / 19 / 16      |   13 / 26        |
+| `demo`             |    20 |     3 / 13 /  4      |    4 / 16        |
+| `enums_basic`      |     2 |     2 /  0 /  0      |    1 /  1        |
+| `enums_payload`    |     4 |     3 /  1 /  0      |    3 /  1        |
+| `no_nested_borrows`|    77 |    12 / 63 /  2      |    5 / 72        |
+
+Total: 12 fixtures, 198 decls, **42 g_rust passes** matching the 42
+distinct decls covered by the differential crate's 44 proptests (two
+tests are variants — `_small` / `_top` — of the same decl).
+
+### Bug found and fixed during the sweep
+
+The initial `g_rust` stem heuristic over-matched: `demo::Counter::incr`
+and `demo::{demo::Counter for usize}::incr` both claimed
+`demo_incr_matches_model` even though the test actually covers
+`demo::incr`. Root cause: the short-stem fallback (e.g. `incr`)
+matched too aggressively when multiple decls shared a last-segment
+name.
+
+Fix: longest-stem-wins assignment. For each test, the harness now
+picks the decl whose matching stem is longest (with first-decl-in-cert
+as the deterministic tiebreak). Locked in by unit tests
+`brace_stripped_decl_collides_with_inherent` and
+`short_stem_does_not_over_prefix` in `gates/g_rust.rs`.
+
+Demo went from 7 (3 false-positive) → 4 (correct) g_rust passes.
+
 ## What's deferred (scope cuts)
 
 - **OCaml mainline `--only-decl`.** Phase C ships only the Lean side

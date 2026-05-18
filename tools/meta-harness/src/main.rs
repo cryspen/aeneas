@@ -142,10 +142,17 @@ fn resolve_cert_input(cli: &Cli) -> Result<PathBuf> {
         return Ok(p.clone());
     }
     if cli.llbc.is_some() {
-        bail!("--llbc not yet implemented (Phase A scope is --cert)");
+        bail!(
+            "--llbc is not yet wired in. Run `aeneas -emit-cert <llbc>` to \
+             produce a `.cert.json`, then pass it with `--cert`."
+        );
     }
     if cli.krate.is_some() {
-        bail!("--crate not yet implemented (Phase A scope is --cert)");
+        bail!(
+            "--crate is not yet wired in (would drive `charon rustc \
+             --preset=aeneas` + `aeneas -emit-cert`). For now, build the \
+             cert manually and pass it with `--cert`."
+        );
     }
     bail!("one of --crate, --llbc, --cert is required")
 }

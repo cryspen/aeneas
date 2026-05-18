@@ -77,7 +77,34 @@ pub fn run(
         return Ok(());
     }
 
-    for decl in &cert.decls {
+    // Longest-stem-wins assignment. For each test, find the decl
+    // whose matching stem is longest; that decl claims the test.
+    // Decls with no claim → skip(no_test_coverage). This prevents
+    // the short-stem fallback (e.g. `incr`) from over-matching
+    // `demo::Counter::incr` to `demo_incr_matches_model` when
+    // `demo::incr` already has a longer stem match.
+    let mut claims: std::collections::HashMap<usize, Vec<&TestResult>> =
+        std::collections::HashMap::new();
+    let decl_stems: Vec<Vec<String>> = cert.decls.iter().map(|d| test_stems_for_decl(&d.path)).collect();
+    for tr in &test_results {
+        let mut best: Option<(usize, usize)> = None; // (decl_idx, stem_len)
+        for (i, stems) in decl_stems.iter().enumerate() {
+            for s in stems {
+                if test_matches_stem(&tr.name, s) {
+                    let len = s.len();
+                    if best.map(|(_, l)| len > l).unwrap_or(true) {
+                        best = Some((i, len));
+                    }
+                    break; // first matching stem for this decl wins; only its length matters
+                }
+            }
+        }
+        if let Some((i, _)) = best {
+            claims.entry(i).or_default().push(tr);
+        }
+    }
+
+    for (i, decl) in cert.decls.iter().enumerate() {
         // Manifest override.
         if let Some(o) = manifest.decls.get(&decl.path) {
             if let Some(v) = &o.g_rust {
@@ -91,12 +118,7 @@ pub fn run(
             }
         }
 
-        let stems = test_stems_for_decl(&decl.path);
-        let matched: Vec<&TestResult> = test_results
-            .iter()
-            .filter(|t| stems.iter().any(|s| test_matches_stem(&t.name, s)))
-            .collect();
-
+        let matched = claims.get(&i).cloned().unwrap_or_default();
         let outcome = if matched.is_empty() {
             GateOutcome::skip("no_test_coverage")
         } else if matched.iter().any(|t| !t.ok) {
@@ -248,5 +270,35 @@ mod tests {
         assert!(test_matches_stem("incr_matches_model", "incr"));
         assert!(test_matches_stem("constants_incr_matches_model", "constants_incr"));
         assert!(!test_matches_stem("incremental_matches_model", "incr"));
+    }
+
+    /// Trait-impl methods get brace-stripped down to the same shape as
+    /// the inherent method: `demo::{demo::Counter for usize}::incr` →
+    /// stems `["demo_incr", "incr"]`, identical to `demo::incr`'s
+    /// stems. Both compete for the test `demo_incr_matches_model`; the
+    /// harness must pick exactly one (longest-stem-wins, then first
+    /// decl in cert order) — not silently assign the same test to
+    /// both, which would over-count `pass`es.
+    #[test]
+    fn brace_stripped_decl_collides_with_inherent() {
+        let inherent = test_stems_for_decl("demo::incr");
+        let impl_method = test_stems_for_decl("demo::{demo::Counter for usize}::incr");
+        // Both produce a "demo_incr" stem that matches.
+        assert!(inherent.contains(&"demo_incr".to_string()));
+        assert!(impl_method.contains(&"demo_incr".to_string()));
+        assert!(test_matches_stem("demo_incr_matches_model", "demo_incr"));
+    }
+
+    /// `incr` is too short to match `demo_incr_matches_model` on its
+    /// own — prefix matching requires the stem to be followed by `_`
+    /// or end-of-string. That's why `demo::Counter::incr` (whose
+    /// stems are `["demo_Counter_incr", "Counter_incr", "incr"]`)
+    /// doesn't grab the `demo_incr_matches_model` test.
+    #[test]
+    fn short_stem_does_not_over_prefix() {
+        // None of `demo::Counter::incr`'s stems start the test name.
+        let stems = test_stems_for_decl("demo::Counter::incr");
+        let any_match = stems.iter().any(|s| test_matches_stem("demo_incr_matches_model", s));
+        assert!(!any_match);
     }
 }
