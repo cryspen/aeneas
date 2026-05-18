@@ -230,15 +230,23 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       lifetime is owned by the named region abstraction; the
       surface `p.local_` is *not* replaced by a loan token.
 
-      Premises (baseline):
-      * `Ω.abs absId = some r` — the named abs is open.
-      * `ℓ`, `σ` fresh.
+      Premises (baseline): `ℓ`, `σ` fresh.
+
+      M10.x.5 dropped the `Ω.abs absId = some r` existential
+      premise — the bound `r` was never used in the post-state
+      (vestigial-existential pattern, same shape as M10.x.4's
+      drop of `Ω.resolvePlace p = some v` from `.direct` /
+      `.loopOwned` / `.sharedBorrow`). Pre-flight scan of the
+      `tests/llbc/*.cert.json` corpus found 112/783 fixtures
+      where the OCaml emitter references `inAbsReborrow.absId`
+      for an ambient function-input abstraction whose
+      installation is not event-recorded — keeping the premise
+      would have falsified `CertGen_faithful` on those certs.
 
       Deferred to Phase C: the parent loan being live in the
       named abs, and place-deref-chain consistency. -/
   | mutBorrow_inAbsReborrow {Ω : LLBCState} {ℓ : LoanId} {p : Place}
-      {σ : SymValId} {absId : AbsId} {r : RegionAbs} :
-      Ω.abs absId = some r →
+      {σ : SymValId} {absId : AbsId} :
       Ω.loanIdFresh ℓ →
       Ω.symValIdFresh σ →
       LStep Ω (.mutBorrow ℓ p σ (.inAbsReborrow absId))

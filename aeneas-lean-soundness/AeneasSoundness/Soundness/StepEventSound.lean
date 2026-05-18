@@ -23,14 +23,14 @@ each lemma's Phase-D-dischargeable hypotheses via the
 `#print axioms stepEvent_sound` reports:
 
 * `propext`, `Quot.sound`, `Classical.choice` (Lean core).
-* `CertGen_faithful.{move, copy, sharedBorrow, mutBorrow_direct,
-  mutBorrow_inAbsReborrow, mutBorrow_loopOwned, reborrow, call,
-  endAbs, symExpandMutBorrow, loopInv, endBorrow_takeOk,
-  endBorrow_direct_witness, endBorrow_reborrow_witness,
-  endBorrow_shared_witness, join}` — the OCaml-side honesty axioms,
-  one extractor per Phase-C per-event lemma's Phase-D-dischargeable
-  premise set. Plan §0.3 + `CertGen.lean`'s header note are the
-  audit surface.
+* `CertGen_faithful.{endAbs, symExpandMutBorrow, loopInv,
+  endBorrow_direct_witness, join}` — the remaining OCaml-side honesty
+  axioms after M10.x.5. Plan §0.3 + `CertGen.lean`'s header note are
+  the audit surface. (Earlier-dropped extractors: `move` / `copy` in
+  M10.x.3; `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned`
+  / `reborrow` in M10.x.4; `mutBorrow_inAbsReborrow` in M10.x.5;
+  `call` / `endBorrow_takeOk` / `endBorrow_reborrow_witness` /
+  `endBorrow_shared_witness` in M10.4a-post.)
 
 No `sorryAx`. No domain `axiom` from `LLBCSharpPaper/`. The four
 `paper_thm_*` axioms (Phase G placeholders) are not consumed by
@@ -425,49 +425,47 @@ theorem stepMutBorrow_direct_sound
 /-- C9 / M10.2i — `EvMutBorrow { kind_hint = MbkInAbsReborrow abs }`
     triggers `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8) on the named
     abs. The replayer records a `.reborrow`-kind loan but leaves `env`
-    untouched, so this discharge only needs `concretise_addLoan`. The
-    `hAbsExists` hypothesis is the Phase-D-dischargeable replacement
-    for the `Ω.abs absId = some r` premise. -/
+    untouched, so this discharge only needs `concretise_addLoan`.
+    M10.x.5 dropped both Phase-D hypotheses: the `∃ r, st.absRegistry[absId]?
+    = some r` premise was vestigial in the paper rule (the bound `r`
+    never appeared in the post-state); the `st.loanIdHwm ≤ loan` clause
+    is discharged from `hStep` via M10.x.2's monotone-allocator reject
+    path. -/
 theorem stepMutBorrow_inAbsReborrow_sound
   (hRep : concretise st = Ω)
-  (loan : Nat) (place : Place) (symval : Nat) (absId : Nat)
-  (hAbsExists : ∃ r, st.absRegistry[absId]? = some r)
-  (hLoanFresh : st.loanIdHwm ≤ loan) :
+  (loan : Nat) (place : Place) (symval : Nat) (absId : Nat) :
   stepEvent st
     (.mutBorrow loan place symval (.inAbsReborrow absId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.inAbsReborrow absId)) Ω ∧
         LStep Ω (.mutBorrow loan place symval (.inAbsReborrow absId)) Ω' ∧
         concretise st' = Ω' := by
-  obtain ⟨r, hr⟩ := hAbsExists
   intro h
   simp only [stepEvent, AeneasCheck.LLBCSharp.stepMutBorrow,
     AeneasCheck.LLBCSharp.placeRootLocal] at h
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
-    -- M10.x.2: HWM monotone-allocator strengthening; discharged by `hLoanFresh`.
-    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
-    rw [if_neg hHwm] at h
-    by_cases hB : place.local_ ≥ st.numLocals
-    · rw [if_pos hB] at h; cases h
-    · rw [if_neg hB] at h
-      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
-      subst h
-      have hAbsLifted : Ω.abs absId = some (LLBCSharpPaper.liftAbsShape r) := by
-        subst hRep
-        simp [Concretise.concretise, Concretise.liftAbsRegistry, hr]
-      have hLoanIdFresh : Ω.loanIdFresh loan := by
-        subst hRep
-        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
-      have hSymValIdFresh : Ω.symValIdFresh symval := by
-        subst hRep
-        simp [LLBCState.symValIdFresh, Concretise.concretise]
-      refine ⟨(Ω.bumpLoanId loan).bumpSymValId symval,
-              ⟨⟨_, hAbsLifted⟩, hLoanIdFresh, hSymValIdFresh⟩,
-              LStep.mutBorrow_inAbsReborrow hAbsLifted hLoanIdFresh hSymValIdFresh, ?_⟩
-      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
-        LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan, hRep]
+    by_cases hHwm : st.loanIdHwm > loan
+    · rw [if_pos hHwm] at h; cases h
+    · rw [if_neg hHwm] at h
+      by_cases hB : place.local_ ≥ st.numLocals
+      · rw [if_pos hB] at h; cases h
+      · rw [if_neg hB] at h
+        simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+        subst h
+        have hLoanFresh : st.loanIdHwm ≤ loan := Nat.not_lt.mp hHwm
+        have hLoanIdFresh : Ω.loanIdFresh loan := by
+          subst hRep
+          simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+        have hSymValIdFresh : Ω.symValIdFresh symval := by
+          subst hRep
+          simp [LLBCState.symValIdFresh, Concretise.concretise]
+        refine ⟨(Ω.bumpLoanId loan).bumpSymValId symval,
+                ⟨hLoanIdFresh, hSymValIdFresh⟩,
+                LStep.mutBorrow_inAbsReborrow hLoanIdFresh hSymValIdFresh, ?_⟩
+        simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+          LLBCState.bumpSymValId,
+          Concretise.concretise_addLoan, hRep]
 
 /-- C10 / M10.2j — `EvMutBorrow { kind_hint = MbkLoopOwned loop }`
     triggers the loop-fixpoint borrow rule (paper §5.2). Same shape
@@ -1040,10 +1038,11 @@ theorem stepEvent_sound :
       -- post-state directly from `hStep`.
       exact stepMutBorrow_direct_sound st st' Ω hRep loan place symval hStep
     | inAbsReborrow absId =>
-      obtain ⟨hAbsExists, hLoanFresh⟩ :=
-        CertGen_faithful.mutBorrow_inAbsReborrow st st' loan place symval absId hStep
-      exact stepMutBorrow_inAbsReborrow_sound st st' Ω hRep loan place symval absId
-        hAbsExists hLoanFresh hStep
+      -- M10.x.5: `CertGen_faithful.mutBorrow_inAbsReborrow` retired.
+      -- The `∃ r, Ω.abs absId = some r` premise was vestigial in the
+      -- paper rule; the HWM clause is replayer-discharged via
+      -- M10.x.2's `stepMutBorrow` monotone-allocator reject path.
+      exact stepMutBorrow_inAbsReborrow_sound st st' Ω hRep loan place symval absId hStep
     | loopOwned loopId =>
       -- M10.x.4: `CertGen_faithful.mutBorrow_loopOwned` retired.
       exact stepMutBorrow_loopOwned_sound st st' Ω hRep loan place symval loopId hStep

@@ -5,5 +5,4 @@
  AeneasSoundness.Soundness.CertGen_faithful.endBorrow_direct_witness,
  AeneasSoundness.Soundness.CertGen_faithful.join,
  AeneasSoundness.Soundness.CertGen_faithful.loopInv,
- AeneasSoundness.Soundness.CertGen_faithful.mutBorrow_inAbsReborrow,
  AeneasSoundness.Soundness.CertGen_faithful.symExpandMutBorrow]

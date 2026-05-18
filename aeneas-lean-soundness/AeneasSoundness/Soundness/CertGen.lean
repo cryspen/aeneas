@@ -28,7 +28,6 @@ by one Phase-C lemma:
 
 | Extractor | Discharges (for stepX_sound) |
 |---|---|
-| `mutBorrow_inAbsReborrow` | `∃ r, st.absRegistry[absId]? = some r` + loan-fresh |
 | `endAbs` | abs-registry-lookup + (stPre, hConcPre, hShape) preamble triple |
 | `symExpandMutBorrow` | `substLocals = #[] ∧ substLoans = #[]` + `bid` freshness |
 | `loopInv` | `loanRegistry = #[]` (paper LStep.loopInv is a no-op) |
@@ -42,6 +41,7 @@ by one Phase-C lemma:
 | `move` / `copy` | dropped M10.x.3 — paper-side `LStep.move`/`.copy` were reshaped via `resolvePlaceRoot` to mirror the replayer's root-local semantics; no extractor needed |
 | `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned` | dropped M10.x.4 — paper-side rules' `Ω.resolvePlace p = some v` premises were vestigial (the bound `v` was not in the post-state); freshness clauses are replayer-discharged via M10.x.2's reject paths |
 | `reborrow` | dropped M10.x.4 — paper-side rule split into `LStep.reborrow` (tracked-parent) + `LStep.reborrow_untracked` (untracked-parent pre-add), mirroring the replayer's two-branch shape; `hChildFresh` is replayer-discharged via M10.x.2 |
+| `mutBorrow_inAbsReborrow` | dropped M10.x.5 — paper-side rule's `Ω.abs absId = some r` premise was vestigial (the bound `r` was not in the post-state); HWM clause replayer-discharged via M10.x.2 |
 
 ## What's NOT here
 
@@ -110,10 +110,24 @@ alone. The HWM-freshness clause is discharged from `hStep` via
 M10.x.2's `stepMutBorrow` / `stepSharedBorrow` monotone-allocator
 reject paths. -/
 
-axiom mutBorrow_inAbsReborrow (st st' : SymState) (loan : Nat) (place : Place)
-    (symval : Nat) (absId : Nat)
-    (hStep : stepEvent st (.mutBorrow loan place symval (.inAbsReborrow absId)) = .ok st') :
-    (∃ r, st.absRegistry[absId]? = some r) ∧ st.loanIdHwm ≤ loan
+/-! ### mutBorrow_inAbsReborrow — dropped (M10.x.5)
+
+The previous extractor promised `∃ r, st.absRegistry[absId]? = some r`
+and `st.loanIdHwm ≤ loan`. The HWM clause is replayer-discharged via
+M10.x.2's `stepMutBorrow` monotone-allocator reject path. The
+abs-registry existential was vestigial in the paper rule: a pre-flight
+scan of `tests/llbc/*.cert.json` found 112/783 fixtures where the
+OCaml emitter references `inAbsReborrow.absId` for an ambient
+function-input abstraction whose installation is *not* event-recorded
+(the abs is part of the caller-side `&mut` argument; Consistency.lean's
+`seenAbs` tolerates exactly this case). Keeping the existential would
+have falsified `CertGen_faithful` on those certs. M10.x.5 drops the
+`{r : RegionAbs}` binder + `Ω.abs absId = some r` premise from
+`LStep.mutBorrow_inAbsReborrow` (same vestigial-existential pattern as
+M10.x.4's drop for `.direct` / `.loopOwned` / `.sharedBorrow`): the
+post-state `(Ω.bumpLoanId ℓ).bumpSymValId σ` never references `r`, so
+the existence claim contributed nothing to the rule's operational
+meaning. The per-event lemma closes from `hStep` + `hRep` alone. -/
 
 /-! ### reborrow — dropped (M10.x.4)
 

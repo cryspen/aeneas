@@ -73,9 +73,13 @@ def Valid (e : Event) (Ω : LLBCState) : Prop :=
   -- premise list collapses to freshness only.
   | .mutBorrow ℓ _ σ .direct =>
       Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
-  | .mutBorrow ℓ _ σ (.inAbsReborrow absId) =>
-      (∃ r, Ω.abs absId = some r) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  -- M10.x.5 — `.inAbsReborrow` lost its `∃ r, Ω.abs absId = some r`
+  -- premise (the bound `r` was vestigial in `LStep.mutBorrow_inAbsReborrow`'s
+  -- post-state). 112/783 fixtures emit `inAbsReborrow.absId` for ambient
+  -- function-input abs not event-installed; the existential would have
+  -- been false on those certs.
+  | .mutBorrow ℓ _ σ (.inAbsReborrow _) =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
   | .mutBorrow ℓ _ σ (.loopOwned _) =>
       Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
   | .sharedBorrow ℓ _ _ σ =>
