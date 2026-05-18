@@ -460,6 +460,38 @@ partial def PExpr.toLean : PExpr → String
       s!"| {pat} => {body.toLean}"
     s!"match {scrutinee.toLean} with\n" ++ String.intercalate "\n" armS
 
+/-- Phase 4a-2: walk a `PExpr` and collect the *sanitised* call heads
+    that appear anywhere in it (as an `Array String`; duplicates are
+    OK — downstream callers dedupe via their own visited set). Used by
+    LeanEmit's caller-decl topological sort: a function whose body
+    calls into a sibling impl-method must be emitted *after* that
+    method's `def`. The cert emits decls in source order, which
+    doesn't always satisfy this (e.g. `const Y = Wrap::new(2)` lives
+    above `impl Wrap { fn new }` in the source). -/
+partial def PExpr.calledNames : PExpr → Array String
+  | .var _ => #[]
+  | .lit _ => #[]
+  | .app head args =>
+    let acc := args.foldl (init := #[]) fun s a => s ++ PExpr.calledNames a
+    acc.push (sanitizeCallName head)
+  | .letIn _ _ e1 e2 => PExpr.calledNames e1 ++ PExpr.calledNames e2
+  | .ok e => PExpr.calledNames e
+  | .ifThenElse c t e =>
+    PExpr.calledNames c ++ PExpr.calledNames t ++ PExpr.calledNames e
+  | .tuple args =>
+    args.foldl (init := #[]) fun s a => s ++ PExpr.calledNames a
+  | .lam _ body => PExpr.calledNames body
+  | .letPure _ _ e1 e2 => PExpr.calledNames e1 ++ PExpr.calledNames e2
+  | .letPat _ _ e1 e2 => PExpr.calledNames e1 ++ PExpr.calledNames e2
+  | .structUpdate base _ value _ =>
+    PExpr.calledNames base ++ PExpr.calledNames value
+  | .matchE scrut arms =>
+    arms.foldl (init := PExpr.calledNames scrut) fun s (_, _, b) =>
+      s ++ PExpr.calledNames b
+  | .fieldAccess base _ => PExpr.calledNames base
+  | .recordLit fields _ =>
+    fields.foldl (init := #[]) fun s (_, v) => s ++ PExpr.calledNames v
+
 /-- Build the `/-- [crate::fn]: ... -/` docstring lines that precede a
     `def`. Empty when no `sourceSpan` is attached. -/
 def Decl.docComment (d : Decl) : String :=

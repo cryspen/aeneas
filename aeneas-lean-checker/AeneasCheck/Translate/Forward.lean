@@ -204,6 +204,38 @@ def placeholderPExprOf : LlbcTy → PExpr
   | .litTy .bool => .lit (.bool false)
   | _ => .lit (.scalar .u32 0)
 
+/-- Phase 4a-3: `tdm`-aware variant of [placeholderPExprOf] that can
+    synthesise a struct-literal placeholder for an ADT type. When the
+    type is a `tAdt` whose `TypeDeclInfo` has the same number of
+    `fieldNames` as the ADT's generic args, assume field K's type is
+    the K-th generic arg (the same coarse heuristic [stepLlbcTy] uses
+    for missing-local field projections) and emit a `recordLit` of
+    typed zeros. Fixes `static S3 : Pair<u32, u32> = P3` whose linear
+    walk never writes vm[0], leaving the catch-all to emit a
+    type-incorrect `ok 0#u32` against `Result (Pair U32 U32)`. The
+    resulting `ok { x := 0#u32, y := 0#u32 }` is still
+    semantically wrong (real value is P3 = `Pair { x: 0, y: 1 }`) —
+    that's tracked separately as a cert-walker gap; the placeholder
+    just keeps the file compiling so the rest of the constants fixture
+    can be wired into the lean-diff harness. -/
+partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
+  | .litTy (.int k) => .lit (.scalar k 0)
+  | .litTy .bool => .lit (.bool false)
+  | .tAdt id args =>
+    match tdm[id]? with
+    | some info =>
+      -- Struct case only (no variants): emit `{ f₁ := 0, …, fₙ := 0 }`
+      -- when fields and generic args line up 1-1.
+      if info.variantFieldCounts.isEmpty
+          ∧ info.fieldNames.size == args.size then
+        let fields : Array (String × PExpr) :=
+          info.fieldNames.zipWith (fun fname fty =>
+            (fname, placeholderPExprOfWith tdm fty)) args
+        .recordLit fields (some info.name)
+      else .lit (.scalar .u32 0)
+    | none => .lit (.scalar .u32 0)
+  | _ => .lit (.scalar .u32 0)
+
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
     returning the inner def name `a.b`. The crate prefix becomes the
     surrounding `namespace` block in the emitter. -/
@@ -314,6 +346,13 @@ def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
       match localTypes[p.local_]? with
       | some t =>
         match projectLlbcTy t p.projection.toList with
+        -- Keep [placeholderPExprOf] (NOT the tdm-aware variant) here:
+        -- this path runs *after* a non-empty projection, so the
+        -- downstream applyFieldProj path expects a `.lit` placeholder
+        -- to recognise via its Phase 1B fix. Synthesising a
+        -- `.recordLit` here would shadow that recognition and emit a
+        -- `{ value := 0#i32 }.value` shape Lean can't elaborate
+        -- without a known expected type.
         | some projTy => placeholderPExprOf projTy
         | none =>
           -- Couldn't resolve the projection. Fall back to the legacy
@@ -2239,11 +2278,46 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
         -- type. Use `.var "()"` so [tailToResult]'s default
         -- `.var _ → .ok _` path wraps it in `ok` (a bare `.app`
         -- head would be treated as Result-typed).
+        --
+        -- Phase 4a-3/4a-4: when there's no first input to fall back
+        -- to (typical for `const fn` / `static` initialisers whose
+        -- only emitted body should have been a call but the cert
+        -- walker never wrote vm[0]), use a *type-correct* placeholder
+        -- derived from the return slot's LlbcTy (`localTypes[0]`).
+        -- This fixes `V::LEN : Result Usize := ok 0#usize` (was
+        -- `ok 0#u32`) and `S3 : Result (Pair U32 U32) := ok {…}`
+        -- (was the type-mismatched `ok 0#u32`). The placeholder is
+        -- still semantically wrong for non-literal types — see
+        -- [placeholderPExprOfWith]'s docstring — but the file now
+        -- compiles against the shim.
         let unitDefault : PExpr := .var "()"
-        let tailE : PExpr := finalSt.vm.getD 0 (
+        let typedDefault : PExpr :=
+          match finalSt.localTypes[(0 : Nat)]? with
+          | some t => placeholderPExprOfWith tdm t
+          | none => .lit (.scalar .u32 0)
+        let tailE0 : PExpr := finalSt.vm.getD 0 (
           if bs.outputIsUnit then unitDefault
           else if numParams ≥ 1 then .var (paramName 1)
-          else .lit (.scalar .u32 0))
+          else typedDefault)
+        -- Phase 4a-3 post-walk: when vm[0] *was* populated but with
+        -- `lookupPlace`'s scalar catch-all (`.lit (.scalar .u32 0)`,
+        -- emitted for an untracked local with no resolvable LlbcTy)
+        -- AND the function's return slot is an ADT, swap in a
+        -- struct-literal placeholder so the emitted `ok 0#u32` shape
+        -- (which doesn't typecheck against `Result (Pair U32 U32)`)
+        -- becomes `ok { x := 0#u32, y := 0#u32 }`. Fixes `static S3 :
+        -- Pair<u32, u32> = P3`, whose cert walker writes the placeholder
+        -- to vm[0] instead of leaving it empty (which would have
+        -- triggered the `typedDefault` path above). The substitution
+        -- is gated on the ADT shape so non-ADT return types (which
+        -- elaborate with the scalar placeholder fine) stay unchanged.
+        let tailE : PExpr :=
+          match tailE0, finalSt.localTypes[(0 : Nat)]? with
+          | .lit (.scalar .u32 0), some t =>
+            match t with
+            | .tAdt _ _ => placeholderPExprOfWith tdm t
+            | _ => tailE0
+          | _, _ => tailE0
         assembleBody finalSt.binds (tailToResult tailE)
       else if !finalSt.multiRegionTail.isEmpty then
         -- M12.2b: caller of a multi-region helper. The deref-EvAssigns

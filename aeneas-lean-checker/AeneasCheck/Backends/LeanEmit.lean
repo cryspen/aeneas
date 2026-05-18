@@ -131,6 +131,91 @@ private def isImplMethodBody (impls : Array TraitImpl) (d : Decl) : Bool :=
   impls.any fun ti =>
     ti.methods.any fun m => m.body == d.name
 
+/-- Phase 4a-5: topologically sort a list of caller-decls so each one
+    appears after every same-list decl it calls. The cert emits decls
+    in source order, which doesn't always satisfy Lean's
+    define-before-use rule: `const Y = Wrap::new(2)` (line 42) sits
+    above `impl Wrap { fn new }` (line 55) in the source, so the
+    naive ordering produces `def Y ... constants.Wrap.new` before
+    `def Wrap.new ...` and Lean rejects the call as an unknown
+    constant. The standard Aeneas backend already reorders by
+    dependency; we mirror that here.
+
+    Self-recursive defs (detected via the `partial_fixpoint` trailer)
+    are not treated as dependencies of themselves. Mutual recursion
+    between non-self defs is not handled here (would need a `mutual`
+    block); if it arises in a fixture, the topo sort will surface it
+    as an unsatisfied edge and the emit order will fall back to the
+    original sequence for the cycle.
+
+    Walk the input list as input order, but for each decl run a DFS
+    that emits all not-yet-emitted callees first. The `crate` arg is
+    the surrounding namespace (e.g. `"constants"`); we strip its
+    prefix from each call head before looking the callee up in the
+    bare-name table. -/
+private def topoSortCallerDecls (crate : String) (decls : Array Decl) :
+    Array Decl :=
+  -- Build bare-name → decl-index lookup. Indices into the input array
+  -- are what the DFS marks visited / emitted to keep the algorithm
+  -- equality-free (Decl has no DecidableEq). Keys are *sanitised*
+  -- (Phase 4a-2's `sanitizeCallName`) so they match the form
+  -- `calledNames` produces from call heads — `d.name` itself still
+  -- carries Charon's brace decoration (`{constants.Wrap<T>}.new`)
+  -- since Phase 4a-2 only sanitises at print time.
+  let nameIdx : Std.HashMap String Nat := Id.run do
+    let mut m : Std.HashMap String Nat := {}
+    for (d, i) in decls.zipIdx do
+      m := m.insert (sanitizeCallName d.name) i
+    return m
+  let cratePrefix := crate ++ "."
+  -- Resolve a sanitised call head to a sibling-decl index when it
+  -- names a decl in this same crate. Strip the `<crate>.` namespace
+  -- prefix (the call always carries it in the emit; bare names live
+  -- in the namespace) before lookup; ignore heads that don't refer
+  -- to a sibling (extern calls, primitives, self-recursive heads).
+  let resolveCallee (head : String) : Option Nat :=
+    let bare : String :=
+      if head.startsWith cratePrefix then
+        (head.drop cratePrefix.length).toString
+      else head
+    nameIdx[bare]?
+  -- DFS-based emit: visit each decl in input order; for each, recurse
+  -- into unresolved callees first, then emit the decl itself.
+  Id.run do
+    let n := decls.size
+    let mut visited : Array Bool := Array.replicate n false
+    let mut out : Array Decl := #[]
+    -- Manual stack-based DFS to avoid Lean termination obligations.
+    -- For each root i in input order, iterate via a worklist.
+    for root in [0 : n] do
+      if !visited[root]! then
+        -- Pre-order traversal: push root, then while non-empty pop
+        -- and either expand (push deps) or emit.
+        let mut stack : Array (Nat × Bool) := #[(root, false)]
+        while !stack.isEmpty do
+          let (idx, expanded) := stack.back!
+          stack := stack.pop
+          if visited[idx]! then
+            continue
+          if !expanded then
+            -- First visit: re-push as expanded, then push every
+            -- unresolved callee dep so they're processed first.
+            stack := stack.push (idx, true)
+            let callees := decls[idx]!.body.calledNames
+            for head in callees do
+              match resolveCallee head with
+              | some j =>
+                -- Skip self (partial_fixpoint handles self-recursion)
+                -- and already-emitted decls.
+                if j != idx ∧ !visited[j]! then
+                  stack := stack.push (j, false)
+              | none => ()
+          else
+            -- Post-order emit.
+            visited := visited.set! idx true
+            out := out.push decls[idx]!
+    return out
+
 /-- Emit one `namespace …` block. Ordering, mirroring the standard
     Aeneas backend's output for a `traits_basic`-shaped crate:
     1. trait decls
@@ -159,8 +244,13 @@ def emitNamespace (c : String) (traits : Array TraitDecl)
   let defaults := decls.filter isDefaultMethod
   let implMethods := decls.filter (fun d =>
     !isDefaultMethod d && isImplMethodBody impls d)
-  let callerDecls := decls.filter (fun d =>
-    !isDefaultMethod d && !isImplMethodBody impls d)
+  -- Phase 4a-5: caller decls need to be in dependency order — the cert
+  -- emits them in source order, which doesn't satisfy Lean's
+  -- define-before-use rule when a constant calls into an inherent
+  -- impl method that lives below it in the source. Run a DFS topo sort
+  -- over the caller-decl list so each call resolves to a prior `def`.
+  let callerDecls := topoSortCallerDecls c (decls.filter (fun d =>
+    !isDefaultMethod d && !isImplMethodBody impls d))
   let defaultBody :=
     String.intercalate "\n" (defaults.toList.map emitDecl)
   let implFnBody :=

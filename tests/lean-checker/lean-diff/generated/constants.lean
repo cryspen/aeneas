@@ -112,6 +112,11 @@ def P2 : Result (Std.U32 × Std.U32) := do
 def P3 : Result (Pair Std.U32 Std.U32) := do
   ok { x := 0#u32, y := 1#u32 }
 
+/-- [constants::{constants::Wrap<T>}::new]:
+    Source: 'tests/src/constants.rs', lines 55:4-57:5 -/
+def Wrap.new {T : Type} (x1 : T) : Result (Wrap T) := do
+  ok { value := x1 }
+
 /-- [constants::Y]:
     Source: 'tests/src/constants.rs', lines 42:0-42:38 -/
 def Y : Result (Wrap Std.I32) := do
@@ -121,11 +126,6 @@ def Y : Result (Wrap Std.I32) := do
     Source: 'tests/src/constants.rs', lines 48:0-48:33 -/
 def YVAL : Result Std.I32 := do
   constants.unwrap_y
-
-/-- [constants::{constants::Wrap<T>}::new]:
-    Source: 'tests/src/constants.rs', lines 55:4-57:5 -/
-def Wrap.new {T : Type} (x1 : T) : Result (Wrap T) := do
-  ok { value := x1 }
 
 /-- [constants::Q1]:
     Source: 'tests/src/constants.rs', lines 75:0-75:22 -/
@@ -155,7 +155,7 @@ def S2 : Result Std.U32 := do
 /-- [constants::S3]:
     Source: 'tests/src/constants.rs', lines 83:0-83:35 -/
 def S3 : Result (Pair Std.U32 Std.U32) := do
-  ok 0#u32
+  ok { x := 0#u32, y := 0#u32 }
 
 /-- [constants::S4]:
     Source: 'tests/src/constants.rs', lines 84:0-84:47 -/
@@ -170,6 +170,6 @@ def get_z1.Z1 : Result Std.I32 := do
 /-- [constants::{constants::V<T, N>}::LEN]:
     Source: 'tests/src/constants.rs', lines 92:4-92:29 -/
 def V.LEN {T : Type} : Result Std.Usize := do
-  ok 0#u32
+  ok 0#usize
 
 end constants
