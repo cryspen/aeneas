@@ -170,7 +170,7 @@ private partial def parenIfNeeded (s : String) (e : PExpr) : String :=
   -- M9.5b: a `{ base with f := v }` record-update token spans
   -- multiple operators; wrap it when used as an `app` arg so it
   -- can't be reparsed as `{ base` ` with f := v }`.
-  | .structUpdate _ _ _
+  | .structUpdate _ _ _ _
   -- M9.5d: a `match … with …` token chain similarly spans multiple
   -- arms; wrap it when used as an `app` arg.
   | .matchE _ _ => "(" ++ s ++ ")"
@@ -213,9 +213,9 @@ partial def PExpr.toLeanDo : PExpr → String
       | .app _ _ => PExpr.toLeanDo inner
       -- M9.5b: `{ base with f := v }` self-delimits via braces, so
       -- skip parens — `ok { p with fst := v }` not `ok ({ … })`.
-      | .structUpdate _ _ _ => PExpr.toLeanDo inner
+      | .structUpdate _ _ _ _ => PExpr.toLeanDo inner
       -- M9.5p: `{ x := e1, y := e2 }` self-delimits via braces too.
-      | .recordLit _ => PExpr.toLeanDo inner
+      | .recordLit _ _ => PExpr.toLeanDo inner
       -- M9.5n: a field access `<base>.<field>` is a single dotted
       -- token; no parens needed (`ok x1.value` not `ok (x1.value)`).
       | .fieldAccess _ _ => PExpr.toLeanDo inner
@@ -283,12 +283,15 @@ partial def PExpr.toLeanDo : PExpr → String
     -- Aeneas backend uses `_` for the discard slot; we follow.
     let pats := String.intercalate ", " pat.toList
     s!"let ({pats}) ← {e1.toLeanDo}\n  {e2.toLeanDo}"
-  | .structUpdate base field value =>
+  | .structUpdate base field value _adtName =>
     -- M9.5b: `{ base with field := value }`. The standard Aeneas
     -- backend renders this exact shape for a write through `&mut Pair`
     -- (e.g. `set_fst`'s `ok { p with fst := v }`). We do not bracket
     -- the inner pieces; the outer `{ … }` self-delimits. `\{` and
     -- `}` escape the curly braces inside an `s!"..."` interpolation.
+    -- Phase 1C: Lean's anonymous-constructor syntax does not need the
+    -- ADT name (inferred from `base`'s type) — only RustEmit consumes
+    -- the `_adtName` field.
     s!"\{ {base.toLeanDo} with {field} := {value.toLeanDo} }"
   | .fieldAccess base field =>
     -- M9.5n: `<base>.<field>`. The standard Aeneas backend uses
@@ -300,12 +303,14 @@ partial def PExpr.toLeanDo : PExpr → String
     -- field-access against a `.var` base so the issue doesn't arise.
     let baseS := base.toLeanDo
     s!"{baseS}.{field}"
-  | .recordLit fields =>
+  | .recordLit fields _adtName =>
     -- M9.5p: a Lean record literal `{ x := e1, y := e2 }`. Matches the
     -- standard Aeneas backend's whitespace for `ok { x := x1, y := x2 }`
     -- (one space after `{`, one space before `}`, `, ` between fields,
     -- ` := ` between each field name and value). `\{` escapes the
     -- opening brace inside an `s!"..."` interpolation.
+    -- Phase 1C: Lean ignores `_adtName` — the anonymous-constructor
+    -- syntax `{ x := e1, y := e2 }` is inferred from the expected type.
     let body := String.intercalate ", "
       (fields.toList.map fun (n, v) => s!"{n} := {v.toLeanDo}")
     s!"\{ {body} }"
@@ -378,10 +383,10 @@ partial def PExpr.toLean : PExpr → String
   | .letPat pat _ e1 e2 =>
     let pats := String.intercalate ", " pat.toList
     s!"let ({pats}) := {e1.toLean}\n  {e2.toLean}"
-  | .structUpdate base field value =>
+  | .structUpdate base field value _adtName =>
     s!"\{ {base.toLean} with {field} := {value.toLean} }"
   | .fieldAccess base field => s!"{base.toLean}.{field}"
-  | .recordLit fields =>
+  | .recordLit fields _adtName =>
     -- M9.5p: diagnostic-only rendering for `{ x := e1, y := e2 }`.
     let body := String.intercalate ", "
       (fields.toList.map fun (n, v) => s!"{n} := {v.toLean}")

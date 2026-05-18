@@ -165,6 +165,45 @@ def adtIdOfLlbcTy : LlbcTy → Option Nat
   | .tRef _ inner _ => adtIdOfLlbcTy inner
   | _ => none
 
+/-- Apply a single projection step to an `LlbcTy`. Returns `none`
+    when the step can't be resolved (unknown ADT, missing field). For
+    `Field K` on an `LlbcTy.tAdt` we approximate the field type by
+    looking up the K-th *generic argument* — this is a coarse heuristic
+    that's only used by `lookupPlace`'s missing-local fallback (so the
+    result is a placeholder anyway), but it picks the correct scalar
+    kind for shapes like `Wrap<i32>.value` whose field type is the
+    sole generic. -/
+private partial def stepLlbcTy : LlbcTy → Raw.ProjElem → Option LlbcTy
+  | .tRef _ inner _, .deref => some inner
+  | .tRawPtr inner _, .deref => some inner
+  | .tAdt _ args, .field k => args[k]?
+  | .tTuple args, .field k => args[k]?
+  | .tArray elem _, .projIndex => some elem
+  | .tSlice elem, .projIndex => some elem
+  | .tArray elem _, .subslice => some (.tSlice elem)
+  | .tSlice elem, .subslice => some (.tSlice elem)
+  | _, _ => none
+
+/-- Walk a projection list against an LlbcTy, returning the terminal
+    type if every step resolves. Used by `lookupPlace`'s missing-local
+    fallback to pick a type-appropriate placeholder. -/
+private partial def projectLlbcTy
+    : LlbcTy → List Raw.ProjElem → Option LlbcTy
+  | t, [] => some t
+  | t, step :: rest =>
+    match stepLlbcTy t step with
+    | some t' => projectLlbcTy t' rest
+    | none => none
+
+/-- Build a placeholder `PExpr` matching an `LlbcTy`'s shape. Used by
+    `lookupPlace` to produce a typed zero when the local isn't tracked
+    in the vm and we fall back to a literal. Only scalar integers and
+    `bool` get a typed placeholder; other shapes default to `0#u32`. -/
+def placeholderPExprOf : LlbcTy → PExpr
+  | .litTy (.int k) => .lit (.scalar k 0)
+  | .litTy .bool => .lit (.bool false)
+  | _ => .lit (.scalar .u32 0)
+
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
     returning the inner def name `a.b`. The crate prefix becomes the
     surrounding `namespace` block in the emitter. -/
@@ -231,11 +270,42 @@ private def applyFieldProj
     the input, so `x1` is the right pure-value substitute. -/
 def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     (vm : VarMap) (p : Place) : PExpr :=
-  let root : PExpr :=
-    match vm[p.local_]? with
-    | some e => e
-    | none => vm.getD 1 (.lit (.scalar .u32 0))
-  applyFieldProj tdm localTypes p.local_ p.projection.toList root
+  match vm[p.local_]? with
+  | some e =>
+    -- The local is tracked: use its current pure value as the root
+    -- and apply the field projection (if any) through the regular
+    -- M9.5n path.
+    applyFieldProj tdm localTypes p.local_ p.projection.toList e
+  | none =>
+    -- Local not tracked. Prefer input-1's pure value (a deliberate
+    -- over-approximation that mirrors the M9.5n-vintage borrow-
+    -- reborrow behaviour). When even `1` is missing — typical for
+    -- a global initializer / nullary const-fn whose body the cert
+    -- only describes through assignments between uninitialised
+    -- locals — use a *type-correct* zero literal derived from the
+    -- place's projection-resolved `LlbcTy`. This keeps the emitted
+    -- `def`'s body well-typed against its declared return type
+    -- (e.g. `unwrap_y : Result Std.I32 := ok 0#i32` instead of the
+    -- pre-fix `ok 0#u32.value`). Non-scalar projected types still
+    -- fall back to `0#u32`.
+    match vm[1]? with
+    | some e1 =>
+      applyFieldProj tdm localTypes p.local_ p.projection.toList e1
+    | none =>
+      match localTypes[p.local_]? with
+      | some t =>
+        match projectLlbcTy t p.projection.toList with
+        | some projTy => placeholderPExprOf projTy
+        | none =>
+          -- Couldn't resolve the projection. Fall back to the legacy
+          -- root + applyFieldProj path so the `.value` shape still
+          -- appears (matches the pre-fix output for unrecognised
+          -- shapes).
+          applyFieldProj tdm localTypes p.local_ p.projection.toList
+            (.lit (.scalar .u32 0))
+      | none =>
+        applyFieldProj tdm localTypes p.local_ p.projection.toList
+          (.lit (.scalar .u32 0))
 
 /-- M9.5e: consult a payload-binder map *before* falling back to the
     plain `lookupPlace`. When a place reads `local L` with a trailing
@@ -306,8 +376,12 @@ partial def lookupSymExpr
   -- M9.5p: named-field struct aggregate. The OCaml cert generator
   -- already resolved each field's surface name; recurse on the
   -- values and emit a `PExpr.recordLit`.
-  | .symRecord _ fields =>
-    .recordLit (fields.map fun (n, e) => (n, lookupSymExpr tdm localTypes vm e))
+  --
+  -- Phase 1C: also resolve the struct's bare Lean name through
+  -- `tdm` so RustEmit can render `Foo { … }` instead of a placeholder.
+  | .symRecord adtId fields =>
+    let adtName := (tdm[adtId]?).map (·.name)
+    .recordLit (fields.map fun (n, e) => (n, lookupSymExpr tdm localTypes vm e)) adtName
 
 /-- M9.5e/f: payload-binder-aware variant of [lookupSymExpr]. Same
     semantics as [lookupSymExpr] except a `symCopy` / `symMove` of a
@@ -332,9 +406,12 @@ partial def lookupSymExprWithBinders
   -- operands of an aggregate construction in current LLBC.
   | .symTuple fields =>
     .tuple (fields.map (lookupSymExprWithBinders tdm localTypes vm payloadBinders))
-  | .symRecord _ fields =>
+  -- Phase 1C: resolve the struct's bare Lean name through `tdm`
+  -- so RustEmit has a real Rust struct name to render.
+  | .symRecord adtId fields =>
+    let adtName := (tdm[adtId]?).map (·.name)
     .recordLit (fields.map fun (n, e) =>
-      (n, lookupSymExprWithBinders tdm localTypes vm payloadBinders e))
+      (n, lookupSymExprWithBinders tdm localTypes vm payloadBinders e)) adtName
 
 /-- Map an OCaml `cert_binop_string` tag onto a Pure `App` head. The
     head string is what the Lean emitter pretty-prints — see
@@ -764,7 +841,9 @@ def walkEvent (st : WalkState) (ev : Event) : WalkState :=
                 info.fieldNames[k]?.map fun fname =>
                   let base : PExpr :=
                     st.vm.getD d.local_ (.var (paramName d.local_))
-                  (fname, .structUpdate base fname rhsE)
+                  -- Phase 1C: pass the struct's bare Lean name through
+                  -- so RustEmit can render `Foo { field: v, ..base }`.
+                  (fname, .structUpdate base fname rhsE (some info.name))
         | _, _ => none
     -- M12.2b: detect a field-destructure of a multi-region call
     -- result, i.e. `EvAssign dst=L rhs=SymMove(L'.[Field K])`

@@ -97,8 +97,19 @@ inductive PExpr
       EvAssign through `[Deref, Field K]`. The pretty-printer emits
       `{ <base> with <field> := <value> }`. Single-field updates only
       for now; chained-field updates (`{ p with fst := a, snd := b }`)
-      can be modelled as nested `structUpdate`s. -/
+      can be modelled as nested `structUpdate`s.
+
+      Phase 1C: optional `adtName` carries the struct's bare Lean name
+      (e.g. `Pair`) so the RustEmit backend can render Rust's
+      `Foo { field: value, ..base }` struct-update syntax. Lean's
+      anonymous `{ base with field := value }` syntax does not need
+      the type name — it's inferred from `base` — so LeanEmit ignores
+      this field. Defaults to `none` for back-compat with translator
+      paths and tests that don't have the ADT id in hand (the
+      RustEmit backend falls back to a `with_<field>(base, value)`
+      placeholder when the name is missing). -/
   | structUpdate (base : PExpr) (field : String) (value : PExpr)
+                 (adtName : Option String := none)
   /-- M9.5d / M9.5e: a `match scrutinee with | Ctor1 b₁ … bₙ => body1 | …`
       expression. M9.5d supported only nullary-constructor patterns
       (C-style enums); M9.5e extends each arm with an optional binder
@@ -128,8 +139,16 @@ inductive PExpr
       and on RHS positions seeded from a `SymRecord` cert event. The
       pretty-printer renders this as Lean's anonymous-constructor
       syntax `{ x := e1, y := e2 }`, matching the standard Aeneas
-      backend's exact whitespace. -/
-  | recordLit (fields : Array (String × PExpr))
+      backend's exact whitespace.
+
+      Phase 1C: optional `adtName` carries the struct's bare Lean name
+      (e.g. `Pair`) so the RustEmit backend can render
+      `Pair { x: e1, y: e2 }`. Lean's anonymous-constructor syntax
+      does not need the type name — it's inferred from the surrounding
+      expected type — so LeanEmit ignores this field. Defaults to
+      `none` for back-compat (RustEmit falls back to the
+      `record_lit { … }` placeholder when the name is missing). -/
+  | recordLit (fields : Array (String × PExpr)) (adtName : Option String := none)
   deriving Repr, Inhabited
 
 /-- Parameter declaration: `(name : ty)`. -/

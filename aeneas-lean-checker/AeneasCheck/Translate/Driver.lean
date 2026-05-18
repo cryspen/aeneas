@@ -313,13 +313,13 @@ partial def rewriteCalleeNames (pretty : Std.HashMap String String) :
     .letPure n ty (rewriteCalleeNames pretty e1) (rewriteCalleeNames pretty e2)
   | .letPat ps ty e1 e2 =>
     .letPat ps ty (rewriteCalleeNames pretty e1) (rewriteCalleeNames pretty e2)
-  | .structUpdate base f v =>
-    .structUpdate (rewriteCalleeNames pretty base) f (rewriteCalleeNames pretty v)
+  | .structUpdate base f v adtName =>
+    .structUpdate (rewriteCalleeNames pretty base) f (rewriteCalleeNames pretty v) adtName
   | .fieldAccess base f =>
     .fieldAccess (rewriteCalleeNames pretty base) f
   -- M9.5p: aggregate record literals — recurse into each field value.
-  | .recordLit fields =>
-    .recordLit (fields.map fun (n, v) => (n, rewriteCalleeNames pretty v))
+  | .recordLit fields adtName =>
+    .recordLit (fields.map fun (n, v) => (n, rewriteCalleeNames pretty v)) adtName
   | .matchE scr arms =>
     .matchE (rewriteCalleeNames pretty scr)
             (arms.map fun (ctor, binders, body) =>
@@ -367,13 +367,13 @@ partial def rewriteTraitClauseRefs (bounds : Array Pure.TraitBoundParam) :
     .letPure n ty (rewriteTraitClauseRefs bounds e1) (rewriteTraitClauseRefs bounds e2)
   | .letPat ps ty e1 e2 =>
     .letPat ps ty (rewriteTraitClauseRefs bounds e1) (rewriteTraitClauseRefs bounds e2)
-  | .structUpdate base f v =>
-    .structUpdate (rewriteTraitClauseRefs bounds base) f (rewriteTraitClauseRefs bounds v)
+  | .structUpdate base f v adtName =>
+    .structUpdate (rewriteTraitClauseRefs bounds base) f (rewriteTraitClauseRefs bounds v) adtName
   | .fieldAccess base f =>
     .fieldAccess (rewriteTraitClauseRefs bounds base) f
   -- M9.5p: aggregate record literals — recurse into each field value.
-  | .recordLit fields =>
-    .recordLit (fields.map fun (n, v) => (n, rewriteTraitClauseRefs bounds v))
+  | .recordLit fields adtName =>
+    .recordLit (fields.map fun (n, v) => (n, rewriteTraitClauseRefs bounds v)) adtName
   | .matchE scr arms =>
     .matchE (rewriteTraitClauseRefs bounds scr)
             (arms.map fun (ctor, binders, body) =>
