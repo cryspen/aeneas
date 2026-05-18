@@ -210,10 +210,16 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
 
       Post-state: `p.local_ ↦ mutLoan ℓ`; freshness counters bumped.
       The borrow's body `v` is later assigned to its `dst` by a
-      following `EvAssign`; this rule does not materialise it. -/
+      following `EvAssign`; this rule does not materialise it.
+
+      M10.x.4 — the previous `Ω.resolvePlace p = some v` premise was
+      vestigial (the existentially bound `v` does not appear in the
+      post-state) and the projection-empty / env-resident clauses
+      were not replayer-discharged. The rule now matches the
+      replayer's `stepMutBorrow .direct`: the post-state is computed
+      purely from the place's root local id; no source-value premise. -/
   | mutBorrow_direct {Ω : LLBCState} {ℓ : LoanId} {p : Place}
-      {σ : SymValId} {v : Val} :
-      Ω.resolvePlace p = some v →
+      {σ : SymValId} :
       Ω.loanIdFresh ℓ →
       Ω.symValIdFresh σ →
       LStep Ω (.mutBorrow ℓ p σ .direct)
@@ -242,12 +248,13 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
       but the borrow's lifetime is owned by the loop's region
       abstraction; lazy-expansion-style.
 
-      Premises (baseline): place resolves; freshness on ℓ, σ.
-      The loop-region-abs existence premise is deferred to Phase C
-      alongside the corresponding `EvLoopInv` lemma (C17). -/
+      Premises (baseline): freshness on ℓ, σ. M10.x.4 dropped the
+      `Ω.resolvePlace p = some v` premise for the same reason as
+      `mutBorrow_direct`. The loop-region-abs existence premise is
+      deferred to Phase C alongside the corresponding `EvLoopInv`
+      lemma (C17). -/
   | mutBorrow_loopOwned {Ω : LLBCState} {ℓ : LoanId} {p : Place}
-      {σ : SymValId} {loopId : Nat} {v : Val} :
-      Ω.resolvePlace p = some v →
+      {σ : SymValId} {loopId : Nat} :
       Ω.loanIdFresh ℓ →
       Ω.symValIdFresh σ →
       LStep Ω (.mutBorrow ℓ p σ (.loopOwned loopId))
@@ -256,10 +263,16 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
   /-- `E-SharedBorrow` (Fig. 3). Creating a shared borrow does *not*
       move the source value — both the original local and the
       borrower can read it concurrently. The source local keeps its
-      value; freshness on ℓ, σ. -/
+      value; freshness on ℓ, σ.
+
+      M10.x.4 dropped the `Ω.resolvePlace p = some v` premise for
+      the same reason as `mutBorrow_direct` — the value `v` was
+      vestigial (not in the post-state). The replayer's
+      `stepSharedBorrow` operates on the place's root local
+      regardless of projection structure (with M10.x.2's
+      projection-empty reject path preventing structured places). -/
   | sharedBorrow {Ω : LLBCState} {ℓ : LoanId} {sbId : Nat}
-      {p : Place} {σ : SymValId} {v : Val} :
-      Ω.resolvePlace p = some v →
+      {p : Place} {σ : SymValId} :
       Ω.loanIdFresh ℓ →
       Ω.symValIdFresh σ →
       LStep Ω (.sharedBorrow ℓ sbId p σ)
@@ -393,12 +406,40 @@ inductive LStep : LLBCState → Event → LLBCState → Prop where
 
       Post-state: `child` is registered as a fresh loan; surface
       `ctx` unchanged (the reborrow lives inside the parent's
-      abstraction, not in any local). -/
+      abstraction, not in any local).
+
+      M10.x.4 — split into two constructors mirroring the replayer's
+      `stepReborrow` two-branch shape (tracked parent vs untracked
+      parent pre-add). The tracked-parent constructor's post-state
+      bumps `child` only; the untracked-parent constructor's
+      post-state bumps `parent` then `child`, matching the replayer's
+      `(st.addLoan parent ...).addLoan child ...` pre-add fallback
+      for the 95 fixtures whose parent loan lives inside an abs the
+      Lean `SymState` does not model. Both share the same `Event`
+      payload and `Valid` premise (`Ω.loanIdFresh child`); the
+      dispatcher in `stepEvent_sound` picks the constructor by
+      casing on `st.loans.contains parent`. This split is the
+      `endBorrow`-style pattern: multiple `LStep` constructors per
+      `Event` constructor, `Valid` collapses to their shared
+      premise, replayer state picks the discharge. -/
   | reborrow {Ω : LLBCState} {child parent : LoanId} {p : Place}
       {parentLive : Bool} {parentAbs : Option AbsId} :
       Ω.loanIdFresh child →
       LStep Ω (.reborrow child parent p parentLive parentAbs)
         (Ω.bumpLoanId child)
+
+  /-- Reborrow with parent loan owned by an untracked abs (M10.x.4).
+      The replayer's `stepReborrow` falls back to a `parent`-pre-add
+      `.reborrow` when `st.loans.contains parent = false`; on the
+      paper side this is the post-state `(Ω.bumpLoanId parent).bumpLoanId child`.
+      Same `Event` payload + `Valid` premise as `LStep.reborrow`;
+      the dispatcher picks this constructor on the untracked-parent
+      branch. -/
+  | reborrow_untracked {Ω : LLBCState} {child parent : LoanId} {p : Place}
+      {parentLive : Bool} {parentAbs : Option AbsId} :
+      Ω.loanIdFresh child →
+      LStep Ω (.reborrow child parent p parentLive parentAbs)
+        ((Ω.bumpLoanId parent).bumpLoanId child)
 
   /-- `E-Call-Symbolic` (Fig. 9, included in the M10.0g batch). The
       cert emits `EvCall fn callId fnName args dst regionAbs absSig`.

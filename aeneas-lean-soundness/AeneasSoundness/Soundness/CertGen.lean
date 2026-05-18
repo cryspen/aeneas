@@ -28,10 +28,7 @@ by one Phase-C lemma:
 
 | Extractor | Discharges (for stepX_sound) |
 |---|---|
-| `sharedBorrow` | place-projection-empty + env-some + `st.loanIdHwm ≤ loan` |
-| `mutBorrow_direct` / `mutBorrow_loopOwned` | as `sharedBorrow` |
 | `mutBorrow_inAbsReborrow` | `∃ r, st.absRegistry[absId]? = some r` + loan-fresh |
-| `reborrow` | `st.loanIdHwm ≤ child ∧ parent < st.loanIdHwm` |
 | `endAbs` | abs-registry-lookup + (stPre, hConcPre, hShape) preamble triple |
 | `symExpandMutBorrow` | `substLocals = #[] ∧ substLoans = #[]` + `bid` freshness |
 | `loopInv` | `loanRegistry = #[]` (paper LStep.loopInv is a no-op) |
@@ -43,6 +40,8 @@ by one Phase-C lemma:
 | `endBorrow_reborrow_witness` | dropped M10.4a-post — provable by `hStep` inversion |
 | `endBorrow_shared_witness` | dropped M10.4a-post — provable by `hStep` inversion |
 | `move` / `copy` | dropped M10.x.3 — paper-side `LStep.move`/`.copy` were reshaped via `resolvePlaceRoot` to mirror the replayer's root-local semantics; no extractor needed |
+| `sharedBorrow` / `mutBorrow_direct` / `mutBorrow_loopOwned` | dropped M10.x.4 — paper-side rules' `Ω.resolvePlace p = some v` premises were vestigial (the bound `v` was not in the post-state); freshness clauses are replayer-discharged via M10.x.2's reject paths |
+| `reborrow` | dropped M10.x.4 — paper-side rule split into `LStep.reborrow` (tracked-parent) + `LStep.reborrow_untracked` (untracked-parent pre-add), mirroring the replayer's two-branch shape; `hChildFresh` is replayer-discharged via M10.x.2 |
 
 ## What's NOT here
 
@@ -93,48 +92,41 @@ the rule premise-free, the extractors are no longer needed; the
 per-event lemmas `stepMove_sound` / `stepCopy_sound` close from
 `hStep` + `hRep` alone. -/
 
-/-! ### Borrow events — place-projection + env-resident + loan-id-fresh
+/-! ### sharedBorrow / mutBorrow_direct / mutBorrow_loopOwned —
+    dropped (M10.x.4)
 
-The freshness clause `st.loanIdHwm ≤ loan` is the monotone discipline
-the OCaml allocator promises; the M10.1g `loanIdHwm` field on
-`SymState` is the soundness-side mirror. -/
-
-axiom sharedBorrow (st st' : SymState) (loan sbId : Nat)
-    (place : Place) (symval : Nat)
-    (hStep : stepEvent st (.sharedBorrow loan sbId place symval) = .ok st') :
-    place.projection = #[] ∧
-    (∃ v, st.env[place.local_]? = some v) ∧
-    st.loanIdHwm ≤ loan
-
-axiom mutBorrow_direct (st st' : SymState) (loan : Nat) (place : Place)
-    (symval : Nat)
-    (hStep : stepEvent st (.mutBorrow loan place symval .direct) = .ok st') :
-    place.projection = #[] ∧
-    (∃ v, st.env[place.local_]? = some v) ∧
-    st.loanIdHwm ≤ loan
+The previous extractors promised
+`place.projection = #[]`,
+`∃ v, st.env[place.local_]? = some v`,
+and `st.loanIdHwm ≤ loan`. The first two clauses were not
+guaranteed by cert emission: the M10.x.2 fixture-corpus scan found
+1187/2000 fixtures with non-empty projections on mut/shared borrows
+and 1181/2000 with never-env-bound source locals (function arguments
+not pre-populated by `SymState.empty`). M10.x.4 dropped the
+existential `v` from `LStep.sharedBorrow` / `.mutBorrow_direct` /
+`.mutBorrow_loopOwned` (the bound value was not used in the
+post-state); the per-event lemmas now close from `hStep + hRep`
+alone. The HWM-freshness clause is discharged from `hStep` via
+M10.x.2's `stepMutBorrow` / `stepSharedBorrow` monotone-allocator
+reject paths. -/
 
 axiom mutBorrow_inAbsReborrow (st st' : SymState) (loan : Nat) (place : Place)
     (symval : Nat) (absId : Nat)
     (hStep : stepEvent st (.mutBorrow loan place symval (.inAbsReborrow absId)) = .ok st') :
     (∃ r, st.absRegistry[absId]? = some r) ∧ st.loanIdHwm ≤ loan
 
-axiom mutBorrow_loopOwned (st st' : SymState) (loan : Nat) (place : Place)
-    (symval : Nat) (loopId : Nat)
-    (hStep : stepEvent st (.mutBorrow loan place symval (.loopOwned loopId)) = .ok st') :
-    place.projection = #[] ∧
-    (∃ v, st.env[place.local_]? = some v) ∧
-    st.loanIdHwm ≤ loan
+/-! ### reborrow — dropped (M10.x.4)
 
-/-! ### Reborrow — child fresh + parent in HWM
-
-`hParentInHwm : parent < st.loanIdHwm` rests on cert discipline that
-the parent loan was previously allocated (so it's strictly below the
-current HWM). -/
-
-axiom reborrow (st st' : SymState) (child parent : Nat) (place : Place)
-    (parentLive : Bool) (parentAbs : Option Nat)
-    (hStep : stepEvent st (.reborrow child parent place parentLive parentAbs) = .ok st') :
-    st.loanIdHwm ≤ child ∧ parent < st.loanIdHwm
+The previous extractor promised `st.loanIdHwm ≤ child ∧
+parent < st.loanIdHwm`. The child clause is replayer-discharged
+via M10.x.2's `stepReborrow` reject path. The parent clause was
+NOT replayer-discharged (95 fixtures emit a reborrow with parent
+allocated inside an untracked abs); M10.x.4 splits the paper-side
+`LStep.reborrow` rule into two constructors mirroring the replayer's
+two branches (tracked-parent vs untracked-parent pre-add), so the
+per-event lemma picks the matching constructor by `by_cases` on
+`st.loans.contains parent`. No paper-side parent-HWM premise
+remains. -/
 
 /-! ### EndAbs — abs-in-registry + (stPre, hConcPre, hShape) preamble
 

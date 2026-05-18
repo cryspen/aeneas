@@ -321,19 +321,20 @@ allocation) discharges it. -/
 /-- C7 / M10.2g — `E-SharedBorrow` (paper Fig. 3). The replayer
     fails if the loan id is already live or the place's root is
     out of range, otherwise records the new shared loan; on the
-    paper side this picks `LStep.sharedBorrow`, witnessing the
-    inner value as `liftVal vR`. -/
+    paper side this picks `LStep.sharedBorrow`.
+
+    M10.x.4 — every Phase-D-dischargeable hypothesis is now derived
+    from `hStep` via M10.x.2's replayer reject paths
+    (HWM-strengthening + projection-empty) and the paper-side
+    rule's drop of the `Ω.resolvePlace p = some v` premise. The
+    lemma signature carries `hRep` + `hStep` only. -/
 theorem stepSharedBorrow_sound
   (hRep : concretise st = Ω)
-  (loan sbId : Nat) (place : Place) (symval : Nat)
-  (hPlaceProj : place.projection = #[])
-  (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
-  (hLoanFresh : st.loanIdHwm ≤ loan) :
+  (loan sbId : Nat) (place : Place) (symval : Nat) :
   stepEvent st (.sharedBorrow loan sbId place symval) = .ok st' →
   ∃ Ω', Valid (.sharedBorrow loan sbId place symval) Ω ∧
         LStep Ω (.sharedBorrow loan sbId place symval) Ω' ∧
         concretise st' = Ω' := by
-  obtain ⟨vR, hvR⟩ := hPlaceEnv
   intro h
   simp only [stepEvent, AeneasCheck.LLBCSharp.stepSharedBorrow,
     AeneasCheck.LLBCSharp.placeRootLocal,
@@ -342,61 +343,52 @@ theorem stepSharedBorrow_sound
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
-    -- Guard 2 (M10.x.2): `st.loanIdHwm ≤ loan` discharges the
-    -- monotone-allocator strengthening; `hLoanFresh` is exactly the
-    -- negation of the reject path's condition.
-    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
-    rw [if_neg hHwm] at h
-    -- Guard 3 (M10.x.2): projection-empty strengthening.
-    have hProj : ¬ place.projection.size ≠ 0 := by
-      intro hne; exact hne (by simp [hPlaceProj])
-    rw [if_neg hProj] at h
-    -- Guard 4: `place.local_ < st.numLocals` (on success).
-    by_cases hB : place.local_ ≥ st.numLocals
-    · rw [if_pos hB] at h; cases h
-    · rw [if_neg hB] at h
-      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
-      subst h
-      -- Witness Ω' = (Ω.bumpLoanId loan).bumpSymValId symval.
-      have hResolve : Ω.resolvePlace place = some (Concretise.liftVal vR) := by
-        subst hRep
-        simp [LLBCState.resolvePlace, hPlaceProj, LLBCState.resolveProj,
-          LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
-      have hLoanIdFresh : Ω.loanIdFresh loan := by
-        subst hRep
-        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
-      have hSymValIdFresh : Ω.symValIdFresh symval := by
-        subst hRep
-        simp [LLBCState.symValIdFresh, Concretise.concretise]
-      refine ⟨(Ω.bumpLoanId loan).bumpSymValId symval,
-              ⟨⟨_, hResolve⟩, hLoanIdFresh, hSymValIdFresh⟩,
-              LStep.sharedBorrow hResolve hLoanIdFresh hSymValIdFresh, ?_⟩
-      -- concretise (st.addLoan loan vR .shared) = Ω.bumpLoanId loan
-      -- (bumpSymValId is a no-op).
-      have hGetD :
-        (st.env.getD place.local_ (.bottom : Val)) = vR := by
-        rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
-      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
-        hGetD, LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan, hRep]
+    -- Guard 2 (M10.x.2): on success, `¬ st.loanIdHwm > loan`.
+    by_cases hHwm : st.loanIdHwm > loan
+    · rw [if_pos hHwm] at h; cases h
+    · rw [if_neg hHwm] at h
+      -- Guard 3 (M10.x.2): on success, `place.projection.size = 0`.
+      by_cases hProj : place.projection.size ≠ 0
+      · rw [if_pos hProj] at h; cases h
+      · rw [if_neg hProj] at h
+        -- Guard 4: `place.local_ < st.numLocals` (on success).
+        by_cases hB : place.local_ ≥ st.numLocals
+        · rw [if_pos hB] at h; cases h
+        · rw [if_neg hB] at h
+          simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+          subst h
+          have hLoanFresh : st.loanIdHwm ≤ loan := Nat.not_lt.mp hHwm
+          have hLoanIdFresh : Ω.loanIdFresh loan := by
+            subst hRep
+            simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+          have hSymValIdFresh : Ω.symValIdFresh symval := by
+            subst hRep
+            simp [LLBCState.symValIdFresh, Concretise.concretise]
+          refine ⟨(Ω.bumpLoanId loan).bumpSymValId symval,
+                  ⟨hLoanIdFresh, hSymValIdFresh⟩,
+                  LStep.sharedBorrow hLoanIdFresh hSymValIdFresh, ?_⟩
+          -- concretise (st.addLoan loan _ .shared) = Ω.bumpLoanId loan
+          -- (bumpSymValId is a no-op).
+          simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+            LLBCState.bumpSymValId,
+            Concretise.concretise_addLoan, hRep]
 
 /-- C8 / M10.2h — `EvMutBorrow { kind_hint = MbkDirect }` triggers
     `E-MutBorrow` (paper Fig. 3). The replayer additionally replaces
     `place.local_` by a `mutLoan loan` token; we chain
     `concretise_setLocal` and `concretise_addLoan` to discharge the
-    post-state equality. Same Phase-D-dischargeable hypotheses as
-    `stepSharedBorrow_sound`. -/
+    post-state equality.
+
+    M10.x.4 — drops `hPlaceProj` / `hPlaceEnv` (the paper-side rule
+    no longer existentially binds a source value) and `hLoanFresh`
+    (derived from `hStep` via M10.x.2's HWM reject path). -/
 theorem stepMutBorrow_direct_sound
   (hRep : concretise st = Ω)
-  (loan : Nat) (place : Place) (symval : Nat)
-  (hPlaceProj : place.projection = #[])
-  (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
-  (hLoanFresh : st.loanIdHwm ≤ loan) :
+  (loan : Nat) (place : Place) (symval : Nat) :
   stepEvent st (.mutBorrow loan place symval .direct) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval .direct) Ω ∧
         LStep Ω (.mutBorrow loan place symval .direct) Ω' ∧
         concretise st' = Ω' := by
-  obtain ⟨vR, hvR⟩ := hPlaceEnv
   intro h
   simp only [stepEvent, AeneasCheck.LLBCSharp.stepMutBorrow,
     AeneasCheck.LLBCSharp.placeRootLocal,
@@ -404,38 +396,31 @@ theorem stepMutBorrow_direct_sound
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
-    -- M10.x.2: HWM monotone-allocator strengthening; discharged by `hLoanFresh`.
-    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
-    rw [if_neg hHwm] at h
-    by_cases hB : place.local_ ≥ st.numLocals
-    · rw [if_pos hB] at h; cases h
-    · rw [if_neg hB] at h
-      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
-      subst h
-      have hResolve : Ω.resolvePlace place = some (Concretise.liftVal vR) := by
-        subst hRep
-        simp [LLBCState.resolvePlace, hPlaceProj, LLBCState.resolveProj,
-          LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
-      have hLoanIdFresh : Ω.loanIdFresh loan := by
-        subst hRep
-        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
-      have hSymValIdFresh : Ω.symValIdFresh symval := by
-        subst hRep
-        simp [LLBCState.symValIdFresh, Concretise.concretise]
-      refine ⟨((Ω.setLocal place.local_ (.mutLoan loan)).bumpLoanId loan).bumpSymValId symval,
-              ⟨⟨_, hResolve⟩, hLoanIdFresh, hSymValIdFresh⟩,
-              LStep.mutBorrow_direct hResolve hLoanIdFresh hSymValIdFresh, ?_⟩
-      -- concretise ((st.setLocal _ (.mutLoan loan)).addLoan loan _ .direct)
-      --   = (Ω.setLocal _ (.mutLoan loan)).bumpLoanId loan  (bumpSymValId no-op)
-      -- setLocal preserves `.loans` (it only mutates `env`), so the
-      -- freshness premise carries over without any transport.
-      have hGetD :
-        (st.env.getD place.local_ (.bottom : Val)) = vR := by
-        rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
-      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
-        hGetD, LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan,
-        Concretise.concretise_setLocal, hRep, Concretise.liftVal]
+    -- M10.x.2: on success, `¬ st.loanIdHwm > loan`.
+    by_cases hHwm : st.loanIdHwm > loan
+    · rw [if_pos hHwm] at h; cases h
+    · rw [if_neg hHwm] at h
+      by_cases hB : place.local_ ≥ st.numLocals
+      · rw [if_pos hB] at h; cases h
+      · rw [if_neg hB] at h
+        simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+        subst h
+        have hLoanFresh : st.loanIdHwm ≤ loan := Nat.not_lt.mp hHwm
+        have hLoanIdFresh : Ω.loanIdFresh loan := by
+          subst hRep
+          simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+        have hSymValIdFresh : Ω.symValIdFresh symval := by
+          subst hRep
+          simp [LLBCState.symValIdFresh, Concretise.concretise]
+        refine ⟨((Ω.setLocal place.local_ (.mutLoan loan)).bumpLoanId loan).bumpSymValId symval,
+                ⟨hLoanIdFresh, hSymValIdFresh⟩,
+                LStep.mutBorrow_direct hLoanIdFresh hSymValIdFresh, ?_⟩
+        -- concretise ((st.setLocal _ (.mutLoan loan)).addLoan loan _ .direct)
+        --   = (Ω.setLocal _ (.mutLoan loan)).bumpLoanId loan  (bumpSymValId no-op).
+        simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+          LLBCState.bumpSymValId,
+          Concretise.concretise_addLoan,
+          Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
 /-- C9 / M10.2i — `EvMutBorrow { kind_hint = MbkInAbsReborrow abs }`
     triggers `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8) on the named
@@ -489,19 +474,16 @@ theorem stepMutBorrow_inAbsReborrow_sound
     as `stepMutBorrow_direct_sound`: the replayer additionally writes
     a `mutLoan` token to `place.local_`. The replayer's recorded kind
     is `.lazyExpand` (distinct from `.direct`) but `concretise_addLoan`
-    is kind-agnostic. -/
+    is kind-agnostic. M10.x.4 drops all three Phase-D hypotheses
+    (same shape as `stepMutBorrow_direct_sound`). -/
 theorem stepMutBorrow_loopOwned_sound
   (hRep : concretise st = Ω)
-  (loan : Nat) (place : Place) (symval : Nat) (loopId : Nat)
-  (hPlaceProj : place.projection = #[])
-  (hPlaceEnv : ∃ v, st.env[place.local_]? = some v)
-  (hLoanFresh : st.loanIdHwm ≤ loan) :
+  (loan : Nat) (place : Place) (symval : Nat) (loopId : Nat) :
   stepEvent st
     (.mutBorrow loan place symval (.loopOwned loopId)) = .ok st' →
   ∃ Ω', Valid (.mutBorrow loan place symval (.loopOwned loopId)) Ω ∧
         LStep Ω (.mutBorrow loan place symval (.loopOwned loopId)) Ω' ∧
         concretise st' = Ω' := by
-  obtain ⟨vR, hvR⟩ := hPlaceEnv
   intro h
   simp only [stepEvent, AeneasCheck.LLBCSharp.stepMutBorrow,
     AeneasCheck.LLBCSharp.placeRootLocal,
@@ -509,34 +491,29 @@ theorem stepMutBorrow_loopOwned_sound
   by_cases hC : st.loans.contains loan = true
   · rw [if_pos hC] at h; cases h
   · rw [if_neg hC] at h
-    -- M10.x.2: HWM monotone-allocator strengthening; discharged by `hLoanFresh`.
-    have hHwm : ¬ st.loanIdHwm > loan := Nat.not_lt.mpr hLoanFresh
-    rw [if_neg hHwm] at h
-    by_cases hB : place.local_ ≥ st.numLocals
-    · rw [if_pos hB] at h; cases h
-    · rw [if_neg hB] at h
-      simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
-      subst h
-      have hResolve : Ω.resolvePlace place = some (Concretise.liftVal vR) := by
-        subst hRep
-        simp [LLBCState.resolvePlace, hPlaceProj, LLBCState.resolveProj,
-          LLBCState.getLocal, Concretise.concretise, Concretise.liftEnv, hvR]
-      have hLoanIdFresh : Ω.loanIdFresh loan := by
-        subst hRep
-        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
-      have hSymValIdFresh : Ω.symValIdFresh symval := by
-        subst hRep
-        simp [LLBCState.symValIdFresh, Concretise.concretise]
-      refine ⟨((Ω.setLocal place.local_ (.mutLoan loan)).bumpLoanId loan).bumpSymValId symval,
-              ⟨⟨_, hResolve⟩, hLoanIdFresh, hSymValIdFresh⟩,
-              LStep.mutBorrow_loopOwned hResolve hLoanIdFresh hSymValIdFresh, ?_⟩
-      have hGetD :
-        (st.env.getD place.local_ (.bottom : Val)) = vR := by
-        rw [Std.HashMap.getD_eq_getD_getElem?, hvR]; rfl
-      simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
-        hGetD, LLBCState.bumpSymValId,
-        Concretise.concretise_addLoan,
-        Concretise.concretise_setLocal, hRep, Concretise.liftVal]
+    -- M10.x.2: on success, `¬ st.loanIdHwm > loan`.
+    by_cases hHwm : st.loanIdHwm > loan
+    · rw [if_pos hHwm] at h; cases h
+    · rw [if_neg hHwm] at h
+      by_cases hB : place.local_ ≥ st.numLocals
+      · rw [if_pos hB] at h; cases h
+      · rw [if_neg hB] at h
+        simp only [Pure.pure, Except.pure, Except.ok.injEq] at h
+        subst h
+        have hLoanFresh : st.loanIdHwm ≤ loan := Nat.not_lt.mp hHwm
+        have hLoanIdFresh : Ω.loanIdFresh loan := by
+          subst hRep
+          simpa [LLBCState.loanIdFresh, Concretise.concretise] using hLoanFresh
+        have hSymValIdFresh : Ω.symValIdFresh symval := by
+          subst hRep
+          simp [LLBCState.symValIdFresh, Concretise.concretise]
+        refine ⟨((Ω.setLocal place.local_ (.mutLoan loan)).bumpLoanId loan).bumpSymValId symval,
+                ⟨hLoanIdFresh, hSymValIdFresh⟩,
+                LStep.mutBorrow_loopOwned hLoanIdFresh hSymValIdFresh, ?_⟩
+        simp only [show (concretise : SymState → LLBCState) = Concretise.concretise from rfl,
+          LLBCState.bumpSymValId,
+          Concretise.concretise_addLoan,
+          Concretise.concretise_setLocal, hRep, Concretise.liftVal]
 
 /-! ### End-borrow trio (C11-C13)
 
@@ -660,20 +637,23 @@ no-op. Both branches collapse to the same paper-side conclusion. -/
 
 /-- C14 / M10.2n — `EvReborrow child parent place …` triggers
     `Le-Reborrow-MutBorrow-Abs` (paper Fig. 8 body-position entry).
-    Two Phase-D-dischargeable freshness premises:
-    * `hChildFresh : st.loanIdHwm ≤ child` — matches the paper's
-      `loanIdFresh child` premise after the `concretise` lift.
-    * `hParentInHwm : parent < st.loanIdHwm` — used to discharge
-      the no-op `Ω.bumpLoanId parent = Ω` when the replayer's
-      strict-path falls through to the pre-add-parent branch. Cert
-      emission discipline (parent loan id was previously allocated)
-      discharges. -/
+
+    M10.x.4 — both Phase-D-dischargeable hypotheses
+    (`hChildFresh : st.loanIdHwm ≤ child`,
+     `hParentInHwm : parent < st.loanIdHwm`) drop:
+    * `hChildFresh` is discharged from `hStep` via M10.x.2's
+      monotone-allocator reject path.
+    * `hParentInHwm` is replaced by a paper-side rule split: the
+      tracked-parent branch (`st.loans.contains parent`) fires
+      `LStep.reborrow` with post-state `Ω.bumpLoanId child`; the
+      untracked-parent branch fires `LStep.reborrow_untracked` with
+      post-state `(Ω.bumpLoanId parent).bumpLoanId child`, mirroring
+      the replayer's `(st.addLoan parent _ _).addLoan child _ _`
+      pre-add fallback. -/
 theorem stepReborrow_sound
   (hRep : concretise st = Ω)
   (child parent : Nat) (place : Place)
-  (parentLive : Bool) (parentAbs : Option Nat)
-  (hChildFresh : st.loanIdHwm ≤ child)
-  (hParentInHwm : parent < st.loanIdHwm) :
+  (parentLive : Bool) (parentAbs : Option Nat) :
   stepEvent st (.reborrow child parent place parentLive parentAbs)
     = .ok st' →
   ∃ Ω', Valid (.reborrow child parent place parentLive parentAbs) Ω ∧
@@ -686,46 +666,40 @@ theorem stepReborrow_sound
   by_cases hC : st.loans.contains child = true
   · rw [if_pos hC] at hStep; cases hStep
   · rw [if_neg hC] at hStep
-    -- Guard 2 (M10.x.2): HWM monotone-allocator strengthening on the
-    -- child id; discharged by `hChildFresh`.
-    have hHwm : ¬ st.loanIdHwm > child := Nat.not_lt.mpr hChildFresh
-    rw [if_neg hHwm] at hStep
-    -- Guard 3: place's root local is in bounds.
-    by_cases hB : place.local_ ≥ st.numLocals
-    · rw [if_pos hB] at hStep; cases hStep
-    · rw [if_neg hB] at hStep
-      simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
-      subst hStep
-      -- Paper-side freshness on the child id.
-      have hChildIdFresh : Ω.loanIdFresh child := by
-        subst hRep
-        simpa [LLBCState.loanIdFresh, Concretise.concretise] using hChildFresh
-      -- Paper-side bumpLoanId is a no-op on `parent` since parent
-      -- is already past the HWM.
-      have hParentNoOp : Ω.bumpLoanId parent = Ω := by
-        unfold LLBCState.bumpLoanId
-        have hParentHwm : parent < Ω.freshness.nextLoanId := by
+    -- Guard 2 (M10.x.2): on success, `¬ st.loanIdHwm > child`.
+    by_cases hHwm : st.loanIdHwm > child
+    · rw [if_pos hHwm] at hStep; cases hStep
+    · rw [if_neg hHwm] at hStep
+      -- Guard 3: place's root local is in bounds.
+      by_cases hB : place.local_ ≥ st.numLocals
+      · rw [if_pos hB] at hStep; cases hStep
+      · rw [if_neg hB] at hStep
+        simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+        subst hStep
+        have hChildFresh : st.loanIdHwm ≤ child := Nat.not_lt.mp hHwm
+        -- Paper-side freshness on the child id.
+        have hChildIdFresh : Ω.loanIdFresh child := by
           subst hRep
-          simpa [Concretise.concretise] using hParentInHwm
-        rcases Ω with ⟨ctx, abs, ⟨nL, nA, nS⟩⟩
-        simp only at *
-        have : max nL (parent + 1) = nL :=
-          Nat.max_eq_left (Nat.succ_le_of_lt hParentHwm)
-        simp [this]
-      refine ⟨Ω.bumpLoanId child,
-              hChildIdFresh,
-              LStep.reborrow hChildIdFresh, ?_⟩
-      -- Both replayer branches conclude `?.addLoan child .bottom .reborrow`.
-      -- Push concretise through the outer addLoan unconditionally.
-      by_cases hP : st.loans.contains parent = true
-      · rw [if_pos hP]
-        simp only [show (concretise : SymState → LLBCState)
-                            = Concretise.concretise from rfl,
-          Concretise.concretise_addLoan, hRep]
-      · rw [if_neg hP]
-        simp only [show (concretise : SymState → LLBCState)
-                            = Concretise.concretise from rfl,
-          Concretise.concretise_addLoan, hParentNoOp, hRep]
+          simpa [LLBCState.loanIdFresh, Concretise.concretise] using hChildFresh
+        -- Dispatch on whether the parent loan is tracked. The
+        -- tracked branch picks `LStep.reborrow`; the untracked
+        -- branch picks `LStep.reborrow_untracked` (M10.x.4
+        -- paper-side rule split).
+        by_cases hP : st.loans.contains parent = true
+        · rw [if_pos hP]
+          refine ⟨Ω.bumpLoanId child,
+                  hChildIdFresh,
+                  LStep.reborrow hChildIdFresh, ?_⟩
+          simp only [show (concretise : SymState → LLBCState)
+                              = Concretise.concretise from rfl,
+            Concretise.concretise_addLoan, hRep]
+        · rw [if_neg hP]
+          refine ⟨(Ω.bumpLoanId parent).bumpLoanId child,
+                  hChildIdFresh,
+                  LStep.reborrow_untracked hChildIdFresh, ?_⟩
+          simp only [show (concretise : SymState → LLBCState)
+                              = Concretise.concretise from rfl,
+            Concretise.concretise_addLoan, hRep]
 
 /-! ### Call (C15, full absSig support)
 
@@ -1061,25 +1035,21 @@ theorem stepEvent_sound :
   | mutBorrow loan place symval kindHint =>
     cases kindHint with
     | direct =>
-      obtain ⟨hPlaceProj, hPlaceEnv, hLoanFresh⟩ :=
-        CertGen_faithful.mutBorrow_direct st st' loan place symval hStep
-      exact stepMutBorrow_direct_sound st st' Ω hRep loan place symval
-        hPlaceProj hPlaceEnv hLoanFresh hStep
+      -- M10.x.4: `CertGen_faithful.mutBorrow_direct` retired; the
+      -- per-event lemma reads the HWM-fresh + projection-tolerant
+      -- post-state directly from `hStep`.
+      exact stepMutBorrow_direct_sound st st' Ω hRep loan place symval hStep
     | inAbsReborrow absId =>
       obtain ⟨hAbsExists, hLoanFresh⟩ :=
         CertGen_faithful.mutBorrow_inAbsReborrow st st' loan place symval absId hStep
       exact stepMutBorrow_inAbsReborrow_sound st st' Ω hRep loan place symval absId
         hAbsExists hLoanFresh hStep
     | loopOwned loopId =>
-      obtain ⟨hPlaceProj, hPlaceEnv, hLoanFresh⟩ :=
-        CertGen_faithful.mutBorrow_loopOwned st st' loan place symval loopId hStep
-      exact stepMutBorrow_loopOwned_sound st st' Ω hRep loan place symval loopId
-        hPlaceProj hPlaceEnv hLoanFresh hStep
+      -- M10.x.4: `CertGen_faithful.mutBorrow_loopOwned` retired.
+      exact stepMutBorrow_loopOwned_sound st st' Ω hRep loan place symval loopId hStep
   | sharedBorrow loan sbId place symval =>
-    obtain ⟨hPlaceProj, hPlaceEnv, hLoanFresh⟩ :=
-      CertGen_faithful.sharedBorrow st st' loan sbId place symval hStep
-    exact stepSharedBorrow_sound st st' Ω hRep loan sbId place symval
-      hPlaceProj hPlaceEnv hLoanFresh hStep
+    -- M10.x.4: `CertGen_faithful.sharedBorrow` retired.
+    exact stepSharedBorrow_sound st st' Ω hRep loan sbId place symval hStep
   | assign dst rhs =>
     exact stepAssign_sound st st' Ω hRep dst rhs hStep
   | move src dst =>
@@ -1146,10 +1116,11 @@ theorem stepEvent_sound :
   | binop op lhs rhs dst =>
     exact stepBinop_sound st st' Ω hRep op lhs rhs dst hStep
   | reborrow child parent place parentLive parentAbs =>
-    obtain ⟨hChildFresh, hParentInHwm⟩ :=
-      CertGen_faithful.reborrow st st' child parent place parentLive parentAbs hStep
-    exact stepReborrow_sound st st' Ω hRep child parent place parentLive parentAbs
-      hChildFresh hParentInHwm hStep
+    -- M10.x.4: `CertGen_faithful.reborrow` retired. The HWM-fresh
+    -- child clause is replayer-discharged via M10.x.2's reject path;
+    -- the parent-in-HWM clause is replaced by a paper-side rule
+    -- split (`LStep.reborrow` vs `LStep.reborrow_untracked`).
+    exact stepReborrow_sound st st' Ω hRep child parent place parentLive parentAbs hStep
   | call fn callId fnName args dst regionAbs absSig =>
     -- M10.4a-post: `CertGen_faithful.call` (dst-in-bounds) was hStep-derivable;
     -- the replayer's `stepCall` fails on `root ≥ numLocals`, so the inequality

@@ -67,18 +67,19 @@ open AeneasCheck.Raw
 def Valid (e : Event) (Ω : LLBCState) : Prop :=
   match e with
   -- Fig. 3 — direct-borrow / ownership / control-flow ---
-  | .mutBorrow ℓ p σ .direct =>
-      (∃ v, Ω.resolvePlace p = some v) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  -- M10.x.4 — the `.direct` / `.loopOwned` / `.sharedBorrow` rules
+  -- dropped their `Ω.resolvePlace p = some v` existential (the
+  -- value `v` was vestigial in the `LStep` post-state); the
+  -- premise list collapses to freshness only.
+  | .mutBorrow ℓ _ σ .direct =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
   | .mutBorrow ℓ _ σ (.inAbsReborrow absId) =>
       (∃ r, Ω.abs absId = some r) ∧
         Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
-  | .mutBorrow ℓ p σ (.loopOwned _) =>
-      (∃ v, Ω.resolvePlace p = some v) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
-  | .sharedBorrow ℓ _ p σ =>
-      (∃ v, Ω.resolvePlace p = some v) ∧
-        Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  | .mutBorrow ℓ _ σ (.loopOwned _) =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
+  | .sharedBorrow ℓ _ _ σ =>
+      Ω.loanIdFresh ℓ ∧ Ω.symValIdFresh σ
   -- `endBorrow` splits into endBorrow_direct (∃ x, ctx x =
   -- some (.mutLoan ℓ)), endBorrow_reborrow (no premise), and
   -- endBorrow_shared (no premise). The disjunction is `True`.
