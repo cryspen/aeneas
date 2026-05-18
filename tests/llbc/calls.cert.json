@@ -1,6 +1,6 @@
 {
-  "fmt_version": 4,
-  "crate_hash": "5e24cc5984d6b10877c5fd7e1248a69c",
+  "fmt_version": 6,
+  "crate_hash": "17dc5fa1e89506f12eaa265fb0763930",
   "functions": [
     {
       "fn_id": 0,
@@ -121,7 +121,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     },
     {
       "fn_id": 1,
@@ -247,7 +248,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     },
     {
       "fn_id": 2,
@@ -555,7 +557,12 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null
+      ]
     },
     {
       "fn_id": 3,
@@ -794,7 +801,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null
+      ]
     },
     {
       "fn_id": 4,
@@ -1013,10 +1024,18 @@
               "live_loans": []
             },
             "witnesses": [
-              { "local": 4, "rule": { "JoinSymbolic": { "fresh_sv": 4 } } },
-              { "local": 3, "rule": "JoinSame" },
-              { "local": 2, "rule": "JoinSame" },
-              { "local": 1, "rule": { "JoinSymbolic": { "fresh_sv": 3 } } }
+              {
+                "local": 4,
+                "rule": { "JoinSymbolic": { "fresh_sv": 4 } },
+                "delta": { "Symbolic": { "fresh_sv": 4 } }
+              },
+              { "local": 3, "rule": "JoinSame", "delta": "Trivial" },
+              { "local": 2, "rule": "JoinSame", "delta": "Trivial" },
+              {
+                "local": 1,
+                "rule": { "JoinSymbolic": { "fresh_sv": 3 } },
+                "delta": { "Symbolic": { "fresh_sv": 3 } }
+              }
             ]
           }
         },
@@ -1104,7 +1123,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null
+      ]
     }
   ],
   "llbc_program": {

@@ -1,6 +1,6 @@
 {
-  "fmt_version": 4,
-  "crate_hash": "ab254281f30c8d6e970ede54f2fe681b",
+  "fmt_version": 6,
+  "crate_hash": "a3fe357db77be95408f2b17f0b566e38",
   "functions": [
     {
       "fn_id": 0,
@@ -265,7 +265,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null
+      ]
     },
     {
       "fn_id": 1,
@@ -530,7 +534,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null
+      ]
     },
     {
       "fn_id": 2,
@@ -671,7 +679,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     },
     {
       "fn_id": 3,
@@ -812,7 +821,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     },
     {
       "fn_id": 4,
@@ -953,7 +963,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     }
   ],
   "llbc_program": {

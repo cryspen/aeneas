@@ -1,12 +1,12 @@
 {
-  "fmt_version": 4,
-  "crate_hash": "c1a5cda64df1dae960c5b748b2afe735",
+  "fmt_version": 6,
+  "crate_hash": "2a13d05a1983fd2afe352433c2bb98b1",
   "functions": [
     {
       "fn_id": 0,
       "fn_name": "incr_cert::incr",
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+        "file": "tests/src/incr_cert.rs",
         "beg_line": 7,
         "beg_col": 0,
         "end_line": 9,
@@ -121,13 +121,14 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     },
     {
       "fn_id": 1,
       "fn_name": "incr_cert::incr_local",
       "source_span": {
-        "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+        "file": "tests/src/incr_cert.rs",
         "beg_line": 11,
         "beg_col": 0,
         "end_line": 15,
@@ -255,13 +256,16 @@
         {
           "EvEndBorrow": {
             "loan": 1,
-            "restore": { "given_back": { "SymVal": 1 } }
+            "restore": {
+              "given_back": { "SymVal": 1 },
+              "holder_local": null
+            }
           }
         },
         {
           "EvEndBorrow": {
             "loan": 0,
-            "restore": { "given_back": { "SymVal": 1 } }
+            "restore": { "given_back": { "SymVal": 1 }, "holder_local": 1 }
           }
         },
         {
@@ -310,7 +314,11 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [
+        null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null
+      ]
     }
   ],
   "llbc_program": {
@@ -324,7 +332,7 @@
           "source_text": "pub fn incr(x: &mut u32) {\n    *x += 1;\n}",
           "lang_item": null,
           "span": {
-            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "file": "tests/src/incr_cert.rs",
             "beg_line": 7,
             "beg_col": 0,
             "end_line": 9,
@@ -346,7 +354,7 @@
         },
         "body": {
           "span": {
-            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "file": "tests/src/incr_cert.rs",
             "beg_line": 0,
             "beg_col": 0,
             "end_line": 9,
@@ -355,7 +363,7 @@
           "statements": [
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 0,
                 "beg_col": 0,
                 "end_line": 0,
@@ -387,7 +395,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 8,
                 "beg_col": 4,
                 "end_line": 8,
@@ -431,7 +439,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 8,
                 "beg_col": 4,
                 "end_line": 8,
@@ -460,7 +468,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 7,
                 "beg_col": 25,
                 "end_line": 9,
@@ -492,7 +500,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 9,
                 "beg_col": 1,
                 "end_line": 9,
@@ -518,7 +526,7 @@
           "source_text": "pub fn incr_local(mut y: u32) -> u32 {\n    let r: &mut u32 = &mut y;\n    *r += 1;\n    y\n}",
           "lang_item": null,
           "span": {
-            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "file": "tests/src/incr_cert.rs",
             "beg_line": 11,
             "beg_col": 0,
             "end_line": 15,
@@ -538,7 +546,7 @@
         },
         "body": {
           "span": {
-            "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+            "file": "tests/src/incr_cert.rs",
             "beg_line": 12,
             "beg_col": 8,
             "end_line": 15,
@@ -547,7 +555,7 @@
           "statements": [
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 12,
                 "beg_col": 22,
                 "end_line": 12,
@@ -578,7 +586,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 12,
                 "beg_col": 22,
                 "end_line": 12,
@@ -613,7 +621,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 12,
                 "beg_col": 28,
                 "end_line": 12,
@@ -623,7 +631,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 13,
                 "beg_col": 4,
                 "end_line": 13,
@@ -667,7 +675,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 13,
                 "beg_col": 4,
                 "end_line": 13,
@@ -696,7 +704,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 14,
                 "beg_col": 4,
                 "end_line": 14,
@@ -723,7 +731,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 15,
                 "beg_col": 0,
                 "end_line": 15,
@@ -733,7 +741,7 @@
             },
             {
               "span": {
-                "file": "/Users/karthik/aeneas/tests/src/incr_cert.rs",
+                "file": "tests/src/incr_cert.rs",
                 "beg_line": 15,
                 "beg_col": 1,
                 "end_line": 15,

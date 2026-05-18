@@ -1,22 +1,177 @@
-//! Differential property tests.
+//! Differential property tests for the aeneas-lean-checker vertical slice.
 //!
-//! For each function in the M8+ slice, generate random inputs, run
-//! the reference function and the generated model, assert they agree.
+//! For each fixture, generate random inputs, run the original Rust
+//! function (R₀ — `aeneas_cert_differential::ref_impl` and the ADT
+//! per-fixture modules) and the generated model (R₁ —
+//! `aeneas_cert_differential::model` and the per-fixture
+//! `*_model.rs` includes), assert they agree.
+//!
+//! Fixtures live under `tests/src/*.rs`; certs under
+//! `tests/llbc/*.cert.json`. Regenerate models with
+//! `./scripts/regen-diff-models.sh`.
 
-use aeneas_cert_differential::{incr_model, incr_ref};
-use aeneas_cert_differential::aggregates_basic::{mk_pair_ref, mk_pair_model, mk_tuple_ref, mk_tuple_model};
-use aeneas_cert_differential::reborrows::{self, set_fst_ref, set_fst_model};
+use aeneas_cert_differential::{incr_model, incr_ref, model, ref_impl};
+use aeneas_cert_differential::aggregates_basic::{
+    mk_pair_model, mk_pair_ref, mk_tuple_model, mk_tuple_ref,
+};
+use aeneas_cert_differential::reborrows::{self, set_fst_model, set_fst_ref};
 use proptest::prelude::*;
+
+// ====================================================================
+// incr_cert.rs
+// ====================================================================
+
+proptest! {
+    /// `incr_cert::incr` — direct-borrow `*x += 1`, reshaped by the
+    /// cert to `u32 → u32`. Existing pre-campaign test (kept for
+    /// back-compat with the M9.0c era harness).
+    #[test]
+    fn incr_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(ref_impl::incr_cert_incr(x), model::incr_model(x));
+    }
+}
+
+// ====================================================================
+// constants.rs
+// ====================================================================
+
+proptest! {
+    /// `constants::incr` — `const fn incr(n: u32) -> u32 { n + 1 }`.
+    /// Generic case across the full u32 range. Release-mode `+`
+    /// wraps silently, matching R₀'s `wrapping_add(1)`.
+    #[test]
+    fn constants_incr_matches_model(n in any::<u32>()) {
+        prop_assert_eq!(ref_impl::constants_incr(n), model::constants_incr_model(n));
+    }
+
+    /// Edge case: small inputs (0..256) where `+ 1` cannot wrap.
+    #[test]
+    fn constants_incr_matches_model_small(n in 0u32..256) {
+        prop_assert_eq!(ref_impl::constants_incr(n), model::constants_incr_model(n));
+    }
+
+    /// Edge case: top of the u32 range (MAX-256 ..= MAX) where `+ 1`
+    /// wraps. Stresses the model's release-mode overflow semantics.
+    #[test]
+    fn constants_incr_matches_model_top(n in (u32::MAX - 255)..=u32::MAX) {
+        prop_assert_eq!(ref_impl::constants_incr(n), model::constants_incr_model(n));
+    }
+
+    /// `constants::mk_pair0` — `const fn mk_pair0(x, y) -> (x, y)`.
+    #[test]
+    fn constants_mk_pair0_matches_model(x in any::<u32>(), y in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::constants_mk_pair0(x, y),
+            model::constants_mk_pair0_model(x, y)
+        );
+    }
+
+    /// `constants::add` — `const fn add(a: i32, b: i32) -> a + b`.
+    /// Release-mode `+` wraps silently, matching R₀'s
+    /// `wrapping_add`. Both `a` and `b` cover the full i32 range.
+    #[test]
+    fn constants_add_matches_model(a in any::<i32>(), b in any::<i32>()) {
+        prop_assert_eq!(ref_impl::constants_add(a, b), model::constants_add_model(a, b));
+    }
+}
+
+// ====================================================================
+// bitwise.rs
+// ====================================================================
 
 proptest! {
     #[test]
-    fn incr_matches_model(x in any::<u32>()) {
-        // M9.0c: param count now comes from the LLBC signature, so
-        // `incr_model` has one param (matching `incr(x: &mut u32)`)
-        // rather than the M7-era over-counted placeholder. Once M9.1
-        // / M10 add binop and call hooks the *reference* side will
-        // shift to `x.wrapping_add(1)` and exercise the full pipeline.
-        prop_assert_eq!(incr_ref(x), incr_model(x));
+    fn bitwise_xor_u32_matches_model(a in any::<u32>(), b in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::bitwise_xor_u32(a, b),
+            model::bitwise_xor_u32_model(a, b)
+        );
+    }
+
+    #[test]
+    fn bitwise_or_u32_matches_model(a in any::<u32>(), b in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::bitwise_or_u32(a, b),
+            model::bitwise_or_u32_model(a, b)
+        );
+    }
+
+    #[test]
+    fn bitwise_and_u32_matches_model(a in any::<u32>(), b in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::bitwise_and_u32(a, b),
+            model::bitwise_and_u32_model(a, b)
+        );
+    }
+
+    #[test]
+    fn bitwise_shift_u32_matches_model(a in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::bitwise_shift_u32(a),
+            model::bitwise_shift_u32_model(a)
+        );
+    }
+
+    #[test]
+    fn bitwise_shift_i32_matches_model(a in any::<i32>()) {
+        prop_assert_eq!(
+            ref_impl::bitwise_shift_i32(a),
+            model::bitwise_shift_i32_model(a)
+        );
+    }
+}
+
+// ====================================================================
+// compare_simple.rs
+// ====================================================================
+
+proptest! {
+    #[test]
+    fn compare_simple_id_u32_matches_model(x in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::compare_simple_id_u32(x),
+            model::compare_simple_id_u32_model(x)
+        );
+    }
+
+    /// `compare_simple::add_u32` — newly unblocked by `3d086b79`
+    /// (brace-path fix). Previously the model emitted
+    /// `core::num::{u32}::wrapping_add(...)` which is invalid Rust
+    /// syntax.
+    #[test]
+    fn compare_simple_add_u32_matches_model(a in any::<u32>(), b in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::compare_simple_add_u32(a, b),
+            model::compare_simple_add_u32_model(a, b)
+        );
+    }
+}
+
+// ====================================================================
+// calls.rs
+// ====================================================================
+
+proptest! {
+    /// `calls::incr_inner(y: &mut u32)` — the cert collapses the
+    /// in/out borrow into a forward scalar; we shim R₀ to
+    /// `u32 → u32` to match.
+    #[test]
+    fn calls_incr_inner_matches_model(y in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::calls_incr_inner(y),
+            model::calls_incr_inner_model(y)
+        );
+    }
+
+    /// `calls::pick(b, x, y)` — newly unblocked by `3d086b79`. The
+    /// cert routes the body through `eval_switch_with_join`; the
+    /// emitted model uses an if/else and a final `wrapping_add(1)`.
+    #[test]
+    fn calls_pick_matches_model(b in any::<bool>(), x in any::<u32>(), y in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::calls_pick(b, x, y),
+            model::calls_pick_model(b, x, y)
+        );
     }
 
     /// Phase 1C: SymRecord lowering → Rust struct literal

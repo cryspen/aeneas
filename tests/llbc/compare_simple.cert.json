@@ -1,6 +1,6 @@
 {
-  "fmt_version": 4,
-  "crate_hash": "d72d2bd65ac5b6690f179356317eec3f",
+  "fmt_version": 6,
+  "crate_hash": "c4d15832f564709b5f30abf864aec8de",
   "functions": [
     {
       "fn_id": 0,
@@ -59,7 +59,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null ]
     },
     {
       "fn_id": 1,
@@ -180,7 +181,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     },
     {
       "fn_id": 2,
@@ -327,7 +329,8 @@
           }
         }
       ],
-      "final_state": { "env": [], "live_loans": [] }
+      "final_state": { "env": [], "live_loans": [] },
+      "stmt_refs": [ null, null, null, null, null, null, null, null, null ]
     }
   ],
   "llbc_program": {
