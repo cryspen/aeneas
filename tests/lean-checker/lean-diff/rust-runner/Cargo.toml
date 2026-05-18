@@ -1,0 +1,9 @@
+[package]
+name = "lean-diff-rust-runner"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "rust-oracle"
+path = "src/main.rs"
