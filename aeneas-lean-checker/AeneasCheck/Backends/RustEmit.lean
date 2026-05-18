@@ -154,8 +154,28 @@ def sanitizeRustPath (n : String) : String := Id.run do
       out := out ++ txt
   return out
 
+/-- Session 4: rewrite a Pure-IR head into a Rust-valid path.
+
+The Pure IR uses Lean's `.` separator for qualified names — including
+enum variant ctors (`Sign.Pos`, `NumOrZero.Num`) emitted via
+`Forward.variantPExpr`. Rust requires `::` for paths in *expression*
+position (call heads + bare variant refs). For Charon-style heads
+like `core::num::{u32}::wrapping_add`, `sanitizeRustPath` first
+strips the brace decorations and yields a `::`-separated path; for
+ctor heads no braces appear and the `.` separator leaks through.
+Rewriting all remaining `.` to `::` is safe because the only places
+that synthesise a `.` in the head string are Lean-style qualifications
+(field access uses the separate `.fieldAccess` PExpr ctor, not an
+embedded `.` in the head). -/
+def rustifyPath (n : String) : String :=
+  (sanitizeRustPath n).replace "." "::"
+
 partial def PExpr.toRust : PExpr → String
-  | .var name => name
+  | .var name =>
+    -- Bare-variable case: most `.var` names are unqualified (`x1`,
+    -- `t0`, `s33`); the only dotted form is a nullary variant ctor
+    -- like `Sign.Pos`. Apply the same path-rewrite as `.app` heads.
+    rustifyPath name
   | .lit l => litToRust l
   | .app head args =>
     match binopRustOp head, binopRustMethod head, args.toList with
@@ -165,8 +185,9 @@ partial def PExpr.toRust : PExpr → String
       l.toRust ++ "." ++ m ++ "(" ++ r.toRust ++ ")"
     | _, _, _ =>
       -- Strip Charon-style `{…}` brace-decorated segments (impl-for
-      -- and type-instantiation markers) which aren't valid Rust.
-      let head := sanitizeRustPath head
+      -- and type-instantiation markers), then rewrite the remaining
+      -- Lean-style `.` separators to Rust's `::`.
+      let head := rustifyPath head
       if args.isEmpty then head
       else s!"{head}(" ++ String.intercalate ", " (args.toList.map PExpr.toRust) ++ ")"
   | .letIn name _ e1 e2 =>

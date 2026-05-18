@@ -326,3 +326,46 @@ proptest! {
         );
     }
 }
+
+// ====================================================================
+// enums_basic.rs (Session 4 — newly unblocked by the RustEmit
+// `Type.Ctor` → `Type::Ctor` path rewrite).
+// ====================================================================
+
+proptest! {
+    /// `flip` round-trips through the 3-variant `Sign` enum. Property:
+    /// `flip ∘ flip ∘ flip == flip` (only when the Zero-fixed-point
+    /// is excluded; here we simply require ref ≡ model.
+    #[test]
+    fn enums_basic_flip_matches_model(v in 0u8..3) {
+        use aeneas_cert_differential::enums_basic::{Sign, flip_ref, flip_model};
+        let s = match v { 0 => Sign::Pos, 1 => Sign::Neg, _ => Sign::Zero };
+        prop_assert_eq!(flip_ref(s), flip_model(s));
+    }
+}
+
+// ====================================================================
+// enums_payload.rs (Session 4 — payload-bearing match-arm + variant
+// construction).
+// ====================================================================
+
+proptest! {
+    #[test]
+    fn enums_payload_value_matches_model(tag in 0u8..2, n in any::<u32>()) {
+        use aeneas_cert_differential::enums_payload::{NumOrZero, value_ref, value_model};
+        let x = if tag == 0 { NumOrZero::Num(n) } else { NumOrZero::Zero };
+        prop_assert_eq!(value_ref(x), value_model(x));
+    }
+
+    #[test]
+    fn enums_payload_wrap_matches_model(n in any::<u32>()) {
+        use aeneas_cert_differential::enums_payload::{wrap_ref, wrap_model};
+        prop_assert_eq!(wrap_ref(n), wrap_model(n));
+    }
+
+    #[test]
+    fn enums_payload_zero_matches_model(_dummy in any::<u8>()) {
+        use aeneas_cert_differential::enums_payload::{zero_ref, zero_model};
+        prop_assert_eq!(zero_ref(), zero_model());
+    }
+}

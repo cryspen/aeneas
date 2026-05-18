@@ -210,6 +210,72 @@ pub mod reborrows {
     }
 }
 
+// Session 4 — Phase 4b sweep (Item 4b): enum fixtures unblocked by the
+// `PExpr.toRust` rewrite that turns Lean-style `Type.Ctor` paths into
+// Rust's `Type::Ctor`. `enums_basic::flip` exercises a nullary-only
+// enum match-arm round trip; `enums_payload::{value, wrap, zero}` adds
+// a payload-bearing variant.
+
+pub mod enums_basic {
+    #![allow(unused_variables, dead_code, unused_parens, unused_mut, non_snake_case)]
+
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    pub enum Sign {
+        Pos,
+        Neg,
+        Zero,
+    }
+
+    pub fn flip_ref(s: Sign) -> Sign {
+        match s {
+            Sign::Pos => Sign::Neg,
+            Sign::Neg => Sign::Pos,
+            Sign::Zero => Sign::Zero,
+        }
+    }
+
+    // Verbatim from /tmp/enums_basic-rmodel.rs (post-Session-4
+    // `::`-path fix). The cert walker correctly converts the bodies
+    // after Session 4's `PExpr.toRust` rewrite.
+    pub fn flip_model(x1: Sign) -> Sign {
+        match x1 { Sign::Pos => Sign::Neg, Sign::Neg => Sign::Pos, Sign::Zero => Sign::Zero, }
+    }
+}
+
+pub mod enums_payload {
+    #![allow(unused_variables, dead_code, unused_parens, unused_mut, non_snake_case)]
+
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    pub enum NumOrZero {
+        Num(u32),
+        Zero,
+    }
+
+    pub fn value_ref(x: NumOrZero) -> u32 {
+        match x {
+            NumOrZero::Num(n) => n,
+            NumOrZero::Zero => 0,
+        }
+    }
+    pub fn wrap_ref(x: u32) -> NumOrZero {
+        NumOrZero::Num(x)
+    }
+    pub fn zero_ref() -> NumOrZero {
+        NumOrZero::Zero
+    }
+
+    // Verbatim from /tmp/enums_payload-rmodel.rs.
+    pub fn value_model(x1: NumOrZero) -> u32 {
+        match x1 { NumOrZero::Num(x2) => x2, NumOrZero::Zero => 0u32, }
+    }
+    pub fn wrap_model(x1: u32) -> NumOrZero {
+        NumOrZero::Num(x1)
+    }
+    pub fn zero_model() -> NumOrZero {
+        NumOrZero::Zero
+    }
+}
+
 // ----------------------------------------------------------------------
 // Back-compat re-exports so the existing single-fixture proptest in
 // tests/diff.rs still compiles unchanged.
