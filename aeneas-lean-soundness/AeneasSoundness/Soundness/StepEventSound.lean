@@ -984,18 +984,20 @@ fixture set is empty-only. The full case awaits an M9.8-style
 schema follow-up (extend `LStep.loopInv` to allow `.reborrow`-only
 loan additions, or split into a `loopRegisterLoan` event). -/
 
-/-- C24 / M10.3a (M10.x.7 revision) — `EvLoopInv loopId invariant
-    loanRegistry` (paper §5.2 fixpoint snapshot). M10.x.7 dropped
-    `CertGen_faithful.loopInv`'s `loanRegistry = #[]` hypothesis;
-    instead the paper-side `LStep.loopInv` post-state was
+/-- C24 / M10.3a (M10.x.7 / M10.x.11 revision) — `EvLoopInv loopId
+    invariant loanRegistry` (paper §5.2 fixpoint snapshot). M10.x.7
+    dropped `CertGen_faithful.loopInv`'s `loanRegistry = #[]`
+    hypothesis; instead the paper-side `LStep.loopInv` post-state was
     strengthened to a `loanRegistry.foldl bumpLoanId` (which the
     M10.x.7 commute lemma matches against the replayer's
-    conditional `addLoan` fold). The lemma takes `HwmInvariant st`
-    as an extra hypothesis (the skip-branch in the commute requires
-    `b ∈ st.loans → b < st.loanIdHwm`). -/
+    conditional `addLoan` fold). M10.x.11 weakens the precondition
+    from `HwmInvariant` to `LoanHwmInvariant` — only the loan-half
+    is consumed by the skip-branch (`b ∈ st.loans → b < st.loanIdHwm`),
+    so Phase E can thread the (preservation-easier)
+    `LoanHwmInvariant` through `replayFun_sound`. -/
 theorem stepLoopInv_sound
   (hRep : concretise st = Ω)
-  (hInv : Invariants.HwmInvariant st)
+  (hInv : Invariants.LoanHwmInvariant st)
   (loopId : Nat) (invariant : StateSummary)
   (loanRegistry : Array (Nat × Nat)) :
   stepEvent st (.loopInv loopId invariant loanRegistry) = .ok st' →
@@ -1143,7 +1145,7 @@ the per-event lemmas added across Phase C). -/
 theorem stepEvent_sound :
     ∀ (ev : Event) (st st' : SymState) (Ω : LLBCState),
       concretise st = Ω →
-      Invariants.HwmInvariant st →
+      Invariants.LoanHwmInvariant st →
       stepEvent st ev = .ok st' →
       ∃ Ω', Valid ev Ω ∧ LStep Ω ev Ω' ∧ concretise st' = Ω' := by
   intro ev st st' Ω hRep hInv hStep

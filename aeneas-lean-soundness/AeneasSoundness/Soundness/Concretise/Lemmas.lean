@@ -29,7 +29,7 @@ namespace AeneasSoundness.Soundness.Concretise
 open AeneasCheck.LLBCSharp
 open AeneasCheck.Raw (AbsShape)
 open AeneasSoundness.LLBCSharpPaper (LLBCState NonceCounters liftAbsShape)
-open AeneasSoundness.Soundness.Invariants (HwmInvariant)
+open AeneasSoundness.Soundness.Invariants (HwmInvariant LoanHwmInvariant)
 
 /-! ## Inversion lemmas (M10.1d) -/
 
@@ -406,14 +406,21 @@ skip-branch fires (`b ∈ st.loans`), the invariant says
 bump therefore matches the replayer's skip-branch as well as its
 add-branch. -/
 
-/-- Per-entry commute for `loopInv` (under `HwmInvariant`):
+/-- Per-entry commute for `loopInv` (under `LoanHwmInvariant`):
     registering one entry on the replayer side is `bumpLoanId entry.1`
     on the paper side. The add-branch closes via `concretise_addLoan`;
-    the skip-branch closes via the HwmInvariant's `loanBound` (the
+    the skip-branch closes via the LoanHwmInvariant's `loanBound` (the
     skipped `b` is `< st.loanIdHwm`, so the paper-side `bumpLoanId b`
-    is a no-op on `nextLoanId`). -/
+    is a no-op on `nextLoanId`).
+
+    M10.x.11: takes `LoanHwmInvariant` (the strictly weaker loan-half
+    of the bundled `HwmInvariant`). The `absBound` clause is irrelevant
+    to this commute; splitting it out lets Phase E preserve the loan
+    half across the four shape-leaking events (`join`, `endBorrow`,
+    `endAbs`, `symExpandMutBorrow`) without an `eventRespectsHwm`
+    structural promise. -/
 theorem concretise_loopInvRegisterLoan {st : SymState}
-    (hInv : HwmInvariant st) (entry : Nat × Nat) :
+    (hInv : LoanHwmInvariant st) (entry : Nat × Nat) :
     concretise (AeneasCheck.LLBCSharp.loopInvRegisterLoan st entry) =
       (concretise st).bumpLoanId entry.1 := by
   unfold AeneasCheck.LLBCSharp.loopInvRegisterLoan
@@ -435,10 +442,10 @@ theorem concretise_loopInvRegisterLoan {st : SymState}
     simp only [hC, if_false]
     exact concretise_addLoan st b .bottom .reborrow
 
-/-- Auxiliary fold-style commute (HwmInvariant-threaded over the list). -/
+/-- Auxiliary fold-style commute (LoanHwmInvariant-threaded over the list). -/
 private theorem concretise_loopInvRegisterLoan_foldl_aux
     : ∀ (xs : List (Nat × Nat)) {st : SymState},
-      HwmInvariant st →
+      LoanHwmInvariant st →
         concretise (xs.foldl AeneasCheck.LLBCSharp.loopInvRegisterLoan st)
         = xs.foldl
             (fun Ω' entry => Ω'.bumpLoanId entry.1)
@@ -446,22 +453,18 @@ private theorem concretise_loopInvRegisterLoan_foldl_aux
   | [], _, _ => rfl
   | entry :: rest, st, hInv => by
     simp only [List.foldl_cons]
-    -- HwmInvariant is preserved by `loopInvRegisterLoan`.
-    have hInv' : HwmInvariant
-        (AeneasCheck.LLBCSharp.loopInvRegisterLoan st entry) := by
-      unfold AeneasCheck.LLBCSharp.loopInvRegisterLoan
-      obtain ⟨b, _⟩ := entry
-      by_cases hC : st.loans.contains b = true
-      · simp only [hC, if_true]; exact hInv
-      · simp only [hC, if_false]; exact hInv.preserve_addLoan b .bottom .reborrow
+    -- LoanHwmInvariant is preserved by `loopInvRegisterLoan`.
+    have hInv' : LoanHwmInvariant
+        (AeneasCheck.LLBCSharp.loopInvRegisterLoan st entry) :=
+      Invariants.loopInvRegisterLoan_preserves_LoanHwm hInv entry
     have hIH := concretise_loopInvRegisterLoan_foldl_aux rest hInv'
     rw [hIH, concretise_loopInvRegisterLoan hInv entry]
 
-/-- Fold commute for `loopInv`: under `HwmInvariant`, the replayer's
+/-- Fold commute for `loopInv`: under `LoanHwmInvariant`, the replayer's
     `loanRegistry.foldl loopInvRegisterLoan` matches the paper-side
     fold of unconditional `bumpLoanId`. -/
 theorem concretise_loopInvRegisterLoan_foldl {st : SymState}
-    (hInv : HwmInvariant st) (loanRegistry : Array (Nat × Nat)) :
+    (hInv : LoanHwmInvariant st) (loanRegistry : Array (Nat × Nat)) :
     concretise
         (loanRegistry.foldl (init := st)
           AeneasCheck.LLBCSharp.loopInvRegisterLoan) =

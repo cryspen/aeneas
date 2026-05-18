@@ -67,6 +67,26 @@ structure HwmInvariant (st : SymState) : Prop where
       the monotone `absIdHwm`. -/
   absBound  : ∀ a, st.absRegistry.contains a = true → a < st.absIdHwm
 
+/-- Loan-only half of `HwmInvariant`. The downstream consumer
+    `concretise_loopInvRegisterLoan` only needs the `loanBound`
+    clause (the skip-branch of `loopInvRegisterLoan` requires
+    `b ∈ st.loans → b < st.loanIdHwm`); the `absBound` clause
+    is irrelevant. Splitting it out lets us prove a stronger
+    preservation theorem (unconditional, no `eventRespectsHwm`
+    promise needed for the loans-only events `join` / `endAbs`
+    / `endBorrow` / `symExpandMutBorrow`) that Phase E threads
+    through `replayFun_sound`. -/
+structure LoanHwmInvariant (st : SymState) : Prop where
+  /-- Every loan id currently in `st.loans` is strictly below the
+      monotone `loanIdHwm`. Identical clause to
+      `HwmInvariant.loanBound`. -/
+  loanBound : ∀ b, st.loans.contains b = true → b < st.loanIdHwm
+
+/-- Downcast: the loan half of `HwmInvariant` IS `LoanHwmInvariant`. -/
+def HwmInvariant.toLoanHwm {st : SymState} (h : HwmInvariant st) :
+    LoanHwmInvariant st :=
+  ⟨h.loanBound⟩
+
 namespace HwmInvariant
 
 /-! ## Empty-state base case -/
@@ -187,6 +207,701 @@ theorem preserve_loans_givenReplace {st : SymState}
   · intro a ha; exact hInv.absBound a ha
 
 end HwmInvariant
+
+/-! ## `LoanHwmInvariant` — per-mutator preservation
+
+Loan-half analogues of the `HwmInvariant.preserve_*` family. Each
+of the nine mutators the replayer's `stepEvent` uses to touch
+`st.loans` or `st.loanIdHwm` has a one-line preservation proof.
+The `loopInvRegisterLoan` per-entry helper (the `.loopInv` event's
+body) is the ninth.
+
+Splitting the loan half out from the bundled `HwmInvariant`
+buys us preservation of the loan clause across the four "shape-
+leaking" events (`join` / `endBorrow` / `endAbs` /
+`symExpandMutBorrow`) without consulting `eventRespectsHwm` — the
+replayer mutators those events compose with do not introduce loan
+ids ≥ `loanIdHwm`, but they may rearrange `absRegistry` in ways
+the `HwmInvariant.absBound` clause is sensitive to.
+-/
+
+namespace LoanHwmInvariant
+
+theorem preserve_setLocal {st : SymState} (hInv : LoanHwmInvariant st)
+    (l : Nat) (v : Val) :
+    LoanHwmInvariant (st.setLocal l v) :=
+  ⟨fun b hb => hInv.loanBound b hb⟩
+
+theorem preserve_env_replace {st : SymState} (hInv : LoanHwmInvariant st)
+    (newEnv : Std.HashMap Nat Val) :
+    LoanHwmInvariant { st with env := newEnv } :=
+  ⟨fun b hb => hInv.loanBound b hb⟩
+
+theorem preserve_addLoan {st : SymState} (hInv : LoanHwmInvariant st)
+    (b : Nat) (inner : Val) (kind : LoanKind) :
+    LoanHwmInvariant (st.addLoan b inner kind) := by
+  refine ⟨?_⟩
+  intro b' hContains
+  simp only [SymState.addLoan, Std.HashMap.contains_insert,
+    Bool.or_eq_true, beq_iff_eq] at hContains
+  rcases hContains with heq | hold
+  · subst heq
+    exact Nat.lt_of_lt_of_le (Nat.lt_succ_self _) (Nat.le_max_right _ _)
+  · exact Nat.lt_of_lt_of_le (hInv.loanBound _ hold) (Nat.le_max_left _ _)
+
+theorem preserve_addAbsShape {st : SymState} (hInv : LoanHwmInvariant st)
+    (shape : AbsShape) :
+    LoanHwmInvariant (st.addAbsShape shape) :=
+  ⟨fun b hb => hInv.loanBound b hb⟩
+
+theorem preserve_takeLoan {st : SymState} (hInv : LoanHwmInvariant st)
+    {b : Nat} {li : LoanInfo} {st' : SymState}
+    (hTake : st.takeLoan b = some (li, st')) :
+    LoanHwmInvariant st' := by
+  unfold SymState.takeLoan at hTake
+  split at hTake
+  · cases hTake
+  · simp only [Option.some.injEq, Prod.mk.injEq] at hTake
+    obtain ⟨_, hs⟩ := hTake
+    subst hs
+    refine ⟨?_⟩
+    intro b' hContains
+    simp only [Std.HashMap.contains_erase, Bool.and_eq_true,
+      Bool.not_eq_true'] at hContains
+    exact hInv.loanBound _ hContains.2
+
+theorem preserve_loans_erase {st : SymState} (hInv : LoanHwmInvariant st)
+    (b : Nat) :
+    LoanHwmInvariant { st with loans := st.loans.erase b } := by
+  refine ⟨?_⟩
+  intro b' hContains
+  simp only [Std.HashMap.contains_erase, Bool.and_eq_true,
+    Bool.not_eq_true'] at hContains
+  exact hInv.loanBound _ hContains.2
+
+theorem preserve_removeAbsShape {st : SymState} (hInv : LoanHwmInvariant st)
+    (absId : Nat) :
+    LoanHwmInvariant (st.removeAbsShape absId) :=
+  ⟨fun b hb => hInv.loanBound b hb⟩
+
+/-- Rewriting only the `given` field of selected loans (or otherwise
+    rewriting `st.loans` to a map whose key set is a sub-relation of
+    the old key set) keeps the bound clause. The hypothesis says
+    every key in the new loans map is in the old. Used by the
+    `substLoansOne` fold (`symExpandMutBorrow`). -/
+theorem preserve_loans_subKey {st : SymState}
+    (hInv : LoanHwmInvariant st)
+    (newLoans : Std.HashMap Nat LoanInfo)
+    (hSub : ∀ b, newLoans.contains b = true → st.loans.contains b = true) :
+    LoanHwmInvariant { st with loans := newLoans } := by
+  refine ⟨?_⟩
+  intro b hb
+  exact hInv.loanBound _ (hSub _ hb)
+
+end LoanHwmInvariant
+
+/-! ## Loan-only fold helpers
+
+Per-event mutator-chain helpers, mirroring the existing
+`absSigFold_preserves` / `stepLoopInv_fold_preserves` /
+`stepJoin_absInstall_preserves` family but tracking only the loan
+clause. The four new helpers cover the four events that contain a
+loans-bearing fold:
+
+* `call` — `absSig.foldl SymState.addAbsShape` (vacuous on loans).
+* `endAbs` — `released.foldl loansEraseIfPresent` (erase only).
+* `symExpandMutBorrow` — `substLoans.foldl substLoansOne`
+  (sub-key rewrite).
+* `join` — `witnesses.foldlM joinChainFoldStep` (chain fold; per
+  M10.x.10b stepJoinBody body, the loans map is invariant across
+  the fold; only env / absRegistry are touched).
+
+`loopInv` reuses the existing `stepLoopInv_fold_preserves` shape;
+we add a `LoanHwm` analogue. -/
+
+/-- `absSig.foldl SymState.addAbsShape` preserves the loan clause
+    (vacuously: `addAbsShape` only mutates `absRegistry` / `absIdHwm`). -/
+theorem absSigFold_preserves_LoanHwm
+    (shapes : List AbsShape) (st : SymState) (hInv : LoanHwmInvariant st) :
+    LoanHwmInvariant (shapes.foldl SymState.addAbsShape st) := by
+  induction shapes generalizing st with
+  | nil => simpa using hInv
+  | cons s rest ih =>
+    simp only [List.foldl_cons]
+    exact ih _ (LoanHwmInvariant.preserve_addAbsShape hInv _)
+
+/-- `released.foldl loansEraseIfPresent` preserves the loan clause:
+    each step either erases one entry (sub-key) or no-ops. -/
+theorem loansEraseIfPresentFold_preserves_LoanHwm
+    (xs : List Nat) (st : SymState) (hInv : LoanHwmInvariant st) :
+    LoanHwmInvariant (xs.foldl AeneasCheck.LLBCSharp.loansEraseIfPresent st) := by
+  induction xs generalizing st with
+  | nil => simpa using hInv
+  | cons b rest ih =>
+    simp only [List.foldl_cons]
+    have hStep : LoanHwmInvariant
+        (AeneasCheck.LLBCSharp.loansEraseIfPresent st b) := by
+      unfold AeneasCheck.LLBCSharp.loansEraseIfPresent
+      split
+      · exact LoanHwmInvariant.preserve_loans_erase hInv b
+      · exact hInv
+    exact ih _ hStep
+
+/-- Per-step substLoans helper: rewriting one loan's `given` field is
+    a sub-key map operation. -/
+theorem substLoansOne_subKey (svId bid : Nat)
+    (loans : Std.HashMap Nat LoanInfo) (b : Nat) :
+    ∀ b', (AeneasCheck.LLBCSharp.substLoansOne svId bid loans b).contains b'
+            = true → loans.contains b' = true := by
+  intro b' hb
+  unfold AeneasCheck.LLBCSharp.substLoansOne at hb
+  -- Pattern matches on loans[b]? then on .given then on if-cond.
+  split at hb
+  case h_2 => exact hb  -- loans[b]? = none → hb : loans.contains b' = true
+  rename_i li hLook
+  split at hb
+  case h_2 => exact hb  -- li.given ≠ .sym _ → no rewrite
+  rename_i k hGiven
+  split at hb
+  case isFalse => exact hb  -- k ≠ svId → no rewrite
+  -- isTrue branch: loans.insert b _.
+  simp only [Std.HashMap.contains_insert, Bool.or_eq_true,
+    beq_iff_eq] at hb
+  rcases hb with heq | hold
+  · subst heq
+    -- b is a key of `loans` because `loans[b]? = some li`.
+    rw [Std.HashMap.contains_eq_isSome_getElem?, hLook]
+    rfl
+  · exact hold
+
+/-- Auxiliary fold-style sub-key promotion for substLoansOne. -/
+private theorem substLoansOneFold_subKey_aux (svId bid : Nat) :
+    ∀ (xs : List Nat) (loans₀ : Std.HashMap Nat LoanInfo) (b : Nat),
+      (xs.foldl (AeneasCheck.LLBCSharp.substLoansOne svId bid) loans₀).contains b
+        = true → loans₀.contains b = true
+  | [], _, _ => fun h => h
+  | x :: rest, loans₀, b => by
+      intro hb
+      simp only [List.foldl_cons] at hb
+      have hRest := substLoansOneFold_subKey_aux svId bid rest
+        (AeneasCheck.LLBCSharp.substLoansOne svId bid loans₀ x) b hb
+      exact substLoansOne_subKey svId bid loans₀ x b hRest
+
+/-- `{ st with loans := substLoans.foldl substLoansOne st.loans }`
+    preserves the loan clause: the fold only rewrites in-place loan
+    entries (no new keys), so `contains` shrinks (or stays put). -/
+theorem substLoansOneFold_preserves_LoanHwm
+    (svId bid : Nat) (substLoans : List Nat) (st : SymState)
+    (hInv : LoanHwmInvariant st) :
+    LoanHwmInvariant { st with
+      loans := substLoans.foldl
+        (AeneasCheck.LLBCSharp.substLoansOne svId bid) st.loans } := by
+  apply LoanHwmInvariant.preserve_loans_subKey hInv
+  intro b hb
+  exact substLoansOneFold_subKey_aux svId bid substLoans st.loans b hb
+
+/-- `joinMutBorrowsStep` preserves the loan clause: it only mutates
+    `absRegistry` (insert) and `env` (setLocal). -/
+theorem joinMutBorrowsStep_preserves_LoanHwm {st : SymState}
+    (hInv : LoanHwmInvariant st) (localId l_fresh : Nat) (absShape : AbsShape) :
+    LoanHwmInvariant
+      (AeneasCheck.LLBCSharp.joinMutBorrowsStep st localId l_fresh absShape) := by
+  unfold AeneasCheck.LLBCSharp.joinMutBorrowsStep
+  -- absRegistry-insert leaves loans / loanIdHwm unchanged; setLocal too.
+  apply LoanHwmInvariant.preserve_setLocal
+  -- The intermediate state's loans / loanIdHwm are syntactically
+  -- `st.loans` / `st.loanIdHwm`.
+  exact ⟨hInv.loanBound⟩
+
+/-- Per-step `joinChainFoldStep` preserves the loan clause on `.ok`
+    output. Case analysis on the rule:
+
+      * `.joinSame` / `.joinVar` → return st (no change)
+      * `.joinSymbolic _` → setLocal (no loans change)
+      * `.joinMutBorrows _ _ _ _` → on the success branch, runs
+        `joinMutBorrowsStep` (preserves)
+      * `.joinBottomOther _` / `.joinOtherBottom _` → return st on
+        success (no change)
+
+    The fail branches are dispatched by the `.ok` hypothesis. -/
+theorem joinChainFoldStep_preserves_LoanHwm {st st' : SymState}
+    (hInv : LoanHwmInvariant st) (entry : JoinEntry)
+    (hStep : AeneasCheck.LLBCSharp.joinChainFoldStep st entry = .ok st') :
+    LoanHwmInvariant st' := by
+  unfold AeneasCheck.LLBCSharp.joinChainFoldStep at hStep
+  cases hRule : entry.rule with
+  | joinSame =>
+    rw [hRule] at hStep
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact hInv
+  | joinVar =>
+    rw [hRule] at hStep
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact hInv
+  | joinSymbolic freshSv =>
+    rw [hRule] at hStep
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact LoanHwmInvariant.preserve_setLocal hInv _ _
+  | joinMutBorrows _ _ l_fresh absShape =>
+    rw [hRule] at hStep
+    simp only [bind, Except.bind] at hStep
+    by_cases hL : l_fresh < st.loanIdHwm
+    · rw [if_pos hL] at hStep; cases hStep
+    · rw [if_neg hL] at hStep
+      by_cases hA : absShape.absId < st.absIdHwm
+      · rw [if_pos hA] at hStep; cases hStep
+      · rw [if_neg hA] at hStep
+        simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+        subst hStep
+        exact joinMutBorrowsStep_preserves_LoanHwm hInv _ _ _
+  | joinBottomOther absId =>
+    rw [hRule] at hStep
+    by_cases hA : st.absRegistry.contains absId = true
+    · simp only [hA, Bool.not_true, Bool.false_eq_true, if_false,
+        Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      exact hInv
+    · simp only [Bool.not_eq_true] at hA
+      simp only [hA, Bool.not_false, if_true] at hStep
+      cases hStep
+  | joinOtherBottom absId =>
+    rw [hRule] at hStep
+    by_cases hA : st.absRegistry.contains absId = true
+    · simp only [hA, Bool.not_true, Bool.false_eq_true, if_false,
+        Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      exact hInv
+    · simp only [Bool.not_eq_true] at hA
+      simp only [hA, Bool.not_false, if_true] at hStep
+      cases hStep
+
+/-- Fold-version of `joinChainFoldStep_preserves_LoanHwm` over
+    a `List JoinEntry`. -/
+theorem joinChainFoldStepFold_preserves_LoanHwm :
+    ∀ (xs : List JoinEntry) {st st' : SymState},
+      LoanHwmInvariant st →
+        xs.foldlM AeneasCheck.LLBCSharp.joinChainFoldStep st = .ok st' →
+        LoanHwmInvariant st'
+  | [], st, st', hInv, hFold => by
+      simp only [List.foldlM_nil, Pure.pure, Except.pure, Except.ok.injEq] at hFold
+      subst hFold
+      exact hInv
+  | x :: rest, st, st', hInv, hFold => by
+      simp only [List.foldlM_cons, bind, Except.bind] at hFold
+      cases hHead : AeneasCheck.LLBCSharp.joinChainFoldStep st x with
+      | error _ => rw [hHead] at hFold; cases hFold
+      | ok sMid =>
+        rw [hHead] at hFold
+        simp only at hFold
+        have hMid := joinChainFoldStep_preserves_LoanHwm hInv x hHead
+        exact joinChainFoldStepFold_preserves_LoanHwm rest hMid hFold
+
+/-- The `stepLoopInv` body fold preserves the loan clause: each step
+    either calls `addLoan` (preserving) or skips (preserving). Loan-
+    only mirror of `stepLoopInv_fold_preserves`. -/
+theorem stepLoopInv_fold_preserves_LoanHwm
+    (xs : List (Nat × Nat)) (st : SymState) (hInv : LoanHwmInvariant st) :
+    LoanHwmInvariant
+      (xs.foldl AeneasCheck.LLBCSharp.loopInvRegisterLoan st) := by
+  induction xs generalizing st with
+  | nil => simpa using hInv
+  | cons p rest ih =>
+    simp only [List.foldl_cons]
+    unfold AeneasCheck.LLBCSharp.loopInvRegisterLoan
+    obtain ⟨b, _⟩ := p
+    by_cases hC : st.loans.contains b = true
+    · simp only [hC, if_true]
+      exact ih _ hInv
+    · simp only [hC, if_false]
+      exact ih _ (LoanHwmInvariant.preserve_addLoan hInv b .bottom .reborrow)
+
+/-- Per-entry `loopInvRegisterLoan` preserves the loan clause. Used
+    directly by `Concretise/Lemmas.lean`'s `_foldl_aux` step. -/
+theorem loopInvRegisterLoan_preserves_LoanHwm {st : SymState}
+    (hInv : LoanHwmInvariant st) (entry : Nat × Nat) :
+    LoanHwmInvariant (AeneasCheck.LLBCSharp.loopInvRegisterLoan st entry) := by
+  unfold AeneasCheck.LLBCSharp.loopInvRegisterLoan
+  obtain ⟨b, _⟩ := entry
+  by_cases hC : st.loans.contains b = true
+  · simp only [hC, if_true]; exact hInv
+  · simp only [hC, if_false]
+    exact LoanHwmInvariant.preserve_addLoan hInv b .bottom .reborrow
+
+/-! ## Main per-event loan preservation theorem (`loanHwm_preserved_stepEvent`)
+
+Unconditional 17-arm case-split: every event preserves the loan
+clause. No `eventRespectsHwm` premise needed — the four shape-
+leaking events (`join` / `endBorrow` / `endAbs` /
+`symExpandMutBorrow`) all factor through mutators whose loan-
+clause preservation has a structural proof above (and crucially,
+the M10.x.10b checker simplification removed the live-loans
+rebuild that previously broke loan-clause preservation in the
+`.join` arm).
+
+The corollary `loanHwm_preserved_stepEvent_mono` adds the
+`loanIdHwm` monotonicity clause for downstream Phase E
+trace-induction. -/
+
+/-- Per-event preservation of `LoanHwmInvariant`. No `hShape`
+    precondition. -/
+theorem loanHwm_preserved_stepEvent
+    {st st' : SymState} {e : Event} {strictJoin : Bool}
+    (hInv : LoanHwmInvariant st)
+    (hStep : stepEvent st e strictJoin = .ok st') :
+    LoanHwmInvariant st' := by
+  unfold stepEvent at hStep
+  cases e with
+  | mutBorrow loan place symval kindHint =>
+    simp only [stepMutBorrow] at hStep
+    by_cases hC : st.loans.contains loan = true
+    · rw [if_pos hC] at hStep; cases hStep
+    · rw [if_neg hC] at hStep
+      by_cases hHwm : st.loanIdHwm > loan
+      · rw [if_pos hHwm] at hStep; cases hStep
+      · rw [if_neg hHwm] at hStep
+        by_cases hB : placeRootLocal place ≥ st.numLocals
+        · rw [if_pos hB] at hStep; cases hStep
+        · rw [if_neg hB] at hStep
+          cases kindHint with
+          | direct =>
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            exact LoanHwmInvariant.preserve_addLoan
+                    (LoanHwmInvariant.preserve_setLocal hInv _ _) _ _ _
+          | inAbsReborrow _ =>
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            exact LoanHwmInvariant.preserve_addLoan hInv _ _ _
+          | loopOwned _ =>
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            exact LoanHwmInvariant.preserve_addLoan
+                    (LoanHwmInvariant.preserve_setLocal hInv _ _) _ _ _
+  | sharedBorrow loan _sbId place _symval =>
+    simp only [stepSharedBorrow] at hStep
+    by_cases hC : st.loans.contains loan = true
+    · rw [if_pos hC] at hStep; cases hStep
+    · rw [if_neg hC] at hStep
+      by_cases hHwm : st.loanIdHwm > loan
+      · rw [if_pos hHwm] at hStep; cases hStep
+      · rw [if_neg hHwm] at hStep
+        by_cases hProj : place.projection.size ≠ 0
+        · rw [if_pos hProj] at hStep; cases hStep
+        · rw [if_neg hProj] at hStep
+          by_cases hB : placeRootLocal place ≥ st.numLocals
+          · rw [if_pos hB] at hStep; cases hStep
+          · rw [if_neg hB] at hStep
+            simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            subst hStep
+            exact LoanHwmInvariant.preserve_addLoan hInv _ _ _
+  | assign dst rhs =>
+    simp only [stepAssign, bind, Except.bind] at hStep
+    cases hEval : evalSymExpr st rhs with
+    | error _ => rw [hEval] at hStep; cases hStep
+    | ok v =>
+      rw [hEval] at hStep
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      exact LoanHwmInvariant.preserve_setLocal hInv _ _
+  | move src dst =>
+    simp only [stepMove] at hStep
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact LoanHwmInvariant.preserve_setLocal
+            (LoanHwmInvariant.preserve_setLocal hInv _ _) _ _
+  | copy src dst =>
+    simp only [stepCopy] at hStep
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact LoanHwmInvariant.preserve_setLocal hInv _ _
+  | endBorrow loan restore =>
+    -- `stepEndBorrow` either fails or routes through `takeLoan` then
+    -- only mutates env (or returns the post-takeLoan state). The loan
+    -- clause survives because `takeLoan` erases (sub-key) and the env
+    -- mutations don't touch `loans` / `loanIdHwm`.
+    simp only [stepEndBorrow] at hStep
+    cases hTake : st.takeLoan loan with
+    | none => rw [hTake] at hStep; cases hStep
+    | some pair =>
+      obtain ⟨li, stTake⟩ := pair
+      rw [hTake] at hStep
+      simp only [bind, Except.bind] at hStep
+      have hInvTake : LoanHwmInvariant stTake :=
+        LoanHwmInvariant.preserve_takeLoan hInv hTake
+      cases hEval : evalSymExpr stTake restore.givenBack with
+      | error _ => rw [hEval] at hStep; cases hStep
+      | ok v =>
+        rw [hEval] at hStep
+        simp only at hStep
+        cases hKind : li.kind with
+        | direct =>
+          rw [hKind] at hStep
+          simp only at hStep
+          cases hHo : restore.holderLocal.orElse (fun () => findHolder stTake loan) with
+          | none => rw [hHo] at hStep; simp only at hStep; cases hStep
+          | some x =>
+            rw [hHo] at hStep
+            simp only at hStep
+            cases hLk : stTake.env[x]? with
+            | none =>
+              rw [hLk] at hStep; simp only at hStep; cases hStep
+            | some val =>
+              rw [hLk] at hStep
+              cases val with
+              | bottom => simp only at hStep; cases hStep
+              | sym _ => simp only at hStep; cases hStep
+              | lit _ => simp only at hStep; cases hStep
+              | mutBorrow _ _ => simp only at hStep; cases hStep
+              | mutLoan b =>
+                simp only at hStep
+                by_cases hb : b = loan
+                · simp only [hb, if_true, Pure.pure, Except.pure,
+                    Except.ok.injEq] at hStep
+                  subst hStep
+                  exact LoanHwmInvariant.preserve_setLocal hInvTake _ _
+                · simp only [hb, if_false] at hStep; cases hStep
+        | lazyExpand =>
+          rw [hKind] at hStep
+          simp only at hStep
+          -- Several branches lead to `.ok st`; aggregate.
+          have leakOK : ∀ st_out : SymState, st_out = stTake →
+              LoanHwmInvariant st_out := by
+            intro _ hEq; rw [hEq]; exact hInvTake
+          cases hHo : restore.holderLocal.orElse (fun () => findHolder stTake loan) with
+          | none =>
+            rw [hHo] at hStep
+            simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+              if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+            exact leakOK st' hStep.symm
+          | some x =>
+            rw [hHo] at hStep
+            simp only at hStep
+            cases hLk : stTake.env[x]? with
+            | none =>
+              rw [hLk] at hStep
+              simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+                if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+              exact leakOK st' hStep.symm
+            | some val =>
+              rw [hLk] at hStep
+              cases val with
+              | bottom =>
+                simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+                  if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+                exact leakOK st' hStep.symm
+              | sym _ =>
+                simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+                  if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+                exact leakOK st' hStep.symm
+              | lit _ =>
+                simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+                  if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+                exact leakOK st' hStep.symm
+              | mutBorrow _ _ =>
+                simp only [show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+                  if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+                exact leakOK st' hStep.symm
+              | mutLoan b =>
+                simp only at hStep
+                by_cases hb : b = loan
+                · simp only [hb, if_true, Pure.pure, Except.pure,
+                    Except.ok.injEq] at hStep
+                  subst hStep
+                  exact LoanHwmInvariant.preserve_setLocal hInvTake _ _
+                · simp only [hb, if_false,
+                    show (LoanKind.lazyExpand == LoanKind.lazyExpand) = true from rfl,
+                    if_true, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+                  exact leakOK st' hStep.symm
+        | reborrow =>
+          rw [hKind] at hStep
+          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+          subst hStep
+          exact hInvTake
+        | shared =>
+          rw [hKind] at hStep
+          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+          subst hStep
+          exact hInvTake
+  | assert cond expected =>
+    simp only [bind, Except.bind] at hStep
+    cases hA : stepAssert st cond expected with
+    | error _ => rw [hA] at hStep; cases hStep
+    | ok _ =>
+      rw [hA] at hStep
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      exact hInv
+  | panic =>
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact hInv
+  | retn =>
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact hInv
+  | binop op lhs rhs dst =>
+    simp only [stepBinop, bind, Except.bind] at hStep
+    cases hL : evalSymExpr st lhs with
+    | error _ => rw [hL] at hStep; cases hStep
+    | ok _ =>
+      rw [hL] at hStep
+      simp only at hStep
+      cases hR : evalSymExpr st rhs with
+      | error _ => rw [hR] at hStep; cases hStep
+      | ok _ =>
+        rw [hR] at hStep
+        simp only at hStep
+        by_cases hB : placeRootLocal dst ≥ st.numLocals
+        · rw [if_pos hB] at hStep; cases hStep
+        · rw [if_neg hB] at hStep
+          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+          subst hStep
+          exact LoanHwmInvariant.preserve_setLocal hInv _ _
+  | reborrow child parent place parentLive parentAbs =>
+    simp only [stepReborrow] at hStep
+    by_cases hC : st.loans.contains child = true
+    · rw [if_pos hC] at hStep; cases hStep
+    · rw [if_neg hC] at hStep
+      by_cases hHwm : st.loanIdHwm > child
+      · rw [if_pos hHwm] at hStep; cases hStep
+      · rw [if_neg hHwm] at hStep
+        by_cases hB : placeRootLocal place ≥ st.numLocals
+        · rw [if_pos hB] at hStep; cases hStep
+        · rw [if_neg hB] at hStep
+          simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+          subst hStep
+          by_cases hP : st.loans.contains parent = true
+          · rw [if_pos hP]
+            exact LoanHwmInvariant.preserve_addLoan hInv _ _ _
+          · rw [if_neg hP]
+            exact LoanHwmInvariant.preserve_addLoan
+                    (LoanHwmInvariant.preserve_addLoan hInv _ _ _) _ _ _
+  | call _fn _callId _fnName _args dst _regionAbs absSig =>
+    simp only [stepCall] at hStep
+    by_cases hB : placeRootLocal dst ≥ st.numLocals
+    · rw [if_pos hB] at hStep; cases hStep
+    · rw [if_neg hB] at hStep
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      have hListEq : absSig.foldl SymState.addAbsShape st =
+                     absSig.toList.foldl SymState.addAbsShape st := by
+        simp [Array.foldl_toList]
+      have hFoldInv : LoanHwmInvariant (absSig.foldl SymState.addAbsShape st) := by
+        rw [hListEq]; exact absSigFold_preserves_LoanHwm _ _ hInv
+      exact LoanHwmInvariant.preserve_setLocal hFoldInv _ _
+  | endAbs absId _finalValues releasedLoans tokenClearLocals =>
+    -- Three-phase body: `loansEraseIfPresent` fold + `tokenClearOne`
+    -- env fold + `removeAbsShape`. The `tokenClearOne` env fold
+    -- mutates only `env`; the loan clause survives unconditionally.
+    simp only [stepEndAbs, bind, Except.bind] at hStep
+    cases hV : stepEndAbsValidate st absId releasedLoans with
+    | error _ => rw [hV] at hStep; cases hStep
+    | ok _ =>
+      rw [hV] at hStep
+      simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+      subst hStep
+      -- Now `st' = stepEndAbsBody st absId releasedLoans tokenClearLocals`.
+      unfold stepEndAbsBody
+      -- Step 1: `released.foldl loansEraseIfPresent st` preserves.
+      have hListEq : releasedLoans.foldl (init := st)
+            AeneasCheck.LLBCSharp.loansEraseIfPresent =
+          releasedLoans.toList.foldl
+            AeneasCheck.LLBCSharp.loansEraseIfPresent st := by
+        simp [Array.foldl_toList]
+      have hStep1 : LoanHwmInvariant
+          (releasedLoans.foldl (init := st)
+            AeneasCheck.LLBCSharp.loansEraseIfPresent) := by
+        rw [hListEq]
+        exact loansEraseIfPresentFold_preserves_LoanHwm _ _ hInv
+      -- Step 2: env-only fold (tokenClearOne); use preserve_env_replace.
+      have hStep2 : LoanHwmInvariant
+          ({ (releasedLoans.foldl (init := st)
+                AeneasCheck.LLBCSharp.loansEraseIfPresent) with
+              env := tokenClearLocals.foldl (init :=
+                (releasedLoans.foldl (init := st)
+                  AeneasCheck.LLBCSharp.loansEraseIfPresent).env)
+                AeneasCheck.LLBCSharp.tokenClearOne } : SymState) :=
+        LoanHwmInvariant.preserve_env_replace hStep1 _
+      -- Step 3: removeAbsShape preserves.
+      exact LoanHwmInvariant.preserve_removeAbsShape hStep2 _
+  | proj _ _ _ => cases hStep
+  | symExpandMutBorrow svId bid _innerSv _parentAbs substLocals substLoans =>
+    -- Body: substLocals env-fold + substLoans loans-fold + addLoan.
+    simp only [stepSymExpandMutBorrow] at hStep
+    by_cases hC : st.loans.contains bid = true
+    · rw [if_pos hC] at hStep; cases hStep
+    · rw [if_neg hC] at hStep
+      by_cases hHwm : st.loanIdHwm > bid
+      · rw [if_pos hHwm] at hStep; cases hStep
+      · rw [if_neg hHwm] at hStep
+        simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+        subst hStep
+        -- Step 1: env fold (env-only).
+        have hEnv := hInv -- before env fold; loans untouched.
+        -- Build intermediate states.
+        let newEnv := substLocals.foldl (init := st.env)
+                        (AeneasCheck.LLBCSharp.substLocalsOne svId bid)
+        let newLoans := substLoans.foldl (init := st.loans)
+                        (AeneasCheck.LLBCSharp.substLoansOne svId bid)
+        -- Show the intermediate state {st with env := newEnv, loans := newLoans}
+        -- has LoanHwmInvariant.
+        have hLoans : LoanHwmInvariant ({ st with loans := newLoans } : SymState) := by
+          have hListEq : substLoans.foldl
+              (AeneasCheck.LLBCSharp.substLoansOne svId bid) (init := st.loans) =
+            substLoans.toList.foldl
+              (AeneasCheck.LLBCSharp.substLoansOne svId bid) st.loans := by
+            simp [Array.foldl_toList]
+          have hP := substLoansOneFold_preserves_LoanHwm svId bid
+                       substLoans.toList st hInv
+          rw [show newLoans = substLoans.foldl (init := st.loans)
+                (AeneasCheck.LLBCSharp.substLoansOne svId bid) from rfl,
+              hListEq]
+          exact hP
+        have hMid : LoanHwmInvariant
+            ({ st with env := newEnv, loans := newLoans } : SymState) := by
+          -- env-replacement on the loans-rewritten state.
+          exact ⟨hLoans.loanBound⟩
+        exact LoanHwmInvariant.preserve_addLoan hMid _ _ _
+  | join _left _right _result witnesses =>
+    -- `stepJoin` = strict-check + chain-fold. The strict-check has no
+    -- state effect; the chain-fold preserves loan clause (per
+    -- `joinChainFoldStepFold_preserves_LoanHwm`).
+    simp only [stepJoin, bind, Except.bind] at hStep
+    cases hCheck : stepJoinStrictCheck _left _right _result witnesses with
+    | error _ => rw [hCheck] at hStep; cases hStep
+    | ok _ =>
+      rw [hCheck] at hStep
+      simp only at hStep
+      -- hStep: stepJoinBody st _result witnesses = .ok st'.
+      unfold stepJoinBody at hStep
+      have hList : witnesses.foldlM (init := st)
+                    AeneasCheck.LLBCSharp.joinChainFoldStep =
+                   witnesses.toList.foldlM
+                    AeneasCheck.LLBCSharp.joinChainFoldStep st := by
+        simp [Array.foldlM_toList]
+      rw [hList] at hStep
+      exact joinChainFoldStepFold_preserves_LoanHwm witnesses.toList hInv hStep
+  | loopInv _loopId _invariant loanRegistry =>
+    -- `stepLoopInv`: body folds `loopInvRegisterLoan` over loanRegistry.
+    simp only [stepEvent, Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    have hListEq : loanRegistry.foldl (init := st)
+        AeneasCheck.LLBCSharp.loopInvRegisterLoan =
+      loanRegistry.toList.foldl AeneasCheck.LLBCSharp.loopInvRegisterLoan st := by
+      simp [Array.foldl_toList]
+    rw [hListEq]
+    exact stepLoopInv_fold_preserves_LoanHwm _ _ hInv
+  | loopEnd _loopId =>
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact hInv
+  | matchArm _scrutinee _adtId _variantId _variantName =>
+    simp only [Pure.pure, Except.pure, Except.ok.injEq] at hStep
+    subst hStep
+    exact hInv
 
 /-! ## Per-event admissibility for the `.join` case
 
