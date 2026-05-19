@@ -62,7 +62,15 @@ use proptest::prelude::*;
 // aggregates_basic — auto-generated
 // ====================================================================
 
-// SKIPPED aggregates_basic::mk_tuple: `model::aggregates_basic_mk_tuple_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+proptest! {
+    /// Auto-generated from `aggregates_basic::mk_tuple` (signature: (u32, u32) -> (u32, u32))
+    #[test]
+    fn aggregates_basic_mk_tuple_auto(a0 in any::<u32>(), a1 in any::<u32>()) {
+        let lhs = aggregates_basic_src::mk_tuple(a0, a1);
+        let rhs = model::aggregates_basic_mk_tuple_model(a0, a1);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
 
 // ====================================================================
 // arrays — auto-generated
@@ -84,13 +92,19 @@ use proptest::prelude::*;
 
 // SKIPPED arrays::f1: `model::arrays_f1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
 
-// SKIPPED arrays::f2: `model::arrays_f2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+proptest! {
+    /// Auto-generated from `arrays::f2` (signature: (u32) -> ())
+    #[test]
+    fn arrays_f2_auto(a0 in any::<u32>()) {
+        let lhs = arrays_src::f2(a0);
+        let rhs = model::arrays_f2_model(a0);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
 
 // SKIPPED arrays::f3: `model::arrays_f3_model` not in src/model.rs (run scripts/regen-diff-models.sh)
 
 // SKIPPED arrays::ite: `model::arrays_ite_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED arrays::SZ: `model::arrays_SZ_model` not in src/model.rs (run scripts/regen-diff-models.sh)
 
 // ====================================================================
 // arrays_defs — auto-generated
@@ -230,30 +244,6 @@ proptest! {
 
 // SKIPPED constants::get_z2: `model::constants_get_z2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
 
-// SKIPPED constants::X0: `model::constants_X0_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::X1: `model::constants_X1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::X2: `model::constants_X2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::X3: `model::constants_X3_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::P0: `model::constants_P0_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::P2: `model::constants_P2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::YVAL: `model::constants_YVAL_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::Q1: `model::constants_Q1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::Q2: `model::constants_Q2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::Q3: `model::constants_Q3_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::S1: `model::constants_S1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
-// SKIPPED constants::S2: `model::constants_S2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
-
 // ====================================================================
 // demo — auto-generated
 // ====================================================================
@@ -284,7 +274,15 @@ proptest! {
 // incr_cert — auto-generated
 // ====================================================================
 
-// SKIPPED incr_cert::incr_local: `model::incr_cert_incr_local_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+proptest! {
+    /// Auto-generated from `incr_cert::incr_local` (signature: (u32) -> u32)
+    #[test]
+    fn incr_cert_incr_local_auto(a0 in any::<u32>()) {
+        let lhs = incr_cert_src::incr_local(a0);
+        let rhs = model::incr_cert_incr_local_model(a0);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
 
 // ====================================================================
 // loops — auto-generated
@@ -308,9 +306,21 @@ proptest! {
 // scalars — auto-generated
 // ====================================================================
 
-// SKIPPED scalars::u32_use_bits: `model::scalars_u32_use_bits_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+/// Auto-generated from `scalars::u32_use_bits` (signature: () -> u32)
+#[test]
+fn scalars_u32_use_bits_auto() {
+    let lhs = scalars_src::u32_use_bits();
+    let rhs = model::scalars_u32_use_bits_model();
+    assert_eq!(lhs, rhs);
+}
 
-// SKIPPED scalars::i32_use_bits: `model::scalars_i32_use_bits_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+/// Auto-generated from `scalars::i32_use_bits` (signature: () -> u32)
+#[test]
+fn scalars_i32_use_bits_auto() {
+    let lhs = scalars_src::i32_use_bits();
+    let rhs = model::scalars_i32_use_bits_model();
+    assert_eq!(lhs, rhs);
+}
 
 // ====================================================================
 // traits — auto-generated

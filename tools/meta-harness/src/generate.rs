@@ -39,6 +39,8 @@ struct RawFnDecl {
     signature: serde_json::Value,
     #[serde(default)]
     body: serde_json::Value,
+    #[serde(default)]
+    is_global_initializer: serde_json::Value,
 }
 #[derive(Deserialize)]
 struct RawItemMeta {
@@ -165,6 +167,16 @@ pub fn generate_for_cert_dir(
                 summary.skipped_no_body += 1;
                 continue;
             }
+            // Drop global initialisers — these are constants, not fns;
+            // calling them as `<name>()` is a syntax error.
+            if fd.is_global_initializer.as_bool() == Some(true) {
+                summary
+                    .skip_reasons
+                    .entry("global initialiser (const, not fn)".into())
+                    .or_default()
+                    .push(path.clone());
+                continue;
+            }
 
             let Some((args, ret)) = parse_simple_sig(&fd.signature) else {
                 summary.skipped_signature += 1;
@@ -283,28 +295,35 @@ pub fn generate_for_cert_dir(
 fn emit_proptest_block(fixture: &str, c: &Candidate) -> String {
     let test_name = format!("{}_{}_auto", fixture, c.fn_name);
     let arg_names: Vec<String> = (0..c.args.len()).map(|i| format!("a{}", i)).collect();
+    let call_args = arg_names.join(", ");
+    let ret_str = match &c.ret {
+        RetTy::Unit => "()".to_string(),
+        RetTy::Scalar(s) => s.rust().to_string(),
+        RetTy::Tuple(ts) => format!("({})", ts.iter().map(|t| t.rust()).collect::<Vec<_>>().join(", ")),
+    };
+    let args_str = c.args.iter().map(|a| a.rust()).collect::<Vec<_>>().join(", ");
+    // Zero-arg fns can't go through `proptest!` (which requires at
+    // least one input strategy). Emit a regular `#[test]` instead —
+    // both fns are deterministic so a single comparison is enough.
+    if c.args.is_empty() {
+        return format!(
+            "\n/// Auto-generated from `{}` (signature: () -> {ret_str})\n#[test]\nfn {}() {{\n    let lhs = {}_src::{}();\n    let rhs = model::{}_{}_model();\n    assert_eq!(lhs, rhs);\n}}\n",
+            c.charon_path, test_name, fixture, c.fn_name, fixture, c.fn_name,
+        );
+    }
     let arg_clauses: Vec<String> = c
         .args
         .iter()
         .zip(&arg_names)
         .map(|(ty, n)| format!("{} in any::<{}>()", n, ty.rust()))
         .collect();
-    let call_args = arg_names.join(", ");
     let mut s = String::new();
     s.push_str(&format!(
-        "\nproptest! {{\n    /// Auto-generated from `{}` (signature: ({}) -> {})\n    #[test]\n    fn {}({}) {{\n",
+        "\nproptest! {{\n    /// Auto-generated from `{}` (signature: ({args_str}) -> {ret_str})\n    #[test]\n    fn {}({}) {{\n",
         c.charon_path,
-        c.args.iter().map(|a| a.rust()).collect::<Vec<_>>().join(", "),
-        match &c.ret {
-            RetTy::Unit => "()".to_string(),
-            RetTy::Scalar(s) => s.rust().to_string(),
-            RetTy::Tuple(ts) => format!("({})", ts.iter().map(|t| t.rust()).collect::<Vec<_>>().join(", ")),
-        },
         test_name,
         arg_clauses.join(", "),
     ));
-    // The R₀ call uses the original source's fn (which may panic on
-    // overflow in debug; differential tests are --release).
     s.push_str(&format!(
         "        let lhs = {}_src::{}({});\n",
         fixture, c.fn_name, call_args
