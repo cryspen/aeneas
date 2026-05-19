@@ -209,6 +209,33 @@ def placeholderPExprOf : LlbcTy → PExpr
   | .litTy .bool => .lit (.bool false)
   | _ => .lit (.scalar .u32 0)
 
+/-- Bug 4a: peel outer `tRef` layers from an `LlbcTy`, returning the
+    referenced type. Used by [vm1FallbackCompatible] so a `&mut U32`
+    input matches a `U32`-typed temp through the borrow-input
+    over-approximation. -/
+private def peelRefs : LlbcTy → LlbcTy
+  | .tRef _ inner _ => peelRefs inner
+  | t => t
+
+/-- Bug 4a: conservative type-compatibility check used by
+    [lookupPlace]'s vm[1] fallback. Returns `true` when the queried
+    place's projected type is *plausibly* the same as input-1's type
+    (after peeling outer refs), and `false` only when both are
+    concretely identifiable as different primitive shapes
+    (U32 ↔ Bool, U32 ↔ Enum, etc.). Keeps the borrow-input
+    over-approximation correct for `incr(x:&mut u32){*x += 1}`-shape
+    fixtures (where the temp's projected `U32` matches input-1's
+    peeled `&mut U32`) while blocking the fallback when joins like
+    `joins::call_choose` would otherwise emit `Bool + U32`. -/
+private def vm1FallbackCompatible : LlbcTy → LlbcTy → Bool
+  | a, b =>
+    match peelRefs a, peelRefs b with
+    | .litTy x, .litTy y => x == y
+    | .litTy _, .tAdt _ _ => false
+    | .tAdt _ _, .litTy _ => false
+    | .tAdt id1 _, .tAdt id2 _ => id1 == id2
+    | _, _ => true
+
 /-- Phase 4a-3: `tdm`-aware variant of [placeholderPExprOf] that can
     synthesise a struct-literal placeholder for an ADT type. When the
     type is a `tAdt` whose `TypeDeclInfo` has the same number of
@@ -344,10 +371,10 @@ def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     -- M9.5n path.
     applyFieldProj tdm localTypes p.local_ p.projection.toList e
   | none =>
-    -- Local not tracked. Prefer input-1's pure value (a deliberate
-    -- over-approximation that mirrors the M9.5n-vintage borrow-
-    -- reborrow behaviour). When even `1` is missing — typical for
-    -- a global initializer / nullary const-fn whose body the cert
+    -- Local not tracked. Historically prefer input-1's pure value (a
+    -- deliberate over-approximation that mirrors the M9.5n-vintage
+    -- borrow-reborrow behaviour). When even `1` is missing — typical
+    -- for a global initializer / nullary const-fn whose body the cert
     -- only describes through assignments between uninitialised
     -- locals — use a *type-correct* zero literal derived from the
     -- place's projection-resolved `LlbcTy`. This keeps the emitted
@@ -355,10 +382,29 @@ def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
     -- (e.g. `unwrap_y : Result Std.I32 := ok 0#i32` instead of the
     -- pre-fix `ok 0#u32.value`). Non-scalar projected types still
     -- fall back to `0#u32`.
-    match vm[1]? with
-    | some e1 =>
+    --
+    -- Bug 4a (joins::call_choose, joins::use_enum): the vm[1]
+    -- over-approximation is unsound when input-1's type is
+    -- concretely different from the query's projected type
+    -- (e.g. binop lhs is `U32`-typed local 7 with vm[7] unset; input
+    -- 1 is `Bool b`). Falling back to vm[1] emits `b + 1#u32` which
+    -- fails to elaborate. We now consult [localTypes] for both
+    -- sides; when [vm1FallbackCompatible] proves them concretely
+    -- incompatible, use the typed placeholder instead. Keeps the
+    -- incr-shape (`&mut U32` input + `U32`-projected temp) using
+    -- vm[1] as before.
+    let queryProjTy : Option LlbcTy :=
+      (localTypes[p.local_]?).bind fun t =>
+        projectLlbcTy t p.projection.toList
+    let input1Ty : Option LlbcTy := localTypes[1]?
+    let vm1Ok : Bool :=
+      match queryProjTy, input1Ty with
+      | some qt, some it => vm1FallbackCompatible qt it
+      | _, _ => true
+    match vm[1]?, vm1Ok with
+    | some e1, true =>
       applyFieldProj tdm localTypes p.local_ p.projection.toList e1
-    | none =>
+    | _, _ =>
       match localTypes[p.local_]? with
       | some t =>
         match projectLlbcTy t p.projection.toList with
