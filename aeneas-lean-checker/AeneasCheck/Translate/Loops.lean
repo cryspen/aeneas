@@ -209,8 +209,15 @@ def buildLoopBody (fnName : String) (typeParams : Array String)
     -- Unconditional body (no break) — shouldn't happen for the M12.1
     -- fixture. Emit a placeholder so downstream consumers still get a
     -- well-typed decl.
+    -- Bug 4e: multi-state loops pack ALL state locals into the `cont`
+    -- payload as a tuple; single-state stays bare. Was previously
+    -- only emitting the first state local, which produced
+    -- `iter_loop.body … (cont i)` when the state type was
+    -- `Range Usize × I32`.
     let contArg : PExpr :=
-      if isStateless then unitVal else .var (stateNames.getD 0 "i")
+      if isStateless then unitVal
+      else if stateNames.size = 1 then .var (stateNames[0]!)
+      else .tuple (stateNames.map (.var ·))
     { name := s!"{innerName fnName}_loop.body"
       qualifiedName := s!"{fnName}::loop_body"
       params := bodyParams
@@ -326,14 +333,22 @@ def buildLoopWrapper (fnName : String) (typeParams : Array String)
     if isStateless then .tuple #[]
     else if stateNames.size = 1 then .var stateNames[0]!
     else .tuple (stateNames.map fun n => .var n)
-  let lambdaParam : String := stateNames.getD 0 "i1"
-  -- Inside the lambda, the argument is the loop's *next* state; we
-  -- pass it through to the body unchanged. For multi-state we'd need
-  -- a let-destructure, deferred for now.
+  -- Bug 4e: multi-state loops destructure the lambda's incoming
+  -- tuple via the Lean `fun (i, j) => ...` syntax sugar — we encode
+  -- this as a single `.lam` param whose "name" is the literal
+  -- parenthesised tuple pattern. The pretty printer emits it
+  -- verbatim, so `fun (i, j) => body n i j` falls out. Single-state
+  -- keeps the bare `fun i => body n i` shape.
+  let lambdaParamName : String :=
+    if isStateless || stateNames.size = 1 then stateNames.getD 0 "i1"
+    else "(" ++ String.intercalate ", " stateNames.toList ++ ")"
+  let bodyStateArgs : Array PExpr :=
+    if isStateless || stateNames.size = 1 then #[.var (stateNames.getD 0 "i1")]
+    else stateNames.map (.var ·)
   let bodyCall : PExpr :=
-    .app s!"{innerName fnName}_loop.body" (forwardedArgs ++ #[.var lambdaParam])
+    .app s!"{innerName fnName}_loop.body" (forwardedArgs ++ bodyStateArgs)
   let lam : PExpr :=
-    .lam #[(lambdaParam, effectiveStateTys.getD 0 placeholderTy)] bodyCall
+    .lam #[(lambdaParamName, effectiveStateTys.getD 0 placeholderTy)] bodyCall
   let loopCall : PExpr := .app "loop" #[lam, stateArg]
   { name := s!"{innerName fnName}_loop"
     qualifiedName := s!"{fnName}::loop"

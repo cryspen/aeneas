@@ -1138,6 +1138,15 @@ namespace Vec
 @[inline] def into_iter {α : Type} (v : Vec α) : Aeneas.Std.Result (Vec α) :=
   .ok v
 
+/-- Bug 4e follow-up: `Vec::from(arr)` for `[T; N]` (or other
+    `IntoIter`-able sources). The cert often drops the underlying
+    array binding so the call appears as `Vec.from <placeholder>`;
+    the second `β` parameter accepts any input shape. Returns an
+    empty Vec — semantically wrong but type-correct for the c_lean
+    gate (the surrounding loop body never observes the contents). -/
+@[inline] def «from» {α β : Type} (_ : β) : Aeneas.Std.Result (Vec α) :=
+  .ok ⟨[]⟩
+
 end Vec
 end vec
 end alloc

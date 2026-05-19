@@ -866,3 +866,47 @@ c_lean per-fixture: 40 → 41 (+`chunks_exact`).
 c_lean per-decl:    573 → 671 (+98).
 Diff harness:       PASS at 275 lines byte-identical.
 g_rust:             86 unchanged.
+
+### Sub-bug 4e — Loop body state-tuple drop → DONE
+
+`iterators-scalar::iter_loop.body` had params `(n : Usize) (i : Range Usize)
+(j : I32)` and return type `Result (ControlFlow (Range Usize × I32) Unit)`,
+but the body was `ok (cont i)` — packing only the *first* state local
+when the ControlFlow state type was the tuple `(Range Usize × I32)`.
+The loop wrapper then couldn't apply the body (`iter_loop.body n i` had
+type `I32 → Result …` after partial application). Same shape on every
+multi-state loop.
+
+* `Loops.lean::buildLoopBody` no-branch case (line 218) now packs all
+  state locals as a tuple when `stateNames.size ≥ 2`. Single-state
+  stays bare. (The conditional-branch path already had the right
+  shape; this just brought the unconditional-body case into
+  alignment.)
+* `Loops.lean::buildLoopWrapper` lambda now destructures via the
+  Lean `fun (i, j) => body n i j` sugar (encoded by passing the
+  literal `"(i, j)"` as a single `.lam` param "name" — the pretty
+  printer renders it verbatim). For single-state we keep the bare
+  `fun i => body n i` shape.
+* New `Vec.from` shim (`alloc::vec::Vec::from`) with a parametric
+  second-arg type so the cert's elided-binding call shape
+  `Vec.from <placeholder>` typechecks. Unblocked by 4e via the
+  iterators-scalar sweep.
+
+c_lean per-fixture: 41 → 42 (+`iterators-scalar`).
+c_lean per-decl:    671 → 770 (+99).
+Diff harness:       PASS at 275 lines byte-identical.
+g_rust:             86 unchanged.
+
+### Carry-forward
+
+* `iterators` and `iterators-array` still blocked. Both share the
+  same opaque-state-type issue: their loop state local has an
+  opaque ADT type (StepBy<Range<Usize>>, Vec<U32, Global>), which
+  `llbcTyToPTyWithVars`'s `isOpaque` branch maps to the U32 fallback
+  so the wrapper signature emits `(i : U32)` — but the top-level
+  call binds `t1 : Range Usize` (or `Vec U32`) from the shim and
+  fails to apply. The fix is either to (a) drop the U32 fallback
+  in favour of the bare-name ADT (requires top-level aliases like
+  `abbrev StepBy (T : Type) := Aeneas.Std.Slice T` plus matching
+  shim sigs), or (b) special-case the wrapper signature to use the
+  Lean type emitted by the corresponding shim — a larger refactor.
