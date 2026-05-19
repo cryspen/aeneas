@@ -15,6 +15,25 @@ def IntKind.toLean : IntKind → String
   | .i8 => "I8" | .i16 => "I16" | .i32 => "I32" | .i64 => "I64"
   | .i128 => "I128" | .isize => "Isize"
 
+/-- Identifiers that collide with Lean reserved words. When a Rust
+    field, local, or variant name matches one of these, the emitter
+    wraps it in `«...»` so the elaborator parses it as an identifier
+    rather than as the keyword (e.g. `«end» : Idx` in a `structure`).
+    Conservative list — only the words the cert pipeline has hit
+    in practice. Extend as more emit gaps surface. -/
+def isLeanKeyword (s : String) : Bool :=
+  s == "end" || s == "where" || s == "match" || s == "let" ||
+  s == "do" || s == "with" || s == "import" || s == "def" ||
+  s == "fun" || s == "if" || s == "then" || s == "else" ||
+  s == "by" || s == "in" || s == "open" || s == "namespace" ||
+  s == "section" || s == "structure" || s == "inductive" ||
+  s == "class" || s == "instance" || s == "theorem" || s == "axiom" ||
+  s == "variable" || s == "universe" || s == "mutual" || s == "partial"
+
+/-- Wrap a name in `«...»` if it collides with a Lean keyword. -/
+def sanitizeIdent (s : String) : String :=
+  if isLeanKeyword s then s!"«{s}»" else s
+
 def IntKind.toRust : IntKind → String
   | .u8 => "u8" | .u16 => "u16" | .u32 => "u32" | .u64 => "u64"
   | .u128 => "u128" | .usize => "usize"
@@ -734,7 +753,7 @@ def StructDecl.toLean (sd : StructDecl) : String :=
       else " " ++ String.intercalate " "
         (sd.typeParams.toList.map fun n => s!"({n} : Type)")
     let header := s!"structure {sd.name}{typeBinders} where"
-    let body := sd.fields.toList.map fun f => s!"  {f.name} : {f.ty.toLean}"
+    let body := sd.fields.toList.map fun f => s!"  {sanitizeIdent f.name} : {f.ty.toLean}"
     sd.docComment ++ header ++ "\n" ++ String.intercalate "\n" body
 
 /-- M9.5d: docstring for an `inductive` decl, same shape as
