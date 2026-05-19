@@ -775,13 +775,11 @@ end option
 end core
 
 /-- Bug 4d: typed-placeholder for an `Option α`-typed slot whose cert
-    local was elided. Pins `α := Unit` so Lean can elaborate the call
-    site without leaving a higher-order metavariable on the type
-    parameter. Type-correct (downstream `is_none`/`is_some` return
-    `Bool` regardless of α). The placeholder is only used when the
-    cert dropped a typed binding upstream — emit-only fixtures with
-    no Rust runner exercise the codepath. -/
-@[inline] def Option.placeholder : Option Unit := none
+    local was elided. Polymorphic in `α`; the emit wraps every use
+    site with a type ascription via the `__typed::` head, so the
+    call site supplies `α` from the local's projected LLBC type
+    (`renderConcreteLlbcTy` renders it). -/
+@[inline] def Option.placeholder {α : Type} : Option α := none
 
 /-- `Clone` / `PartialEq`: empty marker classes plus universal
     fallback instances so synthesis succeeds at any type. Real
@@ -879,17 +877,42 @@ structure ChunksExact (T : Type) where
     (size : Aeneas.Std.Usize) : Aeneas.Std.Result (ChunksExact T) :=
   .ok ⟨s, s, size⟩
 
+/-- Bug 4f follow-up: typed placeholder for a `ChunksExact α` slot
+    whose cert local was elided. Polymorphic in `α`; the emit wraps
+    every use site with a type ascription via the `__typed::` head,
+    so the call site supplies `α` from the local's projected LLBC
+    type. -/
+@[inline] def ChunksExact.placeholder {α : Type} : ChunksExact α :=
+  ⟨⟨[]⟩, ⟨[]⟩, Aeneas.Std.Usize.ofNat 0⟩
+
 end Slice
 end slice
 end core
+
+/-- Bug 4f follow-up: top-level aliases so the cert's bare-name
+    references (`ChunksExact T` in a typed ascription, plus the
+    `ChunksExact.placeholder` call) resolve against the
+    `core.slice.Slice.ChunksExact` stub. The placeholder synthesiser
+    uses the bare name; the path-stripping `sanitizeCallName`
+    doesn't requalify it. -/
+abbrev ChunksExact (T : Type) : Type := core.slice.Slice.ChunksExact T
+
+@[inline] def ChunksExact.placeholder {α : Type} :
+    ChunksExact α :=
+  @core.slice.Slice.ChunksExact.placeholder α
 
 namespace core
 namespace slice
 namespace iter
 
+/-- Bug 4f: `ChunksExact.next(&mut self)` shape. The cert walker
+    destructures the call into `(value, new_state)` per the
+    `&mut self` Aeneas convention, so the shim returns a pair
+    matching `Iterator<ChunksExact<T>>::next : Self → Option (Slice T)`
+    lifted to `Self → Result (Option (Slice T) × Self)`. -/
 @[inline] def ChunksExact.next {T : Type} (c : core.slice.Slice.ChunksExact T) :
-    Aeneas.Std.Result (Option (Aeneas.Std.Slice T)) :=
-  .ok (some c.data)
+    Aeneas.Std.Result (Option (Aeneas.Std.Slice T) × core.slice.Slice.ChunksExact T) :=
+  .ok (some c.data, c)
 
 @[inline] def ChunksExact.remainder {T : Type} (c : core.slice.Slice.ChunksExact T) :
     Aeneas.Std.Result (Aeneas.Std.Slice T) :=

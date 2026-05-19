@@ -86,7 +86,17 @@ def buildTypeDeclMapFromLlbc (cc : CrateCert) : TypeDeclMap := Id.run do
       let counts : Array Nat := variants.map fun v => v.fields.size
       m := m.insert td.id
         { name := bareName, fieldNames := #[], variantFieldCounts := counts }
-    | .union _ | .tAlias _ | .opaque => ()
+    -- Bug 4d/4f follow-up: record opaque stdlib ADTs (StepBy, Iter,
+    -- IterMut, ChunksExact, NonZero, …) with their bare name and the
+    -- `isOpaque := true` tag so the typed-fallback path can dispatch
+    -- on `info.name` and synthesise an appropriate Unit-pinned shim
+    -- placeholder when the cert elides the local's binding.
+    -- `isOpaque` keeps `llbcTyToPTyWithVars` on the U32 fallback so
+    -- function-signature emission doesn't introduce unknown
+    -- `StepBy T`-style heads.
+    | .opaque =>
+      m := m.insert td.id { name := bareName, fieldNames := #[], isOpaque := true }
+    | .union _ | .tAlias _ => ()
   return m
 
 /-- M9.7k / M9.7o-E5a: structured-source twin (now sole path) of the

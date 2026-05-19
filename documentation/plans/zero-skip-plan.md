@@ -827,3 +827,42 @@ c_lean per-fixture: 38 → 40 (+`step_by`, +`arrays_defs`).
 c_lean per-decl:    463 → 573 (+110).
 Diff harness:       PASS at 275 lines byte-identical.
 g_rust:             86 (44 hand + 42 auto, unchanged).
+
+### Sub-bug 4f — Typed placeholders + iterator shim shape → DONE
+
+Four coordinated extensions so the chunks_exact-style `&mut self`
+iterator chain compiles end-to-end:
+
+1. **`ChunksExact.next` shim shape**. Returns
+   `Result (Option (Slice T) × ChunksExact T)` (was
+   `Result (Option (Slice T))`). Matches the standard backend's
+   `Self → Result (Option α × Self)` convention; the cert walker
+   destructures `(value, new_state)` so the pair is required.
+
+2. **Opaque ADT registration with `isOpaque := true`**.
+   `Driver.lean::buildTypeDeclMapFromLlbc` now records opaque
+   stdlib types (StepBy, Iter, IterMut, ChunksExact, NonZero, …)
+   in `tdm` with the `isOpaque` tag. `llbcTyToPTyWithVars` still
+   maps them to the legacy U32 fallback (signatures can't emit
+   unknown `StepBy T`-style heads), but the typed-fallback path
+   in `placeholderPExprOfWith` now dispatches on `info.name`.
+
+3. **Typed-ascription emit via `__typed::<typeStr>` head**.
+   New PExpr head + pretty-printer rule (mirrors the existing
+   `__cast::` mechanism). `renderConcreteLlbcTy` renders a concrete
+   `LlbcTy` to a Lean type string (scalars, slices, arrays, named
+   ADTs); the placeholder synthesiser wraps `Slice.placeholder`,
+   `Option.placeholder`, `ChunksExact.placeholder` with the
+   concrete ascription so call sites that don't constrain `α`
+   (e.g. `Slice.len Slice.placeholder`, whose result is
+   `Result Usize` regardless of element type) still elaborate.
+
+4. **`ChunksExact.placeholder` shim + top-level alias**. The shim
+   is polymorphic in `α`; a top-level `abbrev ChunksExact (T : Type)`
+   alias resolves the cert's bare-name typed-ascription
+   (`ChunksExact U32`) to `core.slice.Slice.ChunksExact U32`.
+
+c_lean per-fixture: 40 → 41 (+`chunks_exact`).
+c_lean per-decl:    573 → 671 (+98).
+Diff harness:       PASS at 275 lines byte-identical.
+g_rust:             86 unchanged.

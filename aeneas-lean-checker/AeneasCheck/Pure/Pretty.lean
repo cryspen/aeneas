@@ -332,6 +332,19 @@ partial def PExpr.toLeanDo : PExpr → String
         s!"(({inner.toLeanDo} : {leanTy}))"
       | _ => "__cast(" ++ String.intercalate ", "
                (args.toList.map (PExpr.toLeanDo)) ++ ")"
+    -- Bug 4f follow-up: typed-placeholder ascription. `Forward.lean`'s
+    -- `placeholderPExprOfWith` emits `__typed::<typeStr>` heads when
+    -- the placeholder's type is concrete enough to render. We unwrap
+    -- to a Lean type ascription `((<inner> : <typeStr>))` so call
+    -- sites that don't constrain the placeholder's type parameter
+    -- (e.g. `Slice.len Slice.placeholder`) still elaborate.
+    else if head.startsWith "__typed::" then
+      match args.toList with
+      | [inner] =>
+        let typeStr : String := (head.drop "__typed::".length).toString
+        s!"(({inner.toLeanDo} : {typeStr}))"
+      | _ => "__typed(" ++ String.intercalate ", "
+               (args.toList.map (PExpr.toLeanDo)) ++ ")"
     else
     match binopInfix head, args.toList with
     | some op, [lhs, rhs] =>

@@ -88,6 +88,14 @@ structure TypeDeclInfo where
       variant id. Empty for struct decls; populated for enum decls
       (zero for C-style nullary variants). -/
   variantFieldCounts : Array Nat := #[]
+  /-- Bug 4d/4f follow-up: `true` when the cert recorded this ADT as
+      `Opaque` (a stdlib type with no body — `StepBy`, `Iter`,
+      `IterMut`, `ChunksExact`, `NonZero`, …). The translator keeps
+      these in `TypeDeclMap` so the typed-fallback path can dispatch
+      on `name`, but `llbcTyToPTyWithVars` still maps them to the
+      legacy `U32` fallback (rather than emitting an unknown
+      `StepBy T` head into function signatures). -/
+  isOpaque : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5b: a TypeDeclId → TypeDeclInfo lookup, keyed by the integer
@@ -130,6 +138,12 @@ partial def llbcTyToPTyWithVars
         match args[0]? with
         | some inner => llbcTyToPTyWithVars tdm typeParams inner
         | none => .lit (.int .u32)
+      -- Bug 4d/4f follow-up: opaque stdlib ADTs are in `tdm` so the
+      -- placeholder synthesiser can dispatch on `info.name`, but
+      -- signature-emission still falls back to U32 — emitting a
+      -- bare `StepBy T` head would resolve to an unknown identifier.
+      else if info.isOpaque then
+        .lit (.int .u32)
       else
         let pargs := args.map (llbcTyToPTyWithVars tdm typeParams)
         .adt info.name pargs
@@ -257,6 +271,61 @@ private def vm1FallbackCompatible : LlbcTy → LlbcTy → Bool
     | .tArray _ _, .tAdt _ _ | .tAdt _ _, .tArray _ _ => false
     | _, _ => true
 
+/-- Bug 4f follow-up: render an `LlbcTy` to a Lean type string, for
+    use in typed-placeholder emission. Returns `none` when the type
+    contains a `tVar` (type-variable) — those require `typeParams` to
+    resolve, which `placeholderPExprOfWith` doesn't carry. Concrete
+    cases (scalars, slices/arrays of scalars, named opaque ADTs)
+    render directly; the caller wraps the placeholder in
+    `((<expr> : <typeStr>))` so Lean has enough info to elaborate
+    even when the call site doesn't constrain the type parameter
+    (e.g. `Slice.len Slice.placeholder` whose result is `Result Usize`
+    regardless of element type). -/
+partial def renderConcreteLlbcTy (tdm : TypeDeclMap) : LlbcTy → Option String
+  | .litTy (.int k) =>
+    match k with
+    | .u8 => some "Std.U8" | .u16 => some "Std.U16" | .u32 => some "Std.U32"
+    | .u64 => some "Std.U64" | .u128 => some "Std.U128"
+    | .usize => some "Std.Usize"
+    | .i8 => some "Std.I8" | .i16 => some "Std.I16" | .i32 => some "Std.I32"
+    | .i64 => some "Std.I64" | .i128 => some "Std.I128"
+    | .isize => some "Std.Isize"
+  | .litTy .bool => some "Bool"
+  | .litTy .char => some "Char"
+  | .litTy (.float _) => some "Float"
+  | .tRef _ inner _ => renderConcreteLlbcTy tdm inner
+  | .tSlice elem =>
+    (renderConcreteLlbcTy tdm elem).map fun s => s!"Aeneas.Std.Slice {s}"
+  | .tArray elem n =>
+    (renderConcreteLlbcTy tdm elem).map fun s =>
+      s!"Aeneas.Std.Array {s} (Aeneas.Std.Usize.ofNat {n})"
+  | .tAdt id args =>
+    match tdm[id]? with
+    | some info =>
+      -- Render args one-by-one; bail on any tVar.
+      let argStrs : Option (Array String) :=
+        args.foldlM (init := #[]) fun acc a =>
+          (renderConcreteLlbcTy tdm a).map (acc.push ·)
+      argStrs.map fun strs =>
+        if strs.isEmpty then info.name
+        else
+          let parens (s : String) : String :=
+            if s.contains ' ' ∧ !s.startsWith "(" then s!"({s})" else s
+          s!"{info.name} {String.intercalate " " (strs.toList.map parens)}"
+    | none => none
+  | .tTuple #[] => some "Unit"
+  | _ => none
+
+/-- Bug 4f follow-up: wrap a placeholder expression with a Lean type
+    ascription `((<e> : <typeStr>))` when the LLBC type renders
+    concretely (no `tVar`s). The pretty printer's `__typed::`
+    handler turns this into the ascription on emit. Returns `e`
+    unchanged when the type cannot be rendered. -/
+def withTypedAscription (tdm : TypeDeclMap) (t : LlbcTy) (e : PExpr) : PExpr :=
+  match renderConcreteLlbcTy tdm t with
+  | some s => .app s!"__typed::{s}" #[e]
+  | none => e
+
 /-- Phase 4a-3: `tdm`-aware variant of [placeholderPExprOf] that can
     synthesise a struct-literal placeholder for an ADT type. When the
     type is a `tAdt` whose `TypeDeclInfo` has the same number of
@@ -274,12 +343,12 @@ private def vm1FallbackCompatible : LlbcTy → LlbcTy → Bool
 partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
   | .litTy (.int k) => .lit (.scalar k 0)
   | .litTy .bool => .lit (.bool false)
-  | .tAdt id args =>
+  | t@(.tAdt id args) =>
     match tdm[id]? with
     | some info =>
       -- Struct case (no variants): emit `{ f₁ := 0, …, fₙ := 0 }`
       -- when fields and generic args line up 1-1.
-      if info.variantFieldCounts.isEmpty
+      if info.variantFieldCounts.isEmpty ∧ ¬info.isOpaque
           ∧ info.fieldNames.size == args.size then
         let fields : Array (String × PExpr) :=
           info.fieldNames.zipWith (fun fname fty =>
@@ -287,18 +356,21 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
         .recordLit fields (some info.name)
       else
         -- Bug 4d: stdlib-ADT placeholder synthesis. Recognise common
-        -- stdlib enums by their bare name so a missing-identifier
-        -- placeholder synthesised at an enum-typed slot doesn't fall
-        -- through to `0#u32`. The shim names (`Option.none`,
-        -- `Result.ok _`, `ControlFlow.Continue _`) match the standard
-        -- Aeneas backend's expectations.
-        match info.name with
-        | "Option" =>
-          -- Bug 4d: typed placeholder so the call site can elaborate
-          -- against an expected `Option α` without leaving the
-          -- type parameter as a higher-order metavariable.
-          .app "Option.placeholder" #[]
-        | _ => .lit (.scalar .u32 0)
+        -- stdlib types by their bare name so a missing-identifier
+        -- placeholder synthesised at an enum/opaque slot doesn't fall
+        -- through to `0#u32`. The shim helpers are Unit-pinned; the
+        -- typed-ascription wrapper [withTypedAscription] then
+        -- annotates the call site with the concrete LLBC type so
+        -- callers like `Slice.len Slice.placeholder` (whose return
+        -- is independent of α) still elaborate.
+        let raw : Option PExpr :=
+          match info.name with
+          | "Option" => some (.app "Option.placeholder" #[])
+          | "ChunksExact" => some (.app "ChunksExact.placeholder" #[])
+          | _ => none
+        match raw with
+        | some r => withTypedAscription tdm t r
+        | none => .lit (.scalar .u32 0)
     | none =>
       -- Bug 4d: opaque ADTs aren't in tdm. Fall through to
       -- `0#u32` here — opaque-tdm population is a separate sub-bug.
@@ -334,8 +406,8 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
   -- and the lookup falls through to the typed-fallback path. The
   -- shim helpers `Slice.placeholder` / `Array.placeholder` infer
   -- `α` from surrounding context.
-  | .tSlice _ =>
-    .app "Aeneas.Std.Slice.placeholder" #[]
+  | t@(.tSlice _) =>
+    withTypedAscription tdm t (.app "Aeneas.Std.Slice.placeholder" #[])
   -- Peel references at the value level (Rust borrows are erased
   -- after monomorphisation, so a `&T` slot pure-value-wise *is* a
   -- `T`).
