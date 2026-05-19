@@ -226,7 +226,16 @@ private def peelRefs : LlbcTy → LlbcTy
     over-approximation correct for `incr(x:&mut u32){*x += 1}`-shape
     fixtures (where the temp's projected `U32` matches input-1's
     peeled `&mut U32`) while blocking the fallback when joins like
-    `joins::call_choose` would otherwise emit `Bool + U32`. -/
+    `joins::call_choose` would otherwise emit `Bool + U32`.
+
+    Bug 4b extension: a query for a concrete-typed local with an
+    input-1 of generic type-variable shape (`static::read`'s
+    `S::SLICE`-elided local 5 of type `&Slice U16`, with input-1 a
+    bare `S : Type`) is also incompatible — passing the generic-typed
+    `x1` into a `Slice.index_usize` arg slot fails to elaborate. Treat
+    `tVar`↔concrete as incompatible, plus `tSlice`/`tArray`↔`litTy`
+    pairs since those occur in array-indexing and slice-iteration
+    paths. -/
 private def vm1FallbackCompatible : LlbcTy → LlbcTy → Bool
   | a, b =>
     match peelRefs a, peelRefs b with
@@ -234,6 +243,18 @@ private def vm1FallbackCompatible : LlbcTy → LlbcTy → Bool
     | .litTy _, .tAdt _ _ => false
     | .tAdt _ _, .litTy _ => false
     | .tAdt id1 _, .tAdt id2 _ => id1 == id2
+    -- Type-vars don't unify with concrete shapes via vm[1].
+    | .tVar i, .tVar j => i == j
+    | .tVar _, .litTy _ | .litTy _, .tVar _ => false
+    | .tVar _, .tAdt _ _ | .tAdt _ _, .tVar _ => false
+    | .tVar _, .tSlice _ | .tSlice _, .tVar _ => false
+    | .tVar _, .tArray _ _ | .tArray _ _, .tVar _ => false
+    -- Slice/Array vs litTy/Adt — incompatible (Slice operand passed
+    -- where a scalar is expected, or vice versa).
+    | .tSlice _, .litTy _ | .litTy _, .tSlice _ => false
+    | .tArray _ _, .litTy _ | .litTy _, .tArray _ _ => false
+    | .tSlice _, .tAdt _ _ | .tAdt _ _, .tSlice _ => false
+    | .tArray _ _, .tAdt _ _ | .tAdt _ _, .tArray _ _ => false
     | _, _ => true
 
 /-- Phase 4a-3: `tdm`-aware variant of [placeholderPExprOf] that can
@@ -287,6 +308,19 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
         (List.range n).foldr (init := .app "List.nil" #[]) fun _ acc =>
           .app "List.cons" #[elem, acc]
       .app "Aeneas.Std.Array.ofList" #[chain]
+  -- Bug 4b: typed placeholders for `Slice α` and reference shapes —
+  -- needed when the cert elides a local's initialiser (Charon
+  -- drops const-item reads like `S::SLICE` from the event stream)
+  -- and the lookup falls through to the typed-fallback path. The
+  -- shim helpers `Slice.placeholder` / `Array.placeholder` infer
+  -- `α` from surrounding context.
+  | .tSlice _ =>
+    .app "Aeneas.Std.Slice.placeholder" #[]
+  -- Peel references at the value level (Rust borrows are erased
+  -- after monomorphisation, so a `&T` slot pure-value-wise *is* a
+  -- `T`).
+  | .tRef _ inner _ =>
+    placeholderPExprOfWith tdm inner
   | _ => .lit (.scalar .u32 0)
 
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
@@ -418,14 +452,15 @@ def lookupPlace (tdm : TypeDeclMap) (localTypes : Std.HashMap Nat Raw.LlbcTy)
       match localTypes[p.local_]? with
       | some t =>
         match projectLlbcTy t p.projection.toList with
-        -- Keep [placeholderPExprOf] (NOT the tdm-aware variant) here:
-        -- this path runs *after* a non-empty projection, so the
-        -- downstream applyFieldProj path expects a `.lit` placeholder
-        -- to recognise via its Phase 1B fix. Synthesising a
-        -- `.recordLit` here would shadow that recognition and emit a
-        -- `{ value := 0#i32 }.value` shape Lean can't elaborate
-        -- without a known expected type.
-        | some projTy => placeholderPExprOf projTy
+        -- Bug 4b: switch to the tdm-aware [placeholderPExprOfWith]
+        -- so `tSlice`/`tArray`/`tRef` shapes (introduced by
+        -- Charon-elided const-item access) produce type-correct
+        -- shim helpers (`Slice.placeholder`, `Array.singleton`,
+        -- `Array.placeholder`) instead of the catch-all `0#u32`.
+        -- The original concern about Phase 1B recognition doesn't
+        -- apply here — this path returns the placeholder directly,
+        -- no downstream `applyFieldProj` runs against it.
+        | some projTy => placeholderPExprOfWith tdm projTy
         | none =>
           -- Couldn't resolve the projection. Fall back to the legacy
           -- root + applyFieldProj path so the `.value` shape still

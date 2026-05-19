@@ -334,6 +334,16 @@ structure Array (α : Type) (_n : Usize) where
     Aeneas.Std.Array α n :=
   ⟨xs⟩
 
+/-- Bug 4b: typed-placeholder for an `Aeneas.Std.Array α n` slot whose
+    cert local was elided (Charon dropped the array's initialiser
+    events, typical for `static`-item references and other
+    const-resolved access shapes). Emits the empty array literal —
+    semantically wrong against the declared length but type-correct
+    because the backing `structure Array` ignores its `n` parameter. -/
+@[inline] def Array.placeholder {α : Type} {n : Usize} :
+    Aeneas.Std.Array α n :=
+  ⟨[]⟩
+
 /-- M9.5c: `Array.update` in-bounds, returning a fresh array. Matches
     the signature of `backends/lean/Aeneas/Std/Array/Array.lean::Array.update`:
     `Array α n → Usize → α → Result (Array α n)`. Out-of-bounds is
@@ -363,6 +373,14 @@ slice primitives that the M9.5g call intercepts emit) to typecheck. -/
 
 structure Slice (α : Type) where
   val : List α
+
+/-- Bug 4b: typed-placeholder for a `Slice α` slot whose cert local
+    was elided (typical for `S::SLICE`-style const-item reads that
+    Charon drops from the event stream — the local just appears as
+    an `EvCall` arg without an upstream assignment). Emits the empty
+    slice; semantically wrong but type-correct. -/
+@[inline] def Slice.placeholder {α : Type} : Aeneas.Std.Slice α :=
+  ⟨[]⟩
 
 /-- M9.5g: read the element at index `i` from a slice, returning
     `Result α`. Matches
