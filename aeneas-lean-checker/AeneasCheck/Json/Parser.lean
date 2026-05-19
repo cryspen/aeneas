@@ -619,6 +619,7 @@ partial def parseLlbcTy (j : Json) : Result LlbcTy := do
           let bs ← asStr idPayload
           match bs, args.toList with
           | "Box", [inner] => return inner
+          | "Str", [] => return .tStr
           | _, _ => return .tOpaque s!"Builtin({bs})"
         | _ => fail s!"parseLlbcTy[Adt.id]: unknown tag {idTag}"
     | "TypeVar" =>

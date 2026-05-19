@@ -150,7 +150,12 @@ partial def llbcTyToPTyWithVars
   | .tRawPtr inner _ => llbcTyToPTyWithVars tdm typeParams inner
   | .tArray elem len => .array (llbcTyToPTyWithVars tdm typeParams elem) len
   | .tSlice elem => .slice (llbcTyToPTyWithVars tdm typeParams elem)
-  | .tStr => .lit (.int .u32)
+  -- M9.7o-Bug5: `&str` (parsed via the `Builtin "Str"` branch in
+  -- Json.Parser) lowers to Lean's builtin `String` so `expect`-style
+  -- shim signatures (`Option α → String → Result α`) line up at the
+  -- call site. Pre-fix this fell through to `Std.U32` and broke
+  -- `options::test_expect` etc.
+  | .tStr => .adt "String" #[]
   | .tFn _ _ => .lit (.int .u32)
   | .tDynTrait _ => .lit (.int .u32)
   | .tOpaque _ => .lit (.int .u32)
@@ -2778,10 +2783,25 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- without globals this is a no-op.
   let genericTypeNames : Array String := typeParams
   let genericConstNames : Array String := lsig.generics.constGenerics
+  -- Bug 5 (Option/String): pre-populate the seed accumulator's vm
+  -- with input names BEFORE running the LLBC-body seed pass. The
+  -- seed's `Assign(local L, Ref(localRef.deref, _))` and
+  -- `Assign(local L, Use(Copy/Move localRef))` branches both
+  -- propagate `acc.vm[localRef]?` to `place.local_` only when the
+  -- referenced local is already in `acc.vm`. Inputs are referenced
+  -- by `&msg`-style temps (`Ref(local 2.deref, Shared)` where local
+  -- 2 is `msg`) and without the pre-seed those temps fall through
+  -- to `lookupPlace`'s vm[1] fallback, producing `expect x x`
+  -- instead of `expect x msg` at the call site.
+  let inputSeedVm : VarMap := Id.run do
+    let mut m : VarMap := {}
+    for i in [0:numParams] do
+      m := m.insert (i + 1) (.var (effectiveParamName i))
+    return m
   let seedAcc : SeedAcc := match lf.body with
     | some b => seedGlobalRefsFromBlock genericTypeNames genericConstNames
-                  lf.localsNames b {}
-    | none => {}
+                  lf.localsNames b { vm := inputSeedVm }
+    | none => { vm := inputSeedVm }
   let initVm : VarMap := Id.run do
     let mut m : VarMap := seedAcc.vm
     for i in [0:numParams] do

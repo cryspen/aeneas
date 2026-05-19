@@ -694,13 +694,13 @@ namespace Option
   | some x => .ok x
   | none => .error .panic
 
-@[inline] def is_none {α : Type} : Option α → Bool
-  | some _ => false
-  | none => true
+@[inline] def is_none {α : Type} : Option α → Aeneas.Std.Result Bool
+  | some _ => .ok false
+  | none => .ok true
 
-@[inline] def is_some {α : Type} : Option α → Bool
-  | some _ => true
-  | none => false
+@[inline] def is_some {α : Type} : Option α → Aeneas.Std.Result Bool
+  | some _ => .ok true
+  | none => .ok false
 
 end Option
 end option
