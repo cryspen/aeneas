@@ -674,6 +674,17 @@ namespace Slice
 @[inline] def len {α : Type} (s : Aeneas.Std.Slice α) : Aeneas.Std.Result Aeneas.Std.Usize :=
   Aeneas.Std.Slice.len s
 
+/-- Bug 4 (shim gap): `core::slice::{[T]}::iter` for the `iter()`-style
+    sites in `iterators.rs`. The slice itself is the iterator state in
+    our shim. -/
+@[inline] def iter {α : Type} (s : Aeneas.Std.Slice α) :
+    Aeneas.Std.Result (Aeneas.Std.Slice α) :=
+  .ok s
+
+@[inline] def iter_mut {α : Type} (s : Aeneas.Std.Slice α) :
+    Aeneas.Std.Result (Aeneas.Std.Slice α) :=
+  .ok s
+
 end Slice
 end slice
 end core
@@ -858,6 +869,12 @@ namespace Range
 @[inline] def next (r : Aeneas.Std.Range Aeneas.Std.Usize) :
     Aeneas.Std.Result (Bool × Aeneas.Std.Range Aeneas.Std.Usize) :=
   .ok (r.start.toNat < r.«end».toNat, r)
+
+-- Bug 4 (shim gap): `(0..n).step_by(k)` lowers through this stub.
+@[inline] def step_by (r : Aeneas.Std.Range Aeneas.Std.Usize)
+    (_n : Aeneas.Std.Usize) :
+    Aeneas.Std.Result (Aeneas.Std.Range Aeneas.Std.Usize) :=
+  .ok r
 
 end Range
 end range
