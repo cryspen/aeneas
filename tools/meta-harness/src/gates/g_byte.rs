@@ -25,11 +25,29 @@ pub fn run(
     manifest: &Manifest,
     report: &mut Report,
 ) -> Result<()> {
-    // Derive the .llbc path from the cert path.
-    let llbc_path = derive_llbc_path(cert_path)?;
+    run_with_llbc(cert, cert_path, None, aeneas, aeneas_check, manifest, report)
+}
+
+/// Variant that accepts an explicit `.llbc` path. Used when the cert
+/// came from a `--llbc` or `--crate` invocation and the llbc isn't
+/// co-located with the cert. Falls back to the cert-adjacent derivation
+/// when `explicit_llbc` is `None`.
+pub fn run_with_llbc(
+    cert: &Cert,
+    cert_path: &Path,
+    explicit_llbc: Option<&Path>,
+    aeneas: &Path,
+    aeneas_check: &Path,
+    manifest: &Manifest,
+    report: &mut Report,
+) -> Result<()> {
+    let llbc_path = match explicit_llbc {
+        Some(p) => p.to_path_buf(),
+        None => derive_llbc_path(cert_path)?,
+    };
     if !llbc_path.exists() {
         bail!(
-            "expected .llbc next to cert at {} (derived from {})",
+            "expected .llbc at {} (cert: {})",
             llbc_path.display(),
             cert_path.display()
         );

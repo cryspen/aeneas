@@ -57,8 +57,8 @@ Exit codes:
 |-------------------------------|---------|
 | `--cert <path>`               | A pre-built `.cert.json`. |
 | `--sweep <dir>`               | Directory of `*.cert.json` files. Produces a fleet-wide report. |
-| `--crate <path>`              | A Cargo crate root. **Not yet wired in.** |
-| `--llbc <path>`               | A pre-built `.llbc`. **Not yet wired in.** |
+| `--crate <path>`              | A Cargo crate root. Runs `charon cargo --preset=aeneas` + `aeneas -emit-cert`, then the gates. |
+| `--llbc <path>`               | A pre-built `.llbc`. Runs `aeneas -emit-cert` then the gates. |
 | `--source-crate <path>`       | Crate whose `cargo test` is the G_rust oracle. Defaults to `--crate` if set. |
 | `--gates g_byte,g_rust`       | Comma-separated. Default: `g_byte`. Use `none` to enumerate decls only. |
 | `--report-json <path>`        | Default: `./report.json`. |
@@ -66,6 +66,8 @@ Exit codes:
 | `--manifest <path>`           | `meta-harness.toml` overriding gate toggles and per-decl skips. Defaults to `<crate>/meta-harness.toml` if present. |
 | `--aeneas <path>`             | Override the aeneas binary. Auto-detects `src/_build/default/main.exe`. |
 | `--aeneas-check <path>`       | Override the aeneas-check binary. Auto-detects `aeneas-lean-checker/.lake/build/bin/aeneas-check`. |
+| `--charon <path>`             | Override the charon binary. Auto-detects the project-pinned `/Users/karthik/charon/charon/target/release/charon` (v0.1.196). Required for `--crate` mode. |
+| `--work-dir <path>`           | Persist intermediate `.llbc` / `.cert.json` artefacts here instead of a tempdir. Useful for debugging. |
 
 ## Manifest
 

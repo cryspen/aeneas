@@ -6,11 +6,12 @@
 
 use anyhow::{Context, Result, bail};
 use clap::Parser;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 mod cert;
 mod gates;
 mod manifest;
+mod prepare;
 mod report;
 mod sweep;
 
@@ -67,6 +68,17 @@ struct Cli {
     /// Path to the aeneas-check binary.
     #[arg(long, env = "AENEAS_CHECK")]
     aeneas_check: Option<PathBuf>,
+
+    /// Path to the charon binary. Defaults to $CHARON, then the
+    /// project-pinned `/Users/karthik/charon/charon/target/release/charon`,
+    /// then PATH-resolved `charon` if neither is set.
+    #[arg(long, env = "CHARON")]
+    charon: Option<PathBuf>,
+
+    /// Where to land intermediate artefacts when `--crate` runs the
+    /// full pipeline. Defaults to a fresh tempdir (auto-cleaned).
+    #[arg(long, value_name = "DIR")]
+    work_dir: Option<PathBuf>,
 }
 
 fn main() {
@@ -115,7 +127,8 @@ fn run() -> Result<i32> {
         return Ok(sweep_report.exit_code());
     }
 
-    let cert_path = resolve_cert_input(&cli)?;
+    let prepared = resolve_cert_input(&cli, &aeneas)?;
+    let cert_path = prepared.cert_path.clone();
     let cert = Cert::load(&cert_path)
         .with_context(|| format!("loading cert {}", cert_path.display()))?;
     let mut report = Report::new(&cert);
@@ -125,9 +138,10 @@ fn run() -> Result<i32> {
     for gate in &active_gates {
         match gate.as_str() {
             "" | "none" => continue,
-            "g_byte" => gates::g_byte::run(
+            "g_byte" => gates::g_byte::run_with_llbc(
                 &cert,
                 &cert_path,
+                prepared.llbc_path.as_deref(),
                 &aeneas,
                 &aeneas_check,
                 &manifest,
@@ -158,6 +172,7 @@ fn run() -> Result<i32> {
         cli.report_md.display()
     );
 
+    drop(prepared); // explicit; the TempDir cleans up here.
     Ok(report.exit_code())
 }
 
@@ -165,24 +180,41 @@ fn default_gates() -> Vec<String> {
     vec!["g_byte".into()]
 }
 
-fn resolve_cert_input(cli: &Cli) -> Result<PathBuf> {
+fn resolve_cert_input(cli: &Cli, aeneas: &Path) -> Result<prepare::Prepared> {
     if let Some(p) = &cli.cert {
-        return Ok(p.clone());
+        return Ok(prepare::Prepared {
+            cert_path: p.clone(),
+            llbc_path: None,
+            _tmp: None,
+        });
     }
-    if cli.llbc.is_some() {
-        bail!(
-            "--llbc is not yet wired in. Run `aeneas -emit-cert <llbc>` to \
-             produce a `.cert.json`, then pass it with `--cert`."
-        );
+    if let Some(p) = &cli.llbc {
+        return prepare::from_llbc(p, aeneas, cli.work_dir.as_deref());
     }
-    if cli.krate.is_some() {
-        bail!(
-            "--crate is not yet wired in (would drive `charon rustc \
-             --preset=aeneas` + `aeneas -emit-cert`). For now, build the \
-             cert manually and pass it with `--cert`."
-        );
+    if let Some(p) = &cli.krate {
+        let charon = resolve_charon(cli)?;
+        return prepare::from_crate(p, &charon, aeneas, cli.work_dir.as_deref());
     }
     bail!("one of --crate, --llbc, --cert is required")
+}
+
+fn resolve_charon(cli: &Cli) -> Result<PathBuf> {
+    if let Some(p) = &cli.charon {
+        return Ok(p.clone());
+    }
+    let pinned = PathBuf::from("/Users/karthik/charon/charon/target/release/charon");
+    if pinned.is_file() {
+        return Ok(pinned);
+    }
+    // Last resort: PATH-resolved `charon`. Likely the wrong version,
+    // so warn.
+    eprintln!(
+        "[meta-harness] warning: no project-pinned charon found at {}; \
+         falling back to PATH-resolved `charon`, which may not match \
+         aeneas's expected version.",
+        pinned.display()
+    );
+    Ok(PathBuf::from("charon"))
 }
 
 fn resolve_aeneas(cli: &Cli) -> Result<PathBuf> {
