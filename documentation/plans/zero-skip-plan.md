@@ -941,3 +941,31 @@ g_rust:             86 unchanged.
 * **Trait-impl-heavy fixtures** (`traits`, `default`,
   `defaulted_method`, `blanket_impl`, `demo`) — unchanged from prior
   session; each has a distinct upstream issue.
+
+### Bug 4 deep session — 2026-05-19 close
+
+All four sub-bugs landed in deepest-leverage order
+(4d → 4f → 4e → 4g — the prompt's 4g sequencing first didn't
+apply because `localTypes` was already correctly seeded, see the 4g
+section). The four sub-bug deltas chain:
+
+```
+c_lean per-fixture: 38 → 40 → 41 → 42 → 43 (+5)
+c_lean per-decl:    463 → 573 → 671 → 770 → 863 (+400)
+g_byte:             3 pass (unchanged)
+g_rust:             86 (44 hand + 42 auto, unchanged)
+diff-harness:       PASS at 275 lines byte-identical, every step
+```
+
+Below the prompt's "Done" target of 46/89 fixtures (short by 3), but
+the per-decl delta exceeded the +237 expected, and every sub-bug
+committed cleanly with no harness regressions.
+
+Newly-passing fixtures: `step_by`, `arrays_defs` (from 4d), `chunks_exact`
+(from 4f), `iterators-scalar` (from 4e), `iterators-array` (from 4g).
+
+Commits (oldest first):
+* `43418e39` — 4d (stdlib-ADT placeholders, `Array.empty`).
+* `91389252` — 4f (typed placeholders, `ChunksExact.next` pair shape).
+* `0d1319bf` — 4e (multi-state loop tuple packing, `Vec.from` shim).
+* `0f0a763c` — 4g (iterator-state transparency, Range stdlib skip).
