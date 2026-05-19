@@ -550,3 +550,24 @@ g_byte:             3 pass (unchanged)
 g_rust:             44 hand + 42 auto = 86 (unchanged)
 diff-harness:       PASS at 275 lines byte-identical
 ```
+
+## Translator-fixes session — 2026-05-19 (in progress)
+
+Followed `prompts/zero-skip-translator-fixes-prompt.md`. Cluster D /
+emit-shape bugs.
+
+### Bug 5 — Option / String type-emit gap → DONE (`249de0e9`)
+
+Three coordinated changes:
+* `Json.Parser`'s `Adt { id = Builtin "Str" }` branch now returns
+  `LlbcTy.tStr` (was `.tOpaque "Builtin(Str)"`).
+* `Forward.lean::llbcTyToPTyWithVars` lowers `.tStr` to
+  `.adt "String" #[]` so the param renders as Lean's builtin `String`.
+* The seed accumulator's `vm` is pre-populated with input names so
+  `seedGlobalRefsFromBlock`'s `Ref(localRef.deref, _)` propagation
+  branch can carry input names through to borrow temps. Without this,
+  `options::test_expect` resolved arg 2 (a `&msg` borrow at local 4)
+  through `lookupPlace`'s vm[1] fallback, emitting `expect x x`.
+* RuntimeShim `Option.is_none`/`is_some` wrapped in `Aeneas.Std.Result`.
+
+c_lean per-fixture: 30 → 31. Per-decl: 329 → 336. Unlocks `options`.
