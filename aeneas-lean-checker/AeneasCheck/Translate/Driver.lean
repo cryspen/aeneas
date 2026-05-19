@@ -1,5 +1,6 @@
 import AeneasCheck.Translate.Forward
 import AeneasCheck.Translate.Loops
+import AeneasCheck.Pure.Pretty
 
 /-!
 End-to-end pipeline:
@@ -484,8 +485,44 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
   -- reference a trait's default body's fun_name (the standalone
   -- `Trait::method` form) need to point to `<Trait>.<method>.default`.
   -- We merge the default rename map into the same callee-rewrite pass.
+  -- Zero-skip relaunch (adt fixture): when an inherent-impl method's
+  -- emitted name collides with a struct field projection (e.g.
+  -- `def adt.Struct.len` vs the auto-generated projection
+  -- `Struct.len : Struct → Usize`), insert `.impl.` between the
+  -- struct path and the method name. Mirrors mainline aeneas's
+  -- `Struct.impl.method` shape.
+  --
+  -- Build the (sanitized struct name → set of field names) map from
+  -- the StructDecls, then rename matching `<struct>.<field>` decls.
+  let structFieldsBySanitizedName : Std.HashMap String (Array String) :=
+    structs.foldl (init := {}) fun acc sd =>
+      acc.insert (sanitizeCallName sd.name)
+        (sd.fields.map (·.name))
+  let collisionRenames : Std.HashMap String String :=
+    decls.foldl (init := {}) fun acc d =>
+      let sanitized := sanitizeCallName d.name
+      -- Split `Struct.method` (last dot only): everything before the
+      -- final `.` is the struct path, after is the method name.
+      match sanitized.splitOn "." with
+      | [] => acc
+      | [_] => acc
+      | parts =>
+        let methodName := parts.getLast!
+        let structName := String.intercalate "." (parts.dropLast)
+        match structFieldsBySanitizedName[structName]? with
+        | some fields =>
+          if fields.contains methodName then
+            let renamed := s!"{structName}.impl.{methodName}"
+            -- Key the rename map by the SANITIZED name (matches the
+            -- form `rewriteCalleeNames` sees in `.app head args`
+            -- after sanitization is applied at emit time).
+            acc.insert sanitized renamed
+          else acc
+        | none => acc
   let allCalleeRenames : Std.HashMap String String :=
-    defaultRenameByName.fold (init := fnPrettyByName) fun acc k v => acc.insert k v
+    collisionRenames.fold (init :=
+      defaultRenameByName.fold (init := fnPrettyByName) fun acc k v => acc.insert k v
+    ) fun acc k v => acc.insert k v
   -- M9.5o / M9.7l: attach `traitBoundParams` to each decl by reading
   -- the function's trait clauses from
   -- `cc.llbcProgram.funDecls[matching].signature.generics.traitClauses`.
@@ -509,10 +546,17 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
     -- header). The impl-method body decl is the only case where
     -- this triggers in M9.5l.
     -- M9.5o: extend to also rename default-method bodies.
+    --
+    -- Zero-skip relaunch (adt fixture): collision renames take
+    -- highest precedence — the `Struct.impl.method` form must
+    -- match both the def header and the call sites.
     let nameOverride : Option String :=
-      match fnPrettyByName[d.qualifiedName]? with
+      match collisionRenames[sanitizeCallName d.name]? with
       | some n => some n
-      | none => defaultRenameByName[d.qualifiedName]?
+      | none =>
+        match fnPrettyByName[d.qualifiedName]? with
+        | some n => some n
+        | none => defaultRenameByName[d.qualifiedName]?
     let isDefault : Bool := defaultRenameByName.contains d.qualifiedName
     let d := match nameOverride with
       | some n => { d with name := n, body := body2 }
