@@ -428,3 +428,125 @@ that's a sign the audit's failure-class classification was wrong for that
 decl and a fresh round of `lake build +{fixture}` is needed to identify
 the remaining root cause. Update this doc rather than silently re-adding
 the skip flag.
+
+## Relaunch session — 2026-05-19 (PARTIAL)
+
+Followed `prompts/zero-skip-relaunch-prompt.md`. Worked Cluster A
+infrastructure plus two opportunistic fixes. Net result: c_lean
+per-fixture **25 → 30** (+5); per-decl **146 → 329** (+183).
+
+Commits, in order:
+
+1. **`ebd0ea6d`** — Cluster A keyword escape extended to record-literal,
+   field-access, and struct-update emit sites. `0195f149` had covered
+   only struct *declarations*; this commit adds the four use sites where
+   `{ start := …, end := … }` was producing the keyword-cascade parse
+   error. Unlocks `issue-807-missing-symbolic-value`. (+1 fixture,
+   +100 decls.)
+
+2. **`68ba7969`** — Cluster A stdlib shim layer. Three coordinated
+   changes:
+   * `sanitizeCallName.pickType` recognises `[T]`/`[T@N]` (→ `Slice`)
+     and `[T; N]`/`[T@N; C@N]` (→ `Array`) brace-inner forms so
+     `core::slice::{[T]}::len` → `core.slice.Slice.len`.
+   * `sanitizeCallName` strips leading `@` for SINGLE-segment names
+     so Charon's builtin intercepts (`@ArrayIndexShared`,
+     `@ArrayToSliceShared`, etc.) elaborate as plain idents instead
+     of explicit-args forms that mis-bind the first arg to the
+     implicit type slot. Multi-segment `@constants.V.LEN` (Step 7's
+     explicit-args form) is intentionally preserved.
+   * `RuntimeShim/Aeneas/Std.lean` gains top-level abbrevs
+     `ArrayIndexShared`/`ArrayToSliceShared`/etc., the
+     `core.slice.Slice.len` binding, `core.option.Option.unwrap`/
+     `is_none`/`is_some`, and universal-instance `class Clone`/
+     `PartialEq`. Infrastructure-only — no fixture flips on its own.
+
+3. **`ef66babc`** — Extended shim stubs for the post-Cluster-A
+   missing-identifier bulk probe. Adds `Aeneas.Std.U128`/`I128`/`Range`
+   plus stubs for `core.slice.index.Slice.{index,index_mut}`,
+   `core.slice.Slice.{get,get_mut,chunks_exact}`, `core.slice.iter.*`,
+   `core.iter.adapters.step_by.StepBy.next`,
+   `core.iter.range.Range.next`, `core.array.Array.*`,
+   `core.clone.impls.{bool,U32,U64,I32}.clone`, `core.mem.replace`,
+   `core.ptr.null`, `core.convert.T.{into,from'}`, `core.num.U32.*`,
+   `core.fmt.*`, `std.io.stdio._print`, `alloc.vec.Vec.*`,
+   `alloc.boxed.Box.{deref,deref_mut,as_mut}`. Plus the missing
+   bare-int macros `#u8`/`#u16`/`#u64`/`#i8`/`#i16`. Two fixtures
+   flip: `builtin-auto`, `print`. (+2 fixtures, +45 decls.)
+
+4. **`1a92b31b`** — `adt` collision fix: when an inherent-impl method
+   `def Struct.field` would collide with the auto-generated structure
+   projection `Struct.field`, rename to `Struct.impl.field` (mirroring
+   mainline's shape). The driver builds a `struct-name → field-set`
+   map, computes the rename map, applies it to both the def header
+   (`nameOverride`) and call sites (`allCalleeRenames`). Unlocks
+   `adt`. (+1 fixture, +5 decls.)
+
+5. **`4a08e607`** — Make `Range.start` default-valued so a RangeTo-
+   style `s[..k]` emit (`Range { «end» := k }` with no `start`)
+   elaborates. The cert pipeline drops the literal-zero `start` for
+   `RangeTo` syntactic sugar; the shim adds an Inhabited-derived
+   default that fills the slot at use time. Unlocks `range`.
+   (+1 fixture, +33 decls.)
+
+### What stopped progress
+
+Of the remaining 59 failing fixtures, none has a single-error or
+two-error profile that yields to a focused shim or one-line emit
+fix. Common remaining patterns and their roots:
+
+* **`Application type mismatch`** in 17+ fixtures — the cert
+  walker's per-local type tracking is wrong (the `paramName` /
+  `lookupSymExpr` chain returns an arg with the wrong inferred type,
+  often a fallback `Std.U32` or the parent place's type when the
+  borrow-projected field's type was expected). Same family as the
+  Step 4 trait closure-leak; needs the trait-method-signature
+  threaded through `translateFunWith`'s retTy/body shaping.
+* **`Unknown identifier xN` / `xN_post`** in 6+ fixtures — uninitialised
+  local references. The translator's seed pass missed the local; the
+  body references it as `x1` / `t3` / `x1_post`. Same family as the
+  Step 3 / Step 5 walker scoping bugs.
+* **`Unknown identifier i`** in loop bodies (3 fixtures, all match-
+  bearing) — Step 5's `loop_body_undefined_locals` cluster, the
+  half-rewrite that was deferred.
+* **`failed to synthesize instance`** (`joins`, etc.) — nonsensical
+  `HAdd U32 Enum`-style errors from type-tracking bugs.
+
+Each of these requires multi-hour translator work. The relaunch
+prompt's 2x-estimate stopping rule for cluster overrun applied: the
+Step 4 trait closure-leak in particular hits `paper`, `demo`,
+`traits`, `default`, `defaulted_method` and is the highest-leverage
+remaining target.
+
+### Carry-forward for next session
+
+* **Cluster B / Step 4 (closure-leak trait `&mut self`).** Pre-
+  requisite: read `Translate/Forward.lean::translateFunWith`'s
+  `retTy` construction and find where it differs from the trait's
+  declared method signature. The trait declaration is in
+  `Pure.Syntax.TraitDecl.methods[k].ty`; need to thread it through
+  the impl-method body translation. Likely 1 day of work; unlocks
+  4 demo decls + several trait-impl-heavy fixtures.
+
+* **Translator-side fix for `xN_post` / `xN` uninitialised locals.**
+  Probably easier than Cluster B — the translator's seed pass needs
+  to also seed `<paramName>_post` slots. Several fixtures (`drop`,
+  `issue-803-self-in-array`, `arrays_defs`) would flip with this.
+
+* **Loop-body match-bearing fix (Step 5 second half).** Already
+  scoped in `prompts/zero-skip-step-5-loop-body-prompt.md`.
+
+* **The remaining 16 `Application type mismatch` fixtures.** Most
+  share a root with Step 4 — once the trait-method-signature
+  plumbing exists, the per-local type tracking should fall into
+  place.
+
+### Gate snapshot at session close
+
+```
+c_lean per-fixture: 30 / 89 (was 25)
+c_lean per-decl:    329 / 3143 (was 146)
+g_byte:             3 pass (unchanged)
+g_rust:             44 hand + 42 auto = 86 (unchanged)
+diff-harness:       PASS at 275 lines byte-identical
+```
