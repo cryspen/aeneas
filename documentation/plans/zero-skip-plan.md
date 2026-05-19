@@ -571,3 +571,118 @@ Three coordinated changes:
 * RuntimeShim `Option.is_none`/`is_some` wrapped in `Aeneas.Std.Result`.
 
 c_lean per-fixture: 30 → 31. Per-decl: 329 → 336. Unlocks `options`.
+
+### Bug 3 — Loop body second half (stateless loops) → DONE (`7b17d790`)
+
+When `inferStateLocals` returned an empty list (state-less loops like
+`mini_tree::explore`, `issue-270::foo`), the emit had two interrelated
+errors: `ControlFlow () Unit` had `()` (unit *value*) where Lean
+expected a type, and the body's tail emitted bare `cont i` referencing
+an unbound `i`.
+
+`Loops.lean::buildLoopBody`/`buildLoopWrapper` now synthesise a virtual
+single-state slot `(i : Unit)` whenever `stateLocals.isEmpty`. Body
+takes the extra param so it fits the
+`loop : (α → Result (ControlFlow α β)) → α → Result β` signature; the
+`ControlFlow Unit β` type renders correctly; `cont`/`done` tails carry
+a unit value `()`. Wrapper stays state-less at the user-visible API
+level (the unit state is internal).
+
+c_lean per-fixture: 31 → 34. Per-decl: 336 → 349. Unlocks
+`issue-134-loop-shared-borrows`, `issue-270-loop-list`, `mini_tree`.
+
+### Bug 2 — Uninitialised local refs → DONE (`ea6b5d89`)
+
+Two coordinated fixes:
+
+1. `buildTopLevelLoopFn` was dropping `preSt.binds` on the floor. The
+   pre-loop walk emits monadic bindings (e.g. `let x1_post ← Slice.len
+   s` in `drop::fill`) whose results feed into the wrapper call's args.
+   Thread `preSt.binds` through `assembleBody`.
+
+2. New `propagateRefsFromBlock` post-walk pass over the LLBC body. The
+   cert event stream often flattens away Charon's `Assign(localTgt,
+   Ref(localSrc.deref, _))` borrow chains; the LLBC body still carries
+   them. Re-walking with the post-event-walk vm propagates
+   `vm[localSrc]` (typically a call result like `t0`) into
+   `vm[localTgt]`. *Fill-only* — never overwrites event-walker values.
+
+c_lean per-fixture: 34 → 35. Per-decl: 349 → 449. Unlocks `drop`.
+
+### Bug 1 — Trait `&mut self` impl-method shape → DONE (`169ca529`)
+
+`traitDeclOfLlbcTraitDecl` built the trait method's return type as
+`buildArrow (.result retInner) inputs` with raw output, producing
+`Counter::incr : Self → Result Std.Usize` — but the matching impl uses
+`backSigOfLlbcWithVars + emitRetTy` to reshape `&mut self -> usize`
+into `Self → Result (Std.Usize × (Unit → Self))`. The trait/impl
+signature diverged.
+
+Switch the trait declarator to the same BackSig pair. No fixture flips
+on its own — `demo`, `traits`, `default`, `defaulted_method`,
+`blanket_impl` still fail downstream Bug 4 type-tracking errors —
+but the structural mismatch is resolved.
+
+c_lean per-fixture: 35 → 35 (deferred unlocks pending Bug 4).
+c_lean per-decl:    449 → 449.
+
+### Bug 4 — Per-local type tracking → PARTIAL (`3ec15a2e`)
+
+The largest cluster (`Application type mismatch` in 15+ fixtures
+plus `failed to synthesize HSub U32 Enum`-style errors). Symptoms
+include:
+* `static::read`: `Slice.index_usize x1 i` with `x1 : S` (generic
+  param) instead of `x1 : Slice U16` — trait-bound resolution at the
+  call site needs to consult the trait method's signature.
+* `joins::use_enum`: `x + e` where `x : U32` and `e : Enum`.
+* `joins::call_choose`: `let t0 ← b + 1#u32` where `b : Bool`.
+
+This session only added shim stubs (`Range.step_by`, `Slice.iter`,
+`Slice.iter_mut`) so the deeper walker errors surface instead of
+being masked by `unknown identifier`. The walker fix requires editing
+`Forward.lean::lookupSymExpr` and the EvAssign re-bind path to keep
+`localTypes` updated when a local's effective type changes, plus
+plumbing trait method signatures through call sites — a session-sized
+investment on its own.
+
+c_lean per-fixture: 35 → 35 (no flip from shim stubs alone).
+c_lean per-decl:    449 → 449.
+
+## Translator-fixes session — close
+
+```
+c_lean per-fixture: 35 / 89 (was 30)
+c_lean per-decl:    449 / 3143 (was 329)
+g_byte:             3 pass (unchanged)
+g_rust:             44 hand + 42 auto = 86 (unchanged)
+diff-harness:       PASS at 275 lines byte-identical
+```
+
+Commits in order:
+1. `249de0e9` — Bug 5 (Option/String): `+1` fixture (`options`).
+2. `7b17d790` — Bug 3 (stateless loops): `+3` fixtures
+   (`issue-134-loop-shared-borrows`, `issue-270-loop-list`,
+   `mini_tree`).
+3. `ea6b5d89` — Bug 2 (uninitialised locals): `+1` fixture (`drop`).
+4. `169ca529` — Bug 1 (trait reshape): structural fix, `+0` immediate
+   (unblocks Bug 4-gated trait fixtures).
+5. `3ec15a2e` — Bug 4 (shim stubs): scaffolding only.
+
+### Carry-forward for next session
+
+* **Bug 4 (per-local type tracking)** — the largest remaining cluster.
+  Surface: `Forward.lean::lookupSymExpr` and the EvAssign re-bind
+  path. Compounds with Bug 1's trait-method-signature plumbing.
+  Estimate: 6-12 hours; expected unlock: 5-10 fixtures including
+  `static`, `joins`, `iterators-scalar`, `arrays`, `slices`.
+
+* **Aggregate-rvalue propagation** — `issue-803-self-in-array`'s
+  `Assign(local 0, Aggregate([Array, [local 2]]))` isn't handled by
+  the post-walk `propagateRefsFromBlock` (which only does Ref/Use).
+  Extending it to recognise Aggregate(Array, [singleSrc]) would emit
+  a singleton-array literal and unlock the fixture. Small fix.
+
+* **`constants` placeholder** — `use_static::PREFIX` body emits `ok
+  0#u32` against a `Result (Array Std.U8 1#usize)` return type
+  (placeholder synthesiser doesn't recognise `Array`). Mirror the
+  `Pair` placeholder logic in `placeholderPExprOfWith` for `Array`.
