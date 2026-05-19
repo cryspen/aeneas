@@ -113,33 +113,88 @@ divergent translations.
 
 **Acceptance:** remove `--skip-decl test_nth` from `run-diff.sh:69`. Re-run.
 
-### Step 3 — Recursive match-arm scoping in the forward walker (Cluster: `recursive_match_arm_scoping`)
+### Step 3 — Recursive match-arm scoping in the forward walker (Cluster: `recursive_match_arm_scoping`) — PARTIAL 2026-05-18
 
-**Unlocks (cascading):** `demo::list_nth`, `demo::list_nth_mut`,
-`demo::list_tail`, `demo::i32_id`, `paper::list_nth_mut`, `paper::sum`. That
-is **6 decls** (the audit said 5; `paper::list_nth_mut` falls into the same
-cluster).
+**Actual work:** ~3 hours. `demo::list_nth` and `paper::sum` unlocked. The
+other five decls in this cluster (`demo::list_nth_mut`, `demo::list_tail`,
+`demo::i32_id`, `paper::list_nth_mut`, `paper::test_nth`) all turned out to
+be blocked by *pre-existing* emit gaps that the cluster-3 fix exposed but
+doesn't resolve — see BLOCKED subsection below.
 
-**Symptom:** for a `match l with | CCons x tl => ... | CNil => ...`, the
-emitter swaps the arms and loses pattern bindings. The `CCons` arm emits
-`ok ()` and the recursive call (which belongs in `CCons`) lands in `CNil`.
+**Root cause (now confirmed):** Charon emits match-arm events in two
+distinct layouts:
 
-**Fix surface:** the match-arm assembler in
-`aeneas-lean-checker/AeneasCheck/Translate/Forward.lean`. Two things to verify
-first:
-- Are the arms genuinely swapped (variant index off-by-one), or is the bug
-  in arm-body assembly (each arm gets the wrong sub-walk's binds)?
-- Does the binding loss come from the `payloadBinders` map not being seeded
-  for recursive enums?
+- *Interleaved* (`list_tail`-style): `[matchArm A][body A][matchArm B][body B]`.
+  The pre-existing walker handles this correctly.
+- *Grouped* (`sum` / `list_nth*` / `list_nth_mut`-style): `[matchArm A]
+  [matchArm B][body B][body A]` — markers all up front, bodies trailing in
+  *reverse* variant-id order. The pre-existing walker collapsed each arm's
+  range to `(marker_i+1, marker_{i+1})`, which made arm 0 an empty body
+  (emitted `ok ()`) and arm 1 inherit the entire residue. That's the
+  audit's "swap" report.
 
-The audit didn't go deep enough to pinpoint the exact line. **Estimated
-work: half a day** (one session of careful walker debugging with a minimal
-reproducer, probably `paper::sum` since it has the simplest match).
+**Fix (Forward.lean):** three coordinated changes.
 
-**Acceptance:** remove `--skip-decl list_nth`, `--skip-decl list_nth_mut`,
-`--skip-decl list_tail`, `--skip-decl i32_id` from `run-diff.sh:48-53`
-(demo) and `--skip-decl list_nth_mut`, `--skip-decl sum` from
-`run-diff.sh:67-68` (paper). Re-run.
+1. **Layout detection + re-slice** (lines around 1727-1855): after the
+   pre-existing `collect` produces armsRaw, detect the grouped layout (every
+   arm except the last has an empty `(start, endIdx)` range) and partition
+   the trailing event stream by *top-level* terminators (`EvReturn` /
+   `EvPanic`, with `findBranchEnd` used to skip past Assert-pair if/elses).
+   Assign body chunks to markers in reverse marker order. The new
+   `lastEnd` for the parent walk is the max `endIdx` across arms (chunk
+   order ≠ marker order).
+2. **Variant-binder seeding** (around `variantFieldBinderName` +
+   `seedGlobalRefsFromStatement`): when the seed pass sees an
+   `Assign localK ← Ref(scrut.[Deref, Field _ (some vid) fIdx])`
+   statement, prefer the binder name (`localsNames[localK]` if set, else
+   synthesized `xL`) over propagating the scrutinee's pure value. Without
+   this the body emitted `(paper.sum l)` (the inherited scrutinee) instead
+   of `(paper.sum tl)`.
+3. **Pattern-slot ↔ body alignment** (`collectVariantBinders*` family +
+   `WalkState.variantBinders`): build a `(vid, fIdx) → binderName` map
+   from the LLBC body so the match-arm walker's `binderName` picks the
+   *same* name the seed pass used. This handles
+   `demo::list_nth_mut`-shaped functions where Charon injected MIR temps
+   before the named binders, so the K-th binder isn't at `numParams+1+K`.
+
+Plus two tail-fixes for the new sub-walks:
+
+4. **Panic-arm tail** (around line 1956): when an arm body contains
+   `EvPanic`, emit `error panic` (RuntimeShim's `Result.error`
+   constructor) instead of inheriting the parent's `vm[0]` — fixes
+   `| CNil => ok x` (where `x` isn't bound in CNil) → `| CNil => error
+   panic`.
+5. **Call-as-tail heuristic** (`pickBranchTail` in the Assert-pair
+   handler + the arm-walker's `tailRaw`): when a sub-walk doesn't write
+   to `vm[0]` and `lastWrite` points to a fresh local introduced in this
+   sub-walk (not present in the parent's `vm`), use `vm[lastWrite]` as
+   the tail. Fixes `list_nth`'s `else` branch where Charon elides
+   `Assign local 0 ← Move t_call_dst` after a tail-call.
+
+**Acceptance:** removed `--skip-decl list_nth` (demo) and `--skip-decl sum`
+(paper) from `run-diff.sh`. G_lean passes 275 lines byte-identical. G_byte
+pass count unchanged at 3. G_rust still at 44.
+
+**BLOCKED (not Step 3 root):**
+
+- `demo::list_nth_mut`, `paper::list_nth_mut`: now emit the right CCons
+  body but the surrounding `ok (match ...)` wrap is wrong (the back-
+  closure-returning fn's outer wrap should be `match l with | ... | ...
+  => fail panic`, not `ok (match ...)`). Pre-existing back-closure-emit
+  issue.
+- `demo::list_tail`: CCons body correct; CNil arm emits `ok l, fun ret =>
+  l)` for the identity-back-closure shape — pre-existing closure-tail
+  rendering issue (same family as `paper::test_choose` from Step 6).
+- `demo::i32_id`: not a match at all. Pre-existing dropped-recursive-call
+  issue (the recursive call result is bound to `t3` then the tail returns
+  the never-bound `t3`).
+- `paper::test_nth`: cascade — depends on `list_nth_mut`, which stays
+  skipped.
+
+**Walker scaffold:** `aeneas-lean-checker/tests/Walker/match_arm_scaffold.py`
+runs `aeneas-check` against the seven decls and asserts cluster-3-shape
+substrings. Reusable for follow-up clusters that touch the same
+match-arm/branch machinery.
 
 ### Step 4 — Closure-leak in trait `&mut self` methods (Cluster: `closure_leak_trait_mut_self`)
 
@@ -170,26 +225,63 @@ trait-impl-heavy fixture (`traits`, `default`, `defaulted_method`,
 "Std.Usize.Insts.DemoCounter"`, `--skip-decl
 "Std.Usize.Insts.DemoCounter.incr"`, `--skip-decl use_counter`. Re-run.
 
-### Step 5 — Loop body emits undefined locals (Cluster: `loop_body_undefined_locals`)
+### Step 5 — Loop body emits undefined locals (Cluster: `loop_body_undefined_locals`) — PARTIAL 2026-05-18
+
+**Actual work:** ~2 hours. Wrapper-signature half of the cluster shipped;
+the loop-body half (architectural mismatch — see below) is deferred. Net:
+0 of 3 decls unlock in this commit, but the typeParams + tdm fix is
+prerequisite groundwork for the body rewrite that will unlock all 3.
 
 **Unlocks:** `demo::list_nth1`, `demo::list_nth1_loop`,
 `demo::list_nth1_loop.body`. **3 decls**, all part of one loop fn.
 
 **Symptom:** the loop-body translator references `s33` / `t3` — locals that
-were never bound. The wrapper's return type is `Result T` (the type
-variable) when it should be `Result Std.U32` (the concrete type the body
-returns).
+were never bound. The wrapper emits `(l : Std.U32)` (the catch-all
+placeholder) where the oracle has `(l : CList T)` and is missing the
+`{T : Type}` binder line entirely.
 
 **Fix surface:** `aeneas-lean-checker/AeneasCheck/Translate/Loops.lean`'s
-`buildLoopBody` and `buildTopLevelLoopFn`. Likely two bugs:
-- Stale local-index references when the walker emits names from the parent
-  scope's vm without rewriting them to the loop-body's binders.
-- Loop-state type inference picks a too-general `T` when the body's
-  state is concrete.
+`buildLoopBody`, `buildLoopWrapper`, `buildTopLevelLoopFn`, and
+`translateLoopFun`. Two independent bugs:
 
-**Estimated work: half a day.**
+1. **tdm + typeParams not threaded.** `translateLoopFun` built a local
+   `tdm := {}`, so every ADT-typed input fell through to
+   `llbcTyToPTyWithVars`'s `Std.U32` catch-all; the three Decl records
+   omitted `typeParams`, so the renderer dropped the implicit
+   `{T : Type}` binder. **Fixed in commit `a51913d6` (this commit).**
+   `tdm` now flows from `Driver.translateCrate`'s
+   `buildTypeDeclMapFromLlbc` call into `translateLoopFun`, and
+   `typeParams := lsig.generics.types` propagates into all three
+   emitted Decls.
 
-**Acceptance:** remove the three `list_nth1*` skips. Re-run.
+2. **buildLoopBody assumes the wrong body shape.** The current design
+   expects `[setup events] EvAssert(c, true) [continue body]
+   EvAssert(c, false) [break body]` — a flat conditional, modelled
+   after the M12.1 `count_to` fixture. But `list_nth1_loop`'s body is
+   match-then-branch: `[EvMatchArm CCons] [setup + asserts + recurse]
+   [EvMatchArm CNil] [EvPanic]`. The match-arm walker in
+   `Forward.lean::walkEvents` consumes the entire match before
+   `findBodyBranch` ever sees the asserts, so the cond falls back to
+   `lookupSymExpr` on a bare `SymVal 33` (renders as `s33`) and the
+   cont/done payloads default to `()` (because no state-local is
+   tracked through the arm sub-walks). **Not fixed in this commit.**
+   The repair is a buildLoopBody rewrite — likely: walk the body as a
+   normal function expression, then rewrite the recursive self-call
+   into `cont <args>` and the function's `Return v` into `done v`.
+   Out of scope here.
+
+**Scaffold:** `aeneas-lean-checker/tests/Walker/loop_body_scaffold.py`
+shipped alongside the typeParams fix. Asserts the wrapper /
+top-level signature shape (now passing) and the body's absence of
+`if s33` / `ok t3` (still failing, single remaining assertion).
+
+**Acceptance for partial:** scaffold passes 8/9; the wrapper-signature
+shape on `list_nth1` / `list_nth1_loop` / `list_nth1_loop.body` now
+matches the oracle. Skip list unchanged because the broken body
+prevents the whole 3-decl chain from elaborating.
+
+**Acceptance for full (deferred):** remove the three `list_nth1*` skips
+and re-run after the buildLoopBody rewrite.
 
 ### Step 6 — Back-closure tail position not wrapped in `ok` (Cluster: `tail_back_closure_wrap`) — PARTIAL 2026-05-18
 

@@ -712,6 +712,25 @@ structure WalkState where
       `_post`-name synthesiser produce `<sourceName>_post` instead of
       `<paramName k>_post` when the cert carries a source name. -/
   paramNameByLocal : Std.HashMap Nat String := {}
+  /-- Zero-Skip Step 3 (Cluster `recursive_match_arm_scoping`): the
+      function's `LlbcFunDecl.localsNames` (one entry per local in
+      `localTypes`, in declaration order; `none` for unnamed
+      MIR-introduced temps). Used by the match-arm sub-walk to give
+      payload binders their source-level name (`tl`, `x`, …) instead
+      of the synthesised `x{N}` form — without the source name the
+      pattern binders don't agree with the body's references after
+      the seed pass's variant-field-binder fix-up. -/
+  localsNames : Array (Option String) := #[]
+  /-- Zero-Skip Step 3 (Cluster `recursive_match_arm_scoping`):
+      precomputed per-(variant-id, field-idx) binder name. Built at
+      `translateFunWith` time by scanning the LLBC body for
+      `Assign localK ← Ref(_.[Field _ (some vid) fIdx])` statements
+      and mapping (vid, fIdx) → `localsNames[localK]?` (or the
+      synthesised `s!"x{localK}"` fallback used by the seed pass).
+      Consulted by the match-arm walker so the pattern slot agrees
+      with the body's seeded binder name. Empty for non-match
+      bodies / opaque LLBC. -/
+  variantBinders : Std.HashMap (Nat × Nat) String := {}
   deriving Inhabited
 
 namespace WalkState
@@ -1722,7 +1741,107 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                 collect endIdx ((k, endIdx, adtId, vid, vname) :: acc)
               else acc.reverse
             | _ => acc.reverse
-        let arms := collect i []
+        let armsRaw := collect i []
+        -- Zero-Skip Step 3 (Cluster `recursive_match_arm_scoping`):
+        -- detect Charon's *grouped* match layout. The default
+        -- interleaved layout is
+        --   `[matchArm A] [body A] [matchArm B] [body B] …`
+        -- and `collect` slices it correctly. But Charon also emits a
+        -- *grouped* layout for matches whose body values flow
+        -- directly into the return slot (e.g. `paper::sum`,
+        -- `paper::list_nth_mut`, `demo::list_nth`, `demo::i32_id`
+        -- via Assert pairs):
+        --   `[matchArm A] [matchArm B] [body B] [body A]`
+        -- with all markers up front and the bodies *in reverse
+        -- variant-id order* trailing. In that layout `collect`
+        -- assigns arm A an empty body (`ok ()`) and arm B the whole
+        -- residue, which is the swap bug the audit calls out.
+        --
+        -- Detection: every arm except the last has an empty body
+        -- range (`endIdx == start + 1`). Repair: scan the trailing
+        -- event stream of the last arm for top-level body
+        -- terminators (`EvReturn` / `EvPanic`), skipping past
+        -- Assert(true)…Assert(false)…(EvJoin|EvReturn) pairs, to
+        -- split it into one chunk per arm; then assign chunks to
+        -- arms in *reverse* order.
+        let arms : List (Nat × Nat × Nat × Nat × String) :=
+          match armsRaw with
+          | []  => []
+          | [_] => armsRaw
+          | _ =>
+            let nArms := armsRaw.length
+            let allButLastEmpty :=
+              armsRaw.take (nArms - 1) |>.all (fun (s, e, _, _, _) => e == s + 1)
+            if !allButLastEmpty then armsRaw
+            else
+              -- Body events start right after the last marker; they
+              -- run to the original last-arm `endIdx` (which is either
+              -- the array end or an EvJoin).
+              let (firstStart, totalEnd) :=
+                match armsRaw.head?, armsRaw.getLast? with
+                | some (s0, _, _, _, _), some (_, eN, _, _, _) => (s0, eN)
+                | _, _ => (i + nArms, evs.size)
+              let _ := firstStart  -- silence unused
+              let bodyStart := i + nArms
+              -- Walk the body event stream looking for top-level
+              -- terminators. We re-use `findBranchEnd` to skip past
+              -- whole if/else constructs encoded as Assert pairs so
+              -- their internal `EvReturn`s don't get treated as
+              -- chunk boundaries.
+              let rec nextChunkEnd (k : Nat) (fuel : Nat) : Nat :=
+                match fuel with
+                | 0 => k
+                | Nat.succ fuel' =>
+                  if k ≥ totalEnd then totalEnd
+                  else
+                    match evs[k]? with
+                    | some (.assert c true) =>
+                      -- Skip past the whole branch construct.
+                      match findBranchEnd evs k c with
+                      | some (.joined _ kIdx) => nextChunkEnd (kIdx + 1) fuel'
+                      | some (.returnTailed _ _ fEnd) => fEnd + 1
+                      | none => nextChunkEnd (k + 1) fuel'
+                    | some .retn => k + 1
+                    | some .panic => k + 1
+                    | _ => nextChunkEnd (k + 1) fuel'
+              -- Collect chunk ranges in stream order.
+              let rec collectChunks (k : Nat) (remaining : Nat)
+                  (acc : List (Nat × Nat)) (fuel : Nat) : List (Nat × Nat) :=
+                match fuel, remaining with
+                | 0, _ => acc.reverse
+                | _, 0 => acc.reverse
+                | Nat.succ fuel', Nat.succ _ =>
+                  if k ≥ totalEnd then acc.reverse
+                  else
+                    let kEnd := nextChunkEnd k (totalEnd - k + 1)
+                    let kEnd := if kEnd > totalEnd then totalEnd else kEnd
+                    collectChunks kEnd (remaining - 1) ((k, kEnd) :: acc) fuel'
+              let chunks := collectChunks bodyStart nArms [] (nArms + 1)
+              -- We need exactly nArms chunks; if fewer were found,
+              -- fall back to armsRaw (don't risk a worse mis-emit).
+              if chunks.length != nArms then armsRaw
+              else
+                -- Pair each marker (in marker order) with a chunk
+                -- (in reverse chunk order).
+                let rev := chunks.reverse
+                let pairs :=
+                  (List.range nArms).map fun idx =>
+                    let (_, _, adtId, vid, vname) := armsRaw[idx]!
+                    let (cs, ce) := rev[idx]!
+                    -- We synthesise `(start, endIdx)` so the
+                    -- downstream body extractor — which uses
+                    -- `(start+1, endIdx)` and may strip a trailing
+                    -- `EvReturn` — sees the right events. We extend
+                    -- `endIdx` by one past `ce` so the
+                    -- trailing-EvReturn strip targets the
+                    -- post-terminator event (typically a no-op
+                    -- `EvMove`) instead of swallowing the chunk's
+                    -- own terminator — that terminator is structural
+                    -- when the chunk contains an Assert-pair if/else
+                    -- (whose false-branch terminator is the chunk's
+                    -- own trailing `EvReturn`).
+                    (cs - 1, ce + 1, adtId, vid, vname)
+                pairs
         match arms with
         | [] => go (i + 1) (walkEvent st ev)
         | _ =>
@@ -1769,13 +1888,23 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
             | some info => info.variantFieldCounts
             | none => #[]
           -- M9.5e: derive a binder name for an arm's K-th payload
-          -- field. We pick `x{numParams + 1 + K}` — coincides with
-          -- the LLBC local index Charon assigns to the binding
-          -- (post-input locals start at numParams+1) for single-arm
-          -- bodies, and stays arm-scoped so reuse across arms is
-          -- safe. Cosmetic: the standard backend uses the Rust
-          -- source name (e.g. `n`) which the cert doesn't carry.
-          let binderName (k : Nat) : String := paramName (st.numParams + 1 + k)
+          -- field. Zero-Skip Step 3: consult the
+          -- `(variantId, fieldIdx) → binderName` map precomputed at
+          -- `translateFunWith` time by `collectVariantBinders*`.
+          -- The map's name agrees with the seed pass's vm-seeded
+          -- name (Charon source name from `localsNames` when
+          -- available, synthesised `xL` otherwise), so pattern and
+          -- body references resolve to the same identifier even
+          -- when Charon injected MIR temps before the named
+          -- binders (`demo::list_nth_mut`) or when the binder is
+          -- unnamed (`demo::list_tail`'s head `t`). The
+          -- `paramName (numParams + 1 + k)` fallback covers
+          -- functions without an LLBC body or with synthesised
+          -- variants not surfaced through `variantBinders`.
+          let binderName (vid k : Nat) : String :=
+            match st.variantBinders[(vid, k)]? with
+            | some n => n
+            | none => paramName (st.numParams + 1 + k)
           -- Build the arm bodies via sub-walks.
           let armResults : Array (String × Array String × PExpr) × Nat :=
             arms.toArray.foldl (init := (#[], st.fresh)) fun (acc, fresh) arm =>
@@ -1798,11 +1927,11 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                 if vid < variantFieldCounts.size then variantFieldCounts[vid]!
                 else 0
               let binders : Array String :=
-                (List.range nFields).toArray.map binderName
+                (List.range nFields).toArray.map (binderName vid)
               let armPayloadBinders : Std.HashMap (Nat × Nat) String :=
                 (List.range nFields).foldl
                   (init := st.payloadBinders) fun m k =>
-                    m.insert (scrutLocal, k) (binderName k)
+                    m.insert (scrutLocal, k) (binderName vid k)
               let sub := walkEvents bodyEvs
                 { st with
                   binds := #[], fresh := fresh,
@@ -1823,18 +1952,65 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
                     .var s!"{adtName}.{name}"
                   else .var name
                 | e => e
-              let tailRaw : PExpr := sub.vm.getD 0 (.var "()")
+              -- Zero-Skip Step 3: prefer `fail panic` when the arm
+              -- body contains an `EvPanic` event — that's Charon's
+              -- encoding of a Rust `panic!()` / unreachable arm and
+              -- maps to `fail panic` in the standard backend's
+              -- output. Without this, the arm tail falls back to
+              -- the inherited parent `vm[0]` (typically the seed
+              -- pass's binder for the *other* arm's payload), which
+              -- emits `ok x` for a `panic!()` Nil branch.
+              -- Zero-Skip Step 3 (continued): a recursive-call-as-
+              -- return shape (`let t_dst ← rec_call …` with no
+              -- subsequent `Assign local 0 ← …` because Charon
+              -- elides it) similarly leaves `vm[0]` inherited. When
+              -- the sub-walk's `lastWrite` points to a fresh local
+              -- (i.e. one that was *introduced* by an EvCall in this
+              -- arm — not present in the parent's `vm`), prefer
+              -- `vm[lastWrite]` over the inherited `vm[0]`.
+              let armEndsInPanic : Bool :=
+                bodyEvs.any (fun ev => match ev with | .panic => true | _ => false)
+              -- Did the sub-walk introduce a write to local 0 (the
+              -- LLBC return slot)? If not, `vm[0]` is just the
+              -- parent's inherited entry and the real tail value is
+              -- whatever the sub-walk wrote most recently.
+              let vm0Inherited : Bool :=
+                match st.vm[0]?, sub.vm[0]? with
+                | some _, some _ =>
+                  -- Both present and equal-ish. We approximate by
+                  -- treating it as inherited iff no event in
+                  -- `bodyEvs` is an `.assign` whose dst.local_ is 0.
+                  !bodyEvs.any (fun ev => match ev with
+                    | .assign d _ => d.local_ == 0
+                    | _ => false)
+                | _, _ => false
+              let tailRaw : PExpr :=
+                if armEndsInPanic then .var "error panic"
+                else
+                  match sub.lastWrite with
+                  | some lw =>
+                    if vm0Inherited && !st.vm.contains lw then
+                      -- lw is a fresh local introduced in this arm.
+                      sub.vm.getD lw (sub.vm.getD 0 (.var "()"))
+                    else
+                      sub.vm.getD 0 (.var "()")
+                  | none => sub.vm.getD 0 (.var "()")
               let tail : PExpr := qualify tailRaw
               let armCtor := s!"{adtName}.{vname}"
-              let body := assembleBody sub.binds (tailToResult tail)
+              -- `fail panic` is already monadic: don't wrap in `ok`.
+              let body :=
+                if armEndsInPanic then assembleBody sub.binds tail
+                else assembleBody sub.binds (tailToResult tail)
               (acc.push (armCtor, binders, body), sub.fresh)
           let armsArr := armResults.1
           let nextFresh := armResults.2
-          -- Skip past the entire run: end of last arm's range.
+          -- Skip past the entire run: end of last arm's range. For
+          -- the Step-3 grouped layout the marker order and chunk
+          -- order differ; the safe bound is the *max* `endIdx`
+          -- across all arms (the rightmost event consumed).
           let lastEnd : Nat :=
-            match arms.getLast? with
-            | some (_, e, _, _, _) => e
-            | none => i + 1
+            arms.foldl (init := i + 1) fun acc (_, e, _, _, _) =>
+              if e > acc then e else acc
           let matchE : PExpr := PExpr.matchE scrutE armsArr
           -- Whole function body is a match expression. Bind it as
           -- vm[0] (the return slot) so the linear walk's wrap-up
@@ -1897,10 +2073,32 @@ partial def walkEvents (evs : Array Event) (st0 : WalkState) : WalkState :=
           -- assigned. For a Return-tailed branch, the tail
           -- expression is `vm[0]` (the LLBC return slot), wrapped
           -- in ok.
-          let leftTail : PExpr :=
-            leftSub.vm.getD 0 (.lit (.scalar .u32 0))
-          let rightTail : PExpr :=
-            rightSub.vm.getD 0 (.lit (.scalar .u32 0))
+          -- Zero-Skip Step 3: when a branch ends with a call whose
+          -- result IS the return value (Charon elides the trailing
+          -- `Assign local 0 ← Move call_dst` because it's
+          -- structurally implicit), `vm[0]` stays inherited from
+          -- the parent. Detect that case by checking whether any
+          -- event in the branch's body wrote to local 0; if not,
+          -- prefer the most recently introduced fresh local
+          -- (`lastWrite` not present in the parent's `vm`).
+          let branchVm0Touched (branchEvs : Array Event) : Bool :=
+            branchEvs.any (fun ev => match ev with
+              | .assign d _ => d.local_ == 0
+              | _ => false)
+          let pickBranchTail (subSt : WalkState) (branchEvs : Array Event)
+              : PExpr :=
+            if branchVm0Touched branchEvs then
+              subSt.vm.getD 0 (.lit (.scalar .u32 0))
+            else
+              match subSt.lastWrite with
+              | some lw =>
+                if st.vm.contains lw then
+                  subSt.vm.getD 0 (.lit (.scalar .u32 0))
+                else
+                  subSt.vm.getD lw (subSt.vm.getD 0 (.lit (.scalar .u32 0)))
+              | none => subSt.vm.getD 0 (.lit (.scalar .u32 0))
+          let leftTail : PExpr := pickBranchTail leftSub leftEvs
+          let rightTail : PExpr := pickBranchTail rightSub rightEvs
           let thenBody := assembleBody leftSub.binds (tailToResult leftTail)
           let elseBody := assembleBody rightSub.binds (tailToResult rightTail)
           let ite : PExpr := PExpr.ifThenElse cond thenBody elseBody
@@ -2318,17 +2516,128 @@ def buildGlobalGenericCall
   let head := if tyArgs.isEmpty then bareName else "@" ++ bareName
   some (.app head (tyArgs ++ cgArgs))
 
+/-- Zero-Skip Step 3 helper: detect a match-arm-binder Ref-projection.
+
+    For an `Assign localK ← Ref(localScrut.[…, Field(_, some _, _), …])`,
+    Charon's pattern is to introduce a fresh local (`localK`) that is
+    bound to the *named* variant payload (`x`, `tl`, …). The
+    standard backend renders the match arm as `| List.Cons x tl => …`
+    and references `x` / `tl` directly in the body. The cert events
+    *don't* carry the projection itself (it's stripped at the
+    symbolic-interpreter layer), so without a seed the event walker
+    falls back to `vm[1]` and emits the scrutinee root (`l`) in place
+    of the binder — the source of the Cluster-3 "wrong argument"
+    bug. We seed `vm[localK] := .var <binderName>` so the rest of
+    the seed pass's deref/Use propagation forwards the binder
+    through any reborrow chain (`local 6 := Ref(local 3.[Deref,
+    Deref])` → `vm[6] := vm[3]`). The chosen binder name is the
+    Charon source name (`localsNames[localK]`) when available — for
+    `paper::sum` / `demo::list_nth`-shaped functions where the
+    arm-pattern handler (see `binderName` in the match-arm walker)
+    will surface the same source name in the pattern slot — and the
+    synthesised `s!"x{localK}"` otherwise (so seed and pattern stay
+    aligned even when Charon injected MIR temps before the named
+    binders). -/
+def variantFieldBinderName
+    (localsNames : Array (Option String))
+    (place : Raw.LlbcPlace) (placeRef : Raw.LlbcPlace) :
+    Option String :=
+  let isVariantProj : Bool :=
+    placeRef.projection.any fun
+      | .field _ (some _) _ => true
+      | _ => false
+  if !isVariantProj then none
+  else
+    -- Always seed *something* so the body's downstream reads pick
+    -- up a binder name rather than the scrutinee fallback. Prefer
+    -- the Charon source name; fall back to synthesised `xL`.
+    match localsNames[place.local_]?.bind id with
+    | some n => some n
+    | none => some s!"x{place.local_}"
+
+/-- Zero-Skip Step 3 helper: extract the first variant-field
+    projection element (if any) from a place's projection chain.
+    Returns `(vid, fieldIdx)` for `_.[Field _ (some vid) fIdx]`. -/
+def firstVariantFieldProj (p : Raw.LlbcPlace) : Option (Nat × Nat) :=
+  p.projection.foldl (init := none) fun acc el =>
+    match acc, el with
+    | none, .field _ (some vid) fIdx => some (vid, fIdx)
+    | acc, _ => acc
+
+-- Zero-Skip Step 3: deep scan of the LLBC body for
+-- `Assign localK ← Ref(_.[Field _ (some vid) fIdx])` statements,
+-- accumulating a `(vid, fIdx) → binderName` map. The binder name
+-- is the Charon source name (`localsNames[localK]`) when present,
+-- otherwise the synthesised `xL` form — same scheme the
+-- `variantFieldBinderName` seed helper uses, so the pattern slot
+-- and the seeded vm binding always agree. First occurrence wins.
+-- Used by the match-arm walker's `binderName` to pick the right
+-- pattern slot for arm `vid` field `K`.
+mutual
+
+partial def collectVariantBindersBlock
+    (localsNames : Array (Option String))
+    : Raw.LlbcBlock → Std.HashMap (Nat × Nat) String
+        → Std.HashMap (Nat × Nat) String
+| .mk _ stmts, acc =>
+  stmts.foldl (init := acc) fun acc s =>
+    collectVariantBindersStmt localsNames s acc
+
+partial def collectVariantBindersStmt
+    (localsNames : Array (Option String))
+    : Raw.LlbcStatement → Std.HashMap (Nat × Nat) String
+        → Std.HashMap (Nat × Nat) String
+| .mk kind _, acc =>
+  match kind with
+  | .assign place (.ref placeRef _) =>
+    match firstVariantFieldProj placeRef with
+    | none => acc
+    | some (vid, fIdx) =>
+      if acc.contains (vid, fIdx) then acc
+      else
+        let nm : String :=
+          match localsNames[place.local_]? with
+          | some (some n) => n
+          | _ => s!"x{place.local_}"
+        acc.insert (vid, fIdx) nm
+  | .block b => collectVariantBindersBlock localsNames b acc
+  | .loopStmt b => collectVariantBindersBlock localsNames b acc
+  | .switch sw => collectVariantBindersSwitch localsNames sw acc
+  | _ => acc
+
+partial def collectVariantBindersSwitch
+    (localsNames : Array (Option String))
+    : Raw.LlbcSwitch → Std.HashMap (Nat × Nat) String
+        → Std.HashMap (Nat × Nat) String
+| .ifBool _ t e, acc =>
+  collectVariantBindersBlock localsNames e
+    (collectVariantBindersBlock localsNames t acc)
+| .switchInt _ _ arms dflt, acc =>
+  let acc := arms.foldl (init := acc)
+    fun acc (_, b) => collectVariantBindersBlock localsNames b acc
+  collectVariantBindersBlock localsNames dflt acc
+| .match_ _ arms dfltOpt, acc =>
+  let acc := arms.foldl (init := acc)
+    fun acc (_, b) => collectVariantBindersBlock localsNames b acc
+  match dfltOpt with
+  | some b => collectVariantBindersBlock localsNames b acc
+  | none => acc
+
+end
+
 mutual
 
 partial def seedGlobalRefsFromBlock
     (typeNames constNames : Array String)
+    (localsNames : Array (Option String))
     : Raw.LlbcBlock → SeedAcc → SeedAcc
 | .mk _ stmts, acc =>
   stmts.foldl (init := acc) fun acc s =>
-    seedGlobalRefsFromStatement typeNames constNames s acc
+    seedGlobalRefsFromStatement typeNames constNames localsNames s acc
 
 partial def seedGlobalRefsFromStatement
     (typeNames constNames : Array String)
+    (localsNames : Array (Option String))
     : Raw.LlbcStatement → SeedAcc → SeedAcc
 | .mk kind _, acc =>
   match kind with
@@ -2359,9 +2668,17 @@ partial def seedGlobalRefsFromStatement
               binds := acc.binds.push (.regular name callE) }
         | none => acc
       | none =>
-        match acc.vm[placeRef.local_]? with
-        | some v => { acc with vm := acc.vm.insert place.local_ v }
-        | none => acc
+        -- Zero-Skip Step 3 (Cluster `recursive_match_arm_scoping`):
+        -- when the Ref projects a *variant* field, prefer the named
+        -- binder from `localsNames` over the root local's pure
+        -- value. See [variantFieldBinderName].
+        match variantFieldBinderName localsNames place placeRef with
+        | some binderName =>
+          { acc with vm := acc.vm.insert place.local_ (.var binderName) }
+        | none =>
+          match acc.vm[placeRef.local_]? with
+          | some v => { acc with vm := acc.vm.insert place.local_ v }
+          | none => acc
     | .use op =>
       let propagate (p : Raw.LlbcPlace) : SeedAcc :=
         match acc.vm[p.local_]? with
@@ -2372,26 +2689,27 @@ partial def seedGlobalRefsFromStatement
       | .move p => propagate p
       | _ => acc
     | _ => acc
-  | .block b => seedGlobalRefsFromBlock typeNames constNames b acc
-  | .loopStmt b => seedGlobalRefsFromBlock typeNames constNames b acc
-  | .switch sw => seedGlobalRefsFromSwitch typeNames constNames sw acc
+  | .block b => seedGlobalRefsFromBlock typeNames constNames localsNames b acc
+  | .loopStmt b => seedGlobalRefsFromBlock typeNames constNames localsNames b acc
+  | .switch sw => seedGlobalRefsFromSwitch typeNames constNames localsNames sw acc
   | _ => acc
 
 partial def seedGlobalRefsFromSwitch
     (typeNames constNames : Array String)
+    (localsNames : Array (Option String))
     : Raw.LlbcSwitch → SeedAcc → SeedAcc
 | .ifBool _ t e, acc =>
-  seedGlobalRefsFromBlock typeNames constNames e
-    (seedGlobalRefsFromBlock typeNames constNames t acc)
+  seedGlobalRefsFromBlock typeNames constNames localsNames e
+    (seedGlobalRefsFromBlock typeNames constNames localsNames t acc)
 | .switchInt _ _ arms dflt, acc =>
   let acc := arms.foldl (init := acc)
-    fun acc (_, b) => seedGlobalRefsFromBlock typeNames constNames b acc
-  seedGlobalRefsFromBlock typeNames constNames dflt acc
+    fun acc (_, b) => seedGlobalRefsFromBlock typeNames constNames localsNames b acc
+  seedGlobalRefsFromBlock typeNames constNames localsNames dflt acc
 | .match_ _ arms dfltOpt, acc =>
   let acc := arms.foldl (init := acc)
-    fun acc (_, b) => seedGlobalRefsFromBlock typeNames constNames b acc
+    fun acc (_, b) => seedGlobalRefsFromBlock typeNames constNames localsNames b acc
   match dfltOpt with
-  | some b => seedGlobalRefsFromBlock typeNames constNames b acc
+  | some b => seedGlobalRefsFromBlock typeNames constNames localsNames b acc
   | none => acc
 
 end
@@ -2461,7 +2779,8 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   let genericTypeNames : Array String := typeParams
   let genericConstNames : Array String := lsig.generics.constGenerics
   let seedAcc : SeedAcc := match lf.body with
-    | some b => seedGlobalRefsFromBlock genericTypeNames genericConstNames b {}
+    | some b => seedGlobalRefsFromBlock genericTypeNames genericConstNames
+                  lf.localsNames b {}
     | none => {}
   let initVm : VarMap := Id.run do
     let mut m : VarMap := seedAcc.vm
@@ -2516,10 +2835,21 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
     for i in [0:numParams] do
       m := m.insert (i + 1) (effectiveParamName i)
     return m
+  -- Zero-Skip Step 3 (Cluster `recursive_match_arm_scoping`): scan
+  -- the LLBC body once for variant-projection Assigns and build the
+  -- (variantId, fieldIdx) → binderName map the match-arm walker
+  -- consults to keep pattern slots aligned with the seed pass's
+  -- vm-seeded names.
+  let variantBinders : Std.HashMap (Nat × Nat) String :=
+    match lf.body with
+    | none => {}
+    | some body =>
+      collectVariantBindersBlock lf.localsNames body {}
   let finalSt : WalkState :=
     walkEvents f.events
       { vm := initVm, numParams, tdm, localTypes := initLocalTypes,
-        binds := seedAcc.binds, paramNameMap, paramNameByLocal }
+        binds := seedAcc.binds, paramNameMap, paramNameByLocal,
+        localsNames := lf.localsNames, variantBinders }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
   -- M9.5i / M9.7o-E5b: thread the structured `LlbcSignature` so a

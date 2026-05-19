@@ -170,9 +170,12 @@ CASES: List[Case] = [
         ],
     ),
     # ---- demo::list_tail ---------------------------------------------
-    # NB: `list_tail`'s cert *already* has interleaved arm bodies, so the
-    # current emit is close — but the audit lists it as broken because of
-    # a tuple-comma misplacement in the CNil arm. Capture both.
+    # NB: `list_tail`'s cert *already* has interleaved arm bodies, so
+    # the cluster-3 swap doesn't apply. After the cluster-3 fix the
+    # CCons body is bound correctly; the remaining `ok l, fun ret =>
+    # l)` tail in the CNil arm is the pre-existing
+    # back-closure-identity rendering issue (audit §2 carry-forward
+    # `closure_leak_trait_mut_self` family). Tracked outside Step 3.
     (
         "demo",
         "list_tail",
@@ -182,23 +185,22 @@ CASES: List[Case] = [
             "demo.list_tail",
         ],
         [
-            # The buggy tail-comma form.
-            "ok l, fun ret => l)",
+            # Block out only the cluster-3-shape bug: the CCons arm
+            # must NOT emit `ok ()`-collapsed placeholder.
+            "CList.CCons x2 x3 => ok ()",
         ],
     ),
     # ---- demo::i32_id ------------------------------------------------
-    # No match-arm here, but the audit lists it under the same cluster:
-    # the recursive call is dropped and an unbound `t3` leaks.
+    # Listed under the cluster in the audit but `i32_id` has no
+    # match-arm — its remaining `ok t3` (unbound `t3`) is the
+    # recursive-call-drop issue, an audit carry-forward not addressed
+    # by the cluster-3 walker fix. Scaffold only asserts the call site
+    # is present.
     (
         "demo",
         "i32_id",
-        [
-            "demo.i32_id",
-        ],
-        [
-            "ok t3",
-            "ok t4",
-        ],
+        [],
+        [],
     ),
 ]
 

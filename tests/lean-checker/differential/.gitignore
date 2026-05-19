@@ -5,6 +5,10 @@ Cargo.lock
 # scripts/regen-diff-models.sh).
 # Per-fixture auto-generated model files (Phase 1C: ADT fixtures
 # get their own model file because their crate-local struct decls
-# can't share a flat namespace).
-src/aggregates_basic_model.rs
+# can't share a flat namespace). `aggregates_basic_model.rs` is
+# `include!()`-ed from `lib.rs` so it must be tracked — gitignored
+# was wrong, the file is build-required. `reborrows_model.rs` is
+# never `include!()`-ed (lib.rs hand-copies just `set_fst_model`
+# because the auto-generated `set_idx_model` emits invalid Rust),
+# so it stays gitignored.
 src/reborrows_model.rs
