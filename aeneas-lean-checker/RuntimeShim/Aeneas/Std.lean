@@ -1151,6 +1151,11 @@ end Vec
 end vec
 end alloc
 
+/-- Bug 4g: top-level alias so the cert's bare-name `Vec T` (emitted
+    when `llbcTyToPTyWithVars` drops the `Vec<T, A>` allocator
+    generic) resolves to the `alloc.vec.Vec T` stub. -/
+abbrev Vec (T : Type) : Type := alloc.vec.Vec T
+
 namespace alloc
 namespace boxed
 namespace Box

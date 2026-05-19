@@ -60,7 +60,13 @@ def isStdlibTypeDecl (qualifiedName : String) : Bool :=
   | "core::option::Option"
   | "core::result::Result"
   | "core::cmp::Ordering"
-  | "core::ops::control_flow::ControlFlow" => true
+  | "core::ops::control_flow::ControlFlow"
+  -- Bug 4g: don't emit a fixture-local `Range` — the shim's
+  -- `Aeneas.Std.Range` is the type returned by `core.iter.range.
+  -- Range.step_by` et al., and emitting a parallel `iterators.Range`
+  -- creates two distinct types Lean refuses to unify at the
+  -- wrapper-call site.
+  | "core::ops::range::Range" => true
   | _ => false
 
 /-- M9.7k / M9.7o-E5a: build the [TypeDeclMap] used by the

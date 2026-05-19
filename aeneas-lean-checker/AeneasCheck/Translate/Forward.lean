@@ -138,10 +138,45 @@ partial def llbcTyToPTyWithVars
         match args[0]? with
         | some inner => llbcTyToPTyWithVars tdm typeParams inner
         | none => .lit (.int .u32)
+      -- Bug 4g: iterator-adapter transparency. Each wrapper maps
+      -- to whatever the corresponding shim's `next`/`into_iter`
+      -- call actually flows through, so the wrapper-sig type
+      -- aligns with the call-site binding.
+      --
+      -- * `StepBy<X>` → `X` (the inner iterable flows through; the
+      --   Range.step_by shim returns Range Usize, so the cert's
+      --   StepBy<Range<Usize>> renders as Range Usize).
+      -- * `Iter<T>` / `IterMut<T>` → `Slice T` (the shim's
+      --   Slice.iter / Slice.iter_mut returns the same Slice).
+      -- * `IntoIter<T>` → `Vec T` (the shim's Vec.into_iter returns
+      --   the same Vec; the cert's wrapper type IntoIter<T> wraps
+      --   the Vec value).
+      else if info.name == "StepBy" then
+        match args[0]? with
+        | some inner => llbcTyToPTyWithVars tdm typeParams inner
+        | none => .lit (.int .u32)
+      else if info.name == "Iter" ∨ info.name == "IterMut" then
+        match args[0]? with
+        | some inner => .slice (llbcTyToPTyWithVars tdm typeParams inner)
+        | none => .lit (.int .u32)
+      else if info.name == "IntoIter" then
+        match args[0]? with
+        | some inner => .adt "Vec" #[llbcTyToPTyWithVars tdm typeParams inner]
+        | none => .lit (.int .u32)
+      -- Bug 4g: `Vec<T, A>` (where `A : Allocator`). The shim is
+      -- mono-arg `alloc.vec.Vec α`; drop the Allocator generic so the
+      -- emitted type `Vec U32` matches the shim's signature.
+      else if info.name == "Vec" then
+        match args[0]? with
+        | some inner => .adt "Vec" #[llbcTyToPTyWithVars tdm typeParams inner]
+        | none => .lit (.int .u32)
       -- Bug 4d/4f follow-up: opaque stdlib ADTs are in `tdm` so the
       -- placeholder synthesiser can dispatch on `info.name`, but
-      -- signature-emission still falls back to U32 — emitting a
-      -- bare `StepBy T` head would resolve to an unknown identifier.
+      -- signature-emission falls back to U32 by default — emitting
+      -- a bare `<TypeName> T` head would resolve to an unknown
+      -- identifier unless a top-level alias exists. Only the
+      -- transparent-wrapper cases above and the `Vec` alias case
+      -- are safe to surface; everything else stays on U32.
       else if info.isOpaque then
         .lit (.int .u32)
       else

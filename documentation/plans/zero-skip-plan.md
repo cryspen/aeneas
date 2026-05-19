@@ -897,16 +897,47 @@ c_lean per-decl:    671 → 770 (+99).
 Diff harness:       PASS at 275 lines byte-identical.
 g_rust:             86 unchanged.
 
+### Sub-bug 4g — Opaque iterator-state transparency → DONE
+
+The prompt framed 4g as "Call-return type refresh on EvCall", but on
+inspection `localTypes` was already seeded correctly from
+`lf.localsTypes` — the visible failure (wrapper sig
+`iter_range_step_by_loop (i : U32)` but call passes `t0 : Range Usize`)
+came instead from `llbcTyToPTyWithVars` falling back to U32 for
+opaque ADT types. Each iterator wrapper has a specific underlying
+type that the corresponding shim flows through; treat the wrapper as
+transparent at the signature level so wrapper-sig matches the shim's
+return.
+
+* `StepBy<X>` → `X` (the shim's `Range.step_by` returns `Range Usize`,
+  so `StepBy<Range<Usize>>` renders as `Range Usize`).
+* `Iter<T>` / `IterMut<T>` → `Slice T` (the shim's
+  `Slice.iter` / `Slice.iter_mut` returns the same `Slice`).
+* `IntoIter<T>` → `Vec T` (the shim's `Vec.into_iter` returns the same
+  `Vec`; the cert's `IntoIter<T>` wrapper holds the Vec value).
+* `Vec<T, A>` → `Vec T` (drop the `Allocator` generic so the emitted
+  type aligns with the mono-arg `alloc.vec.Vec T` shim).
+* `core::ops::range::Range` added to `isStdlibTypeDecl` so the
+  translator no longer emits a fixture-local `Range` struct that
+  would shadow `Aeneas.Std.Range` and create two distinct types at
+  the wrapper-call site.
+* New top-level `abbrev Vec (T : Type) := alloc.vec.Vec T` so the
+  bare-name `Vec U32` (after the allocator drop) resolves.
+
+c_lean per-fixture: 42 → 43 (+`iterators-array`).
+c_lean per-decl:    770 → 863 (+93).
+Diff harness:       PASS at 275 lines byte-identical.
+g_rust:             86 unchanged.
+
 ### Carry-forward
 
-* `iterators` and `iterators-array` still blocked. Both share the
-  same opaque-state-type issue: their loop state local has an
-  opaque ADT type (StepBy<Range<Usize>>, Vec<U32, Global>), which
-  `llbcTyToPTyWithVars`'s `isOpaque` branch maps to the U32 fallback
-  so the wrapper signature emits `(i : U32)` — but the top-level
-  call binds `t1 : Range Usize` (or `Vec U32`) from the shim and
-  fails to apply. The fix is either to (a) drop the U32 fallback
-  in favour of the bare-name ADT (requires top-level aliases like
-  `abbrev StepBy (T : Type) := Aeneas.Std.Slice T` plus matching
-  shim sigs), or (b) special-case the wrapper signature to use the
-  Lean type emitted by the corresponding shim — a larger refactor.
+* **`iterators`** — still mismatched. After 4g the wrapper signatures
+  match, but `slice_iter_mut_while` and `slice_iter_while` have an
+  emitter issue: the loop body has `if t0 then cont i else done i`
+  where `t0` is the `IterMut.next` result (a `Option × Slice` pair,
+  not a `Bool`). The fix is to translate the cert's
+  match-on-Option-arm into `if t0.fst.isSome then …` (or a real
+  match). Distinct from the 4g surface; needs a separate sub-bug.
+* **Trait-impl-heavy fixtures** (`traits`, `default`,
+  `defaulted_method`, `blanket_impl`, `demo`) — unchanged from prior
+  session; each has a distinct upstream issue.
