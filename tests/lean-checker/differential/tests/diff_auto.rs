@@ -28,6 +28,9 @@ mod bitwise_src;
 #[path = "../../../src/calls.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod calls_src;
+#[path = "../src/fixtures/chunks_exact.rs"]
+#[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
+mod chunks_exact_src;
 #[path = "../../../src/compare_simple.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod compare_simple_src;
@@ -49,9 +52,18 @@ mod loops_src;
 #[path = "../../../src/loops_simple.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod loops_simple_src;
+#[path = "../src/fixtures/no_nested_borrows.rs"]
+#[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
+mod no_nested_borrows_src;
+#[path = "../src/fixtures/paper.rs"]
+#[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
+mod paper_src;
 #[path = "../../../src/scalars.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod scalars_src;
+#[path = "../src/fixtures/step_by.rs"]
+#[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
+mod step_by_src;
 #[path = "../../../src/traits.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod traits_src;
@@ -197,6 +209,28 @@ proptest! {
 }
 
 // ====================================================================
+// chunks_exact — auto-generated
+// ====================================================================
+
+// SKIPPED chunks_exact::test_chunks_exact_exact_fit: `model::chunks_exact_test_chunks_exact_exact_fit_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_with_remainder: `model::chunks_exact_test_chunks_exact_with_remainder_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_remainder_2: `model::chunks_exact_test_chunks_exact_remainder_2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_size_1: `model::chunks_exact_test_chunks_exact_size_1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_empty: `model::chunks_exact_test_chunks_exact_empty_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_chunk_larger_than_slice: `model::chunks_exact_test_chunks_exact_chunk_larger_than_slice_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_chunk_equals_slice: `model::chunks_exact_test_chunks_exact_chunk_equals_slice_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_2_odd: `model::chunks_exact_test_chunks_exact_2_odd_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED chunks_exact::test_chunks_exact_2_single_element: `model::chunks_exact_test_chunks_exact_2_single_element_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// ====================================================================
 // compare_simple — auto-generated
 // ====================================================================
 
@@ -319,6 +353,168 @@ proptest! {
 // SKIPPED loops_simple::count_to: `model::loops_simple_count_to_model` not in src/model.rs (run scripts/regen-diff-models.sh)
 
 // ====================================================================
+// no_nested_borrows — auto-generated
+// ====================================================================
+
+proptest! {
+    /// Auto-generated from `no_nested_borrows::cast_u32_to_i32` (signature: (u32) -> i32)
+    #[test]
+    fn no_nested_borrows_cast_u32_to_i32_auto(a0 in any::<u32>()) {
+        let lhs = no_nested_borrows_src::cast_u32_to_i32(a0);
+        let rhs = model::no_nested_borrows_cast_u32_to_i32_model(a0);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
+
+proptest! {
+    /// Auto-generated from `no_nested_borrows::cast_bool_to_i32` (signature: (bool) -> i32)
+    #[test]
+    fn no_nested_borrows_cast_bool_to_i32_auto(a0 in any::<bool>()) {
+        let lhs = no_nested_borrows_src::cast_bool_to_i32(a0);
+        let rhs = model::no_nested_borrows_cast_bool_to_i32_model(a0);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
+
+proptest! {
+    /// Auto-generated from `no_nested_borrows::cast_bool_to_bool` (signature: (bool) -> bool)
+    #[test]
+    fn no_nested_borrows_cast_bool_to_bool_auto(a0 in any::<bool>()) {
+        let lhs = no_nested_borrows_src::cast_bool_to_bool(a0);
+        let rhs = model::no_nested_borrows_cast_bool_to_bool_model(a0);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
+
+/// Auto-generated from `no_nested_borrows::test2` (signature: () -> ())
+#[test]
+fn no_nested_borrows_test2_auto() {
+    let lhs = no_nested_borrows_src::test2();
+    let rhs = model::no_nested_borrows_test2_model();
+    assert_eq!(lhs, rhs);
+}
+
+proptest! {
+    /// Auto-generated from `no_nested_borrows::get_max` (signature: (u32, u32) -> u32)
+    #[test]
+    fn no_nested_borrows_get_max_auto(a0 in any::<u32>(), a1 in any::<u32>()) {
+        let lhs = no_nested_borrows_src::get_max(a0, a1);
+        let rhs = model::no_nested_borrows_get_max_model(a0, a1);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
+
+// SKIPPED no_nested_borrows::test3: `model::no_nested_borrows_test3_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+/// Auto-generated from `no_nested_borrows::test_neg1` (signature: () -> ())
+#[test]
+fn no_nested_borrows_test_neg1_auto() {
+    let lhs = no_nested_borrows_src::test_neg1();
+    let rhs = model::no_nested_borrows_test_neg1_model();
+    assert_eq!(lhs, rhs);
+}
+
+/// Auto-generated from `no_nested_borrows::refs_test1` (signature: () -> ())
+#[test]
+fn no_nested_borrows_refs_test1_auto() {
+    let lhs = no_nested_borrows_src::refs_test1();
+    let rhs = model::no_nested_borrows_refs_test1_model();
+    assert_eq!(lhs, rhs);
+}
+
+/// Auto-generated from `no_nested_borrows::refs_test2` (signature: () -> ())
+#[test]
+fn no_nested_borrows_refs_test2_auto() {
+    let lhs = no_nested_borrows_src::refs_test2();
+    let rhs = model::no_nested_borrows_refs_test2_model();
+    assert_eq!(lhs, rhs);
+}
+
+// SKIPPED no_nested_borrows::test_list1: `model::no_nested_borrows_test_list1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+proptest! {
+    /// Auto-generated from `no_nested_borrows::copy_int` (signature: (i32) -> i32)
+    #[test]
+    fn no_nested_borrows_copy_int_auto(a0 in any::<i32>()) {
+        let lhs = no_nested_borrows_src::copy_int(a0);
+        let rhs = model::no_nested_borrows_copy_int_model(a0);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
+
+// SKIPPED no_nested_borrows::test_unreachable: `test_unreachable` not defined in the resolved source file
+
+// SKIPPED no_nested_borrows::test_panic: `test_panic` not defined in the resolved source file
+
+// SKIPPED no_nested_borrows::test_panic_msg: `test_panic_msg` not defined in the resolved source file
+
+// SKIPPED no_nested_borrows::test_copy_int: `model::no_nested_borrows_test_copy_int_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::test_is_cons: `model::no_nested_borrows_test_is_cons_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::test_split_list: `model::no_nested_borrows_test_split_list_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::choose_test: `model::no_nested_borrows_choose_test_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::test_list_functions: `model::no_nested_borrows_test_list_functions_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::test_constants: `model::no_nested_borrows_test_constants_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+/// Auto-generated from `no_nested_borrows::test_weird_borrows1` (signature: () -> ())
+#[test]
+fn no_nested_borrows_test_weird_borrows1_auto() {
+    let lhs = no_nested_borrows_src::test_weird_borrows1();
+    let rhs = model::no_nested_borrows_test_weird_borrows1_model();
+    assert_eq!(lhs, rhs);
+}
+
+proptest! {
+    /// Auto-generated from `no_nested_borrows::test_shared_borrow_bool1` (signature: (bool) -> u32)
+    #[test]
+    fn no_nested_borrows_test_shared_borrow_bool1_auto(a0 in any::<bool>()) {
+        let lhs = no_nested_borrows_src::test_shared_borrow_bool1(a0);
+        let rhs = model::no_nested_borrows_test_shared_borrow_bool1_model(a0);
+        prop_assert_eq!(lhs, rhs);
+    }
+}
+
+/// Auto-generated from `no_nested_borrows::test_shared_borrow_bool2` (signature: () -> u32)
+#[test]
+fn no_nested_borrows_test_shared_borrow_bool2_auto() {
+    let lhs = no_nested_borrows_src::test_shared_borrow_bool2();
+    let rhs = model::no_nested_borrows_test_shared_borrow_bool2_model();
+    assert_eq!(lhs, rhs);
+}
+
+/// Auto-generated from `no_nested_borrows::test_shared_borrow_enum2` (signature: () -> u32)
+#[test]
+fn no_nested_borrows_test_shared_borrow_enum2_auto() {
+    let lhs = no_nested_borrows_src::test_shared_borrow_enum2();
+    let rhs = model::no_nested_borrows_test_shared_borrow_enum2_model();
+    assert_eq!(lhs, rhs);
+}
+
+// SKIPPED no_nested_borrows::call_incr: `model::no_nested_borrows_call_incr_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::not_bool: `model::no_nested_borrows_not_bool_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::not_u32: `model::no_nested_borrows_not_u32_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED no_nested_borrows::not_i32: `model::no_nested_borrows_not_i32_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// ====================================================================
+// paper — auto-generated
+// ====================================================================
+
+// SKIPPED paper::test_incr: `model::paper_test_incr_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED paper::test_choose: `model::paper_test_choose_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED paper::test_nth: `model::paper_test_nth_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED paper::call_choose: `model::paper_call_choose_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// ====================================================================
 // scalars — auto-generated
 // ====================================================================
 
@@ -337,6 +533,32 @@ fn scalars_i32_use_bits_auto() {
     let rhs = model::scalars_i32_use_bits_model();
     assert_eq!(lhs, rhs);
 }
+
+// ====================================================================
+// step_by — auto-generated
+// ====================================================================
+
+// SKIPPED step_by::test_step_by_1: `model::step_by_test_step_by_1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_2: `model::step_by_test_step_by_2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_3: `model::step_by_test_step_by_3_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_larger_than_len: `model::step_by_test_step_by_larger_than_len_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_empty: `model::step_by_test_step_by_empty_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_single: `model::step_by_test_step_by_single_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_single_step_2: `model::step_by_test_step_by_single_step_2_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_eq_len: `model::step_by_test_step_by_eq_len_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_len_minus_1: `model::step_by_test_step_by_len_minus_1_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_two_elements: `model::step_by_test_step_by_two_elements_model` not in src/model.rs (run scripts/regen-diff-models.sh)
+
+// SKIPPED step_by::test_step_by_4_on_longer: `model::step_by_test_step_by_4_on_longer_model` not in src/model.rs (run scripts/regen-diff-models.sh)
 
 // ====================================================================
 // traits — auto-generated
