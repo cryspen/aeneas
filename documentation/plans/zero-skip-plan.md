@@ -687,9 +687,22 @@ Commits in order:
   (placeholder synthesiser doesn't recognise `Array`). Mirror the
   `Pair` placeholder logic in `placeholderPExprOfWith` for `Array`.
 
-## Bug 4 session — 2026-05-19 (in progress)
+## Bug 4 session — 2026-05-19 (close)
 
 Following `prompts/zero-skip-bug4-prompt.md`. Three sub-bugs.
+
+```
+c_lean per-fixture: 38 / 89 (was 36)
+c_lean per-decl:    463 / 3143 (was 451)
+g_byte:             3 pass (unchanged)
+g_rust:             44 hand + 42 auto = 86 (unchanged)
+diff-harness:       PASS at 275 lines byte-identical
+```
+
+Commits in order:
+1. `145ed187` — Sub-bug 4a (vm[1] type-incompat): `+1` fixture (`joins`).
+2. `c5dcb3fd` — Sub-bug 4c (multi-elem Array): `+0`, scaffolding only.
+3. `988a6153` — Sub-bug 4b (Slice/Array/tVar typed fallback): `+1` fixture (`static`).
 
 ### Sub-bug 4a — `lookupPlace` vm[1] fallback drops type info → DONE (`145ed187`)
 
@@ -711,3 +724,62 @@ to the existing typed-placeholder path (`placeholderPExprOf`).
 
 c_lean per-fixture: 36 → 37 (+`joins`).
 c_lean per-decl:    451 → 459 (+8).
+
+### Sub-bug 4c — Multi-element Array aggregates → DONE (`c5dcb3fd`, scaffolding)
+
+Extend the Aggregate-array rvalue propagator and the
+`placeholderPExprOfWith` Array path from single-element only to
+arbitrary length. Multi-element literals `[e₁, …, eₙ]` (n ≥ 2)
+lower to `Aeneas.Std.Array.ofList (e₁ :: … :: List.nil)`; zero-
+length `[]` lowers to `Array.ofList List.nil`. Add the `Array.ofList`
+shim alongside `Array.singleton`. No fixture flips — every
+candidate has at least one independent upstream issue. Scaffolding-
+only commit; the right shape so downstream fixes don't have to
+revisit array literals.
+
+c_lean per-fixture: 37 → 37 (no flips).
+c_lean per-decl:    459 → 459 (no flips).
+
+### Sub-bug 4b — Trait-bound Self / Slice typed fallback → PARTIAL (`988a6153`)
+
+Two coordinated extensions to the 4a typed-fallback machinery:
+
+(1) Extend `vm1FallbackCompatible` to reject `tVar`↔concrete pairs
+and `tSlice`/`tArray`↔`litTy`/`tAdt` pairs. Catches Charon-elided
+const-item reads like `static::read`'s `S::SLICE` (local 5 is
+`&Slice U16`, input-1 is generic `S`).
+
+(2) Extend `placeholderPExprOfWith` for `tSlice` (emit
+`Aeneas.Std.Slice.placeholder`) and `tRef` (peel and recurse).
+Switch `lookupPlace`'s typed-fallback path to the tdm-aware
+variant so a missing `Slice α` slot emits the shim's empty-slice
+helper instead of the catch-all `0#u32`. Add shim helpers
+`Slice.placeholder` / `Array.placeholder`.
+
+c_lean per-fixture: 37 → 38 (+`static`).
+c_lean per-decl:    459 → 463 (+4).
+
+The wider 4b unlock (`traits`, `default`, `defaulted_method`,
+`blanket_impl`, `demo`) was not reached — those fixtures have
+distinct upstream issues:
+* `traits` — "unsupported pattern in syntax match: Option.Some x2".
+* `default` — parse-level emit gap (unexpected token `;`).
+* `defaulted_method` — `Unknown constant
+  defaulted_method.YesOverride.Insts.Defaulted_methodTrait.required_method`
+  (impl-method qualifier mismatch from Bug 1 cascade).
+* `demo` — `Counter.incr` body `self + 1` typed as `Usize` not
+  `Result _` (Bug 1 incomplete coverage of body shape).
+
+### Carry-forward for next session
+
+* **Trait-impl-heavy fixtures** (`traits`, `default`,
+  `defaulted_method`, `blanket_impl`, `demo`) — five fixtures
+  blocked on a mix of pattern-syntax, parse-level emit gaps, and
+  Bug 1's incomplete body shaping. Each looks like a separate
+  small fix rather than a single shared root.
+
+* **Iterator / slice-iter fixtures** (`step_by`, `iterators-array`,
+  `iterators-scalar`, `chunks_exact`) — blocked on missing shim
+  bindings for `core.slice.Slice.iter`,
+  `core.iter.adapters.step_by.StepBy.next`, etc. Worth a dedicated
+  shim-extension session.
