@@ -157,6 +157,7 @@ pub mod ref_impl {
 /// `./scripts/regen-diff-models.sh`.
 pub mod model {
     include!("model.rs");
+    include!("auto_model.rs");
 }
 
 // ----------------------------------------------------------------------

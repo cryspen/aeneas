@@ -13,6 +13,7 @@ mod gates;
 mod generate;
 mod manifest;
 mod prepare;
+mod regen;
 mod report;
 mod sweep;
 
@@ -103,6 +104,23 @@ struct Cli {
     /// fn is missing so the user can regen.
     #[arg(long, value_name = "PATH")]
     tests_model_path: Option<PathBuf>,
+
+    /// Regen-models mode: walk every `.cert.json` under `--sweep`,
+    /// invoke aeneas-check --rust-model on each, filter the emitted
+    /// fns through the same signature filter the test generator
+    /// uses, rename `<name>_model` → `<fixture>_<name>_model`, drop
+    /// duplicates of `--tests-model-path`'s contents, and append to
+    /// the path passed here. After each fixture, runs `cargo check`
+    /// against the differential crate; rolls back any fn whose
+    /// addition breaks the build.
+    #[arg(long, value_name = "PATH", conflicts_with_all = ["gates", "generate_tests"])]
+    regen_models: Option<PathBuf>,
+
+    /// For --regen-models: path to the differential crate root (the
+    /// directory containing `Cargo.toml`). Defaults to
+    /// `tests/lean-checker/differential`.
+    #[arg(long, value_name = "PATH")]
+    diff_crate: Option<PathBuf>,
 }
 
 fn main() {
@@ -117,6 +135,37 @@ fn main() {
 
 fn run() -> Result<i32> {
     let cli = Cli::parse();
+
+    if let Some(out_path) = cli.regen_models.as_deref() {
+        let dir = cli.sweep.as_deref().ok_or_else(|| {
+            anyhow::anyhow!("--regen-models requires --sweep <cert-dir>")
+        })?;
+        let aeneas_check = resolve_aeneas_check(&cli)?;
+        let default_diff = PathBuf::from("tests/lean-checker/differential");
+        let diff_crate = cli.diff_crate.as_deref().unwrap_or(&default_diff);
+        let default_model = PathBuf::from("tests/lean-checker/differential/src/model.rs");
+        let model_path = cli
+            .tests_model_path
+            .as_deref()
+            .unwrap_or(&default_model);
+        let summary = regen::run(dir, out_path, &aeneas_check, diff_crate, model_path)?;
+        eprintln!(
+            "[meta-harness] regen-models: wrote {} ({} kept of {} fns; \
+             skipped: sig={} body={} dup={} compile={})",
+            out_path.display(),
+            summary.fns_kept,
+            summary.fns_total,
+            summary.skipped_sig,
+            summary.skipped_body,
+            summary.skipped_duplicate,
+            summary.fns_dropped_compile,
+        );
+        eprintln!(
+            "[meta-harness] regen-models: fixtures processed={} failed={}",
+            summary.fixtures_processed, summary.fixtures_failed,
+        );
+        return Ok(0);
+    }
 
     if cli.generate_tests {
         let dir = cli.sweep.as_deref().ok_or_else(|| {
