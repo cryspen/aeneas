@@ -2719,6 +2719,76 @@ partial def seedGlobalRefsFromSwitch
 
 end
 
+-- Bug 2 (uninitialised locals): a post-walk Ref/Use propagation pass.
+-- Same shape as `seedGlobalRefsFromBlock` but only propagates *local*
+-- Refs and `Use(Copy/Move)` operands; the global-ref branch is
+-- skipped because those binds were already emitted by the pre-walk
+-- seed pass.
+--
+-- Used after the event walk to resolve `Assign(local 0,
+-- Ref(localL.deref, _))`-style chains that the cert event stream
+-- flattens away — the LLBC body still has them as ordinary statements,
+-- so re-walking with the post-walk vm propagates `vm[L]` (typically a
+-- call result like `t0`) into `vm[0]`.
+mutual
+
+partial def propagateRefsFromBlock
+    : Raw.LlbcBlock → VarMap → VarMap
+| .mk _ stmts, vm =>
+  stmts.foldl (init := vm) fun vm s =>
+    propagateRefsFromStatement s vm
+
+partial def propagateRefsFromStatement
+    : Raw.LlbcStatement → VarMap → VarMap
+| .mk kind _, vm =>
+  match kind with
+  | .assign place rvalue =>
+    -- Bug 2: this is a *post-walk* propagation, so we must NOT
+    -- overwrite values the event walker computed. Only fill in
+    -- vm[target] when it is currently empty.
+    if vm.contains place.local_ then vm
+    else
+    match rvalue with
+    | .ref placeRef _ =>
+      -- Skip globals — they were seeded by the pre-walk pass.
+      match placeRef.globalName with
+      | some _ => vm
+      | none =>
+        match vm[placeRef.local_]? with
+        | some v => vm.insert place.local_ v
+        | none => vm
+    | .use op =>
+      let propagate (p : Raw.LlbcPlace) : VarMap :=
+        match vm[p.local_]? with
+        | some v => vm.insert place.local_ v
+        | none => vm
+      match op with
+      | .copy p => propagate p
+      | .move p => propagate p
+      | _ => vm
+    | _ => vm
+  | .block b => propagateRefsFromBlock b vm
+  | .loopStmt b => propagateRefsFromBlock b vm
+  | .switch sw => propagateRefsFromSwitch sw vm
+  | _ => vm
+
+partial def propagateRefsFromSwitch
+    : Raw.LlbcSwitch → VarMap → VarMap
+| .ifBool _ t e, vm =>
+  propagateRefsFromBlock e (propagateRefsFromBlock t vm)
+| .switchInt _ _ arms dflt, vm =>
+  let vm := arms.foldl (init := vm)
+    fun vm (_, b) => propagateRefsFromBlock b vm
+  propagateRefsFromBlock dflt vm
+| .match_ _ arms dfltOpt, vm =>
+  let vm := arms.foldl (init := vm)
+    fun vm (_, b) => propagateRefsFromBlock b vm
+  match dfltOpt with
+  | some b => propagateRefsFromBlock b vm
+  | none => vm
+
+end
+
 /-- Translate a function's cert + replay into a Pure decl.
 
     The forward translator walks `f.events`, updates a per-local
@@ -2865,11 +2935,22 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
     | none => {}
     | some body =>
       collectVariantBindersBlock lf.localsNames body {}
-  let finalSt : WalkState :=
+  let finalSt0 : WalkState :=
     walkEvents f.events
       { vm := initVm, numParams, tdm, localTypes := initLocalTypes,
         binds := seedAcc.binds, paramNameMap, paramNameByLocal,
         localsNames := lf.localsNames, variantBinders }
+  -- Bug 2 (uninitialised locals): the cert event stream often flattens
+  -- away Charon's `Assign(localTgt, Ref(localSrc.deref, _))` /
+  -- `Assign(localTgt, Use(...))` borrow chains. The LLBC body still
+  -- carries them, so re-walk it with `finalSt.vm` to propagate
+  -- post-call values (e.g. the call's `t0` binding into the
+  -- return slot `local 0`) along the LLBC chain.
+  let propagatedVm : VarMap :=
+    match lf.body with
+    | some b => propagateRefsFromBlock b finalSt0.vm
+    | none => finalSt0.vm
+  let finalSt : WalkState := { finalSt0 with vm := propagatedVm }
   -- M12.2a-2: pick the function's output shape based on its
   -- signature's borrow pattern. See [BackSig] / [emitRetTy].
   -- M9.5i / M9.7o-E5b: thread the structured `LlbcSignature` so a

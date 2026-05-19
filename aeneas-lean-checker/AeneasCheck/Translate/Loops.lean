@@ -378,8 +378,17 @@ def buildTopLevelLoopFn (fnName : String) (typeParams : Array String)
   -- Build the call. Single state: `<fn>_loop <forwarded> <init>`.
   -- Multi state: pass each state arg in position order; the wrapper
   -- splits at the lambda level. Stateless: just `<fn>_loop <forwarded>`.
+  --
+  -- Bug 2 (uninitialised locals): the pre-loop walk may have emitted
+  -- `let <name> ← <callExpr>` bindings (e.g. `let x1_post ← Slice.len s`
+  -- in `drop::fill`) whose results feed into `stateInit`. Without
+  -- prepending these binds to the body, the call's argument
+  -- expressions reference unbound names (`x1_post` etc.). Thread
+  -- `preSt.binds` through `assembleBody` so the top-level decl reads
+  -- as `do let x1_post ← Slice.len s; (fill_loop s value { … })`.
   let callArgs : Array PExpr := forwardedArgs ++ stateInit
-  let body : PExpr := .app s!"{innerName fnName}_loop" callArgs
+  let body : PExpr := assembleBody preSt.binds
+    (.app s!"{innerName fnName}_loop" callArgs)
   { name := innerName fnName
     qualifiedName := fnName
     params, retTy, body
