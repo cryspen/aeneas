@@ -186,8 +186,16 @@ def traitDeclOfLlbcTraitDecl (tdm : TypeDeclMap) (_crateName : String)
       match rt with
       | .tRef _ inner _ => llbcTyToPTyWithVars tdm selfParams inner
       | other => llbcTyToPTyWithVars tdm selfParams other
-    let retInner : PTy :=
-      llbcTyToPTyWithVars tdm selfParams m.signature.output
+    -- Bug 1 (trait &mut self reshape): when the trait method takes
+    -- `&mut self` (or any `&mut`-input), Aeneas's value-style
+    -- translation wraps the output with a backward closure carrying
+    -- the new Self. Use the existing `backSigOfLlbcWithVars` +
+    -- `emitRetTy` machinery so the trait method's declared type
+    -- matches the impl's emitted shape — without this they diverged
+    -- (trait said `Self → Result usize`, impl said
+    -- `Self → Result (usize × (Unit → Self))`).
+    let bs := backSigOfLlbcWithVars tdm selfParams m.signature
+    let retInner : PTy := emitRetTy bs
     let buildArrow (acc : PTy) (xs : List PTy) : PTy :=
       xs.foldr (fun a b => .arrow a b) acc
     let ty := buildArrow (.result retInner) inputs.toList
