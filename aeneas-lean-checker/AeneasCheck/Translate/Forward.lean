@@ -277,7 +277,7 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
   | .tAdt id args =>
     match tdm[id]? with
     | some info =>
-      -- Struct case only (no variants): emit `{ f₁ := 0, …, fₙ := 0 }`
+      -- Struct case (no variants): emit `{ f₁ := 0, …, fₙ := 0 }`
       -- when fields and generic args line up 1-1.
       if info.variantFieldCounts.isEmpty
           ∧ info.fieldNames.size == args.size then
@@ -285,8 +285,24 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
           info.fieldNames.zipWith (fun fname fty =>
             (fname, placeholderPExprOfWith tdm fty)) args
         .recordLit fields (some info.name)
-      else .lit (.scalar .u32 0)
-    | none => .lit (.scalar .u32 0)
+      else
+        -- Bug 4d: stdlib-ADT placeholder synthesis. Recognise common
+        -- stdlib enums by their bare name so a missing-identifier
+        -- placeholder synthesised at an enum-typed slot doesn't fall
+        -- through to `0#u32`. The shim names (`Option.none`,
+        -- `Result.ok _`, `ControlFlow.Continue _`) match the standard
+        -- Aeneas backend's expectations.
+        match info.name with
+        | "Option" =>
+          -- Bug 4d: typed placeholder so the call site can elaborate
+          -- against an expected `Option α` without leaving the
+          -- type parameter as a higher-order metavariable.
+          .app "Option.placeholder" #[]
+        | _ => .lit (.scalar .u32 0)
+    | none =>
+      -- Bug 4d: opaque ADTs aren't in tdm. Fall through to
+      -- `0#u32` here — opaque-tdm population is a separate sub-bug.
+      .lit (.scalar .u32 0)
   -- Bug 4 (Array placeholder synthesis): mirror the `.tAdt` placeholder
   -- logic for fixed-length arrays. `use_static::PREFIX` declares a
   -- `[u8; 1]` static whose linear walk never writes vm[0]; without
@@ -300,7 +316,11 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
     let elem := placeholderPExprOfWith tdm elemTy
     match n with
     | 0 =>
-      .app "Aeneas.Std.Array.ofList" #[.app "List.nil" #[]]
+      -- Bug 4d: empty-array placeholder. Use the Unit-pinned shim so
+      -- the call site doesn't leave `α` as an unresolved metavariable
+      -- through the typical `Array.ofList List.nil →
+      -- ArrayToSliceShared → Slice.iter → ...` chain.
+      .app "Aeneas.Std.Array.empty" #[]
     | 1 =>
       .app "Aeneas.Std.Array.singleton" #[elem]
     | _ =>
@@ -2886,9 +2906,9 @@ partial def propagateRefsFromStatement
         let elems : Array PExpr := resolvedOpts.map (·.getD (.lit (.scalar .u32 0)))
         match elems.size with
         | 0 =>
-          -- Zero-length array literal `[]`: emit `Array.ofList []`.
-          vm.insert place.local_
-            (.app "Aeneas.Std.Array.ofList" #[.app "List.nil" #[]])
+          -- Zero-length array literal `[]`: emit the Unit-pinned shim
+          -- so the surrounding chain doesn't leave `α` unresolved.
+          vm.insert place.local_ (.app "Aeneas.Std.Array.empty" #[])
         | 1 =>
           vm.insert place.local_ (.app "Aeneas.Std.Array.singleton" #[elems[0]!])
         | _ =>

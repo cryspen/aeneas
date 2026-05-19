@@ -783,3 +783,47 @@ distinct upstream issues:
   bindings for `core.slice.Slice.iter`,
   `core.iter.adapters.step_by.StepBy.next`, etc. Worth a dedicated
   shim-extension session.
+
+## Bug 4 deep session — 2026-05-19 (close-1)
+
+Following `prompts/zero-skip-bug4-deep-prompt.md`. First sub-bug
+landed; remaining three to follow.
+
+### Sub-bug 4d — Stdlib-ADT placeholder synthesis → DONE
+
+Three coordinated fixes for the typed-fallback machinery so a
+missing `Option α` slot synthesises a usable placeholder, plus the
+empty-array literal `[]` pins its element type to avoid an
+unconstrained metavariable through `Array.ofList List.nil →
+ArrayToSliceShared → Slice.iter → …`:
+
+1. **`Option.placeholder`**. New top-level shim
+   (`Option.placeholder : Option Unit := none`) — Unit-pinned so
+   the call site doesn't leave a higher-order metavariable on
+   `α`. `core.option.Option.is_none` / `.is_some` returns `Bool`
+   regardless of `α`, so the type pin is safe.
+   `Forward.lean::placeholderPExprOfWith`'s `tAdt` branch now
+   recognises `info.name == "Option"` and emits
+   `.app "Option.placeholder" #[]` instead of the catch-all
+   `0#u32`.
+
+2. **`Array.ofList` autoParam-style `n` default**. Made `n` an
+   *explicit* arg with default `Usize.ofNat xs.length`, so
+   `Array.ofList [a, b, c]` resolves `n = 3#usize` without
+   needing downstream context. Restores type inference for the
+   typical
+   `ArrayToSliceShared (Array.ofList [0#u32, 0#u32, 0#u32])` chain
+   where the slice coercion erases `n` from the result.
+
+3. **`Array.empty` (Unit-pinned)**. New shim
+   (`Array.empty : Array Unit 0#usize := ⟨[]⟩`) for the
+   empty-array case. The `Forward.lean`'s `Aggregate(.array _,
+   #[])` propagation and `placeholderPExprOfWith`'s `tArray _ 0`
+   branch both now emit `Aeneas.Std.Array.empty` instead of
+   `Array.ofList List.nil` — element type Unit, length 0#usize,
+   no metavariables to resolve.
+
+c_lean per-fixture: 38 → 40 (+`step_by`, +`arrays_defs`).
+c_lean per-decl:    463 → 573 (+110).
+Diff harness:       PASS at 275 lines byte-identical.
+g_rust:             86 (44 hand + 42 auto, unchanged).

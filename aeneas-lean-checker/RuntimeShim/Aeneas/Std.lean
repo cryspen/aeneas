@@ -329,8 +329,16 @@ structure Array (α : Type) (_n : Usize) where
     `Result (Array α k#usize)`); the call's argument list-length and
     `n` are not constrained to match here. The real Aeneas runtime
     enforces the length via a subtype proof — the shim's looser
-    typing is enough for c_lean to accept the emit. -/
-@[inline] def Array.ofList {α : Type} {n : Usize} (xs : List α) :
+    typing is enough for c_lean to accept the emit.
+
+    Bug 4d follow-up: provide an `autoParam`-style default for `n`
+    from the list's runtime length so an unconstrained call site
+    (e.g. `ArrayToSliceShared (Array.ofList [a, b, c])`, where the
+    surrounding slice coercion erases `n` from the result) elaborates
+    without needing `n` from outside. When the caller constrains
+    `n`, Lean still unifies with that value. -/
+@[inline] def Array.ofList {α : Type} (xs : List α)
+    (n : Usize := Usize.ofNat xs.length) :
     Aeneas.Std.Array α n :=
   ⟨xs⟩
 
@@ -343,6 +351,15 @@ structure Array (α : Type) (_n : Usize) where
 @[inline] def Array.placeholder {α : Type} {n : Usize} :
     Aeneas.Std.Array α n :=
   ⟨[]⟩
+
+/-- Bug 4d: empty-array literal `[]`. Pins the element type to `Unit`
+    so `Array.ofList List.nil` (which leaves `α` as an unresolved
+    metavariable through `ArrayToSliceShared → Slice.iter → ...`)
+    elaborates without needing downstream constraints. The element
+    type isn't observable in any reasonable program path that ends
+    in `is_none()` / `len() == 0` on the empty result, so the
+    Unit-pinning is type-correct and erases at runtime. -/
+@[inline] def Array.empty : Aeneas.Std.Array Unit (Aeneas.Std.Usize.ofNat 0) := ⟨[]⟩
 
 /-- M9.5c: `Array.update` in-bounds, returning a fresh array. Matches
     the signature of `backends/lean/Aeneas/Std/Array/Array.lean::Array.update`:
@@ -756,6 +773,15 @@ namespace Option
 end Option
 end option
 end core
+
+/-- Bug 4d: typed-placeholder for an `Option α`-typed slot whose cert
+    local was elided. Pins `α := Unit` so Lean can elaborate the call
+    site without leaving a higher-order metavariable on the type
+    parameter. Type-correct (downstream `is_none`/`is_some` return
+    `Bool` regardless of α). The placeholder is only used when the
+    cert dropped a typed binding upstream — emit-only fixtures with
+    no Rust runner exercise the codepath. -/
+@[inline] def Option.placeholder : Option Unit := none
 
 /-- `Clone` / `PartialEq`: empty marker classes plus universal
     fallback instances so synthesis succeeds at any type. Real
