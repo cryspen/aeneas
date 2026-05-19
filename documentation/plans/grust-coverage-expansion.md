@@ -25,13 +25,30 @@ async / FFI (the contract calls these out as honest skips).
 | Metric | Value |
 |---|---|
 | Fleet fixtures | 89 |
-| g_byte processed (pass + divergent) | 86 |
-| g_rust per-fixture pass (≥1 decl) | 13 |
+| **c_rust** (Rust compile via charon) | **89/89** ✓ |
+| **g_byte** processed (pass + divergent) | **86/89** |
+| **c_lean** (L₁ typechecks via lake env lean) | **25/89** |
+| **g_rust** per-fixture pass (≥1 decl) | **13/89** |
 | g_rust per-decl pass | 53 |
 | Auto-generated proptests | 42 |
 | Hand-written proptests | 44 |
 | `cargo test` count | 86, all pass |
 | Generator emit skips (last run) | `non-public=107  non-simple-sig=177  missing-model=68  missing-source=4` |
+
+The c_lean gate landed in this branch. Per-decl: 146 pass (in the 25
+typechecking fixtures), 2997 fail. Failure clusters (first-error per
+fixture):
+
+- 18 type mismatch
+- 11 `end <ns>` mismatch (emitter doesn't close namespace right)
+- 9 "function expected" (call-site shape wrong)
+- 7 parse errors (tokens the elaborator rejects)
+- 1 field/fn name collision (`struct.len` vs `fn len`)
+- 18 other (Lean-side semantic errors)
+
+These are emitter-side gaps. The zero-skip campaign (planning doc
+`zero-skip-plan.md`) is the natural workstream for fixing them; this
+plan focuses on the differential-test side.
 
 ## 3. Blocker taxonomy
 

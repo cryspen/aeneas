@@ -145,6 +145,17 @@ pub fn run_sweep(
                         &mut report,
                     )?;
                 }
+                "c_lean" => {
+                    let lean_diff_dir = gates::c_lean::default_lean_diff_dir();
+                    gates::c_lean::run(
+                        cert,
+                        cert_path,
+                        aeneas_check,
+                        &lean_diff_dir,
+                        manifest,
+                        &mut report,
+                    )?;
+                }
                 other => anyhow::bail!("unknown gate: {other}"),
             }
         }

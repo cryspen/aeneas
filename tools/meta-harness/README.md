@@ -12,6 +12,10 @@ gate. The gates today are:
   (fast path) and falls back to per-decl slicing of the emitted Lean.
 - **g_rust** — source-tests-as-oracle. Runs `cargo test` against
   `--source-crate`, parses pass/fail, and maps test names to decls.
+- **c_lean** — does the L₁ emit typecheck? Runs `aeneas-check --out`
+  then `lake env lean <emit>` inside `tests/lean-checker/lean-diff/`
+  (which provides the `RuntimeShim` `Aeneas` import). Reports
+  whole-fixture pass/fail until `--only-decl` lands on mainline.
 
 `g_lean` closes by transitivity (g_rust + g_byte/g_rfl), so there is
 no separate runner. `g_rfl` is not implemented yet.
