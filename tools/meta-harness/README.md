@@ -68,6 +68,10 @@ Exit codes:
 | `--aeneas-check <path>`       | Override the aeneas-check binary. Auto-detects `aeneas-lean-checker/.lake/build/bin/aeneas-check`. |
 | `--charon <path>`             | Override the charon binary. Auto-detects the project-pinned `/Users/karthik/charon/charon/target/release/charon` (v0.1.196). Required for `--crate` mode. |
 | `--work-dir <path>`           | Persist intermediate `.llbc` / `.cert.json` artefacts here instead of a tempdir. Useful for debugging. |
+| `--generate-tests`            | Emit a Rust file of `proptest!` blocks for cert decls with simple signatures (all-scalar args, no generics, no refs). Combine with `--sweep <cert-dir>` and `--tests-src-dir <fixture-source-dir>`. |
+| `--tests-src-dir <dir>`       | For `--generate-tests`: directory of fixture sources (`tests/src/`). |
+| `--tests-out <path>`          | For `--generate-tests`: where to write the generated file. Default `diff_auto.rs`. |
+| `--tests-model-path <path>`   | For `--generate-tests`: existing `src/model.rs` (decls without a model are emitted as `// SKIPPED` comments). |
 
 ## Manifest
 

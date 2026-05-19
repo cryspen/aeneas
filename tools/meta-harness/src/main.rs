@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 
 mod cert;
 mod gates;
+mod generate;
 mod manifest;
 mod prepare;
 mod report;
@@ -79,6 +80,29 @@ struct Cli {
     /// full pipeline. Defaults to a fresh tempdir (auto-cleaned).
     #[arg(long, value_name = "DIR")]
     work_dir: Option<PathBuf>,
+
+    /// Generate-tests mode: walk every `.cert.json` under `--sweep
+    /// <dir>` and emit a Rust file with `proptest!` blocks for every
+    /// decl whose signature is simple enough (all-scalar args, no
+    /// generics, no refs). Skips gate execution.
+    #[arg(long, conflicts_with_all = ["gates"])]
+    generate_tests: bool,
+
+    /// For --generate-tests: directory holding the fixture sources
+    /// (e.g. `tests/src/`). Each `<fixture>.rs` is `#[path]`-imported
+    /// by the generated test file.
+    #[arg(long, value_name = "DIR")]
+    tests_src_dir: Option<PathBuf>,
+
+    /// For --generate-tests: where to write the generated test file.
+    #[arg(long, value_name = "PATH", default_value = "diff_auto.rs")]
+    tests_out: PathBuf,
+
+    /// For --generate-tests: path to the existing `model.rs`. The
+    /// generator emits `// SKIPPED` comments for decls whose model
+    /// fn is missing so the user can regen.
+    #[arg(long, value_name = "PATH")]
+    tests_model_path: Option<PathBuf>,
 }
 
 fn main() {
@@ -93,6 +117,33 @@ fn main() {
 
 fn run() -> Result<i32> {
     let cli = Cli::parse();
+
+    if cli.generate_tests {
+        let dir = cli.sweep.as_deref().ok_or_else(|| {
+            anyhow::anyhow!("--generate-tests requires --sweep <cert-dir>")
+        })?;
+        let src = cli.tests_src_dir.as_deref().ok_or_else(|| {
+            anyhow::anyhow!("--generate-tests requires --tests-src-dir <fixture-source-dir>")
+        })?;
+        let default_model = PathBuf::from("tests/lean-checker/differential/src/model.rs");
+        let model_path = cli.tests_model_path.as_deref().unwrap_or(&default_model);
+        let summary = generate::generate_for_cert_dir(dir, src, model_path, &cli.tests_out)?;
+        eprintln!(
+            "[meta-harness] generate-tests: wrote {} ({} proptest blocks emitted)",
+            cli.tests_out.display(),
+            summary.emitted
+        );
+        eprintln!(
+            "[meta-harness] skips: non-public={}  no-body={}  non-simple-sig={}  missing-model={}  missing-source={}",
+            summary.skipped_non_public,
+            summary.skipped_no_body,
+            summary.skipped_signature,
+            summary.skipped_missing_model,
+            summary.skipped_missing_source,
+        );
+        return Ok(0);
+    }
+
     let manifest = manifest::load(cli.manifest.as_deref(), cli.krate.as_deref())?;
     let aeneas = resolve_aeneas(&cli)?;
     let aeneas_check = resolve_aeneas_check(&cli)?;
