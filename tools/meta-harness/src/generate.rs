@@ -1,6 +1,7 @@
 //! Auto-generate `proptest!` blocks for cert decls whose signatures
 //! are simple enough that we can synthesise inputs (all scalar in,
-//! scalar / tuple-of-scalars out).
+//! scalar / tuple-of-scalars out, fixed-size scalar arrays, and
+//! simple all-scalar named-field structs defined in the same fixture).
 //!
 //! Input:  a directory of `.cert.json` files (typically tests/llbc/).
 //! Output: a Rust file with one `proptest!` block per candidate decl,
@@ -32,6 +33,8 @@ struct RawCertSig {
 struct RawProgram {
     #[serde(default)]
     fun_decls: Option<Vec<RawFnDecl>>,
+    #[serde(default)]
+    type_decls: Option<Vec<RawTypeDecl>>,
 }
 #[derive(Deserialize)]
 struct RawFnDecl {
@@ -41,6 +44,14 @@ struct RawFnDecl {
     body: serde_json::Value,
     #[serde(default)]
     is_global_initializer: serde_json::Value,
+}
+#[derive(Deserialize)]
+struct RawTypeDecl {
+    id: u64,
+    item_meta: RawItemMeta,
+    kind: serde_json::Value,
+    #[serde(default)]
+    generics: serde_json::Value,
 }
 #[derive(Deserialize)]
 struct RawItemMeta {
@@ -68,11 +79,122 @@ impl Scalar {
     }
 }
 
+/// A "shape" we can drive with proptest strategies, both for inputs and
+/// for return types. Scalars, fixed-size scalar arrays, simple
+/// all-scalar named-field structs, and unit / tuples-of-shapes.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RetTy {
-    Unit,
+pub enum Shape {
     Scalar(Scalar),
-    Tuple(Vec<Scalar>),
+    Array(Scalar, usize),
+    /// Named struct with all-scalar fields. `fixture` is the fixture
+    /// where the struct is defined; `name` is the bare struct name;
+    /// `fields` is the ordered list of (field_name, field_scalar)
+    /// pairs. `field_name` is `None` for tuple structs (positional).
+    Struct {
+        fixture: String,
+        name: String,
+        fields: Vec<(Option<String>, Scalar)>,
+    },
+    Unit,
+    Tuple(Vec<Shape>),
+}
+
+impl Shape {
+    /// Rust type expression for use in `fn` signatures and casts.
+    fn rust_ty(&self) -> String {
+        match self {
+            Shape::Scalar(s) => s.rust().to_string(),
+            Shape::Array(s, n) => format!("[{}; {}]", s.rust(), n),
+            Shape::Struct { fixture, name, .. } => {
+                format!("{fixture}_src::{name}")
+            }
+            Shape::Unit => "()".to_string(),
+            Shape::Tuple(ts) => format!(
+                "({})",
+                ts.iter().map(|t| t.rust_ty()).collect::<Vec<_>>().join(", ")
+            ),
+        }
+    }
+
+    /// Proptest strategy expression for this shape.
+    fn strategy(&self) -> String {
+        match self {
+            Shape::Scalar(s) => format!("any::<{}>()", s.rust()),
+            Shape::Array(s, n) => {
+                // proptest::array::uniform<N>(any::<S>()) for small N.
+                // Only sizes 1..=32 have a `uniform<N>` helper. For
+                // larger sizes we fall back to a runtime-checked init.
+                if *n == 0 {
+                    format!("Just([] as [{}; 0])", s.rust())
+                } else if *n <= 32 {
+                    format!(
+                        "proptest::array::uniform{}(any::<{}>())",
+                        n, s.rust()
+                    )
+                } else {
+                    // Use prop::collection::vec + try_into for big arrays.
+                    format!(
+                        "prop::collection::vec(any::<{ty}>(), {n}..={n}).prop_map(|v| {{ let a: [{ty}; {n}] = v.try_into().unwrap(); a }})",
+                        ty = s.rust(),
+                        n = n
+                    )
+                }
+            }
+            Shape::Struct { fixture, name, fields } => {
+                // Build `(any::<T1>(), any::<T2>(), ...).prop_map(|(f1,f2,...)| Foo { f1, f2, ... })`
+                if fields.is_empty() {
+                    return format!("Just({fixture}_src::{name} {{}})");
+                }
+                let strats: Vec<String> = fields
+                    .iter()
+                    .map(|(_, s)| format!("any::<{}>()", s.rust()))
+                    .collect();
+                let bind: Vec<String> = (0..fields.len())
+                    .map(|i| format!("f{i}"))
+                    .collect();
+                let assigns: Vec<String> = fields
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (fname, _))| match fname {
+                        Some(fn_) => format!("{fn_}: f{i}"),
+                        None => format!("f{i}"),
+                    })
+                    .collect();
+                // If all field names are None, emit tuple-struct ctor.
+                let is_tuple_struct = fields.iter().all(|(n, _)| n.is_none());
+                let ctor = if is_tuple_struct {
+                    format!(
+                        "{fixture}_src::{name}({})",
+                        bind.join(", ")
+                    )
+                } else {
+                    format!(
+                        "{fixture}_src::{name} {{ {} }}",
+                        assigns.join(", ")
+                    )
+                };
+                let strats_str = strats.join(", ");
+                if fields.len() == 1 {
+                    // Single-field: `any::<T>().prop_map(|f0| Foo { x: f0 })`
+                    format!(
+                        "{strats_str}.prop_map(|{}| {ctor})",
+                        bind[0]
+                    )
+                } else {
+                    format!(
+                        "({strats_str}).prop_map(|({})| {ctor})",
+                        bind.join(", ")
+                    )
+                }
+            }
+            Shape::Unit => "Just(())".to_string(),
+            Shape::Tuple(ts) => {
+                let strats: Vec<String> =
+                    ts.iter().map(|t| t.strategy()).collect();
+                format!("({})", strats.join(", "))
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -80,8 +202,8 @@ pub struct Candidate {
     pub fixture: String,
     pub fn_name: String,
     pub charon_path: String,
-    pub args: Vec<Scalar>,
-    pub ret: RetTy,
+    pub args: Vec<Shape>,
+    pub ret: Shape,
     pub is_public: bool,
 }
 
@@ -95,6 +217,10 @@ pub struct Summary {
     pub skipped_missing_source: usize,
     pub skip_reasons: BTreeMap<String, Vec<String>>, // reason → [paths]
 }
+
+/// Per-fixture struct registry: ADT id → struct shape (for sigs that
+/// reference structs via `Adt { id: Adt N }`).
+pub type StructRegistry = BTreeMap<u64, Shape>;
 
 pub fn generate_for_cert_dir(
     cert_dir: &Path,
@@ -134,6 +260,8 @@ pub fn generate_for_cert_dir(
                 continue;
             }
         };
+
+        let registry = build_struct_registry_raw(&fixture, &raw.llbc_program);
 
         let Some(fns) = raw.llbc_program.fun_decls else { continue };
 
@@ -178,7 +306,7 @@ pub fn generate_for_cert_dir(
                 continue;
             }
 
-            let Some((args, ret)) = parse_simple_sig(&fd.signature) else {
+            let Some((args, ret)) = parse_simple_sig(&fd.signature, &registry) else {
                 summary.skipped_signature += 1;
                 summary
                     .skip_reasons
@@ -295,13 +423,25 @@ pub fn generate_for_cert_dir(
 fn emit_proptest_block(fixture: &str, c: &Candidate) -> String {
     let test_name = format!("{}_{}_auto", fixture, c.fn_name);
     let arg_names: Vec<String> = (0..c.args.len()).map(|i| format!("a{}", i)).collect();
-    let call_args = arg_names.join(", ");
-    let ret_str = match &c.ret {
-        RetTy::Unit => "()".to_string(),
-        RetTy::Scalar(s) => s.rust().to_string(),
-        RetTy::Tuple(ts) => format!("({})", ts.iter().map(|t| t.rust()).collect::<Vec<_>>().join(", ")),
-    };
-    let args_str = c.args.iter().map(|a| a.rust()).collect::<Vec<_>>().join(", ");
+    let call_args_lhs = arg_names.join(", ");
+    let call_args_rhs = arg_names
+        .iter()
+        .enumerate()
+        .map(|(i, n)| {
+            // Clone non-Copy args (structs / arrays) so both calls
+            // can consume them. Scalars are Copy already; arrays of
+            // Copy scalars are Copy; structs may or may not be Copy
+            // but `.clone()` is always safe for our shapes (we only
+            // accept all-scalar fields).
+            match &c.args[i] {
+                Shape::Scalar(_) => n.clone(),
+                _ => format!("{n}.clone()"),
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(", ");
+    let ret_str = c.ret.rust_ty();
+    let args_str = c.args.iter().map(|a| a.rust_ty()).collect::<Vec<_>>().join(", ");
     // Zero-arg fns can't go through `proptest!` (which requires at
     // least one input strategy). Emit a regular `#[test]` instead —
     // both fns are deterministic so a single comparison is enough.
@@ -315,7 +455,7 @@ fn emit_proptest_block(fixture: &str, c: &Candidate) -> String {
         .args
         .iter()
         .zip(&arg_names)
-        .map(|(ty, n)| format!("{} in any::<{}>()", n, ty.rust()))
+        .map(|(ty, n)| format!("{} in {}", n, ty.strategy()))
         .collect();
     let mut s = String::new();
     s.push_str(&format!(
@@ -326,25 +466,123 @@ fn emit_proptest_block(fixture: &str, c: &Candidate) -> String {
     ));
     s.push_str(&format!(
         "        let lhs = {}_src::{}({});\n",
-        fixture, c.fn_name, call_args
+        fixture, c.fn_name, call_args_lhs
     ));
     s.push_str(&format!(
         "        let rhs = model::{}_{}_model({});\n",
-        fixture, c.fn_name, call_args
+        fixture, c.fn_name, call_args_rhs
     ));
     s.push_str("        prop_assert_eq!(lhs, rhs);\n    }\n}\n");
     s
 }
 
-fn parse_simple_sig(sig: &serde_json::Value) -> Option<(Vec<Scalar>, RetTy)> {
+/// Build a per-fixture map of ADT-id → simple struct Shape. Only
+/// includes structs whose fields are all scalars (no generics, no
+/// nested ADTs, no arrays).
+pub fn build_struct_registry(fixture: &str, prog_value: &serde_json::Value) -> StructRegistry {
+    let mut out = StructRegistry::new();
+    let Some(tds) = prog_value.get("type_decls").and_then(|v| v.as_array()) else {
+        return out;
+    };
+    for td in tds {
+        let Some(id) = td.get("id").and_then(|v| v.as_u64()) else { continue };
+        let Some(name) = td
+            .get("item_meta")
+            .and_then(|m| m.get("name"))
+            .and_then(|n| n.as_str())
+        else {
+            continue;
+        };
+        let prefix = format!("{fixture}::");
+        if !name.starts_with(&prefix) {
+            continue;
+        }
+        let short = &name[prefix.len()..];
+        // Reject nested types — `mod::Foo`-shape.
+        if short.contains("::") || short.contains('{') {
+            continue;
+        }
+        // Reject generic structs — proptest can't synthesise <T>.
+        let gens = td.get("generics").cloned().unwrap_or(serde_json::Value::Null);
+        if !generics_empty(&gens) {
+            continue;
+        }
+        let kind = td.get("kind").cloned().unwrap_or(serde_json::Value::Null);
+        let Some(struct_kind) = kind.get("Struct") else { continue };
+        let Some(fields) = struct_kind.as_array() else { continue };
+        let mut field_shapes: Vec<(Option<String>, Scalar)> = Vec::new();
+        let mut ok = true;
+        for f in fields {
+            let fname = f.get("name").and_then(|v| v.as_str()).map(String::from);
+            let ty = f.get("ty");
+            let Some(ty) = ty else { ok = false; break };
+            let Some(s) = scalar_of(ty) else { ok = false; break };
+            field_shapes.push((fname, s));
+        }
+        if !ok {
+            continue;
+        }
+        out.insert(
+            id,
+            Shape::Struct {
+                fixture: fixture.to_string(),
+                name: short.to_string(),
+                fields: field_shapes,
+            },
+        );
+    }
+    out
+}
+
+/// `RawProgram` wrapper that drops directly into `build_struct_registry`.
+fn build_struct_registry_raw(fixture: &str, prog: &RawProgram) -> StructRegistry {
+    let tds = match &prog.type_decls {
+        Some(t) => t,
+        None => return StructRegistry::new(),
+    };
+    // Re-encode through serde_json::Value for uniform handling.
+    let v = serde_json::json!({
+        "type_decls": tds.iter().map(|td| serde_json::json!({
+            "id": td.id,
+            "item_meta": {"name": td.item_meta.name},
+            "kind": td.kind,
+            "generics": td.generics,
+        })).collect::<Vec<_>>()
+    });
+    build_struct_registry(fixture, &v)
+}
+
+fn generics_empty(g: &serde_json::Value) -> bool {
+    let types = g
+        .get("types")
+        .and_then(|v| v.as_array())
+        .map(|a| a.is_empty())
+        .unwrap_or(true);
+    let cgs = g
+        .get("const_generics")
+        .and_then(|v| v.as_array())
+        .map(|a| a.is_empty())
+        .unwrap_or(true);
+    let clauses = g
+        .get("trait_clauses")
+        .and_then(|v| v.as_array())
+        .map(|a| a.is_empty())
+        .unwrap_or(true);
+    types && cgs && clauses
+}
+
+pub fn parse_simple_sig(
+    sig: &serde_json::Value,
+    registry: &StructRegistry,
+) -> Option<(Vec<Shape>, Shape)> {
     let inputs = sig.get("inputs")?.as_array()?;
     let mut args = Vec::new();
     for inp in inputs {
-        let s = scalar_of(inp)?;
+        let s = shape_of(inp, registry)?;
         args.push(s);
     }
     let output = sig.get("output")?;
-    let ret = ret_of(output)?;
+    let ret = shape_of(output, registry)?;
     // Reject generics — easier to skip than support
     if let Some(g) = sig.get("generics") {
         let types = g.get("types").and_then(|v| v.as_array()).map(|a| !a.is_empty()).unwrap_or(false);
@@ -355,6 +593,73 @@ fn parse_simple_sig(sig: &serde_json::Value) -> Option<(Vec<Scalar>, RetTy)> {
         }
     }
     Some((args, ret))
+}
+
+/// Recognise a type as a Shape we can drive with proptest. Returns
+/// `None` for refs, slices, generics, opaque, etc.
+pub fn shape_of(v: &serde_json::Value, registry: &StructRegistry) -> Option<Shape> {
+    // Scalars (Literal).
+    if let Some(s) = scalar_of(v) {
+        return Some(Shape::Scalar(s));
+    }
+    // Fixed-size scalar array: {"Array": [<elem>, {"kind": {"Literal":{"Scalar":{"Unsigned":["Usize","<N>"]}}}}]}
+    if let Some(arr) = v.get("Array") {
+        let arr = arr.as_array()?;
+        if arr.len() == 2 {
+            let elem = scalar_of(&arr[0])?;
+            let n = array_size(&arr[1])?;
+            return Some(Shape::Array(elem, n));
+        }
+        return None;
+    }
+    // Adt: tuple or simple struct.
+    if let Some(adt) = v.get("Adt") {
+        let id = adt.get("id")?;
+        if id.as_str() == Some("Tuple") {
+            let tys = adt.get("generics")?.get("types")?.as_array()?;
+            if tys.is_empty() {
+                return Some(Shape::Unit);
+            }
+            let mut shapes = Vec::new();
+            for t in tys {
+                // Tuple components are scalars only (keeps Display
+                // simple). Could be extended later.
+                shapes.push(Shape::Scalar(scalar_of(t)?));
+            }
+            return Some(Shape::Tuple(shapes));
+        }
+        // Simple named struct: id = {"Adt": N}, no generics applied.
+        let gens = adt.get("generics").cloned().unwrap_or(serde_json::Value::Null);
+        if !generics_empty(&gens) {
+            return None;
+        }
+        if let Some(n) = id.get("Adt").and_then(|v| v.as_u64()) {
+            return registry.get(&n).cloned();
+        }
+        return None;
+    }
+    None
+}
+
+/// Parse the `N` out of `{"kind": {"Literal": {"Scalar": {"Unsigned":
+/// ["Usize", "<N>"]}}}}` (the const-generic literal used in fixed-size
+/// arrays).
+fn array_size(v: &serde_json::Value) -> Option<usize> {
+    let lit = v
+        .get("kind")
+        .and_then(|k| k.get("Literal"))
+        .and_then(|l| l.get("Scalar"))?;
+    // {"Unsigned": ["Usize", "<N>"]}  or  {"Signed": [...]}
+    for sign_key in ["Unsigned", "Signed"] {
+        if let Some(arr) = lit.get(sign_key).and_then(|a| a.as_array()) {
+            if let Some(s) = arr.get(1).and_then(|s| s.as_str()) {
+                if let Ok(n) = s.parse::<usize>() {
+                    return Some(n);
+                }
+            }
+        }
+    }
+    None
 }
 
 fn scalar_of(v: &serde_json::Value) -> Option<Scalar> {
@@ -382,25 +687,6 @@ fn scalar_of(v: &serde_json::Value) -> Option<Scalar> {
     None
 }
 
-fn ret_of(v: &serde_json::Value) -> Option<RetTy> {
-    // Tuple? `{"Adt":{"id":"Tuple","generics":{"types":[...]}}}`
-    if let Some(adt) = v.get("Adt") {
-        if adt.get("id").and_then(|i| i.as_str()) == Some("Tuple") {
-            let tys = adt.get("generics")?.get("types")?.as_array()?;
-            if tys.is_empty() {
-                return Some(RetTy::Unit);
-            }
-            let mut scalars = Vec::new();
-            for t in tys {
-                scalars.push(scalar_of(t)?);
-            }
-            return Some(RetTy::Tuple(scalars));
-        }
-        return None;
-    }
-    scalar_of(v).map(RetTy::Scalar)
-}
-
 fn is_public(attr_info: &Option<serde_json::Value>) -> bool {
     attr_info
         .as_ref()
@@ -420,7 +706,7 @@ fn fixture_name(cert_path: &Path) -> String {
 /// Parse `pub fn <name>_model(` lines out of `src/model.rs` to build
 /// a set of names that already exist. Cheap; doesn't need real Rust
 /// parsing.
-fn parse_model_fns(model_path: &Path) -> Result<std::collections::HashSet<String>> {
+pub fn parse_model_fns(model_path: &Path) -> Result<std::collections::HashSet<String>> {
     let mut out = std::collections::HashSet::new();
     if !model_path.is_file() {
         return Ok(out);
@@ -468,7 +754,8 @@ fn relative_from(target: &Path, from: &Path) -> Option<String> {
 const HEADER: &str = "// AUTO-GENERATED by `meta-harness --generate-tests`. DO NOT EDIT.
 // Each `proptest!` block was synthesised from a cert.json fn whose
 // signature is simple enough to drive `any::<...>()` directly
-// (all-scalar inputs + scalar / tuple-of-scalars output, no
+// (all-scalar / fixed-size-scalar-array / simple-struct inputs +
+// scalar / tuple-of-scalars / array / simple-struct output, no
 // generics, no refs).
 //
 // To regenerate:
@@ -480,3 +767,72 @@ const HEADER: &str = "// AUTO-GENERATED by `meta-harness --generate-tests`. DO N
 #![allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 
 ";
+
+// Quiet unused-warning on the raw helper; some integration paths use
+// the JSON variant instead.
+#[allow(dead_code)]
+fn _unused_keepalive(_p: &RawProgram) {
+    let _: StructRegistry = build_struct_registry_raw("x", _p);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn scalar_array_shape() {
+        let registry = StructRegistry::new();
+        let ty = json!({"Array": [
+            {"Literal": {"UInt": "U32"}},
+            {"kind": {"Literal": {"Scalar": {"Unsigned": ["Usize", "4"]}}}}
+        ]});
+        assert_eq!(
+            shape_of(&ty, &registry),
+            Some(Shape::Array(Scalar::U32, 4))
+        );
+    }
+
+    #[test]
+    fn struct_shape_via_registry() {
+        let mut registry = StructRegistry::new();
+        registry.insert(
+            0,
+            Shape::Struct {
+                fixture: "aggregates_basic".into(),
+                name: "Pair".into(),
+                fields: vec![
+                    (Some("x".into()), Scalar::U32),
+                    (Some("y".into()), Scalar::U32),
+                ],
+            },
+        );
+        let ty = json!({"Adt": {"id": {"Adt": 0}, "generics": {"types": []}}});
+        let got = shape_of(&ty, &registry).unwrap();
+        match got {
+            Shape::Struct { name, .. } => assert_eq!(name, "Pair"),
+            _ => panic!("expected Struct"),
+        }
+    }
+
+    #[test]
+    fn array_strategy_uses_uniform() {
+        let s = Shape::Array(Scalar::U32, 4);
+        assert_eq!(s.strategy(), "proptest::array::uniform4(any::<u32>())");
+    }
+
+    #[test]
+    fn struct_strategy_uses_prop_map() {
+        let s = Shape::Struct {
+            fixture: "agg".into(),
+            name: "P".into(),
+            fields: vec![
+                (Some("x".into()), Scalar::U32),
+                (Some("y".into()), Scalar::U32),
+            ],
+        };
+        let strat = s.strategy();
+        assert!(strat.contains("prop_map"));
+        assert!(strat.contains("agg_src::P"));
+    }
+}
