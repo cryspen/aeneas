@@ -157,11 +157,23 @@ def buildLoopBody (fnName : String) (typeParams : Array String)
     (stateLocals : Array Nat) (stateTys : Array PTy)
     (retTy : PTy)
     (bodyEvs : Array Event) (sourceSpan : Option Raw.SourceSpan) : Decl :=
+  -- Bug 3 (loop-body unit state): when `inferStateLocals` returned an
+  -- empty list (state-less loop — typical for `mini_tree::explore` or
+  -- `issue-270`'s `foo`), still emit a Unit-typed state slot so the
+  -- body fits the `loop : (α → Result (ControlFlow α β)) → α → Result β`
+  -- combinator. We synthesise a single state with name `i` and type
+  -- `.unit`. There is no corresponding LLBC local index, so the vm
+  -- never binds it, and `contSt.vm.getD l _` falls through to the
+  -- `.var "i"` fallback below — which typechecks since `i : Unit`.
+  let isStateless := stateLocals.isEmpty
   let stateNames : Array String :=
-    stateLocals.mapIdx fun i _ => stateName i
+    if isStateless then #["i"]
+    else stateLocals.mapIdx fun i _ => stateName i
+  let effectiveStateTys : Array PTy :=
+    if isStateless then #[.unit] else stateTys
   -- Body params: forwarded inputs, then state locals.
   let stateParams : Array Param :=
-    stateNames.zip stateTys |>.map fun (n, t) => { name := n, ty := t }
+    stateNames.zip effectiveStateTys |>.map fun (n, t) => { name := n, ty := t }
   let bodyParams : Array Param := forwarded ++ stateParams
   -- Initial vm for the body walk: input local k ↦ forwarded[k]!.name
   -- (Session 7 Item 1d: read source name from the param record we were
@@ -178,21 +190,32 @@ def buildLoopBody (fnName : String) (typeParams : Array String)
       m := m.insert stateLocals[i]! (.var stateNames[i]!)
     return m
   -- Loop body's return type: ControlFlow stateTy retTy.
+  -- Bug 3: prefer `.unit` over `.tuple #[]` so the rendered type is
+  -- `ControlFlow Unit ...` not the ill-typed `ControlFlow () ...`.
   let stateTy : PTy :=
-    if stateTys.size = 1 then stateTys[0]!
-    else .tuple stateTys
+    if effectiveStateTys.size = 1 then effectiveStateTys[0]!
+    else if effectiveStateTys.isEmpty then .unit
+    else .tuple effectiveStateTys
   let cfTy : PTy := .adt "ControlFlow" #[stateTy, retTy]
+  -- Bug 3: for the stateless case, `cont`/`done` carry a unit value
+  -- `()` (a PExpr.tuple of zero args) rather than the param name.
+  -- The body's `i : Unit` param is technically usable, but match-
+  -- bearing loops compile cleaner with a literal `()` payload because
+  -- some downstream patterns expect a constructor in the slot.
+  let unitVal : PExpr := .tuple #[]
   -- Locate the branch markers.
   match findBodyBranch bodyEvs with
   | none =>
     -- Unconditional body (no break) — shouldn't happen for the M12.1
     -- fixture. Emit a placeholder so downstream consumers still get a
     -- well-typed decl.
+    let contArg : PExpr :=
+      if isStateless then unitVal else .var (stateNames.getD 0 "i")
     { name := s!"{innerName fnName}_loop.body"
       qualifiedName := s!"{fnName}::loop_body"
       params := bodyParams
       retTy := cfTy
-      body := .ok (.app "cont" #[.var (stateNames.getD 0 "i")])
+      body := .ok (.app "cont" #[contArg])
       sourceSpan
       typeParams
       attributes := #["rust_loop_body"]
@@ -279,16 +302,29 @@ def buildLoopWrapper (fnName : String) (typeParams : Array String)
     (forwarded : Array Param)
     (stateLocals : Array Nat) (stateTys : Array PTy)
     (retTy : PTy) (sourceSpan : Option Raw.SourceSpan) : Decl :=
+  -- Bug 3 (loop-body unit state): mirror `buildLoopBody`'s stateless
+  -- handling. The wrapper has no extra param (caller doesn't see the
+  -- unit state), but the lambda still takes a `Unit` arg `i` and the
+  -- initial state passed to `loop` is the unit value `()`.
+  let isStateless := stateLocals.isEmpty
   let stateNames : Array String :=
-    stateLocals.mapIdx fun i _ => stateName i
+    if isStateless then #["i"]
+    else stateLocals.mapIdx fun i _ => stateName i
+  let effectiveStateTys : Array PTy :=
+    if isStateless then #[.unit] else stateTys
+  -- Wrapper-level params: when stateless, no state param surfaces in
+  -- the wrapper's signature (the unit state is internal).
   let stateParams : Array Param :=
-    stateNames.zip stateTys |>.map fun (n, t) => { name := n, ty := t }
+    if isStateless then #[]
+    else stateNames.zip effectiveStateTys |>.map fun (n, t) =>
+      { name := n, ty := t }
   let wrapperParams : Array Param := forwarded ++ stateParams
   -- Body: `loop (fun <state> => <fn>_loop.body <forwarded> <state>) <state>`
   let forwardedArgs : Array PExpr :=
     forwarded.map fun p => .var p.name
   let stateArg : PExpr :=
-    if stateNames.size = 1 then .var stateNames[0]!
+    if isStateless then .tuple #[]
+    else if stateNames.size = 1 then .var stateNames[0]!
     else .tuple (stateNames.map fun n => .var n)
   let lambdaParam : String := stateNames.getD 0 "i1"
   -- Inside the lambda, the argument is the loop's *next* state; we
@@ -297,7 +333,7 @@ def buildLoopWrapper (fnName : String) (typeParams : Array String)
   let bodyCall : PExpr :=
     .app s!"{innerName fnName}_loop.body" (forwardedArgs ++ #[.var lambdaParam])
   let lam : PExpr :=
-    .lam #[(lambdaParam, stateTys.getD 0 placeholderTy)] bodyCall
+    .lam #[(lambdaParam, effectiveStateTys.getD 0 placeholderTy)] bodyCall
   let loopCall : PExpr := .app "loop" #[lam, stateArg]
   { name := s!"{innerName fnName}_loop"
     qualifiedName := s!"{fnName}::loop"
@@ -332,14 +368,16 @@ def buildTopLevelLoopFn (fnName : String) (typeParams : Array String)
     return m
   let preSt : WalkState :=
     walkEvents preLoopEvs { vm := initVm, numParams }
-  -- Initial state for each state local.
+  -- Initial state for each state local. Bug 3 (loop-body unit state):
+  -- when stateLocals is empty the wrapper does not surface a state
+  -- param either, so no extra arg flows here.
   let stateInit : Array PExpr :=
     stateLocals.map fun l => preSt.vm.getD l (.lit (.scalar .u32 0))
   let forwardedArgs : Array PExpr :=
     forwarded.map fun p => .var p.name
   -- Build the call. Single state: `<fn>_loop <forwarded> <init>`.
   -- Multi state: pass each state arg in position order; the wrapper
-  -- splits at the lambda level.
+  -- splits at the lambda level. Stateless: just `<fn>_loop <forwarded>`.
   let callArgs : Array PExpr := forwardedArgs ++ stateInit
   let body : PExpr := .app s!"{innerName fnName}_loop" callArgs
   { name := innerName fnName
