@@ -686,3 +686,28 @@ Commits in order:
   0#u32` against a `Result (Array Std.U8 1#usize)` return type
   (placeholder synthesiser doesn't recognise `Array`). Mirror the
   `Pair` placeholder logic in `placeholderPExprOfWith` for `Array`.
+
+## Bug 4 session — 2026-05-19 (in progress)
+
+Following `prompts/zero-skip-bug4-prompt.md`. Three sub-bugs.
+
+### Sub-bug 4a — `lookupPlace` vm[1] fallback drops type info → DONE (`145ed187`)
+
+`lookupPlace` falls back to `vm[1]` (the first input parameter)
+when the queried local is missing. For `incr(x:&mut u32){*x += 1}`-
+shape fixtures the over-approximation is right (the temp's
+projected `U32` matches input-1's peeled `&mut U32`), but
+`joins::call_choose` reads `local 7 : U32` whose `vm` slot is unset
+because the join's binding got dropped — and input-1 is `Bool b`.
+The fallback emitted `b + 1#u32`. Same shape kills
+`joins::use_enum`.
+
+Add `vm1FallbackCompatible`: peel outer refs from both candidate
+types and compare. Block the vm[1] fallback only when both sides
+are concretely identifiable as different `litTy`s, different
+`tAdt`s, or litTy↔tAdt — every other shape (including unknown
+sides) preserves the legacy behaviour. When blocked, fall through
+to the existing typed-placeholder path (`placeholderPExprOf`).
+
+c_lean per-fixture: 36 → 37 (+`joins`).
+c_lean per-decl:    451 → 459 (+8).
