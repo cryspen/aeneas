@@ -312,6 +312,15 @@ compile against the shim. -/
 structure Array (α : Type) (_n : Usize) where
   val : List α
 
+/-- Bug 4 (Aggregate-rvalue propagation, follow-up): a Rust array
+    literal `[x]` (Aggregate Array, single operand) lowers through this
+    helper. The signature carries the const-generic `1#usize` length so
+    the call's return type matches the function's declared
+    `Result (Array α 1#usize)` shape. -/
+@[inline] def Array.singleton {α : Type} (x : α) :
+    Aeneas.Std.Array α (Aeneas.Std.Usize.ofNat 1) :=
+  ⟨[x]⟩
+
 /-- M9.5c: `Array.update` in-bounds, returning a fresh array. Matches
     the signature of `backends/lean/Aeneas/Std/Array/Array.lean::Array.update`:
     `Array α n → Usize → α → Result (Array α n)`. Out-of-bounds is

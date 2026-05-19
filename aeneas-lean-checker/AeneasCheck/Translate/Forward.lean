@@ -239,6 +239,17 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
         .recordLit fields (some info.name)
       else .lit (.scalar .u32 0)
     | none => .lit (.scalar .u32 0)
+  -- Bug 4 (Array placeholder synthesis): mirror the `.tAdt` placeholder
+  -- logic for fixed-length arrays. `use_static::PREFIX` declares a
+  -- `[u8; 1]` static whose linear walk never writes vm[0]; without
+  -- this branch the catch-all emitted `ok 0#u32` against
+  -- `Result (Array Std.U8 1#usize)`. We emit `Array.singleton 0#u8`
+  -- (the shim helper from the Aggregate-rvalue propagation pass).
+  -- Length-0 → empty array (not yet reachable in fixtures, defer);
+  -- length ≥ 2 falls back to scalar zero since `Array.singleton`
+  -- only matches length 1.
+  | .tArray elemTy 1 =>
+    .app "Aeneas.Std.Array.singleton" #[placeholderPExprOfWith tdm elemTy]
   | _ => .lit (.scalar .u32 0)
 
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
@@ -2765,6 +2776,18 @@ partial def propagateRefsFromStatement
       match op with
       | .copy p => propagate p
       | .move p => propagate p
+      | _ => vm
+    -- Bug 4 (Aggregate-rvalue propagation): a Rust array literal `[x]`
+    -- (a single-operand `Aggregate(Array, [Move/Copy local])`) is
+    -- emitted as `Aeneas.Std.Array.singleton <vm[local]>`. Only the
+    -- single-operand form is handled here — multi-element array
+    -- literals would need a List-builder helper; deferred.
+    | .aggregate (.array _) ops =>
+      match ops.toList with
+      | [.move p] | [.copy p] =>
+        match vm[p.local_]? with
+        | some v => vm.insert place.local_ (.app "Aeneas.Std.Array.singleton" #[v])
+        | none => vm
       | _ => vm
     | _ => vm
   | .block b => propagateRefsFromBlock b vm
