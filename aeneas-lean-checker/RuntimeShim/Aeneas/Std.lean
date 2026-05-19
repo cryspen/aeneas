@@ -734,9 +734,13 @@ namespace Std
 
 /-- Rust-style range `0..end` as a struct with `start` and `end`
     fields. Used in iterator/loop emit; `end` is a Lean keyword so
-    the cert pipeline emits `«end»`. -/
-structure Range (α : Type) where
-  start : α
+    the cert pipeline emits `«end»`.
+    `start` has an Inhabited-derived default so a `RangeTo`-style
+    emit (`s[..k]` → `Range { end := k }`, no `start`) elaborates;
+    the cert pipeline currently drops the literal-zero start in
+    that case. -/
+structure Range (α : Type) [Inhabited α] where
+  start : α := default
   «end» : α
   deriving Inhabited
 
