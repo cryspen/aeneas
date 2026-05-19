@@ -180,6 +180,26 @@ def sanitizeCallName (n : String) : String := Id.run do
   let bareInts :=
     ["u8","u16","u32","u64","u128","usize",
      "i8","i16","i32","i64","i128","isize"]
+  -- Cluster-A follow-up: Charon's builtin-intercept calls carry a
+  -- leading `@` (e.g. `@ArrayIndexShared`). Some are special-cased by
+  -- the Forward translator (`@ArrayIndexMut`, `@SliceIndexShared`,
+  -- `@SliceIndexMut`); the rest fall through to the generic call
+  -- machinery and reach the emitter with `@` still in the name. Lean
+  -- treats `@Foo` as the explicit-args form of `Foo`, which mis-binds
+  -- the first arg to `Foo`'s leading implicit. Strip the `@` so the
+  -- shim's top-level `abbrev`s (with their implicit type/const-generic
+  -- binders) auto-elaborate from the explicit arg's type.
+  --
+  -- Step 7 (`use_v_arity`) intentionally prefixes IN-CRATE generic
+  -- global calls with `@` so the implicit `{T : Type}` slot is filled
+  -- explicitly from the call's type arg (`(@constants.V.LEN T N)`).
+  -- Distinguish: builtin intercepts have a SINGLE name segment
+  -- (`@ArrayIndexShared`); in-crate calls carry `::` or `.` (the
+  -- crate-qualified path). Only strip in the single-segment case.
+  let n :=
+    if n.startsWith "@" ∧ ¬ (n.contains '.' ∨ n.contains ':') then
+      (n.drop 1).toString
+    else n
   -- Fast path: no brace decoration, keep the legacy per-segment shape
   -- so existing fixtures remain byte-identical.
   if !n.contains '{' then
@@ -224,6 +244,16 @@ def sanitizeCallName (n : String) : String := Id.run do
     -- `::` (`constants::Wrap<T>` straight from Charon) both reduce
     -- the same way.
     let normalized := (after.trimAscii.toString).replace "::" "."
+    -- Cluster-A follow-up: Rust slice / array brace-inners.
+    -- `{[T]}` → `Slice`, `{[T; N]}` → `Array`. Mainline aeneas's
+    -- backend reduces these forms to the runtime-shim's `Slice` /
+    -- `Array` type. Stripping happens before the lastSeg/split-on-`<`
+    -- pass so the `[T@0]` / `[T@0; C@0]` forms (Charon's region-
+    -- tagged variables) reduce the same way.
+    let stripped := normalized.trimAscii.toString
+    if stripped.startsWith "[" ∧ stripped.endsWith "]" then
+      if stripped.contains ';' then "Array" else "Slice"
+    else
     let lastSeg := (normalized.splitOn ".").getLast?.getD normalized
     let cleanSeg := (lastSeg.splitOn "<").headD lastSeg
     let trimmed := cleanSeg.trimAscii.toString
