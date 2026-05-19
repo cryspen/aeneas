@@ -54,4 +54,15 @@ def test_choose : Result Unit := do
   let _ := (t0_back t1)
   ok ()
 
+/-- [paper::sum]:
+    Source: 'tests/src/paper.rs', lines 62:0-71:1
+    Visibility: public -/
+def sum (l : List Std.I32) : Result Std.I32 := do
+  match l with
+  | List.Cons x tl =>
+    let t0 ← (paper.sum tl)
+    x + t0
+  | List.Nil => ok 0#i32
+partial_fixpoint
+
 end paper

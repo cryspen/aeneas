@@ -57,6 +57,20 @@ def use_incr : Result Unit := do
   let t2 ← (demo.incr 0#u32)
   ok ()
 
+/-- [demo::list_nth]:
+    Source: 'tests/src/demo.rs', lines 42:0-55:1
+    Visibility: public -/
+def list_nth {T : Type} (l : CList T) (i : Std.U32) : Result T := do
+  match l with
+  | CList.CCons x tl =>
+    let t0 := i = 0#u32
+    if t0
+    then ok x
+    else let t1 ← i - 1#u32
+         (demo.list_nth tl t1)
+  | CList.CNil => error panic
+partial_fixpoint
+
 /-- [demo::mod_add]:
     Source: 'tests/src/demo.rs', lines 117:0-125:1 -/
 def mod_add (a : Std.U32) (b : Std.U32) : Result Std.U32 := do

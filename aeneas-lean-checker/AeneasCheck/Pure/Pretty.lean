@@ -442,7 +442,7 @@ partial def PExpr.toLeanDo : PExpr → String
     -- Phase 1C: Lean's anonymous-constructor syntax does not need the
     -- ADT name (inferred from `base`'s type) — only RustEmit consumes
     -- the `_adtName` field.
-    s!"\{ {base.toLeanDo} with {field} := {value.toLeanDo} }"
+    s!"\{ {base.toLeanDo} with {sanitizeIdent field} := {value.toLeanDo} }"
   | .fieldAccess base field =>
     -- M9.5n: `<base>.<field>`. The standard Aeneas backend uses
     -- Lean's dot-notation for struct field access since
@@ -452,7 +452,7 @@ partial def PExpr.toLeanDo : PExpr → String
     -- itself need parens, but our M9.5n caller only constructs
     -- field-access against a `.var` base so the issue doesn't arise.
     let baseS := base.toLeanDo
-    s!"{baseS}.{field}"
+    s!"{baseS}.{sanitizeIdent field}"
   | .recordLit fields _adtName =>
     -- M9.5p: a Lean record literal `{ x := e1, y := e2 }`. Matches the
     -- standard Aeneas backend's whitespace for `ok { x := x1, y := x2 }`
@@ -462,7 +462,7 @@ partial def PExpr.toLeanDo : PExpr → String
     -- Phase 1C: Lean ignores `_adtName` — the anonymous-constructor
     -- syntax `{ x := e1, y := e2 }` is inferred from the expected type.
     let body := String.intercalate ", "
-      (fields.toList.map fun (n, v) => s!"{n} := {v.toLeanDo}")
+      (fields.toList.map fun (n, v) => s!"{sanitizeIdent n} := {v.toLeanDo}")
     s!"\{ {body} }"
   | .matchE scrutinee arms =>
     -- M9.5d / M9.5e: `match <scrutinee> with | Ctor1 b₁ … bₙ => body1
@@ -534,12 +534,12 @@ partial def PExpr.toLean : PExpr → String
     let pats := String.intercalate ", " pat.toList
     s!"let ({pats}) := {e1.toLean}\n  {e2.toLean}"
   | .structUpdate base field value _adtName =>
-    s!"\{ {base.toLean} with {field} := {value.toLean} }"
-  | .fieldAccess base field => s!"{base.toLean}.{field}"
+    s!"\{ {base.toLean} with {sanitizeIdent field} := {value.toLean} }"
+  | .fieldAccess base field => s!"{base.toLean}.{sanitizeIdent field}"
   | .recordLit fields _adtName =>
     -- M9.5p: diagnostic-only rendering for `{ x := e1, y := e2 }`.
     let body := String.intercalate ", "
-      (fields.toList.map fun (n, v) => s!"{n} := {v.toLean}")
+      (fields.toList.map fun (n, v) => s!"{sanitizeIdent n} := {v.toLean}")
     s!"\{ {body} }"
   | .matchE scrutinee arms =>
     let armS := arms.toList.map fun (ctor, binders, body) =>
