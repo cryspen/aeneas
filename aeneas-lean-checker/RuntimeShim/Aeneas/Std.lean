@@ -321,6 +321,19 @@ structure Array (α : Type) (_n : Usize) where
     Aeneas.Std.Array α (Aeneas.Std.Usize.ofNat 1) :=
   ⟨[x]⟩
 
+/-- Bug 4c: multi-element array literal `[e₁, …, eₙ]` lowers to
+    `Array.ofList (e₁ :: … :: eₙ :: [])` at the emitter level. The
+    backing `structure Array (α : Type) (_n : Usize)` ignores its
+    second parameter, so the implicit `n` is inferred from the
+    surrounding context (the function's declared return type
+    `Result (Array α k#usize)`); the call's argument list-length and
+    `n` are not constrained to match here. The real Aeneas runtime
+    enforces the length via a subtype proof — the shim's looser
+    typing is enough for c_lean to accept the emit. -/
+@[inline] def Array.ofList {α : Type} {n : Usize} (xs : List α) :
+    Aeneas.Std.Array α n :=
+  ⟨xs⟩
+
 /-- M9.5c: `Array.update` in-bounds, returning a fresh array. Matches
     the signature of `backends/lean/Aeneas/Std/Array/Array.lean::Array.update`:
     `Array α n → Usize → α → Result (Array α n)`. Out-of-bounds is

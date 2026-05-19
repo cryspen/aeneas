@@ -272,11 +272,21 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
   -- this branch the catch-all emitted `ok 0#u32` against
   -- `Result (Array Std.U8 1#usize)`. We emit `Array.singleton 0#u8`
   -- (the shim helper from the Aggregate-rvalue propagation pass).
-  -- Length-0 → empty array (not yet reachable in fixtures, defer);
-  -- length ≥ 2 falls back to scalar zero since `Array.singleton`
-  -- only matches length 1.
-  | .tArray elemTy 1 =>
-    .app "Aeneas.Std.Array.singleton" #[placeholderPExprOfWith tdm elemTy]
+  -- Bug 4c: extend to multi-element placeholders — emit
+  -- `Array.ofList (List.cons 0#α … List.nil)` for n ≥ 2, and
+  -- `Array.ofList List.nil` for n = 0.
+  | .tArray elemTy n =>
+    let elem := placeholderPExprOfWith tdm elemTy
+    match n with
+    | 0 =>
+      .app "Aeneas.Std.Array.ofList" #[.app "List.nil" #[]]
+    | 1 =>
+      .app "Aeneas.Std.Array.singleton" #[elem]
+    | _ =>
+      let chain : PExpr :=
+        (List.range n).foldr (init := .app "List.nil" #[]) fun _ acc =>
+          .app "List.cons" #[elem, acc]
+      .app "Aeneas.Std.Array.ofList" #[chain]
   | _ => .lit (.scalar .u32 0)
 
 /-- Strip the leading crate-name segment of a `crate::a::b` path,
@@ -2825,16 +2835,33 @@ partial def propagateRefsFromStatement
       | _ => vm
     -- Bug 4 (Aggregate-rvalue propagation): a Rust array literal `[x]`
     -- (a single-operand `Aggregate(Array, [Move/Copy local])`) is
-    -- emitted as `Aeneas.Std.Array.singleton <vm[local]>`. Only the
-    -- single-operand form is handled here — multi-element array
-    -- literals would need a List-builder helper; deferred.
+    -- emitted as `Aeneas.Std.Array.singleton <vm[local]>`. Bug 4c
+    -- extends this to N-operand literals `[e₁, …, eₙ]` (n ≥ 2),
+    -- emitted as `Array.ofList (List.cons e₁ … (List.cons eₙ
+    -- List.nil))`. All operands must resolve through `vm`; if any
+    -- doesn't, drop the propagation (safe — keeps the slot empty so
+    -- the placeholder path takes over).
     | .aggregate (.array _) ops =>
-      match ops.toList with
-      | [.move p] | [.copy p] =>
-        match vm[p.local_]? with
-        | some v => vm.insert place.local_ (.app "Aeneas.Std.Array.singleton" #[v])
-        | none => vm
-      | _ => vm
+      let resolvedOpts : Array (Option PExpr) := ops.map fun op =>
+        match op with
+        | .move p | .copy p => vm[p.local_]?
+        | _ => none
+      if resolvedOpts.any Option.isNone then vm
+      else
+        let elems : Array PExpr := resolvedOpts.map (·.getD (.lit (.scalar .u32 0)))
+        match elems.size with
+        | 0 =>
+          -- Zero-length array literal `[]`: emit `Array.ofList []`.
+          vm.insert place.local_
+            (.app "Aeneas.Std.Array.ofList" #[.app "List.nil" #[]])
+        | 1 =>
+          vm.insert place.local_ (.app "Aeneas.Std.Array.singleton" #[elems[0]!])
+        | _ =>
+          -- Build a List.cons chain: List.cons e₁ (List.cons e₂ … List.nil).
+          let chain : PExpr :=
+            elems.foldr (init := .app "List.nil" #[]) fun e acc =>
+              .app "List.cons" #[e, acc]
+          vm.insert place.local_ (.app "Aeneas.Std.Array.ofList" #[chain])
     | _ => vm
   | .block b => propagateRefsFromBlock b vm
   | .loopStmt b => propagateRefsFromBlock b vm
