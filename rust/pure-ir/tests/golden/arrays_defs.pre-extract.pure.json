@@ -1,0 +1,3256 @@
+{
+  "crate_name": "arrays_defs",
+  "fun_decls": [
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": null,
+      "builtin_info": {
+        "kind": "BuiltinFunInfo",
+        "payload": null
+      },
+      "def_id": 3,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": "Hint",
+          "public": true,
+          "rename": null
+        },
+        "is_local": false,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "core"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "array"
+            }
+          },
+          {
+            "kind": "PeImpl",
+            "payload": null
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "clone"
+            }
+          }
+        ],
+        "opacity": "Foreign",
+        "source_text": null,
+        "span": {
+          "beg_col": 4,
+          "beg_line": 446,
+          "end_col": 27,
+          "end_line": 446,
+          "file": "/rustc/library/core/src/array/mod.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "core::array::{core::clone::Clone for [T; N]}::clone",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [
+          {
+            "effect_info": {
+              "can_diverge": false,
+              "can_fail": false,
+              "is_rec": false
+            },
+            "region_group_id": 0
+          }
+        ],
+        "explicit_info": {
+          "explicit_const_generics": [
+            "Implicit"
+          ],
+          "explicit_types": [
+            "Implicit"
+          ]
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [
+            {
+              "index": 0,
+              "name": "N",
+              "ty": {
+                "kind": "TUInt",
+                "payload": "Usize"
+              }
+            }
+          ],
+          "trait_clauses": [
+            {
+              "clause_id": 0,
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "trait_id": 0
+            }
+          ],
+          "types": [
+            {
+              "index": 0,
+              "name": "T"
+            }
+          ]
+        },
+        "inputs": [
+          {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [
+                  {
+                    "kind": "CgVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TArray",
+                  "payload": null
+                }
+              }
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [
+            "Unknown"
+          ],
+          "known_types": [
+            "Known"
+          ]
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [
+                        {
+                          "kind": "CgVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ],
+                      "trait_refs": [],
+                      "types": [
+                        {
+                          "kind": "TVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ]
+                    },
+                    "type_id": {
+                      "kind": "TBuiltin",
+                      "payload": {
+                        "kind": "TArray",
+                        "payload": null
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TraitImplItem",
+        "payload": null
+      }
+    },
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": null,
+      "builtin_info": null,
+      "def_id": 4,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [
+            {
+              "kind": "AttrDocComment",
+              "payload": " Returns a duplicate of the value."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Note that what \"duplicate\" means varies by type:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " - For most types, this creates a deep, independent copy"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " - For reference types like `&T`, this creates another reference to the same value"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " - For smart pointers like [`Arc`] or [`Rc`], this increments the reference count"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "   but still points to the same underlying data"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`Arc`]: ../../std/sync/struct.Arc.html"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`Rc`]: ../../std/rc/struct.Rc.html"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " # Examples"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " # #![allow(noop_method_call)]"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " let hello = \"Hello\"; // &str implements Clone"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " assert_eq!(\"Hello\", hello.clone());"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Example with a reference-counted type:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " use std::sync::{Arc, Mutex};"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " let data = Arc::new(Mutex::new(vec![1, 2, 3]));"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " let data_clone = data.clone(); // Creates another Arc pointing to the same Mutex"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " {"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     let mut lock = data.lock().unwrap();"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     lock.push(4);"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " // Changes are visible through the clone because they share the same underlying data"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " assert_eq!(*data_clone.lock().unwrap(), vec![1, 2, 3, 4]);"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            }
+          ],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": false,
+        "lang_item": "clone_fn",
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "core"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "clone"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "Clone"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "clone"
+            }
+          }
+        ],
+        "opacity": "Foreign",
+        "source_text": null,
+        "span": {
+          "beg_col": 4,
+          "beg_line": 236,
+          "end_col": 28,
+          "end_line": 236,
+          "file": "/rustc/library/core/src/clone.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "core::clone::Clone::clone",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [
+          {
+            "effect_info": {
+              "can_diverge": false,
+              "can_fail": false,
+              "is_rec": false
+            },
+            "region_group_id": 0
+          }
+        ],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": [
+            "Implicit"
+          ]
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [
+            {
+              "clause_id": 0,
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "trait_id": 0
+            }
+          ],
+          "types": [
+            {
+              "index": 0,
+              "name": "Self"
+            }
+          ]
+        },
+        "inputs": [
+          {
+            "kind": "TVar",
+            "payload": {
+              "kind": "Free",
+              "payload": 0
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": [
+            "Known"
+          ]
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TVar",
+                  "payload": {
+                    "kind": "Free",
+                    "payload": 0
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TraitDeclItem",
+        "payload": null
+      }
+    },
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "Let",
+            "payload": {
+              "body": {
+                "e": {
+                  "kind": "Let",
+                  "payload": {
+                    "body": {
+                      "e": {
+                        "kind": "App",
+                        "payload": {
+                          "arg": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TTuple",
+                                      "payload": null
+                                    },
+                                    "variant_id": null
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "type_id": {
+                                  "kind": "TTuple",
+                                  "payload": null
+                                }
+                              }
+                            }
+                          },
+                          "fun": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TAdt",
+                                      "payload": {
+                                        "generics": {
+                                          "const_generics": [],
+                                          "trait_refs": [],
+                                          "types": []
+                                        },
+                                        "type_id": {
+                                          "kind": "TTuple",
+                                          "payload": null
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    },
+                                    "variant_id": 0
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TArrow",
+                              "payload": {
+                                "input": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": []
+                                    },
+                                    "type_id": {
+                                      "kind": "TTuple",
+                                      "payload": null
+                                    }
+                                  }
+                                },
+                                "output": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TAdt",
+                                          "payload": {
+                                            "generics": {
+                                              "const_generics": [],
+                                              "trait_refs": [],
+                                              "types": []
+                                            },
+                                            "type_id": {
+                                              "kind": "TTuple",
+                                              "payload": null
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": []
+                                  },
+                                  "type_id": {
+                                    "kind": "TTuple",
+                                    "payload": null
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TResult",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "bound": {
+                      "e": {
+                        "kind": "App",
+                        "payload": {
+                          "arg": {
+                            "e": {
+                              "kind": "BVar",
+                              "payload": {
+                                "id": 0,
+                                "scope": 0
+                              }
+                            },
+                            "ty": {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TLiteral",
+                                      "payload": {
+                                        "kind": "TUInt",
+                                        "payload": "U32"
+                                      }
+                                    }
+                                  ]
+                                },
+                                "type_id": {
+                                  "kind": "TBuiltin",
+                                  "payload": {
+                                    "kind": "TSlice",
+                                    "payload": null
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "fun": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TLiteral",
+                                      "payload": {
+                                        "kind": "TUInt",
+                                        "payload": "U32"
+                                      }
+                                    }
+                                  ]
+                                },
+                                "id": {
+                                  "kind": "FunOrOp",
+                                  "payload": {
+                                    "kind": "Fun",
+                                    "payload": {
+                                      "kind": "FromLlbc",
+                                      "payload": {
+                                        "kind": {
+                                          "kind": "FunId",
+                                          "payload": {
+                                            "kind": "FRegular",
+                                            "payload": 1
+                                          }
+                                        },
+                                        "loop": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TArrow",
+                              "payload": {
+                                "input": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TLiteral",
+                                          "payload": {
+                                            "kind": "TUInt",
+                                            "payload": "U32"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TSlice",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                },
+                                "output": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TLiteral",
+                                          "payload": {
+                                            "kind": "TUInt",
+                                            "payload": "U32"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TResult",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "monadic": true,
+                    "pat": {
+                      "pat": {
+                        "kind": "PIgnored",
+                        "payload": null
+                      },
+                      "ty": {
+                        "kind": "TLiteral",
+                        "payload": {
+                          "kind": "TUInt",
+                          "payload": "U32"
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": [
+                        {
+                          "kind": "TAdt",
+                          "payload": {
+                            "generics": {
+                              "const_generics": [],
+                              "trait_refs": [],
+                              "types": []
+                            },
+                            "type_id": {
+                              "kind": "TTuple",
+                              "payload": null
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "type_id": {
+                      "kind": "TBuiltin",
+                      "payload": {
+                        "kind": "TResult",
+                        "payload": null
+                      }
+                    }
+                  }
+                }
+              },
+              "bound": {
+                "e": {
+                  "kind": "App",
+                  "payload": {
+                    "arg": {
+                      "e": {
+                        "kind": "App",
+                        "payload": {
+                          "arg": {
+                            "e": {
+                              "kind": "StructUpdate",
+                              "payload": {
+                                "init": null,
+                                "struct_id": {
+                                  "kind": "TBuiltin",
+                                  "payload": {
+                                    "kind": "TArray",
+                                    "payload": null
+                                  }
+                                },
+                                "updates": []
+                              }
+                            },
+                            "ty": {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [
+                                    {
+                                      "kind": "CgValue",
+                                      "payload": {
+                                        "kind": "VScalar",
+                                        "payload": {
+                                          "signed": false,
+                                          "ty": "Usize",
+                                          "value": "0"
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TLiteral",
+                                      "payload": {
+                                        "kind": "TUInt",
+                                        "payload": "U32"
+                                      }
+                                    }
+                                  ]
+                                },
+                                "type_id": {
+                                  "kind": "TBuiltin",
+                                  "payload": {
+                                    "kind": "TArray",
+                                    "payload": null
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "fun": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [
+                                    {
+                                      "kind": "CgValue",
+                                      "payload": {
+                                        "kind": "VScalar",
+                                        "payload": {
+                                          "signed": false,
+                                          "ty": "Usize",
+                                          "value": "0"
+                                        }
+                                      }
+                                    }
+                                  ],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TLiteral",
+                                      "payload": {
+                                        "kind": "TUInt",
+                                        "payload": "U32"
+                                      }
+                                    }
+                                  ]
+                                },
+                                "id": {
+                                  "kind": "FunOrOp",
+                                  "payload": {
+                                    "kind": "Fun",
+                                    "payload": {
+                                      "kind": "FromLlbc",
+                                      "payload": {
+                                        "kind": {
+                                          "kind": "FunId",
+                                          "payload": {
+                                            "kind": "FBuiltin",
+                                            "payload": null
+                                          }
+                                        },
+                                        "loop": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TArrow",
+                              "payload": {
+                                "input": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [
+                                        {
+                                          "kind": "CgValue",
+                                          "payload": {
+                                            "kind": "VScalar",
+                                            "payload": {
+                                              "signed": false,
+                                              "ty": "Usize",
+                                              "value": "0"
+                                            }
+                                          }
+                                        }
+                                      ],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TLiteral",
+                                          "payload": {
+                                            "kind": "TUInt",
+                                            "payload": "U32"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TArray",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                },
+                                "output": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TLiteral",
+                                          "payload": {
+                                            "kind": "TUInt",
+                                            "payload": "U32"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TSlice",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TSlice",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "fun": {
+                      "e": {
+                        "kind": "Qualif",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": [
+                                      {
+                                        "kind": "TLiteral",
+                                        "payload": {
+                                          "kind": "TUInt",
+                                          "payload": "U32"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "type_id": {
+                                    "kind": "TBuiltin",
+                                    "payload": {
+                                      "kind": "TSlice",
+                                      "payload": null
+                                    }
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "id": {
+                            "kind": "FunOrOp",
+                            "payload": {
+                              "kind": "Fun",
+                              "payload": {
+                                "kind": "Pure",
+                                "payload": {
+                                  "kind": "ToResult",
+                                  "payload": null
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TArrow",
+                        "payload": {
+                          "input": {
+                            "kind": "TAdt",
+                            "payload": {
+                              "generics": {
+                                "const_generics": [],
+                                "trait_refs": [],
+                                "types": [
+                                  {
+                                    "kind": "TLiteral",
+                                    "payload": {
+                                      "kind": "TUInt",
+                                      "payload": "U32"
+                                    }
+                                  }
+                                ]
+                              },
+                              "type_id": {
+                                "kind": "TBuiltin",
+                                "payload": {
+                                  "kind": "TSlice",
+                                  "payload": null
+                                }
+                              }
+                            }
+                          },
+                          "output": {
+                            "kind": "TAdt",
+                            "payload": {
+                              "generics": {
+                                "const_generics": [],
+                                "trait_refs": [],
+                                "types": [
+                                  {
+                                    "kind": "TAdt",
+                                    "payload": {
+                                      "generics": {
+                                        "const_generics": [],
+                                        "trait_refs": [],
+                                        "types": [
+                                          {
+                                            "kind": "TLiteral",
+                                            "payload": {
+                                              "kind": "TUInt",
+                                              "payload": "U32"
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      "type_id": {
+                                        "kind": "TBuiltin",
+                                        "payload": {
+                                          "kind": "TSlice",
+                                          "payload": null
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              "type_id": {
+                                "kind": "TBuiltin",
+                                "payload": {
+                                  "kind": "TResult",
+                                  "payload": null
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": [
+                        {
+                          "kind": "TAdt",
+                          "payload": {
+                            "generics": {
+                              "const_generics": [],
+                              "trait_refs": [],
+                              "types": [
+                                {
+                                  "kind": "TLiteral",
+                                  "payload": {
+                                    "kind": "TUInt",
+                                    "payload": "U32"
+                                  }
+                                }
+                              ]
+                            },
+                            "type_id": {
+                              "kind": "TBuiltin",
+                              "payload": {
+                                "kind": "TSlice",
+                                "payload": null
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "type_id": {
+                      "kind": "TBuiltin",
+                      "payload": {
+                        "kind": "TResult",
+                        "payload": null
+                      }
+                    }
+                  }
+                }
+              },
+              "monadic": true,
+              "pat": {
+                "pat": {
+                  "kind": "PBound",
+                  "payload": {
+                    "mplace": {
+                      "kind": "PlaceLocal",
+                      "payload": {
+                        "local_id": 2,
+                        "name": null
+                      }
+                    },
+                    "var": {
+                      "basename": null,
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TSlice",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": [
+                        {
+                          "kind": "TLiteral",
+                          "payload": {
+                            "kind": "TUInt",
+                            "payload": "U32"
+                          }
+                        }
+                      ]
+                    },
+                    "type_id": {
+                      "kind": "TBuiltin",
+                      "payload": {
+                        "kind": "TSlice",
+                        "payload": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": []
+                      },
+                      "type_id": {
+                        "kind": "TTuple",
+                        "payload": null
+                      }
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": []
+      },
+      "builtin_info": null,
+      "def_id": 2,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "arrays_defs"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "index_empty_array"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub fn index_empty_array() {\n    let _ = index_slice_0::<u32>(&[]);\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 11,
+          "end_col": 1,
+          "end_line": 13,
+          "file": "arrays_defs.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "arrays_defs::index_empty_array",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": []
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [],
+          "types": []
+        },
+        "inputs": [],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": []
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": []
+                    },
+                    "type_id": {
+                      "kind": "TTuple",
+                      "payload": null
+                    }
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TopLevelItem",
+        "payload": null
+      }
+    },
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "App",
+            "payload": {
+              "arg": {
+                "e": {
+                  "kind": "Const",
+                  "payload": {
+                    "kind": "VScalar",
+                    "payload": {
+                      "signed": false,
+                      "ty": "Usize",
+                      "value": "0"
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "Usize"
+                  }
+                }
+              },
+              "fun": {
+                "e": {
+                  "kind": "App",
+                  "payload": {
+                    "arg": {
+                      "e": {
+                        "kind": "BVar",
+                        "payload": {
+                          "id": 0,
+                          "scope": 0
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TVar",
+                                "payload": {
+                                  "kind": "Free",
+                                  "payload": 0
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TSlice",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "fun": {
+                      "e": {
+                        "kind": "Qualif",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TVar",
+                                "payload": {
+                                  "kind": "Free",
+                                  "payload": 0
+                                }
+                              }
+                            ]
+                          },
+                          "id": {
+                            "kind": "FunOrOp",
+                            "payload": {
+                              "kind": "Fun",
+                              "payload": {
+                                "kind": "FromLlbc",
+                                "payload": {
+                                  "kind": {
+                                    "kind": "FunId",
+                                    "payload": {
+                                      "kind": "FBuiltin",
+                                      "payload": null
+                                    }
+                                  },
+                                  "loop": null
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TArrow",
+                        "payload": {
+                          "input": {
+                            "kind": "TAdt",
+                            "payload": {
+                              "generics": {
+                                "const_generics": [],
+                                "trait_refs": [],
+                                "types": [
+                                  {
+                                    "kind": "TVar",
+                                    "payload": {
+                                      "kind": "Free",
+                                      "payload": 0
+                                    }
+                                  }
+                                ]
+                              },
+                              "type_id": {
+                                "kind": "TBuiltin",
+                                "payload": {
+                                  "kind": "TSlice",
+                                  "payload": null
+                                }
+                              }
+                            }
+                          },
+                          "output": {
+                            "kind": "TArrow",
+                            "payload": {
+                              "input": {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "Usize"
+                                }
+                              },
+                              "output": {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": [
+                                      {
+                                        "kind": "TVar",
+                                        "payload": {
+                                          "kind": "Free",
+                                          "payload": 0
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "type_id": {
+                                    "kind": "TBuiltin",
+                                    "payload": {
+                                      "kind": "TResult",
+                                      "payload": null
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TArrow",
+                  "payload": {
+                    "input": {
+                      "kind": "TLiteral",
+                      "payload": {
+                        "kind": "TUInt",
+                        "payload": "Usize"
+                      }
+                    },
+                    "output": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [],
+                          "trait_refs": [],
+                          "types": [
+                            {
+                              "kind": "TVar",
+                              "payload": {
+                                "kind": "Free",
+                                "payload": 0
+                              }
+                            }
+                          ]
+                        },
+                        "type_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TResult",
+                            "payload": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": [
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "s",
+                  "ty": {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": [
+                          {
+                            "kind": "TVar",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        ]
+                      },
+                      "type_id": {
+                        "kind": "TBuiltin",
+                        "payload": {
+                          "kind": "TSlice",
+                          "payload": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TAdt",
+              "payload": {
+                "generics": {
+                  "const_generics": [],
+                  "trait_refs": [],
+                  "types": [
+                    {
+                      "kind": "TVar",
+                      "payload": {
+                        "kind": "Free",
+                        "payload": 0
+                      }
+                    }
+                  ]
+                },
+                "type_id": {
+                  "kind": "TBuiltin",
+                  "payload": {
+                    "kind": "TSlice",
+                    "payload": null
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "builtin_info": null,
+      "def_id": 1,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "arrays_defs"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "index_slice_0"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub fn index_slice_0<T>(s: &[T]) -> &T {\n    &s[0]\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 7,
+          "end_col": 1,
+          "end_line": 9,
+          "file": "arrays_defs.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "arrays_defs::index_slice_0",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [
+          {
+            "effect_info": {
+              "can_diverge": false,
+              "can_fail": false,
+              "is_rec": false
+            },
+            "region_group_id": 0
+          }
+        ],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": [
+            "Implicit"
+          ]
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [],
+          "types": [
+            {
+              "index": 0,
+              "name": "T"
+            }
+          ]
+        },
+        "inputs": [
+          {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TSlice",
+                  "payload": null
+                }
+              }
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": [
+            "Unknown"
+          ]
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TVar",
+                  "payload": {
+                    "kind": "Free",
+                    "payload": 0
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TopLevelItem",
+        "payload": null
+      }
+    },
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "App",
+            "payload": {
+              "arg": {
+                "e": {
+                  "kind": "BVar",
+                  "payload": {
+                    "id": 0,
+                    "scope": 0
+                  }
+                },
+                "ty": {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [
+                        {
+                          "kind": "CgVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ],
+                      "trait_refs": [],
+                      "types": [
+                        {
+                          "kind": "TVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ]
+                    },
+                    "type_id": {
+                      "kind": "TBuiltin",
+                      "payload": {
+                        "kind": "TArray",
+                        "payload": null
+                      }
+                    }
+                  }
+                }
+              },
+              "fun": {
+                "e": {
+                  "kind": "Qualif",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [
+                        {
+                          "kind": "CgVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ],
+                      "trait_refs": [
+                        {
+                          "trait_decl_ref": {
+                            "decl_generics": {
+                              "const_generics": [],
+                              "trait_refs": [],
+                              "types": [
+                                {
+                                  "kind": "TVar",
+                                  "payload": {
+                                    "kind": "Free",
+                                    "payload": 0
+                                  }
+                                }
+                              ]
+                            },
+                            "trait_decl_id": 0
+                          },
+                          "trait_id": {
+                            "kind": "Clause",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        }
+                      ],
+                      "types": [
+                        {
+                          "kind": "TVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ]
+                    },
+                    "id": {
+                      "kind": "FunOrOp",
+                      "payload": {
+                        "kind": "Fun",
+                        "payload": {
+                          "kind": "FromLlbc",
+                          "payload": {
+                            "kind": {
+                              "kind": "FunId",
+                              "payload": {
+                                "kind": "FRegular",
+                                "payload": 3
+                              }
+                            },
+                            "loop": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TArrow",
+                  "payload": {
+                    "input": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [
+                            {
+                              "kind": "CgVar",
+                              "payload": {
+                                "kind": "Free",
+                                "payload": 0
+                              }
+                            }
+                          ],
+                          "trait_refs": [],
+                          "types": [
+                            {
+                              "kind": "TVar",
+                              "payload": {
+                                "kind": "Free",
+                                "payload": 0
+                              }
+                            }
+                          ]
+                        },
+                        "type_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TArray",
+                            "payload": null
+                          }
+                        }
+                      }
+                    },
+                    "output": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [],
+                          "trait_refs": [],
+                          "types": [
+                            {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [
+                                    {
+                                      "kind": "CgVar",
+                                      "payload": {
+                                        "kind": "Free",
+                                        "payload": 0
+                                      }
+                                    }
+                                  ],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TVar",
+                                      "payload": {
+                                        "kind": "Free",
+                                        "payload": 0
+                                      }
+                                    }
+                                  ]
+                                },
+                                "type_id": {
+                                  "kind": "TBuiltin",
+                                  "payload": {
+                                    "kind": "TArray",
+                                    "payload": null
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "type_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TResult",
+                            "payload": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [
+                          {
+                            "kind": "CgVar",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        ],
+                        "trait_refs": [],
+                        "types": [
+                          {
+                            "kind": "TVar",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        ]
+                      },
+                      "type_id": {
+                        "kind": "TBuiltin",
+                        "payload": {
+                          "kind": "TArray",
+                          "payload": null
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": [
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "x",
+                  "ty": {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [
+                          {
+                            "kind": "CgVar",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        ],
+                        "trait_refs": [],
+                        "types": [
+                          {
+                            "kind": "TVar",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        ]
+                      },
+                      "type_id": {
+                        "kind": "TBuiltin",
+                        "payload": {
+                          "kind": "TArray",
+                          "payload": null
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TAdt",
+              "payload": {
+                "generics": {
+                  "const_generics": [
+                    {
+                      "kind": "CgVar",
+                      "payload": {
+                        "kind": "Free",
+                        "payload": 0
+                      }
+                    }
+                  ],
+                  "trait_refs": [],
+                  "types": [
+                    {
+                      "kind": "TVar",
+                      "payload": {
+                        "kind": "Free",
+                        "payload": 0
+                      }
+                    }
+                  ]
+                },
+                "type_id": {
+                  "kind": "TBuiltin",
+                  "payload": {
+                    "kind": "TArray",
+                    "payload": null
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "builtin_info": null,
+      "def_id": 0,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "arrays_defs"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "clone_array"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub fn clone_array<T: Clone, const N: usize>(x: &[T; N]) -> [T; N] {\n    x.clone()\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 3,
+          "end_col": 1,
+          "end_line": 5,
+          "file": "arrays_defs.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "arrays_defs::clone_array",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [
+          {
+            "effect_info": {
+              "can_diverge": false,
+              "can_fail": false,
+              "is_rec": false
+            },
+            "region_group_id": 0
+          }
+        ],
+        "explicit_info": {
+          "explicit_const_generics": [
+            "Implicit"
+          ],
+          "explicit_types": [
+            "Implicit"
+          ]
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [
+            {
+              "index": 0,
+              "name": "N",
+              "ty": {
+                "kind": "TUInt",
+                "payload": "Usize"
+              }
+            }
+          ],
+          "trait_clauses": [
+            {
+              "clause_id": 0,
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "trait_id": 0
+            }
+          ],
+          "types": [
+            {
+              "index": 0,
+              "name": "T"
+            }
+          ]
+        },
+        "inputs": [
+          {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [
+                  {
+                    "kind": "CgVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TArray",
+                  "payload": null
+                }
+              }
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [
+            "Unknown"
+          ],
+          "known_types": [
+            "Known"
+          ]
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [
+                        {
+                          "kind": "CgVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ],
+                      "trait_refs": [],
+                      "types": [
+                        {
+                          "kind": "TVar",
+                          "payload": {
+                            "kind": "Free",
+                            "payload": 0
+                          }
+                        }
+                      ]
+                    },
+                    "type_id": {
+                      "kind": "TBuiltin",
+                      "payload": {
+                        "kind": "TArray",
+                        "payload": null
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TopLevelItem",
+        "payload": null
+      }
+    }
+  ],
+  "global_decls": [],
+  "pure_ir_fmt_version": 2,
+  "stage": "pre-extract",
+  "trait_decls": [
+    {
+      "consts": [],
+      "def_id": 0,
+      "explicit_info": {
+        "explicit_const_generics": [],
+        "explicit_types": [
+          "Explicit"
+        ]
+      },
+      "generics": {
+        "const_generics": [],
+        "trait_clauses": [],
+        "types": [
+          {
+            "index": 0,
+            "name": "Self"
+          }
+        ]
+      },
+      "item_meta": {
+        "attr_info": {
+          "attributes": [
+            {
+              "kind": "AttrDocComment",
+              "payload": " A common trait that allows explicit creation of a duplicate value."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Calling [`clone`] always produces a new value."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " However, for types that are references to other data (such as smart pointers or references),"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " the new value may still point to the same underlying data, rather than duplicating it."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " See [`Clone::clone`] for more details."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " This distinction is especially important when using `#[derive(Clone)]` on structs containing"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " smart pointers like `Arc<Mutex<T>>` - the cloned struct will share mutable state with the"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " original."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Differs from [`Copy`] in that [`Copy`] is implicit and an inexpensive bit-wise copy, while"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " `Clone` is always explicit and may or may not be expensive. [`Copy`] has no methods, so you"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " cannot change its behavior, but when implementing `Clone`, the `clone` method you provide"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " may run arbitrary code."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Since `Clone` is a supertrait of [`Copy`], any type that implements `Copy` must also implement"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " `Clone`."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ## Derivable"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " This trait can be used with `#[derive]` if all fields are `Clone`. The `derive`d"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " implementation of [`Clone`] calls [`clone`] on each field."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`clone`]: Clone::clone"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " For a generic struct, `#[derive]` implements `Clone` conditionally by adding bound `Clone` on"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " generic parameters."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " // `derive` implements Clone for Reading<T> when T is Clone."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " #[derive(Clone)]"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " struct Reading<T> {"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     frequency: T,"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ## How can I implement `Clone`?"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Types that are [`Copy`] should have a trivial implementation of `Clone`. More formally:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " if `T: Copy`, `x: T`, and `y: &T`, then `let x = y.clone();` is equivalent to `let x = *y;`."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Manual implementations should be careful to uphold this invariant; however, unsafe code"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " must not rely on it to ensure memory safety."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " An example is a generic struct holding a function pointer. In this case, the"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " implementation of `Clone` cannot be `derive`d, but can be implemented as:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " struct Generate<T>(fn() -> T);"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " impl<T> Copy for Generate<T> {}"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " impl<T> Clone for Generate<T> {"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     fn clone(&self) -> Self {"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "         *self"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " If we `derive`:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " #[derive(Copy, Clone)]"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " struct Generate<T>(fn() -> T);"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " the auto-derived implementations will have unnecessary `T: Copy` and `T: Clone` bounds:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " # struct Generate<T>(fn() -> T);"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " // Automatically derived"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " impl<T: Copy> Copy for Generate<T> { }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " // Automatically derived"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " impl<T: Clone> Clone for Generate<T> {"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     fn clone(&self) -> Generate<T> {"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "         Generate(Clone::clone(&self.0))"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " The bounds are unnecessary because clearly the function itself should be"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " copy- and cloneable even if its return type is not:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```compile_fail,E0599"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " #[derive(Copy, Clone)]"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " struct Generate<T>(fn() -> T);"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " struct NotCloneable;"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " fn generate_not_cloneable() -> NotCloneable {"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "     NotCloneable"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " }"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Generate(generate_not_cloneable).clone(); // error: trait bounds were not satisfied"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " // Note: With the manual implementations the above line will compile."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ## `Clone` and `PartialEq`/`Eq`"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " `Clone` is intended for the duplication of objects. Consequently, when implementing"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " both `Clone` and [`PartialEq`], the following property is expected to hold:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```text"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " x == x -> x.clone() == x"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ```"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " In other words, if an object compares equal to itself,"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " its clone must also compare equal to the original."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " For types that also implement [`Eq`] – for which `x == x` always holds –"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " this implies that `x.clone() == x` must always be true."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Standard library collections such as"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`HashMap`], [`HashSet`], [`BTreeMap`], [`BTreeSet`] and [`BinaryHeap`]"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " rely on their keys respecting this property for correct behavior."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Furthermore, these collections require that cloning a key preserves the outcome of the"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`Hash`] and [`Ord`] methods. Thankfully, this follows automatically from `x.clone() == x`"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " if `Hash` and `Ord` are correctly implemented according to their own requirements."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " When deriving both `Clone` and [`PartialEq`] using `#[derive(Clone, PartialEq)]`"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " or when additionally deriving [`Eq`] using `#[derive(Clone, PartialEq, Eq)]`,"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " then this property is automatically upheld – provided that it is satisfied by"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " the underlying types."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " Violating this property is a logic error. The behavior resulting from a logic error is not"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " specified, but users of the trait must ensure that such logic errors do *not* result in"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " undefined behavior. This means that `unsafe` code **must not** rely on this property"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " being satisfied."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " ## Additional implementors"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " In addition to the [implementors listed below][impls],"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " the following types also implement `Clone`:"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " * Function item types (i.e., the distinct types defined for each function)"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " * Function pointer types (e.g., `fn() -> i32`)"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " * Closure types, if they capture no value from the environment"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "   or if all such captured values implement `Clone` themselves."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "   Note that variables captured by shared reference always implement `Clone`"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "   (even if the referent doesn't),"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": "   while variables captured by mutable reference never implement `Clone`."
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": ""
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`HashMap`]: ../../std/collections/struct.HashMap.html"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`HashSet`]: ../../std/collections/struct.HashSet.html"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`BTreeMap`]: ../../std/collections/struct.BTreeMap.html"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`BTreeSet`]: ../../std/collections/struct.BTreeSet.html"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [`BinaryHeap`]: ../../std/collections/struct.BinaryHeap.html"
+            },
+            {
+              "kind": "AttrDocComment",
+              "payload": " [impls]: #implementors"
+            },
+            {
+              "kind": "AttrUnknown",
+              "payload": {
+                "args": "\"Clone\"",
+                "path": "rustc_diagnostic_item"
+              }
+            },
+            {
+              "kind": "AttrUnknown",
+              "payload": {
+                "args": null,
+                "path": "rustc_trivial_field_reads"
+              }
+            }
+          ],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": false,
+        "lang_item": "clone",
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "core"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "clone"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "Clone"
+            }
+          }
+        ],
+        "opacity": "Foreign",
+        "source_text": null,
+        "span": {
+          "beg_col": 0,
+          "beg_line": 194,
+          "end_col": 28,
+          "end_line": 194,
+          "file": "/rustc/library/core/src/clone.rs"
+        }
+      },
+      "methods": [
+        {
+          "binder": {
+            "binder_explicit_info": {
+              "explicit_const_generics": [],
+              "explicit_types": []
+            },
+            "binder_generics": {
+              "const_generics": [],
+              "trait_clauses": [],
+              "types": []
+            },
+            "binder_preds": {
+              "trait_type_constraints": []
+            },
+            "binder_value": {
+              "fun_generics": {
+                "const_generics": [],
+                "trait_refs": [
+                  {
+                    "trait_decl_ref": {
+                      "decl_generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": [
+                          {
+                            "kind": "TVar",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        ]
+                      },
+                      "trait_decl_id": 0
+                    },
+                    "trait_id": {
+                      "kind": "Self",
+                      "payload": null
+                    }
+                  }
+                ],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "fun_id": 4
+            }
+          },
+          "method_id": 0,
+          "name": "clone"
+        }
+      ],
+      "name": "core::clone::Clone",
+      "parent_clauses": [],
+      "preds": {
+        "trait_type_constraints": []
+      },
+      "types": []
+    }
+  ],
+  "trait_impls": [],
+  "type_decls": []
+}

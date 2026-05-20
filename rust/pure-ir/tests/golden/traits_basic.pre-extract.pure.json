@@ -1,0 +1,1036 @@
+{
+  "crate_name": "traits_basic",
+  "fun_decls": [
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": null,
+      "builtin_info": null,
+      "def_id": 1,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "traits_basic"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "Numeric"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "value"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "fn value(&self) -> u32;",
+        "span": {
+          "beg_col": 4,
+          "beg_line": 11,
+          "end_col": 27,
+          "end_line": 11,
+          "file": "traits_basic.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "traits_basic::Numeric::value",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [
+          {
+            "effect_info": {
+              "can_diverge": false,
+              "can_fail": false,
+              "is_rec": false
+            },
+            "region_group_id": 0
+          }
+        ],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": [
+            "Implicit"
+          ]
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [
+            {
+              "clause_id": 0,
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "trait_id": 0
+            }
+          ],
+          "types": [
+            {
+              "index": 0,
+              "name": "Self"
+            }
+          ]
+        },
+        "inputs": [
+          {
+            "kind": "TVar",
+            "payload": {
+              "kind": "Free",
+              "payload": 0
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": [
+            "Known"
+          ]
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TraitDeclItem",
+        "payload": null
+      }
+    },
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "App",
+            "payload": {
+              "arg": {
+                "e": {
+                  "kind": "BVar",
+                  "payload": {
+                    "id": 0,
+                    "scope": 0
+                  }
+                },
+                "ty": {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": []
+                    },
+                    "type_id": {
+                      "kind": "TAdtId",
+                      "payload": 0
+                    }
+                  }
+                }
+              },
+              "fun": {
+                "e": {
+                  "kind": "Qualif",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": []
+                    },
+                    "id": {
+                      "kind": "FunOrOp",
+                      "payload": {
+                        "kind": "Fun",
+                        "payload": {
+                          "kind": "FromLlbc",
+                          "payload": {
+                            "kind": {
+                              "kind": "FunId",
+                              "payload": {
+                                "kind": "FRegular",
+                                "payload": 2
+                              }
+                            },
+                            "loop": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TArrow",
+                  "payload": {
+                    "input": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [],
+                          "trait_refs": [],
+                          "types": []
+                        },
+                        "type_id": {
+                          "kind": "TAdtId",
+                          "payload": 0
+                        }
+                      }
+                    },
+                    "output": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [],
+                          "trait_refs": [],
+                          "types": [
+                            {
+                              "kind": "TLiteral",
+                              "payload": {
+                                "kind": "TUInt",
+                                "payload": "U32"
+                              }
+                            }
+                          ]
+                        },
+                        "type_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TResult",
+                            "payload": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TLiteral",
+                    "payload": {
+                      "kind": "TUInt",
+                      "payload": "U32"
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": [
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "t",
+                  "ty": {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": []
+                      },
+                      "type_id": {
+                        "kind": "TAdtId",
+                        "payload": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TAdt",
+              "payload": {
+                "generics": {
+                  "const_generics": [],
+                  "trait_refs": [],
+                  "types": []
+                },
+                "type_id": {
+                  "kind": "TAdtId",
+                  "payload": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "builtin_info": null,
+      "def_id": 0,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "traits_basic"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "use_numeric"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub fn use_numeric(t: Tag) -> u32 {\n    t.value()\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 22,
+          "end_col": 1,
+          "end_line": 24,
+          "file": "traits_basic.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "traits_basic::use_numeric",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": []
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [],
+          "types": []
+        },
+        "inputs": [
+          {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": []
+              },
+              "type_id": {
+                "kind": "TAdtId",
+                "payload": 0
+              }
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": []
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TopLevelItem",
+        "payload": null
+      }
+    },
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "App",
+            "payload": {
+              "arg": {
+                "e": {
+                  "kind": "Const",
+                  "payload": {
+                    "kind": "VScalar",
+                    "payload": {
+                      "signed": false,
+                      "ty": "U32",
+                      "value": "42"
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              },
+              "fun": {
+                "e": {
+                  "kind": "Qualif",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": [
+                        {
+                          "kind": "TLiteral",
+                          "payload": {
+                            "kind": "TUInt",
+                            "payload": "U32"
+                          }
+                        }
+                      ]
+                    },
+                    "id": {
+                      "kind": "AdtCons",
+                      "payload": {
+                        "adt_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TResult",
+                            "payload": null
+                          }
+                        },
+                        "variant_id": 0
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TArrow",
+                  "payload": {
+                    "input": {
+                      "kind": "TLiteral",
+                      "payload": {
+                        "kind": "TUInt",
+                        "payload": "U32"
+                      }
+                    },
+                    "output": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [],
+                          "trait_refs": [],
+                          "types": [
+                            {
+                              "kind": "TLiteral",
+                              "payload": {
+                                "kind": "TUInt",
+                                "payload": "U32"
+                              }
+                            }
+                          ]
+                        },
+                        "type_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TResult",
+                            "payload": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TLiteral",
+                    "payload": {
+                      "kind": "TUInt",
+                      "payload": "U32"
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": [
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "self",
+                  "ty": {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": []
+                      },
+                      "type_id": {
+                        "kind": "TAdtId",
+                        "payload": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TAdt",
+              "payload": {
+                "generics": {
+                  "const_generics": [],
+                  "trait_refs": [],
+                  "types": []
+                },
+                "type_id": {
+                  "kind": "TAdtId",
+                  "payload": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "builtin_info": null,
+      "def_id": 2,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "traits_basic"
+            }
+          },
+          {
+            "kind": "PeImpl",
+            "payload": null
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "value"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "fn value(&self) -> u32 {\n        42\n    }",
+        "span": {
+          "beg_col": 4,
+          "beg_line": 17,
+          "end_col": 5,
+          "end_line": 19,
+          "file": "traits_basic.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}::value",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [
+          {
+            "effect_info": {
+              "can_diverge": false,
+              "can_fail": false,
+              "is_rec": false
+            },
+            "region_group_id": 0
+          }
+        ],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": []
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [],
+          "types": []
+        },
+        "inputs": [
+          {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": []
+              },
+              "type_id": {
+                "kind": "TAdtId",
+                "payload": 0
+              }
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": []
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TraitImplItem",
+        "payload": null
+      }
+    }
+  ],
+  "global_decls": [],
+  "pure_ir_fmt_version": 2,
+  "stage": "pre-extract",
+  "trait_decls": [
+    {
+      "consts": [],
+      "def_id": 0,
+      "explicit_info": {
+        "explicit_const_generics": [],
+        "explicit_types": [
+          "Explicit"
+        ]
+      },
+      "generics": {
+        "const_generics": [],
+        "trait_clauses": [],
+        "types": [
+          {
+            "index": 0,
+            "name": "Self"
+          }
+        ]
+      },
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "traits_basic"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "Numeric"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub trait Numeric {\n    fn value(&self) -> u32;\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 10,
+          "end_col": 1,
+          "end_line": 12,
+          "file": "traits_basic.rs"
+        }
+      },
+      "methods": [
+        {
+          "binder": {
+            "binder_explicit_info": {
+              "explicit_const_generics": [],
+              "explicit_types": []
+            },
+            "binder_generics": {
+              "const_generics": [],
+              "trait_clauses": [],
+              "types": []
+            },
+            "binder_preds": {
+              "trait_type_constraints": []
+            },
+            "binder_value": {
+              "fun_generics": {
+                "const_generics": [],
+                "trait_refs": [
+                  {
+                    "trait_decl_ref": {
+                      "decl_generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": [
+                          {
+                            "kind": "TVar",
+                            "payload": {
+                              "kind": "Free",
+                              "payload": 0
+                            }
+                          }
+                        ]
+                      },
+                      "trait_decl_id": 0
+                    },
+                    "trait_id": {
+                      "kind": "Self",
+                      "payload": null
+                    }
+                  }
+                ],
+                "types": [
+                  {
+                    "kind": "TVar",
+                    "payload": {
+                      "kind": "Free",
+                      "payload": 0
+                    }
+                  }
+                ]
+              },
+              "fun_id": 1
+            }
+          },
+          "method_id": 0,
+          "name": "value"
+        }
+      ],
+      "name": "traits_basic::Numeric",
+      "parent_clauses": [],
+      "preds": {
+        "trait_type_constraints": []
+      },
+      "types": []
+    }
+  ],
+  "trait_impls": [
+    {
+      "consts": [],
+      "def_id": 0,
+      "explicit_info": {
+        "explicit_const_generics": [],
+        "explicit_types": []
+      },
+      "generics": {
+        "const_generics": [],
+        "trait_clauses": [],
+        "types": []
+      },
+      "impl_trait": {
+        "decl_generics": {
+          "const_generics": [],
+          "trait_refs": [],
+          "types": [
+            {
+              "kind": "TAdt",
+              "payload": {
+                "generics": {
+                  "const_generics": [],
+                  "trait_refs": [],
+                  "types": []
+                },
+                "type_id": {
+                  "kind": "TAdtId",
+                  "payload": 0
+                }
+              }
+            }
+          ]
+        },
+        "trait_decl_id": 0
+      },
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": false,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "traits_basic"
+            }
+          },
+          {
+            "kind": "PeImpl",
+            "payload": null
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "impl Numeric for Tag {\n    fn value(&self) -> u32 {\n        42\n    }\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 16,
+          "end_col": 1,
+          "end_line": 20,
+          "file": "traits_basic.rs"
+        }
+      },
+      "methods": [
+        {
+          "binder": {
+            "binder_explicit_info": {
+              "explicit_const_generics": [],
+              "explicit_types": []
+            },
+            "binder_generics": {
+              "const_generics": [],
+              "trait_clauses": [],
+              "types": []
+            },
+            "binder_preds": {
+              "trait_type_constraints": []
+            },
+            "binder_value": {
+              "fun_generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": []
+              },
+              "fun_id": 2
+            }
+          },
+          "method_id": 0,
+          "name": "value"
+        }
+      ],
+      "name": "traits_basic::{traits_basic::Numeric for traits_basic::Tag}",
+      "parent_trait_refs": [],
+      "preds": {
+        "trait_type_constraints": []
+      },
+      "types": []
+    }
+  ],
+  "type_decls": [
+    {
+      "def_id": 0,
+      "explicit_info": {
+        "explicit_const_generics": [],
+        "explicit_types": []
+      },
+      "generics": {
+        "const_generics": [],
+        "trait_clauses": [],
+        "types": []
+      },
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "traits_basic"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "Tag"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub struct Tag;",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 14,
+          "end_col": 15,
+          "end_line": 14,
+          "file": "traits_basic.rs"
+        }
+      },
+      "kind": {
+        "kind": "Struct",
+        "payload": []
+      },
+      "name": "traits_basic::Tag",
+      "preds": {
+        "trait_type_constraints": []
+      }
+    }
+  ]
+}
