@@ -132,16 +132,21 @@ FIXTURES=(
 # (so this is fast on repeated runs).
 export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$REPO_ROOT/rust/target}"
 
-# Build pir2rs once up front so the per-fixture cargo run invocations
-# don't each pay the build-script-check overhead.
+# Build pir2rs + route-shims once up front so the per-fixture cargo
+# run invocations don't each pay the build-script-check overhead.
 (
   cd "$REPO_ROOT/rust"
-  cargo build -p pure-ir-emit-rust --bin pir2rs --quiet
+  cargo build -p pure-ir-emit-rust --bin pir2rs --bin route-shims --quiet
 )
 
 PIR2RS="$CARGO_TARGET_DIR/debug/pir2rs"
 if [[ ! -x "$PIR2RS" ]]; then
   echo "error: pir2rs binary not produced at $PIR2RS" >&2
+  exit 1
+fi
+ROUTE_SHIMS="$CARGO_TARGET_DIR/debug/route-shims"
+if [[ ! -x "$ROUTE_SHIMS" ]]; then
+  echo "error: route-shims binary not produced at $ROUTE_SHIMS" >&2
   exit 1
 fi
 
@@ -192,6 +197,16 @@ for f in "${FIXTURES[@]}"; do
   # `#[allow(...)]` on the wrapping `mod` in `tests/diff.rs` covers
   # the same warning surface.
   awk 'NR==1 && /^#!\[allow\(/ { next } { print }' "$raw" > "$out"
+
+  # Post-process: route opaque shim bodies through core_models / native
+  # equivalents where the mapping table has coverage. The library
+  # `emit.rs` is unchanged (Option A) — this is a test-side rewrite
+  # that turns `unimplemented!("opaque body")` shims into callable
+  # equivalents so the diff and diff_auto harnesses see real values.
+  if ! "$ROUTE_SHIMS" "$out" --json "$json" --out "$out" 2>/dev/null; then
+    echo "warn: route-shims failed for $f" >&2
+  fi
+
   written=$((written + 1))
   rm -rf "$tmp"
 done

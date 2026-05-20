@@ -28,3 +28,7 @@ path = "src/bin/pir2rs.rs"
 [[bin]]
 name = "gen-diff-tests"
 path = "src/bin/gen-diff-tests.rs"
+
+[[bin]]
+name = "route-shims"
+path = "src/bin/route-shims.rs"
