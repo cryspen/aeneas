@@ -414,13 +414,61 @@ parseable. Goldens stable.
   `rust/pure-ir/` crate. Left to a follow-up; the `gmake` target
   is the manual entry point.
 
-### Phase 4 — first backend prototype (varies)
+### Phase 4 — first backend prototype (MVP landed)
 
-Not part of this campaign per se, but the natural follow-on. Write
-one new backend in Rust (suggestion: a JSON-to-LaTeX
-pretty-printer, or a simple structural-summary CLI). Validates that
-the AST is rich enough to drive new backends. Sets the template for
-future backends.
+The natural follow-on: build one Rust-side consumer of the JSON that
+emits something useful. Plan (I) (per the design discussion) was
+chosen — consume the JSON, emit IR-faithful Rust source — over an
+in-tree `-emit-rust-model` flag on the OCaml side. The OCaml pipeline
+stays out of scope.
+
+**What landed (May 2026):**
+
+- New crate `rust/pure-ir-emit-rust/` and a top-level workspace
+  `rust/Cargo.toml` listing both `pure-ir` and `pure-ir-emit-rust`
+  as members.
+- `pure_ir_emit_rust::emit_crate(&TranslatedCrate, &EmitOptions) ->
+  String` turns a parsed Pure-IR crate into a single Rust source
+  file. The emit is intentionally NOT a byte-for-byte recovery of the
+  original `.rs` — symbolic-to-pure has functionalised mutable
+  borrows (`incr(x: &mut u32)` becomes `incr(x: u32) -> Result<u32>`),
+  fused loops into a body decl reachable via a fixed-point
+  combinator, and threaded `Result` through fallible operations.
+  The output targets two invariants only: (1) `rustc --edition 2021
+  --crate-type lib --emit metadata` accepts it, and (2) one Rust
+  construct per Pure-IR node, no folding back into idiomatic Rust.
+- CLI binary `pir2rs <input.pure.json> [-o out.rs]` parses a JSON
+  dump and writes the emitted Rust to stdout / `-o`.
+- A tiny `aeneas_runtime` prelude is emitted at the top of every
+  output file: a `Result<T> = core::result::Result<T, ()>` alias,
+  `ret`/`fail` shorthands, and a `loop_op` stub for the loop
+  fixed-point combinator. Keeps the per-expr emit clean.
+- De-Bruijn variables are resolved via a stack of binder scopes
+  threaded through every expression-emit function. Generic params
+  resolve via a separate `GenCtx` populated from the surrounding
+  `FunDecl.signature.generics` / `TypeDecl.generics`.
+- Unhandled variants degrade to `unimplemented!(<msg>)` (with the
+  right type ascription so the surrounding `?` still typechecks),
+  keeping the output parseable.
+- Tests:
+  - `pure-ir-emit-rust/tests/emit_incr_cert.rs` — four-test focused
+    integration test: emit at each of the three pipeline stages, plus
+    a content-shape assertion that both `incr` and `incr_local`
+    appear in the post-s2p emit.
+  - `pure-ir-emit-rust/tests/compile_check.rs` — broader sweep over
+    a working whitelist (currently: `incr_cert`, `enums_basic`,
+    `traits_basic`, `loops_simple`) at all 3 stages. Each
+    fixture-stage emit is shelled out to `rustc` for actual
+    type-checking.
+
+**Coverage:** the working whitelist is intentionally small (the goal
+is a demonstration, not a polished backend). Beyond the whitelist,
+the emitter has been spot-checked on `compare_simple`,
+`aggregates_basic`, and `bitwise` — all three compile cleanly at all
+three pipeline stages. Fixtures that exercise builtin array
+intrinsics (`arrays_defs`) emit but don't yet typecheck against the
+prelude (the FBuiltin / array-aggregate paths need bespoke renders).
+Closures + curve25519 are out of scope for the MVP per the plan.
 
 ---
 
@@ -512,7 +560,7 @@ notes).
 | 2 | Full constructor coverage | 89 fixtures parse on `post-s2p` | done (May 2026, 89/89) |
 | 2-spans | Always-on spans + `attr_info` (fmt v2) | 89 fixtures still parse; spans + attrs survive end-to-end | done (May 2026) |
 | 3 | All stages + CI | 267 JSON files parse; goldens stable | done (May 2026) |
-| 4 | First Rust backend prototype | One new backend writes useful output | not started |
+| 4 | First Rust backend prototype (MVP) | `rust/pure-ir-emit-rust/` emits IR-faithful Rust source that `rustc` accepts for a representative fixture set | done (May 2026) |
 
-Phases 1–3 are this campaign. Phase 4 launches a separate workstream
-per new backend.
+Phases 1–3 are this campaign. Phase 4 MVP landed alongside; further
+backend work launches separate per-backend workstreams.
