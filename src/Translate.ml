@@ -281,8 +281,10 @@ type translated_crate = {
 }
 
 (* TODO: factor out the return type *)
-let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
-    trans_ctx * translated_crate =
+let translate_crate_to_pure ?(post_s2p_hook : (trans_ctx -> Pure.type_decl list ->
+    Pure.fun_decl list -> Pure.global_decl list -> Pure.trait_decl list ->
+    Pure.trait_impl list -> unit) = fun _ _ _ _ _ _ -> ())
+    (crate : crate) (marked_ids : marked_ids) : trans_ctx * translated_crate =
   (* Debug *)
   [%ltrace ""];
 
@@ -544,6 +546,14 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
               None)
           (TraitImplId.Map.values trans_ctx.trait_impls_to_extract))
   in
+
+  (* Phase 3 Pure-IR dump hook: fire the [post-s2p] hook with the raw
+     post-symbolic-to-pure state, before micro passes simplify it. The
+     trait_decls / trait_impls / type_decls / global_decls don't get
+     transformed by the micro-pass loop, so snapshotting them here is
+     equivalent to snapshotting them after micro. *)
+  post_s2p_hook trans_ctx type_decls pure_translations global_decls trait_decls
+    trait_impls;
 
   (* Apply the micro-passes *)
   let pure_translations =
@@ -2104,45 +2114,91 @@ let translate_crate (filename : string) (dest_dir : string)
     "- filename: " ^ filename ^ "\n- dest_dir: " ^ dest_dir ^ "\n- subdir: "
     ^ Print.option_to_string (fun x -> x) subdir];
 
-  (* Translate the module to the pure AST *)
-  let trans_ctx, trans_crate = translate_crate_to_pure crate marked_ids in
+  (* Pure-IR dump helpers — share a common writer across all three stages.
+     The filename is [<crate>.pure.json] regardless of stage; the [stage]
+     field inside the JSON disambiguates. *)
+  let crate_base =
+    let bn = Filename.basename filename in
+    match Filename.chop_suffix_opt ~suffix:".llbc" bn with
+    | Some n -> n
+    | None -> bn
+  in
+  let write_dump ~stage ~dest ~type_decls ~fun_decls ~global_decls ~trait_decls
+      ~trait_impls =
+    let json =
+      PureJson.crate_to_json ~crate_name:crate_base ~stage ~type_decls
+        ~fun_decls ~global_decls ~trait_decls ~trait_impls
+    in
+    let path = Filename.concat dest (crate_base ^ ".pure.json") in
+    let oc = open_out path in
+    Yojson.Basic.pretty_to_channel oc json;
+    output_char oc '\n';
+    close_out oc;
+    log#linfo (lazy ("Pure-IR dump (" ^ stage ^ "): " ^ path))
+  in
 
-  (* Phase 1 Pure-IR dump hook: emits a <crate>.pure.json at the
-     [post-s2p] stage when [-dump-pure-ir post-s2p:<dest>] was passed.
-     [post-micro] and [pre-extract] are reserved for Phase 3 and raise
-     at runtime if requested. See
-     {!documentation/pure-ir-json-export-plan.md}. *)
+  (* Phase 3 [post-s2p] hook: fires inside [translate_crate_to_pure] right
+     after symbolic-to-pure translation completes and before the micro
+     pass loop runs. Receives the raw [fun_decl list] so the dump captures
+     the unsimplified IR. *)
+  let post_s2p_hook trans_ctx type_decls fun_decls global_decls trait_decls
+      trait_impls =
+    let _ = trans_ctx in
+    match !Config.dump_pure_ir with
+    | Some ("post-s2p", dest) ->
+        write_dump ~stage:"post-s2p" ~dest ~type_decls ~fun_decls ~global_decls
+          ~trait_decls ~trait_impls
+    | _ -> ()
+  in
+
+  (* Translate the module to the pure AST (this runs S2P + micro passes;
+     the [post-s2p] dump fires from inside, between those two phases). *)
+  let trans_ctx, trans_crate =
+    translate_crate_to_pure ~post_s2p_hook crate marked_ids
+  in
+
+  (* Phase 3 [post-micro] dump: fires here, right after the micro pass loop
+     returned the simplified [translated_crate]. The fun_decls now carry
+     loop / body decompositions; we flatten the main fn plus loop-aux fns
+     into one list, mirroring how [pre-extract] would see them. *)
   (match !Config.dump_pure_ir with
-  | Some ("post-s2p", dest) ->
-      let base =
-        let bn = Filename.basename filename in
-        match Filename.chop_suffix_opt ~suffix:".llbc" bn with
-        | Some n -> n
-        | None -> bn
-      in
+  | Some ("post-micro", dest) ->
       let main_fun_decls =
         List.map (fun (t : fun_and_loops) -> t.f) trans_crate.fun_decls
       in
-      let json =
-        PureJson.crate_to_json ~crate_name:base ~stage:"post-s2p"
-          ~type_decls:trans_crate.type_decls ~fun_decls:main_fun_decls
-          ~global_decls:trans_crate.global_decls
-          ~trait_decls:trans_crate.trait_decls
-          ~trait_impls:trans_crate.trait_impls
+      let loop_fun_decls =
+        List.concat_map (fun (t : fun_and_loops) -> t.loops) trans_crate.fun_decls
       in
-      let path = Filename.concat dest (base ^ ".pure.json") in
-      let oc = open_out path in
-      Yojson.Basic.pretty_to_channel oc json;
-      output_char oc '\n';
-      close_out oc;
-      log#linfo (lazy ("Pure-IR dump: " ^ path))
-  | Some (("post-micro" | "pre-extract"), _) ->
-      failwith
-        "-dump-pure-ir: stages post-micro and pre-extract are not yet \
-         implemented (Phase 3)"
+      write_dump ~stage:"post-micro" ~dest
+        ~type_decls:trans_crate.type_decls
+        ~fun_decls:(main_fun_decls @ loop_fun_decls)
+        ~global_decls:trans_crate.global_decls
+        ~trait_decls:trans_crate.trait_decls
+        ~trait_impls:trans_crate.trait_impls
+  | _ -> ());
+
+  (* Phase 3 [pre-extract] dump: fires just before [extract_translated_crate]
+     consumes the final pure IR. At this point the IR is identical to what
+     [post-micro] would emit, but kept as a separate stage so we have a
+     clearly-named pinpoint right before extraction — useful if future
+     passes get inserted between micro and extract. *)
+  (match !Config.dump_pure_ir with
+  | Some ("pre-extract", dest) ->
+      let main_fun_decls =
+        List.map (fun (t : fun_and_loops) -> t.f) trans_crate.fun_decls
+      in
+      let loop_fun_decls =
+        List.concat_map (fun (t : fun_and_loops) -> t.loops) trans_crate.fun_decls
+      in
+      write_dump ~stage:"pre-extract" ~dest
+        ~type_decls:trans_crate.type_decls
+        ~fun_decls:(main_fun_decls @ loop_fun_decls)
+        ~global_decls:trans_crate.global_decls
+        ~trait_decls:trans_crate.trait_decls
+        ~trait_impls:trans_crate.trait_impls
+  | Some (("post-s2p" | "post-micro"), _) | None -> ()
   | Some (stage, _) ->
-      failwith ("-dump-pure-ir: unknown stage " ^ stage)
-  | None -> ());
+      failwith ("-dump-pure-ir: unknown stage " ^ stage));
 
   extract_translated_crate filename dest_dir subdir crate trans_ctx trans_crate
     extracted_opaque
