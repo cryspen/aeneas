@@ -202,7 +202,10 @@ proptest! {
 }
 
 // ====================================================================
-// compare_simple.rs — 2 fn pairs; `add_u32` is `#[ignore]`d.
+// compare_simple.rs — 3 fn pairs. `add_u32` previously routed through
+// an `unimplemented!()` opaque shim; Option A's route-shims pass
+// rewrote `impl_core_num_wrapping_add_3` to call `u32::wrapping_add`,
+// so the diff now runs.
 // ====================================================================
 
 proptest! {
@@ -221,19 +224,17 @@ proptest! {
             models::compare_simple::compare_simple_incr_val_1(x),
         );
     }
-}
 
-// EMITTER GAP: `compare_simple::add_u32` calls `a.wrapping_add(b)`,
-// which the pre-extract IR encodes as a trait-method call on
-// `core::num::u32::wrapping_add`. The emit lowers this to an opaque
-// `impl_core_num_wrapping_add_3(...)` whose body is
-// `unimplemented!("opaque body")` — running the model would panic.
-// This is the same `trait-method-* placeholder` class tracked in the
-// emitter README. Surfaced here for symmetry with the diff harness.
-#[test]
-#[ignore = "EMITTER GAP: compare_simple_add_u32 routes through unimplemented!() opaque shim"]
-fn compare_simple_add_u32_diff_ignored() {
-    // Placeholder body — never runs.
+    /// Previously `#[ignore]`d under "EMITTER GAP: routes through
+    /// unimplemented!() opaque shim"; unblocked by the Option-A
+    /// shim-routing pass.
+    #[test]
+    fn compare_simple_add_u32_diff(a in any::<u32>(), b in any::<u32>()) {
+        prop_assert_eq!(
+            ref_impl::compare_simple::add_u32(a, b),
+            models::compare_simple::compare_simple_add_u32_2(a, b),
+        );
+    }
 }
 
 // ====================================================================
@@ -400,13 +401,19 @@ proptest! {
     }
 }
 
-// EMITTER GAP: `demo::mod_add` uses `wrapping_sub`/`wrapping_add`
-// which the pre-extract IR routes through `impl_core_num_wrapping_*`
-// shims that have `unimplemented!()` bodies — same family as
-// `compare_simple::add_u32`.
-#[test]
-#[ignore = "EMITTER GAP: demo_mod_add routes through unimplemented!() wrapping_* shims"]
-fn demo_mod_add_diff_ignored() {}
+// Previously `#[ignore]`d under "EMITTER GAP: demo_mod_add routes
+// through unimplemented!() wrapping_* shims". The Option-A
+// shim-routing pass rewrote `impl_core_num_wrapping_{add,sub}_*`
+// in the demo model so `demo_mod_add_*` is now executable.
+proptest! {
+    #[test]
+    fn demo_mod_add_diff(a in 0u32..3329, b in 0u32..3329) {
+        prop_assert_eq!(
+            ref_impl::demo::mod_add(a, b),
+            models::demo::demo_mod_add_11(a, b),
+        );
+    }
+}
 
 // EMITTER GAP: `demo::i32_id` is structurally a recursive identity
 // function (`if i == 0 { 0 } else { i32_id(i - 1) + 1 }`). The R₂

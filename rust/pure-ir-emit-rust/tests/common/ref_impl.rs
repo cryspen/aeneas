@@ -122,10 +122,12 @@ pub mod compare_simple {
         x.checked_add(1).ok_or(())
     }
 
-    // `add_u32` is intentionally omitted: the pre-extract emit
-    // routes it through an `unimplemented!()` opaque shim
-    // (`impl_core_num_wrapping_add_3`) so the model would panic at
-    // runtime. Surfaced in tests/diff.rs as an `#[ignore]`d test.
+    /// `pub fn add_u32(a: u32, b: u32) -> u32 { a.wrapping_add(b) }`
+    /// — Option A routes the `impl_core_num_wrapping_add_*` shim
+    /// to `u32::wrapping_add`, so this test moved out of `#[ignore]`.
+    pub fn add_u32(a: u32, b: u32) -> Result<u32> {
+        Ok(a.wrapping_add(b))
+    }
 }
 
 // ====================================================================
@@ -256,6 +258,32 @@ pub mod demo {
     /// `u32 -> Result<u32>` (same as `incr_cert::incr`).
     pub fn incr(x: u32) -> Result<u32> {
         x.checked_add(1).ok_or(())
+    }
+
+    /// `fn mod_add(a: u32, b: u32) -> u32 {
+    ///     assert!(a < 3329); assert!(b < 3329);
+    ///     let sum = a + b;
+    ///     let res = sum.wrapping_sub(3329);
+    ///     let mask = res >> 16;
+    ///     let q = 3329 & mask;
+    ///     res.wrapping_add(q) }`
+    ///
+    /// The IR encodes `assert!` as `if cond { Ok(()) } else { Err(()) }`,
+    /// `+` as `checked_add(...).ok_or(())`, and the literal shift `>> 16`
+    /// as `checked_shr(16).ok_or(())`. The `wrapping_*` calls route via
+    /// the Option-A shim rewrite to native `u32::wrapping_*`.
+    pub fn mod_add(a: u32, b: u32) -> Result<u32> {
+        if !(a < 3329) {
+            return Err(());
+        }
+        if !(b < 3329) {
+            return Err(());
+        }
+        let sum = a.checked_add(b).ok_or(())?;
+        let res = sum.wrapping_sub(3329);
+        let mask = res.checked_shr(16).ok_or(())?;
+        let q = 3329u32 & mask;
+        Ok(res.wrapping_add(q))
     }
 }
 

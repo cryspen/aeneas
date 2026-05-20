@@ -489,6 +489,83 @@ The full table lives in `rust/pure-ir-emit-rust/tests/compile_check.rs`
 (`KNOWN_GAPS` constant) — each entry carries a short reason string
 that survives the sweep output.
 
+### Phase 4a — shim routing via `core-models` (Option A landed)
+
+After Phase 4, the `pir2rs` emit produced syntactically valid Rust
+but a large class of fns (~108 candidates the auto-gen diff filter
+skipped) transitively reached opaque shims:
+
+```rust
+pub fn impl_core_num_wrapping_add_23(p0: impl Sized, p1: impl Sized) -> u32 {
+    unimplemented!("opaque body")
+}
+```
+
+These shims are the emitter's collapse of every opaque / trait-method
+call to a uniform placeholder. The values they were supposed to
+return are well-defined (`u32::wrapping_add`, `Default::default()`,
+`u32::BITS`, …) — they just need real bodies.
+
+**Option A (test-side post-processor) landed:**
+
+- New module `pure_ir_emit_rust::core_models_map` maps Charon paths
+  (`["core", "num", "wrapping_add"]`, ...) to a `ShimRoute` describing
+  the rewritten body. Coverage targets the cases the existing committed
+  models need (`core::num::*::{wrapping,saturating,rotate,count_ones,
+  leading_zeros,pow,abs,rem_euclid,BITS,MIN,MAX}`,
+  `core::default::default`, `core::cmp::{min,max}`).
+- New binary `route-shims` reads a `pir2rs` emit + the originating
+  `pure.json`, looks up each opaque shim's path in the map, and
+  rewrites both the signature (`impl Sized` → IR-recovered concrete
+  type) and the body (`unimplemented!()` → `<ret_ty>::method(...)`).
+  Refuses to touch shims with generic params / where-clauses (those
+  need per-callsite monomorphisation info Option C will provide).
+- `regen-diff-models.sh` now invokes `route-shims` per fixture after
+  `pir2rs`. 13 model files updated on the first run; the diff harness
+  un-ignored 2 tests (`compare_simple::add_u32`, `demo::mod_add`)
+  that previously panicked on the placeholder. Auto-gen test count
+  rose from 40 → 42 (new blocks: `calls::pick`, `compare_simple::
+  add_u32`).
+- **The emitter library is unchanged.** `emit::emit_crate` still
+  produces the same `impl Sized` + `unimplemented!()` shapes for
+  every opaque decl; the rewrite happens in the post-processor.
+  This is the Option-A boundary.
+
+**Privacy gotcha:** `core_models::num::<t>::wrapping_add` and friends
+are declared without `pub` inside `#[hax_lib::attributes]` impl
+blocks, so they're not callable from outside the `core-models`
+crate. The map routes through native Rust methods
+(`<t>::wrapping_add`) and free fns
+(`rust_primitives::arithmetic::wrapping_add_<t>` would be the
+public-callable equivalent inside the `core-models` workspace).
+Observationally identical:
+`core_models::num::<t>::wrapping_add` forwards to
+`rust_primitives::arithmetic::wrapping_add_<t>`, which is
+`x.wrapping_add(y)` — i.e. the same thing.
+
+### Phase 4b — emitter-side routing (Option C, future)
+
+Option C graduates the path map into `emit.rs` itself, so the emit
+stage produces routed bodies directly (no post-processor). This
+unblocks:
+
+- Routing shims that carry generic params (`<T>`, `<T, A>`, ...)
+  with full per-callsite monomorphisation context.
+- Cases where `core-models` has the routing target but the post-
+  processor can't safely rewrite (where-clauses, complex generic
+  arity, ...). Option C has the IR's signature context at emit time
+  and so can render the right turbofish.
+- A first step toward extracting Aeneas-Rust-emitted code as a
+  drop-in `core::*` model in downstream verified-Rust pipelines.
+
+The path is staged:
+
+1. **Phase 4a (landed):** `core_models_map` lives in the lib but is
+   unused by `emit_crate`. Post-processor handles the rewrite.
+2. **Phase 4b/Option C:** `emit_crate` consults `core_models_map`
+   when lowering opaque fns. The post-processor binary is retired.
+   `core-models` becomes a `[dependencies]` entry (not just dev-).
+
 ---
 
 ## Phase 1 in detail (the first concrete commit)

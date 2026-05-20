@@ -112,8 +112,10 @@ pure-ir-emit-rust/
 ├── src/
 │   ├── lib.rs                          # crate root; pub fn emit_crate(...)
 │   ├── emit.rs                         # the emitter (one helper per AST node type)
+│   ├── core_models_map.rs              # IR-path → core_models::* route table
 │   └── bin/
 │       ├── pir2rs.rs                   # CLI entrypoint
+│       ├── route-shims.rs              # post-process opaque shim bodies (Option A)
 │       └── gen-diff-tests.rs           # auto-gen diff_auto.rs + ref_impl_auto.rs
 ├── scripts/
 │   └── regen-diff-models.sh            # regenerate tests/models/<fix>_pir.rs
@@ -126,6 +128,54 @@ pure-ir-emit-rust/
     │   ├── ref_impl.rs                 # hand-written R₀ wrappers (reshaped)
     │   └── ref_impl_auto.rs            # auto-gen R₀ via `#[path] mod` imports
     └── models/                         # committed R₂ outputs (regen on demand)
+```
+
+## Shim routing via `core-models` (Option A)
+
+The pre-extract emit collapses every opaque / trait-method call to
+a uniform placeholder:
+
+```rust
+pub fn impl_core_num_wrapping_add_23(p0: impl Sized, p1: impl Sized) -> u32 {
+    unimplemented!("opaque body")
+}
+```
+
+Many such shims have well-defined semantics — `u32::wrapping_add`,
+`Default::default()`, `u32::BITS`, … — they just need real bodies for
+the diff harness to compare against `R₀`. **Option A** routes them
+via a test-side post-processor:
+
+1. `src/core_models_map.rs` is a hand-curated table mapping IR
+   Charon paths to their `core_models::*` Rust equivalents. The
+   table targets the cases the existing committed models need
+   (`core::num::*::{wrapping,saturating,rotate,…}`,
+   `core::default::default`, `core::cmp::{min,max}`).
+2. `src/bin/route-shims.rs` reads a `pir2rs` emit + the originating
+   `pure.json`, looks up each opaque shim's path in the map, and
+   rewrites both signature (`impl Sized` → IR-recovered concrete
+   type) and body (`unimplemented!()` → `<ret_ty>::method(...)`).
+3. `scripts/regen-diff-models.sh` calls `route-shims` per fixture
+   after `pir2rs`, so the committed `tests/models/<fixture>_pir.rs`
+   files have routed bodies on disk.
+
+**The emitter library is unchanged.** `emit::emit_crate` still
+produces `impl Sized` + `unimplemented!()` for every opaque decl;
+the rewrite happens in the post-processor. A future Option C
+campaign will graduate the map into `emit.rs` itself.
+
+**Privacy gotcha:** `core_models::num::<t>::wrapping_add` and
+friends are declared without `pub` inside `#[hax_lib::attributes]`
+impl blocks — they're not callable from outside the `core-models`
+crate. The route-shims tool instead emits native Rust calls
+(`<t>::wrapping_add`), which are observationally identical
+(`core_models` forwards through `rust_primitives::arithmetic::*`,
+which is `x.wrapping_add(y)`).
+
+To regenerate after the map or the emitter changes:
+
+```bash
+./scripts/regen-diff-models.sh    # invokes pir2rs + route-shims + gen-diff-tests
 ```
 
 ## Differential proptest harness
