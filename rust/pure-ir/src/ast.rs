@@ -5,11 +5,99 @@
 //! `tag = "kind", content = "payload"` adapter handles this directly.
 //! Records become structs with matching `snake_case` field names.
 //! Identifiers (anything from an `IdGen()` module on the OCaml side)
-//! arrive as JSON ints; we model them as `u64`. Spans and other
-//! source-meta have been stripped on the OCaml side per the plan's
-//! defaults.
+//! arrive as JSON ints; we model them as `u64`.
+//!
+//! Starting at `pure_ir_fmt_version = 2`, source spans + Charon
+//! `attr_info` ride along on every decl, loop, and `Meta` expression
+//! node (see the `Span`, `AttrInfo`, `ItemMeta`, and `EMeta` types
+//! below). The `Span` shape matches `CertJson.json_cert_source_span`
+//! verbatim so future consumers can share a parser.
 
 use serde::Deserialize;
+
+// ---------- Source spans + Charon attribute / item meta ----------
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct Span {
+    pub file: String,
+    pub beg_line: u32,
+    pub beg_col: u32,
+    pub end_line: u32,
+    pub end_col: u32,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub enum InlineAttr {
+    Hint,
+    Never,
+    Always,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct RawAttribute {
+    pub path: String,
+    pub args: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", content = "payload")]
+pub enum Attribute {
+    AttrOpaque,
+    AttrExclude,
+    AttrRename(String),
+    AttrVariantsPrefix(String),
+    AttrVariantsSuffix(String),
+    AttrDocComment(String),
+    AttrUnknown(RawAttribute),
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct AttrInfo {
+    pub attributes: Vec<Attribute>,
+    pub inline: Option<InlineAttr>,
+    pub rename: Option<String>,
+    pub public: bool,
+}
+
+/// Charon `path_elem`. The heavy `PeImpl` / `PeInstantiated` variants
+/// are opaque on the wire — they're carried as a tag with `null`
+/// payload to keep the schema bounded; `PeIdent` and `PeTarget` ship
+/// their full payloads.
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(tag = "kind", content = "payload")]
+pub enum PathElem {
+    PeIdent(PeIdentPayload),
+    PeImpl,
+    PeInstantiated,
+    PeTarget(String),
+}
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct PeIdentPayload {
+    pub name: String,
+    pub disambiguator: u64,
+}
+
+pub type CharonName = Vec<PathElem>;
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub enum ItemOpacity {
+    Transparent,
+    Foreign,
+    ItemOpaque,
+    Invisible,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ItemMeta {
+    pub name: CharonName,
+    pub span: Span,
+    pub source_text: Option<String>,
+    pub attr_info: AttrInfo,
+    pub is_local: bool,
+    pub opacity: ItemOpacity,
+    pub lang_item: Option<String>,
+}
 
 // ---------- Literals & atomic types ----------
 
@@ -597,6 +685,7 @@ pub struct MatchBranch {
 #[derive(Debug, Clone, Deserialize)]
 pub struct Loop {
     pub loop_id: u64,
+    pub span: Span,
     pub output_tys: Vec<Ty>,
     pub num_output_values: u32,
     pub inputs: Vec<TExpr>,
@@ -624,23 +713,94 @@ pub struct StructUpdateField {
     pub expr: TExpr,
 }
 
-/// Meta-info attached to an expression. The OCaml side strips the
-/// payloads of the heavy variants and ships only the constructor tag.
+/// Charon `field_proj_kind` — either an ADT field (with type-decl id +
+/// optional variant) or a tuple projection (carrying the tuple arity).
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "kind", content = "payload")]
+pub enum FieldProjKind {
+    ProjAdt(ProjAdtPayload),
+    ProjTuple(u32),
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ProjAdtPayload {
+    pub type_decl_id: u64,
+    pub variant_id: Option<u64>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct MProjectionElem {
+    pub pkind: FieldProjKind,
+    pub field_id: u64,
+}
+
+/// Charon meta-place — source-level provenance for a value. Recursive
+/// via `PlaceProjection`. v2 ships the full structural payload (v1
+/// emitted `null`).
+#[derive(Debug, Clone, Deserialize)]
+#[serde(tag = "kind", content = "payload")]
+pub enum MPlace {
+    PlaceLocal(PlaceLocalPayload),
+    PlaceGlobal(GlobalDeclRef),
+    PlaceProjection(Box<PlaceProjectionPayload>),
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct PlaceLocalPayload {
+    pub local_id: u64,
+    pub name: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct PlaceProjectionPayload {
+    pub parent: MPlace,
+    pub elem: MProjectionElem,
+}
+
+/// Meta-info attached to an expression. v2 ships the full structural
+/// payload of each variant (v1 summarised by tag).
 #[derive(Debug, Clone, Deserialize)]
 #[serde(tag = "kind", content = "payload")]
 pub enum EMeta {
-    Assignment,
-    SymbolicAssignments,
-    SymbolicPlaces,
-    MPlace,
+    Assignment(Box<AssignmentMeta>),
+    SymbolicAssignments(Vec<SymbolicAssignment>),
+    SymbolicPlaces(Vec<SymbolicPlace>),
+    MPlace(MPlace),
     Tag(String),
     TypeAnnot,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AssignmentMeta {
+    pub dst: MPlace,
+    pub value: TExpr,
+    pub origin: Option<MPlace>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SymbolicAssignment {
+    pub mvar: TExpr,
+    pub value: TExpr,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SymbolicPlace {
+    pub mvar: TExpr,
+    pub name: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct MetaPayload {
     pub meta: EMeta,
     pub expr: Box<TExpr>,
+}
+
+/// `EError`'s span + diagnostic message. v2 carries the source span;
+/// v1 stripped it.
+#[derive(Debug, Clone, Deserialize)]
+pub struct EErrorPayload {
+    pub span: Option<Span>,
+    pub message: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -658,7 +818,7 @@ pub enum Expr {
     Loop(Box<Loop>),
     StructUpdate(StructUpdate),
     Meta(MetaPayload),
-    EError(String),
+    EError(EErrorPayload),
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -757,6 +917,7 @@ pub enum BuiltinFunInfoSummary {
 #[derive(Debug, Clone, Deserialize)]
 pub struct FunDecl {
     pub def_id: u64,
+    pub item_meta: ItemMeta,
     pub builtin_info: Option<BuiltinFunInfoSummary>,
     pub src: ItemSource,
     pub backend_attributes: BackendAttributes,
@@ -795,6 +956,7 @@ pub enum TypeDeclKind {
 pub struct TypeDecl {
     pub def_id: u64,
     pub name: String,
+    pub item_meta: ItemMeta,
     pub generics: GenericParams,
     pub explicit_info: ExplicitInfo,
     pub kind: TypeDeclKind,
@@ -805,6 +967,8 @@ pub struct TypeDecl {
 pub struct GlobalDecl {
     pub def_id: u64,
     pub name: String,
+    pub span: Span,
+    pub item_meta: ItemMeta,
     pub generics: GenericParams,
     pub explicit_info: ExplicitInfo,
     pub preds: Predicates,
@@ -848,6 +1012,7 @@ pub struct TraitDeclMethod {
 pub struct TraitDecl {
     pub def_id: u64,
     pub name: String,
+    pub item_meta: ItemMeta,
     pub generics: GenericParams,
     pub explicit_info: ExplicitInfo,
     pub preds: Predicates,
@@ -875,6 +1040,7 @@ pub struct TraitImplType {
 pub struct TraitImpl {
     pub def_id: u64,
     pub name: String,
+    pub item_meta: ItemMeta,
     pub impl_trait: TraitDeclRef,
     pub generics: GenericParams,
     pub explicit_info: ExplicitInfo,

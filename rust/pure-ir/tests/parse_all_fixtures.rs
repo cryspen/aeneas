@@ -114,9 +114,9 @@ fn sweep_all_fixtures() {
 
         match pure_ir::parse(&src) {
             Ok(crate_ir) => {
-                if crate_ir.pure_ir_fmt_version != 1 {
+                if crate_ir.pure_ir_fmt_version != 2 {
                     failures.push(format!(
-                        "{name}: pure_ir_fmt_version != 1: got {}",
+                        "{name}: pure_ir_fmt_version != 2: got {}",
                         crate_ir.pure_ir_fmt_version
                     ));
                     continue;

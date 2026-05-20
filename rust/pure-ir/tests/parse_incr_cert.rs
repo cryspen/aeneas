@@ -59,7 +59,7 @@ fn dump_and_parse_incr_cert() {
 
     let crate_ir = pure_ir::parse(&src).expect("parse failed");
 
-    assert_eq!(crate_ir.pure_ir_fmt_version, 1);
+    assert_eq!(crate_ir.pure_ir_fmt_version, 2);
     assert_eq!(crate_ir.stage, "post-s2p");
     assert_eq!(crate_ir.crate_name, "incr_cert");
     assert!(
