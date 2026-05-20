@@ -18,6 +18,9 @@ pub mod assert_cfg;
 #[path = "../../../../tests/src/bitwise.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut, unused_imports, unused_assignments, clippy::all)]
 pub mod bitwise;
+#[path = "../../../../tests/src/calls.rs"]
+#[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut, unused_imports, unused_assignments, clippy::all)]
+pub mod calls;
 #[path = "../../../../tests/src/compare_simple.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut, unused_imports, unused_assignments, clippy::all)]
 pub mod compare_simple;

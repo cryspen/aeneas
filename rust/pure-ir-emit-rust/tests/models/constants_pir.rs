@@ -45,7 +45,8 @@ pub struct constants_V_2<T, const N: usize> {
 }
 
 pub fn impl_core_num_MAX_28() -> Result<u32> {
-    unimplemented!("opaque body")
+    // route: core_models::num::*::MAX → <ret_ty>::MAX (native)
+    Ok(u32::MAX)
 }
 
 pub fn constants_get_z2_6() -> Result<i32> {

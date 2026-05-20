@@ -44,7 +44,8 @@ pub fn core_default_Default_default_6<Self_>() -> Result<Self_> where Self_: 'st
 }
 
 pub fn impl_core_default_default_7() -> u32 {
-    unimplemented!("opaque body")
+    // route: core_models::default::Default::default → Default::default()
+    <u32 as core::default::Default>::default()
 }
 
 pub fn default_f0_0() -> Result<()> {

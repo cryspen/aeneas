@@ -38,8 +38,9 @@ pub enum list_basic_List_0 {
 
 pub struct alloc_alloc_Global_1;
 
-pub fn impl_core_num_wrapping_add_2(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_add_2(p0: u32, p1: u32) -> u32 {
+    // route: core_models::num::*::wrapping_add → rust_primitives::arithmetic::wrapping_add_<t>
+    u32::wrapping_add(p0, p1)
 }
 
 pub fn list_basic_list_len_0(xs: list_basic_List_0) -> Result<u32> {

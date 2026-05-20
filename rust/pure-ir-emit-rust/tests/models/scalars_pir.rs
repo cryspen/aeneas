@@ -31,52 +31,64 @@ pub mod aeneas_runtime {
 
 use self::aeneas_runtime::Result;
 
-pub fn impl_core_num_wrapping_add_23(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_add_23(p0: u32, p1: u32) -> u32 {
+    // route: core_models::num::*::wrapping_add → rust_primitives::arithmetic::wrapping_add_<t>
+    u32::wrapping_add(p0, p1)
 }
 
-pub fn impl_core_num_wrapping_add_24(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> i32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_add_24(p0: i32, p1: i32) -> i32 {
+    // route: core_models::num::*::wrapping_add → rust_primitives::arithmetic::wrapping_add_<t>
+    i32::wrapping_add(p0, p1)
 }
 
-pub fn impl_core_num_wrapping_sub_25(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_sub_25(p0: u32, p1: u32) -> u32 {
+    // route: core_models::num::*::wrapping_sub → rust_primitives::arithmetic::wrapping_sub_<t>
+    u32::wrapping_sub(p0, p1)
 }
 
-pub fn impl_core_num_wrapping_sub_26(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> i32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_sub_26(p0: i32, p1: i32) -> i32 {
+    // route: core_models::num::*::wrapping_sub → rust_primitives::arithmetic::wrapping_sub_<t>
+    i32::wrapping_sub(p0, p1)
 }
 
-pub fn impl_core_num_rotate_right_27(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_rotate_right_27(p0: u32, p1: u32) -> u32 {
+    // route: core_models::num::*::rotate_right → rust_primitives::arithmetic::rotate_right_<t>
+    u32::rotate_right(p0, p1)
 }
 
-pub fn impl_core_num_rotate_right_28(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> i32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_rotate_right_28(p0: i32, p1: u32) -> i32 {
+    // route: core_models::num::*::rotate_right → rust_primitives::arithmetic::rotate_right_<t>
+    i32::rotate_right(p0, p1)
 }
 
-pub fn impl_core_num_rotate_left_29(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_rotate_left_29(p0: u32, p1: u32) -> u32 {
+    // route: core_models::num::*::rotate_left → rust_primitives::arithmetic::rotate_left_<t>
+    u32::rotate_left(p0, p1)
 }
 
-pub fn impl_core_num_rotate_left_30(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> i32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_rotate_left_30(p0: i32, p1: u32) -> i32 {
+    // route: core_models::num::*::rotate_left → rust_primitives::arithmetic::rotate_left_<t>
+    i32::rotate_left(p0, p1)
 }
 
 pub fn impl_core_default_default_31() -> u32 {
-    unimplemented!("opaque body")
+    // route: core_models::default::Default::default → Default::default()
+    <u32 as core::default::Default>::default()
 }
 
 pub fn impl_core_default_default_32() -> i32 {
-    unimplemented!("opaque body")
+    // route: core_models::default::Default::default → Default::default()
+    <i32 as core::default::Default>::default()
 }
 
 pub fn impl_core_num_BITS_33() -> Result<u32> {
-    unimplemented!("opaque body")
+    // route: core_models::num::*::BITS → <ret_ty>::BITS (native)
+    Ok(u32::BITS)
 }
 
 pub fn impl_core_num_BITS_34() -> Result<u32> {
-    unimplemented!("opaque body")
+    // route: core_models::num::*::BITS → <ret_ty>::BITS (native)
+    Ok(u32::BITS)
 }
 
 pub fn scalars_add_and_8(a: u32, b: u32) -> Result<u32> {

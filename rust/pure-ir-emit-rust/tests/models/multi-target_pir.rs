@@ -41,8 +41,9 @@ pub fn multi_target_SimdTrait_add_4<Self_, Clause0_Vec>(p0: impl core::marker::S
     unimplemented!("opaque body")
 }
 
-pub fn impl_core_num_wrapping_add_5(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u128 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_add_5(p0: u128, p1: u128) -> u128 {
+    // route: core_models::num::*::wrapping_add → rust_primitives::arithmetic::wrapping_add_<t>
+    u128::wrapping_add(p0, p1)
 }
 
 pub fn core_clone_Clone_clone_8<Self_>(p0: impl core::marker::Sized) -> Result<Self_> where Self_: 'static {

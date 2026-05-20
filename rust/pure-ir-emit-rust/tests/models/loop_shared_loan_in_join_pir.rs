@@ -59,8 +59,9 @@ pub fn impl_core_iter_range_next_2<A>(p0: impl core::marker::Sized) -> Result<(c
     unimplemented!("opaque body")
 }
 
-pub fn impl_core_num_wrapping_add_3(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u64 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_add_3(p0: u64, p1: u64) -> u64 {
+    // route: core_models::num::*::wrapping_add → rust_primitives::arithmetic::wrapping_add_<t>
+    u64::wrapping_add(p0, p1)
 }
 
 pub fn core_iter_traits_iterator_Iterator_next_5<Self_, Clause0_Item>(p0: impl core::marker::Sized) -> Result<(core_option_Option_2<Clause0_Item>, Self_)> where Self_: 'static, Clause0_Item: 'static {

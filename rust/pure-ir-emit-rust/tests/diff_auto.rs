@@ -42,6 +42,7 @@ mod models {
     pub mod aggregates_basic { include!("models/aggregates_basic_pir.rs"); }
     pub mod assert_cfg { include!("models/assert-cfg_pir.rs"); }
     pub mod bitwise { include!("models/bitwise_pir.rs"); }
+    pub mod calls { include!("models/calls_pir.rs"); }
     pub mod compare_simple { include!("models/compare_simple_pir.rs"); }
     pub mod demo { include!("models/demo_pir.rs"); }
     pub mod incr_cert { include!("models/incr_cert_pir.rs"); }
@@ -569,8 +570,44 @@ prop_assert_eq!(lhs, rhs);
 }
 
 // =====================================================================
-// compare_simple — auto-generated (1 candidates, 3 total scanned)
+// calls — auto-generated (1 candidates, 4 total scanned)
 // =====================================================================
+
+proptest! {
+/// Auto-generated from `calls::pick` (model `calls_pick_4`)
+    #[test]
+fn calls_pick_auto(a0 in any::<bool>(), a1 in any::<u32>(), a2 in any::<u32>()) {
+        let lhs = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| ref_impl_auto::calls::pick(a0, a1, a2))) {
+Ok(v) => Ok::<_, ()>(v),
+Err(_) => Err(()),
+};
+let rhs = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| models::calls::calls_pick_4(a0, a1, a2))) {
+Ok(r) => r.map_err(|_| ()),
+Err(_) => Err(()),
+};
+prop_assert_eq!(lhs, rhs);
+}
+}
+
+// =====================================================================
+// compare_simple — auto-generated (2 candidates, 3 total scanned)
+// =====================================================================
+
+proptest! {
+/// Auto-generated from `compare_simple::add_u32` (model `compare_simple_add_u32_2`)
+    #[test]
+fn compare_simple_add_u32_auto(a0 in any::<u32>(), a1 in any::<u32>()) {
+        let lhs = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| ref_impl_auto::compare_simple::add_u32(a0, a1))) {
+Ok(v) => Ok::<_, ()>(v),
+Err(_) => Err(()),
+};
+let rhs = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| models::compare_simple::compare_simple_add_u32_2(a0, a1))) {
+Ok(r) => r.map_err(|_| ()),
+Err(_) => Err(()),
+};
+prop_assert_eq!(lhs, rhs);
+}
+}
 
 proptest! {
 /// Auto-generated from `compare_simple::id_u32` (model `compare_simple_id_u32_0`)

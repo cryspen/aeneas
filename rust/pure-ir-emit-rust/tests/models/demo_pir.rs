@@ -40,12 +40,14 @@ pub fn demo_Counter_incr_12<Self_>(p0: impl core::marker::Sized) -> Result<(usiz
     unimplemented!("opaque body")
 }
 
-pub fn impl_core_num_wrapping_sub_14(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_sub_14(p0: u32, p1: u32) -> u32 {
+    // route: core_models::num::*::wrapping_sub → rust_primitives::arithmetic::wrapping_sub_<t>
+    u32::wrapping_sub(p0, p1)
 }
 
-pub fn impl_core_num_wrapping_add_15(p0: impl core::marker::Sized, p1: impl core::marker::Sized) -> u32 {
-    unimplemented!("opaque body")
+pub fn impl_core_num_wrapping_add_15(p0: u32, p1: u32) -> u32 {
+    // route: core_models::num::*::wrapping_add → rust_primitives::arithmetic::wrapping_add_<t>
+    u32::wrapping_add(p0, p1)
 }
 
 pub fn demo_list_nth_mut_7<T>(l: demo_CList_0<T>, i: u32) -> Result<(T, Box<dyn FnOnce(T) -> demo_CList_0<T>>)> where T: 'static {
