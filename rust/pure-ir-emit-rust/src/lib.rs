@@ -13,4 +13,12 @@
 
 pub mod emit;
 
+/// Hand-curated table mapping Pure-IR Charon paths to their
+/// `core_models::*` / `rust_primitives::*` Rust equivalents.
+/// Consumed by the `route-shims` post-processor binary; **not used
+/// by `emit::emit_crate`** — that's deliberate (Option A boundary).
+/// A future Option C campaign will graduate this into the emitter
+/// itself.
+pub mod core_models_map;
+
 pub use emit::{emit_crate, EmitOptions};

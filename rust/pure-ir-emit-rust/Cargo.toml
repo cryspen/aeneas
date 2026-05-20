@@ -10,6 +10,16 @@ serde_json = { version = "1", features = ["unbounded_depth"] }
 
 [dev-dependencies]
 proptest = "1"
+# `core-models` is the verified-Rust model of `core::*` we route opaque
+# shim bodies through (Option A of the shim-lowering plan — see
+# `documentation/pure-ir-json-export-plan.md`). Pulled as a dev-dep so
+# the emitter library itself stays standalone (Option C will graduate
+# this to a normal `[dependencies]` entry, used by `emit.rs` directly).
+#
+# Path dep for local development; pin to a SHA before PR-time.
+core-models = { path = "../../../rust-core-models/core-models" }
+rust_primitives = { path = "../../../rust-core-models/rust_primitives" }
+hax-lib = { git = "https://github.com/cryspen/hax", rev = "492a34e33c8744b9672eb3cf1c982ac40469f7d4" }
 
 [[bin]]
 name = "pir2rs"
