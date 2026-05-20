@@ -1,0 +1,6 @@
+[workspace]
+resolver = "2"
+members = [
+    "pure-ir",
+    "pure-ir-emit-rust",
+]

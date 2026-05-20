@@ -217,6 +217,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "pure-ir-emit-rust"
+version = "0.1.0"
+dependencies = [
+ "pure-ir",
+ "serde_json",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
