@@ -110,17 +110,22 @@ ordinary `Box<dyn FnOnce>` values; recursive ADTs as
 pure-ir-emit-rust/
 ├── Cargo.toml
 ├── src/
-│   ├── lib.rs          # crate root; pub fn emit_crate(...)
-│   ├── emit.rs         # the emitter (one helper per AST node type)
-│   └── bin/pir2rs.rs   # CLI entrypoint
+│   ├── lib.rs                          # crate root; pub fn emit_crate(...)
+│   ├── emit.rs                         # the emitter (one helper per AST node type)
+│   └── bin/
+│       ├── pir2rs.rs                   # CLI entrypoint
+│       └── gen-diff-tests.rs           # auto-gen diff_auto.rs + ref_impl_auto.rs
 ├── scripts/
-│   └── regen-diff-models.sh   # regenerate tests/models/<fix>_pir.rs
+│   └── regen-diff-models.sh            # regenerate tests/models/<fix>_pir.rs
 └── tests/
-    ├── emit_incr_cert.rs       # focused incr_cert tests
-    ├── compile_check.rs        # whitelist sweep + rustc shell-out
-    ├── diff.rs                 # R₀ ↔ R₂ proptest harness
-    ├── common/ref_impl.rs      # R₀ wrappers (reshaped to functional form)
-    └── models/                 # committed R₂ outputs (regen on demand)
+    ├── emit_incr_cert.rs               # focused incr_cert tests
+    ├── compile_check.rs                # whitelist sweep + rustc shell-out
+    ├── diff.rs                         # R₀ ↔ R₂ hand-written proptest harness
+    ├── diff_auto.rs                    # R₀ ↔ R₂ auto-generated proptest harness
+    ├── common/
+    │   ├── ref_impl.rs                 # hand-written R₀ wrappers (reshaped)
+    │   └── ref_impl_auto.rs            # auto-gen R₀ via `#[path] mod` imports
+    └── models/                         # committed R₂ outputs (regen on demand)
 ```
 
 ## Differential proptest harness
@@ -185,3 +190,42 @@ list as new code paths come online in the emitter.
 
 See `documentation/pure-ir-json-export-plan.md` § Phase 4 for the
 broader campaign context.
+
+## Auto-generated diff harness (`tests/diff_auto.rs`)
+
+`tests/diff_auto.rs` and `tests/common/ref_impl_auto.rs` are committed
+auto-generated files. They complement the hand-written `diff.rs`: for
+every fixture in `tests/models/`, the generator inspects the
+pre-extract Pure-IR JSON, picks the fns with *amenable* signatures
+(all-scalar / fixed-size-scalar-array / tuple-of-scalars inputs and
+outputs; no generics; no refs; no recursion; no transitive
+`unimplemented!()` / `LoopOp` reach), and emits a proptest block for
+each.
+
+The R₀ side imports `tests/src/<fixture>.rs` directly via
+`#[path] mod <fixture>;` — **no reshape**, because the amenability
+filter rejects any fn the IR would have functionalised.
+
+Both sides are wrapped in `std::panic::catch_unwind` and coerced to
+`Result<T, ()>` for comparison; that absorbs the source-side debug
+overflow panic ↔ model-side `checked_*().ok_or(())` semantic
+mismatch.
+
+To regenerate after the emitter changes:
+
+```bash
+./scripts/regen-diff-models.sh
+# (the script invokes gen-diff-tests at the end)
+```
+
+Or, when only the *generator* changed (no model refresh needed):
+
+```bash
+cargo run -p pure-ir-emit-rust --bin gen-diff-tests
+cargo test -p pure-ir-emit-rust --test diff_auto
+```
+
+The set of `#[ignore]`d auto-generated tests is curated in
+`src/bin/gen-diff-tests.rs::IGNORE_LIST` — each entry surfaces a
+known emitter limitation. Run `cargo test --test diff_auto -- --ignored`
+to exercise the ignored set against a candidate fix.

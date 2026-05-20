@@ -23,7 +23,13 @@
 # To regenerate: run from the repo root or anywhere — the script
 # resolves paths relative to its own location.
 
-set -euo pipefail
+set -uo pipefail
+# Deliberately NOT setting `-e` for the whole script: the FIXTURES
+# list (~72 fixtures, all "green at pre-extract" per compile_check.rs)
+# may carry the occasional fixture whose emit script-line errors out
+# in isolation even though the compile-check sweep passes. We log and
+# continue; the gen-diff-tests pass then filters by the surviving
+# models on disk.
 
 # Resolve repo root + paths.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -40,19 +46,85 @@ fi
 
 mkdir -p "$DEST"
 
-# Fixtures whose pre-extract emit (a) compiles per compile_check and
-# (b) has runtime-reachable scalar/ADT paths free of panicking
-# placeholders.
+# Fixtures whose pre-extract emit compiles per `compile_check.rs`
+# (i.e. everything NOT listed under `KNOWN_GAPS` for the
+# `pre-extract` stage). Auto-generated `tests/diff_auto.rs` is
+# downstream of this list; the gen-diff-tests pass further filters
+# by per-fn signature amenability and per-fn body-content
+# (skipping `loop_op` / `unimplemented!()` models at runtime).
 FIXTURES=(
-  incr_cert
-  constants
-  bitwise
-  compare_simple
+  adt
   aggregates_basic
+  array_slice_index
+  arrays_defs
+  as_mut
+  assert-cfg
+  bitwise
+  blanket_impl
+  builtin
+  builtin-auto
+  calls
+  chunks_exact
+  compare_simple
+  const-shadow
+  constants
+  constants-lean
+  curve25519
+  default
+  defaulted_method
+  demo
+  deref
+  derive
+  discriminant
+  dynamic_size
   enums_basic
   enums_payload
+  from_to
+  generics_basic
+  incr_cert
+  into
+  issue-134-loop-shared-borrows
+  issue-194-recursive-struct-projector
+  issue-270-loop-list
+  issue-789-loop-ctx-match
+  issue-807-missing-symbolic-value
+  issue-815-global-referencing-fallible-global
+  iterators
+  iterators-array
+  iterators-scalar
+  join-duplicate
+  joins
+  list_basic
+  list_generic
+  loop_shared_loan_in_join
+  loops
+  loops_simple
+  loops-issues
+  loops-nested
+  loops-nested-rec
+  loops-rec
+  loops-sequences
+  mini_tree
+  multi_region
+  multi-target
+  mutually-recursive-traits
+  names
+  options
+  paper
+  print
+  range
+  raw_pointers
+  reborrows
+  rename_attribute
+  scalars
+  slices
+  slices_basic
+  static
+  step_by
+  string-chars
+  switch_test
   traits_basic
-  demo
+  vec
 )
 
 # Workspace dir for the pir2rs invocation. Bumping CARGO_TARGET_DIR
@@ -73,30 +145,46 @@ if [[ ! -x "$PIR2RS" ]]; then
   exit 1
 fi
 
+written=0
+failed_fixtures=()
 for f in "${FIXTURES[@]}"; do
   llbc="$LLBC_DIR/$f.llbc"
   if [[ ! -f "$llbc" ]]; then
     echo "warn: $llbc missing, skipping $f" >&2
+    failed_fixtures+=("$f")
     continue
   fi
 
   tmp="$(mktemp -d)"
-  trap 'rm -rf "$tmp"' EXIT
 
-  # Aeneas writes <fixture>.pure.json into the dump dir.
-  "$AENEAS" -backend lean -dest "$tmp" \
-    -dump-pure-ir "pre-extract:$tmp" \
-    "$llbc" >/dev/null 2>&1
+  # Aeneas writes <fixture>.pure.json into the dump dir. The dump dir
+  # must exist (aeneas refuses to create the -dest tree).
+  mkdir -p "$tmp"
+  if ! "$AENEAS" -backend lean -dest "$tmp" \
+        -dump-pure-ir "pre-extract:$tmp" \
+        "$llbc" >/dev/null 2>&1; then
+    echo "warn: aeneas dump failed for $f" >&2
+    failed_fixtures+=("$f")
+    rm -rf "$tmp"
+    continue
+  fi
 
   json="$tmp/$f.pure.json"
   if [[ ! -f "$json" ]]; then
-    echo "error: aeneas did not emit $json for $f" >&2
-    exit 1
+    echo "warn: no JSON produced for $f" >&2
+    failed_fixtures+=("$f")
+    rm -rf "$tmp"
+    continue
   fi
 
   out="$DEST/${f}_pir.rs"
   raw="$tmp/${f}_pir.raw.rs"
-  "$PIR2RS" "$json" -o "$raw"
+  if ! "$PIR2RS" "$json" -o "$raw" 2>/dev/null; then
+    echo "warn: pir2rs failed for $f" >&2
+    failed_fixtures+=("$f")
+    rm -rf "$tmp"
+    continue
+  fi
 
   # Strip the leading `#![allow(...)]` inner attribute — when this
   # file is `include!`d inside `pub mod <fixture> { ... }`, inner
@@ -104,11 +192,22 @@ for f in "${FIXTURES[@]}"; do
   # `#[allow(...)]` on the wrapping `mod` in `tests/diff.rs` covers
   # the same warning surface.
   awk 'NR==1 && /^#!\[allow\(/ { next } { print }' "$raw" > "$out"
-  echo "[regen] wrote $out"
-
+  written=$((written + 1))
   rm -rf "$tmp"
-  trap - EXIT
 done
 
 echo
-echo "Done. ${#FIXTURES[@]} model file(s) refreshed under $DEST."
+echo "Done. $written/${#FIXTURES[@]} model file(s) refreshed under $DEST."
+if (( ${#failed_fixtures[@]} > 0 )); then
+  echo "Skipped fixtures (no model produced): ${failed_fixtures[*]}"
+fi
+
+# Auto-generate `tests/diff_auto.rs` + `tests/common/ref_impl_auto.rs`
+# from the surviving models. The generator filters per-fn by signature
+# amenability; the surviving fixtures here are the input set.
+echo
+echo "[regen] running gen-diff-tests..."
+(
+  cd "$REPO_ROOT/rust"
+  cargo run -p pure-ir-emit-rust --bin gen-diff-tests --quiet
+)
