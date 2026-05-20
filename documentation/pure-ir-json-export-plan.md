@@ -221,7 +221,7 @@ The dumped JSON's root carries:
 
 ```json
 {
-  "pure_ir_fmt_version": 1,
+  "pure_ir_fmt_version": 2,
   "stage": "post-s2p" | "post-micro" | "pre-extract",
   "crate_name": "...",
   "type_decls": [...],
@@ -308,6 +308,42 @@ Acceptance: all 89 fixtures parse on the `post-s2p` stage. No
   has no need for their internal structure yet). The decisions are
   documented in `src/pure/PureJson.mli`.
 
+**Spans + attributes campaign (May 2026) — fmt v1 → v2:**
+
+The plan-level "Risks" entry below originally proposed a
+`-dump-pure-ir-with-spans` flag to opt into source meta. We went
+always-on instead: the dump grows ~2-3× but every consumer gets the
+same payload, no schema fork. `pure_ir_fmt_version` bumped from 1 to 2.
+
+What now rides along on every dump:
+
+- `item_meta` on every decl (`fun_decl`, `type_decl`, `global_decl`,
+  `trait_decl`, `trait_impl`) — carries `name` (a structured
+  `path_elem[]`), `span`, `source_text`, `attr_info` (attributes,
+  inline, rename, public), `is_local`, `opacity`, and `lang_item`.
+- `loop.span` is now emitted alongside the loop payload.
+- The `Meta of emeta * texpr` expression node ships the full `emeta`
+  payload — including the `mplace` structures embedded in
+  `Assignment` / `SymbolicAssignments` / `SymbolicPlaces` / `MPlace`.
+  `mplace` itself is a recursive sum (`PlaceLocal` / `PlaceGlobal` /
+  `PlaceProjection`).
+- `EError`'s optional `Meta.span` is no longer stripped.
+
+The span shape matches `CertJson.json_cert_source_span` verbatim
+(`{file, beg_line, beg_col, end_line, end_col}`) so any future
+consumer can share a parser. Charon `path_elem`'s heavy variants
+(`PeImpl`, `PeInstantiated`) opaque-encode (tag only) to keep the
+schema bounded; `PeIdent` and `PeTarget` carry full payloads.
+
+Rust mirrors: new `Span`, `AttrInfo`, `Attribute`, `InlineAttr`,
+`RawAttribute`, `ItemMeta`, `PathElem`, `MPlace`, `MProjectionElem`,
+`FieldProjKind`, plus a real `EMeta` enum replacing the Phase-2
+stub. `SUPPORTED_FMT_VERSION` bumped to 2. A new test
+`parse_spans_and_attrs.rs` asserts every `fun_decl` has a populated
+`item_meta.span.file` + non-zero `beg_line`, and that the `derive`
+fixture round-trips a non-empty `AttrDocComment` list end-to-end.
+The 89-fixture sweep stays green at v2.
+
 ### Phase 3 — additional stages + tests (2 days)
 
 1. Wire `post-micro` and `pre-extract` dump points in
@@ -372,11 +408,15 @@ invariant (e.g. "the crate has 1 fun_decl named `incr`").
 ## Risks
 
 * **`Pure.ml`'s span / source-position fields are noisy.** Every
-  expression carries a `Meta.span [@opaque]`. Two options:
+  expression carries a `Meta.span [@opaque]`. Two options were
+  considered:
   * Strip spans from the dump (lossy but simpler).
   * Emit spans as opaque strings (lossless, JSON bloats).
-  Default to stripping. Add a `-dump-pure-ir-with-spans` flag if/when
-  a backend needs them.
+  **Resolved (May 2026):** went always-on, no `-dump-pure-ir-with-spans`
+  flag. Bumped `pure_ir_fmt_version` 1 → 2. Spans now ride on every
+  decl (`item_meta.span`), every `loop.span`, every `Meta` expression
+  payload, and `EError`. JSON grew ~2-3×; acceptable. See the
+  Phase-2-landed entry above for the full list of v2 additions.
 
 * **The de-Bruijn index encoding (BVar) is brittle.** `Pure.bvar` is
   a record `{ index : int; name : string option }`. Encode as
@@ -423,6 +463,7 @@ notes).
 |---|---|---|---|
 | 1 | Minimal OCaml emit + Rust parse | 1 fixture round-trips by eye | done (commit `f950d1fe`) |
 | 2 | Full constructor coverage | 89 fixtures parse on `post-s2p` | done (May 2026, 89/89) |
+| 2-spans | Always-on spans + `attr_info` (fmt v2) | 89 fixtures still parse; spans + attrs survive end-to-end | done (May 2026) |
 | 3 | All stages + CI | 267 JSON files parse; goldens stable | not started |
 | 4 | First Rust backend prototype | One new backend writes useful output | not started |
 
