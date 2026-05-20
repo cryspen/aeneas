@@ -93,6 +93,13 @@ let () =
       ( "-borrow-check",
         Arg.Set borrow_check,
         " Only borrow-check the program and do not generate any translation" );
+      ( "-dump-pure-ir",
+        Arg.String set_dump_pure_ir,
+        " Dump the Pure IR as JSON to <dest_dir>/<crate>.pure.json at \
+         the given pipeline stage. Format is <stage>:<dest_dir>. \
+         Stages: post-s2p (Phase 1), post-micro and pre-extract \
+         (Phase 3, not yet implemented). Consumed by the rust/pure-ir/ \
+         Rust crate." );
       ( "-backend",
         Arg.Symbol (backend_names, set_backend),
         " Specify the target backend (" ^ String.concat ", " backend_names ^ ")"

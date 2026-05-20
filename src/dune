@@ -86,6 +86,7 @@
   ProgressBar
   Pure
   PureErrors
+  PureJson
   PureMicroPasses
   PureMicroPassesAnnots
   PureMicroPassesBase

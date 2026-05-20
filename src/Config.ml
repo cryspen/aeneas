@@ -57,6 +57,32 @@ let set_subdir (s : string) : unit = subdir := Some s
     CI arguments. *)
 let borrow_check = ref false
 
+(** Dump the Pure IR as JSON at a chosen pipeline stage. The pair is
+    [(stage, dest_dir)]. Stage is one of [post-s2p] (Phase 1),
+    [post-micro] (Phase 3), or [pre-extract] (Phase 3); the latter two
+    are accepted by the CLI but currently raise at runtime. See
+    {!documentation/pure-ir-json-export-plan.md}. *)
+let dump_pure_ir : (string * string) option ref = ref None
+
+let set_dump_pure_ir (arg : string) : unit =
+  match String.index_opt arg ':' with
+  | None ->
+      raise
+        (Arg.Bad
+           "-dump-pure-ir expects <stage>:<dest_dir> (e.g. \
+            post-s2p:/tmp/pir)")
+  | Some i ->
+      let stage = String.sub arg 0 i in
+      let dest = String.sub arg (i + 1) (String.length arg - i - 1) in
+      (match stage with
+      | "post-s2p" | "post-micro" | "pre-extract" -> ()
+      | _ ->
+          raise
+            (Arg.Bad
+               ("-dump-pure-ir: unknown stage " ^ stage
+              ^ " (expected one of post-s2p, post-micro, pre-extract)")));
+      dump_pure_ir := Some (stage, dest)
+
 (** Get the target backend
 
     If there is no backend (we are borrow-checking) we default to Lean - it
