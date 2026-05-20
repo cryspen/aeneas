@@ -1,16 +1,18 @@
 (** JSON emitter for the Pure IR — see {!PureJson.mli}.
 
-    Encoding convention (kept consistent across Phase 1 and Phase 2):
-    every tagged sum serializes as [{"kind": "Variant", "payload": <data>}].
-    Records serialize as JSON objects whose field names match the OCaml
-    field names verbatim (snake_case). Lists become JSON arrays.
-    Identifiers (anything from [IdGen]) serialize as JSON ints via
-    [<Module>.to_int]. Per the plan's "Risks" section, spans are
-    stripped (a future [-dump-pure-ir-with-spans] flag would re-add them). *)
+    Encoding convention (kept consistent across Phase 1, Phase 2 and the
+    Phase 2 + spans/attrs bump to v2): every tagged sum serializes as
+    [{"kind": "Variant", "payload": <data>}]. Records serialize as JSON
+    objects whose field names match the OCaml field names verbatim
+    (snake_case). Lists become JSON arrays. Identifiers (anything from
+    [IdGen]) serialize as JSON ints via [<Module>.to_int]. Starting at
+    [pure_ir_fmt_version = 2], source spans and attribute info ride
+    along on every decl, loop, and meta-expression — see the .mli
+    docstring for the surface. *)
 
 open Pure
 
-let pure_ir_fmt_version = 1
+let pure_ir_fmt_version = 2
 
 (* ---------- Tagged-enum helper ---------- *)
 
@@ -113,6 +115,105 @@ let json_mutability (m : mutability) : Yojson.Basic.t =
 
 let json_array_or_slice (x : array_or_slice) : Yojson.Basic.t =
   `String (match x with Array -> "Array" | Slice -> "Slice")
+
+(* ---------- Source spans + Charon item meta ----------
+
+   We carry full Charon source spans + attribute info on every decl,
+   loop, and meta-expression starting at [pure_ir_fmt_version = 2].
+   The span shape mirrors [CertJson.json_cert_source_span] verbatim
+   (same field names) so any future consumer can share a parser. *)
+
+(** Extract the filename string out of a Charon [file_name] sum. *)
+let file_name_to_string (fn : Meta.file_name) : string =
+  match fn with
+  | Virtual s | Local s | NotReal s -> s
+
+(** Emit a Charon [span] as [{file, beg_line, beg_col, end_line, end_col}].
+    Matches [CertJson.json_cert_source_span] exactly. *)
+let json_span (sp : Meta.span) : Yojson.Basic.t =
+  let d = sp.data in
+  `Assoc
+    [
+      ("file", `String (file_name_to_string d.file.name));
+      ("beg_line", `Int d.beg_loc.line);
+      ("beg_col", `Int d.beg_loc.col);
+      ("end_line", `Int d.end_loc.line);
+      ("end_col", `Int d.end_loc.col);
+    ]
+
+let json_inline_attr (a : Meta.inline_attr) : Yojson.Basic.t =
+  `String
+    (match a with
+    | Hint -> "Hint"
+    | Never -> "Never"
+    | Always -> "Always")
+
+let json_raw_attribute (r : Meta.raw_attribute) : Yojson.Basic.t =
+  `Assoc
+    [
+      ("path", `String r.path);
+      ("args", json_option (fun s -> `String s) r.args);
+    ]
+
+let json_attribute (a : Meta.attribute) : Yojson.Basic.t =
+  match a with
+  | AttrOpaque -> tagged "AttrOpaque" `Null
+  | AttrExclude -> tagged "AttrExclude" `Null
+  | AttrRename s -> tagged "AttrRename" (`String s)
+  | AttrVariantsPrefix s -> tagged "AttrVariantsPrefix" (`String s)
+  | AttrVariantsSuffix s -> tagged "AttrVariantsSuffix" (`String s)
+  | AttrDocComment s -> tagged "AttrDocComment" (`String s)
+  | AttrUnknown r -> tagged "AttrUnknown" (json_raw_attribute r)
+
+let json_attr_info (ai : Meta.attr_info) : Yojson.Basic.t =
+  `Assoc
+    [
+      ("attributes", `List (List.map json_attribute ai.attributes));
+      ("inline", json_option json_inline_attr ai.inline);
+      ("rename", json_option (fun s -> `String s) ai.rename);
+      ("public", `Bool ai.public);
+    ]
+
+(** [disambiguator] is an [IdGen] id; expose as an int. *)
+let json_disambiguator (d : Pure.Disambiguator.id) : Yojson.Basic.t =
+  `Int (Pure.Disambiguator.to_int d)
+
+(** Charon [path_elem] — opaque-encode the heavy [PeImpl] / [PeInstantiated]
+    variants that carry nested binders / impl-elem payloads. Consumers
+    can recover the human-readable form by joining [PeIdent] strings; the
+    impl/instantiated markers stay as opaque tags so the schema doesn't
+    blow up. *)
+let json_path_elem (pe : Types.path_elem) : Yojson.Basic.t =
+  match pe with
+  | PeIdent (s, d) ->
+      tagged "PeIdent"
+        (`Assoc [ ("name", `String s); ("disambiguator", json_disambiguator d) ])
+  | PeImpl _ -> tagged "PeImpl" `Null
+  | PeInstantiated _ -> tagged "PeInstantiated" `Null
+  | PeTarget s -> tagged "PeTarget" (`String s)
+
+let json_charon_name (n : Types.name) : Yojson.Basic.t =
+  `List (List.map json_path_elem n)
+
+let json_item_opacity (o : Types.item_opacity) : Yojson.Basic.t =
+  `String
+    (match o with
+    | Transparent -> "Transparent"
+    | Foreign -> "Foreign"
+    | ItemOpaque -> "ItemOpaque"
+    | Invisible -> "Invisible")
+
+let json_item_meta (im : Types.item_meta) : Yojson.Basic.t =
+  `Assoc
+    [
+      ("name", json_charon_name im.name);
+      ("span", json_span im.span);
+      ("source_text", json_option (fun s -> `String s) im.source_text);
+      ("attr_info", json_attr_info im.attr_info);
+      ("is_local", `Bool im.is_local);
+      ("opacity", json_item_opacity im.opacity);
+      ("lang_item", json_option (fun s -> `String s) im.lang_item);
+    ]
 
 let literal_type_to_json (t : literal_type) : Yojson.Basic.t =
   match t with
@@ -520,11 +621,46 @@ let json_fvar (v : fvar) : Yojson.Basic.t =
       ("ty", ty_to_json v.ty);
     ]
 
-(** Meta-places encode source-level provenance. We drop them entirely
-    for now — the Rust side has no need for them, and re-encoding the
-    Charon [global_decl_ref] inside [PlaceGlobal] would balloon the JSON.
-    A future flag could re-add this. *)
-let json_mplace (_p : mplace) : Yojson.Basic.t = `Null
+let json_local_id (id : Expressions.local_id) : Yojson.Basic.t =
+  `Int (Expressions.LocalId.to_int id)
+
+let json_field_proj_kind (k : Expressions.field_proj_kind) : Yojson.Basic.t =
+  match k with
+  | ProjAdt (tdid, vid) ->
+      tagged "ProjAdt"
+        (`Assoc
+          [
+            ("type_decl_id", json_type_decl_id tdid);
+            ("variant_id", json_option json_variant_id vid);
+          ])
+  | ProjTuple arity -> tagged "ProjTuple" (`Int arity)
+
+let json_mprojection_elem (m : mprojection_elem) : Yojson.Basic.t =
+  `Assoc
+    [
+      ("pkind", json_field_proj_kind m.pkind);
+      ("field_id", json_field_id m.field_id);
+    ]
+
+(** Meta-places encode source-level provenance. Starting at
+    [pure_ir_fmt_version = 2] we ship the structural payload. *)
+let rec json_mplace (p : mplace) : Yojson.Basic.t =
+  match p with
+  | PlaceLocal (lid, name) ->
+      tagged "PlaceLocal"
+        (`Assoc
+          [
+            ("local_id", json_local_id lid);
+            ("name", json_option (fun s -> `String s) name);
+          ])
+  | PlaceGlobal gref -> tagged "PlaceGlobal" (json_global_decl_ref gref)
+  | PlaceProjection (parent, elem) ->
+      tagged "PlaceProjection"
+        (`Assoc
+          [
+            ("parent", json_mplace parent);
+            ("elem", json_mprojection_elem elem);
+          ])
 
 let rec json_pat (p : pat) : Yojson.Basic.t =
   match p with
@@ -583,9 +719,10 @@ let rec expr_to_json (e : expr) : Yojson.Basic.t =
   | Meta (m, e) ->
       tagged "Meta"
         (`Assoc [ ("meta", json_emeta m); ("expr", texpr_to_json e) ])
-  | EError (_span, s) ->
-      (* Spans are stripped per the plan's defaults. *)
-      tagged "EError" (`String s)
+  | EError (span, s) ->
+      tagged "EError"
+        (`Assoc
+          [ ("span", json_option json_span span); ("message", `String s) ])
 
 and texpr_to_json (te : texpr) : Yojson.Basic.t =
   `Assoc [ ("e", expr_to_json te.e); ("ty", ty_to_json te.ty) ]
@@ -605,6 +742,7 @@ and json_loop (l : loop) : Yojson.Basic.t =
   `Assoc
     [
       ("loop_id", json_loop_id l.loop_id);
+      ("span", json_span l.span);
       ("output_tys", `List (List.map ty_to_json l.output_tys));
       ("num_output_values", `Int l.num_output_values);
       ("inputs", `List (List.map texpr_to_json l.inputs));
@@ -634,15 +772,41 @@ and json_struct_update (su : struct_update) : Yojson.Basic.t =
              su.updates) );
     ]
 
-(** Meta-expressions carry pretty-naming hints and other span-like info
-    that the Rust consumers don't need (and which would re-introduce
-    [mplace] structure). We summarise each variant by its tag. *)
+(** Meta-expressions carry pretty-naming hints and source-place info.
+    Starting at [pure_ir_fmt_version = 2] we ship the full payload —
+    including the [mplace] structures the variants embed. *)
 and json_emeta (m : emeta) : Yojson.Basic.t =
   match m with
-  | Assignment _ -> tagged "Assignment" `Null
-  | SymbolicAssignments _ -> tagged "SymbolicAssignments" `Null
-  | SymbolicPlaces _ -> tagged "SymbolicPlaces" `Null
-  | MPlace _ -> tagged "MPlace" `Null
+  | Assignment (dst, value, origin) ->
+      tagged "Assignment"
+        (`Assoc
+          [
+            ("dst", json_mplace dst);
+            ("value", texpr_to_json value);
+            ("origin", json_option json_mplace origin);
+          ])
+  | SymbolicAssignments pairs ->
+      tagged "SymbolicAssignments"
+        (`List
+          (List.map
+             (fun (mv, value) ->
+               `Assoc
+                 [
+                   ("mvar", texpr_to_json mv);
+                   ("value", texpr_to_json value);
+                 ])
+             pairs))
+  | SymbolicPlaces pairs ->
+      tagged "SymbolicPlaces"
+        (`List
+          (List.map
+             (fun (mv, name) ->
+               `Assoc
+                 [
+                   ("mvar", texpr_to_json mv); ("name", `String name);
+                 ])
+             pairs))
+  | MPlace p -> tagged "MPlace" (json_mplace p)
   | Tag s -> tagged "Tag" (`String s)
   | TypeAnnot -> tagged "TypeAnnot" `Null
 
@@ -738,8 +902,7 @@ let fun_decl_to_json (fd : fun_decl) : Yojson.Basic.t =
   `Assoc
     [
       ("def_id", json_fun_decl_id fd.def_id);
-      (* [item_meta] is dropped: it's Charon source-level meta that the
-         Rust consumer does not need. *)
+      ("item_meta", json_item_meta fd.item_meta);
       ( "builtin_info",
         json_option
           (fun _ -> tagged "BuiltinFunInfo" `Null)
@@ -791,8 +954,7 @@ let type_decl_to_json (td : type_decl) : Yojson.Basic.t =
     [
       ("def_id", json_type_decl_id td.def_id);
       ("name", `String td.name);
-      (* [item_meta], [llbc_generics], [builtin_info] dropped — see
-         module docstring. *)
+      ("item_meta", json_item_meta td.item_meta);
       ("generics", json_generic_params td.generics);
       ("explicit_info", json_explicit_info td.explicit_info);
       ("kind", json_type_decl_kind td.kind);
@@ -804,6 +966,8 @@ let global_decl_to_json (gd : global_decl) : Yojson.Basic.t =
     [
       ("def_id", json_global_decl_id gd.def_id);
       ("name", `String gd.name);
+      ("span", json_span gd.span);
+      ("item_meta", json_item_meta gd.item_meta);
       ("generics", json_generic_params gd.generics);
       ("explicit_info", json_explicit_info gd.explicit_info);
       ("preds", json_predicates gd.preds);
@@ -833,6 +997,7 @@ let trait_decl_to_json (td : trait_decl) : Yojson.Basic.t =
     [
       ("def_id", json_trait_decl_id td.def_id);
       ("name", `String td.name);
+      ("item_meta", json_item_meta td.item_meta);
       ("generics", json_generic_params td.generics);
       ("explicit_info", json_explicit_info td.explicit_info);
       ("preds", json_predicates td.preds);
@@ -876,6 +1041,7 @@ let trait_impl_to_json (ti : trait_impl) : Yojson.Basic.t =
     [
       ("def_id", json_trait_impl_id ti.def_id);
       ("name", `String ti.name);
+      ("item_meta", json_item_meta ti.item_meta);
       ("impl_trait", json_trait_decl_ref ti.impl_trait);
       ("generics", json_generic_params ti.generics);
       ("explicit_info", json_explicit_info ti.explicit_info);

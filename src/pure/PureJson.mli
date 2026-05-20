@@ -4,7 +4,7 @@
     consumer. See {!documentation/pure-ir-json-export-plan.md} for the
     round-trip decision.
 
-    As of Phase 2 the emitter covers every constructor of [Pure.ty],
+    The emitter covers every constructor of [Pure.ty],
     [Pure.literal] / [Pure.literal_type], [Pure.qualif], [Pure.pat] /
     [Pure.tpat], [Pure.binop], and [Pure.expr]; plus the full decl
     envelope ([fun_sig], [fun_body], [fun_decl], [type_decl],
@@ -12,13 +12,35 @@
     under [tests/llbc/*.llbc] all parse on the [post-s2p] stage with no
     [UNSUPPORTED] markers.
 
-    Some opaque-or-redundant fields are intentionally dropped from the
-    emit because no Rust consumer needs them:
-    - [item_meta], [span], [llbc_generics] — Charon source/position meta
-      kept around in OCaml only for pretty-name derivation.
-    - [builtin_info] payloads — summarised by a single tag.
-    - [emeta] payloads — meta-info for OCaml-side pretty-naming.
-    - [mplace] — meta-place information.
+    [pure_ir_fmt_version = 2] (was 1 in earlier Phase-2 commits): we
+    now carry source spans + Charon attribute info end-to-end, with no
+    flag — the dump grows ~2-3x relative to v1 but no consumer is
+    forced to inspect the new fields:
+    - [item_meta] rides on every decl ([fun_decl], [type_decl],
+      [global_decl], [trait_decl], [trait_impl]), carrying [name],
+      [span], [source_text], [attr_info] (attributes, inline, rename,
+      public), [is_local], [opacity], and [lang_item].
+    - [loop.span] is emitted alongside the rest of the loop payload.
+    - The [Meta of emeta * texpr] expression node ships the full
+      [emeta] payload — including the [mplace] structures embedded in
+      [Assignment], [SymbolicAssignments], [SymbolicPlaces], and
+      [MPlace]. [mplace] itself is a recursive sum encoded as a tagged
+      union ([PlaceLocal] / [PlaceGlobal] / [PlaceProjection]).
+    - [EError]'s optional [Meta.span] is no longer stripped.
+
+    The span shape mirrors [CertJson.json_cert_source_span] verbatim:
+    [{"file", "beg_line", "beg_col", "end_line", "end_col"}]. Future
+    consumers can share a parser. Charon [name] (a [path_elem list]) is
+    emitted as a structured JSON array — the heavy [PeImpl] and
+    [PeInstantiated] variants opaque-encode (just the tag) so the
+    schema stays bounded; [PeIdent] and [PeTarget] carry their full
+    payloads.
+
+    Still summarised by tag only (no consumer needs the internals):
+    - [llbc_generics] — original Charon generics, kept in OCaml only
+      for pretty-name derivation.
+    - [builtin_info] payloads on decls.
+    - [item_source] variants — the constructor tag suffices.
 
     Encoding convention: every tagged sum serializes as
     [{"kind": "VariantName", "payload": <data>}]. Records become JSON
