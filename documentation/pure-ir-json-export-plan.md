@@ -414,7 +414,7 @@ parseable. Goldens stable.
   `rust/pure-ir/` crate. Left to a follow-up; the `gmake` target
   is the manual entry point.
 
-### Phase 4 — first backend prototype (MVP landed)
+### Phase 4 — first backend prototype (89-fixture sweep landed)
 
 The natural follow-on: build one Rust-side consumer of the JSON that
 emits something useful. Plan (I) (per the design discussion) was
@@ -455,20 +455,39 @@ stays out of scope.
     integration test: emit at each of the three pipeline stages, plus
     a content-shape assertion that both `incr` and `incr_local`
     appear in the post-s2p emit.
-  - `pure-ir-emit-rust/tests/compile_check.rs` — broader sweep over
-    a working whitelist (currently: `incr_cert`, `enums_basic`,
-    `traits_basic`, `loops_simple`) at all 3 stages. Each
-    fixture-stage emit is shelled out to `rustc` for actual
-    type-checking.
+  - `pure-ir-emit-rust/tests/compile_check.rs` — **full 267-pair
+    sweep**: for every `tests/llbc/*.llbc` fixture at every pipeline
+    stage (`post-s2p`, `post-micro`, `pre-extract`), call aeneas to
+    dump the JSON, emit Rust, and shell out to `rustc --emit
+    metadata`. Pairs we can't emit faithfully today are listed in a
+    `KNOWN_GAPS` table with a one-line reason and are skipped (but
+    logged on stderr); everything else MUST compile.
 
-**Coverage:** the working whitelist is intentionally small (the goal
-is a demonstration, not a polished backend). Beyond the whitelist,
-the emitter has been spot-checked on `compare_simple`,
-`aggregates_basic`, and `bitwise` — all three compile cleanly at all
-three pipeline stages. Fixtures that exercise builtin array
-intrinsics (`arrays_defs`) emit but don't yet typecheck against the
-prelude (the FBuiltin / array-aggregate paths need bespoke renders).
-Closures + curve25519 are out of scope for the MVP per the plan.
+**Sweep coverage (after the extension):**
+
+| | count |
+|--|--|
+| Total (fixture × stage) pairs | 267 |
+| `rustc`-accepted emits | **175 (≈ 66 %)** |
+| Fixtures with all three stages green | **50 / 89 (≈ 56 %)** |
+| `KNOWN_GAPS` entries (skipped, reported) | 92 |
+| Unexpected failures (test panics) | 0 |
+
+The 92 known gaps cluster into a small set of structural
+limitations:
+
+| Class | ≈ count | Why it's hard |
+|--|--|--|
+| `move-of-FnOnce-backward-fn` | ~25 | Aeneas re-uses backward fns across branches; `Box<dyn FnOnce>` is consumed on first call. |
+| `loop_op-positional-arg-mismatch` | ~25 | `LoopOp` shim has a fixed shape (`F: FnOnce(T) -> Result<T>`); IR sites pass diverse arities. |
+| `trait-method-* placeholder` | ~20 | `Qualif::FunOrOp(_, TraitMethod(_))` collapses to `unimplemented!()` — many fixtures call stdlib traits. |
+| `destructure-Box-{LCell,multi-binder}` | ~10 | Stable Rust has no `box` patterns; recursive ADT field destructure can't pierce a `Box<Self>`. |
+| `type-changing-struct-update` | ~3 | Aeneas `..init` can change generic args; Rust struct-update requires identical types. |
+| Miscellaneous (curve25519 size, FFI `fmt::Arguments` shape, etc.) | ~10 | One-offs. |
+
+The full table lives in `rust/pure-ir-emit-rust/tests/compile_check.rs`
+(`KNOWN_GAPS` constant) — each entry carries a short reason string
+that survives the sweep output.
 
 ---
 

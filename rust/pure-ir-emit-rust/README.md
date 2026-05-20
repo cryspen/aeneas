@@ -62,20 +62,47 @@ cargo test -p pure-ir-emit-rust
 
 ## Coverage
 
-The MVP targets a small representative whitelist (see
-`tests/compile_check.rs`):
+The sweep test (`tests/compile_check.rs`) emits Rust for every
+`tests/llbc/*.llbc` fixture at every Pure-IR pipeline stage
+(`post-s2p`, `post-micro`, `pre-extract`) — **89 fixtures × 3 stages
+= 267 emits** — and verifies each one parses + typechecks with
+`rustc --emit metadata`.
 
-- `incr_cert` — mut-borrow forward+backward; the canonical example.
-- `enums_basic` — enum + match.
-- `traits_basic` — trait + impl + direct method call.
-- `loops_simple` — loop → recursive helper + `LoopOp` combinator.
+Current sweep result:
 
-Each is tested at all three pipeline stages (`post-s2p`,
-`post-micro`, `pre-extract`). Spot-checks pass for `compare_simple`,
-`aggregates_basic`, and `bitwise` too.
+| | count |
+|--|--|
+| Emits that pass rustc | **175 / 267 (≈ 66 %)** |
+| Fixtures with all three stages green | **50 / 89 (≈ 56 %)** |
+| Pairs in `KNOWN_GAPS` (logged, skipped) | 92 |
+| Unexpected failures (test panics) | 0 |
 
-Unhandled IR variants degrade to `unimplemented!(<msg>)` with a
-`// TODO:` comment; the output stays rustc-parseable.
+The 92 `KNOWN_GAPS` entries cluster into a small set of structural
+limitations the emitter can't yet bridge without an extra resolution
+pass:
+
+| Class | ≈ count | Description |
+|--|--|--|
+| `move-of-FnOnce-backward-fn` | ~25 | Aeneas re-uses backward fns across branches; `Box<dyn FnOnce>` is consumed on first call. |
+| `loop_op-positional-arg-mismatch` | ~25 | `LoopOp` shim has a fixed shape (`F: FnOnce(T) -> Result<T>`) but IR sites pass diverse arities. |
+| `trait-method-* placeholder` | ~20 | `Qualif::FunOrOp(_, TraitMethod(_))` collapses to `unimplemented!()` — many fixtures call stdlib traits. |
+| `destructure-Box-{LCell,multi-binder}` | ~10 | Stable Rust has no `box` patterns; recursive ADT field destructure can't pierce a `Box<Self>`. |
+| `type-changing-struct-update` | ~3 | Aeneas `..init` can change generic args; Rust struct-update requires identical types. |
+| Miscellaneous (curve25519 size, FFI `fmt::Arguments` shape, etc.) | ~10 | One-offs. |
+
+Unhandled IR variants degrade to `unimplemented!(<msg>)` /
+`Default::default()` / typed `Err::<_,()>(())` placeholders so the
+output stays rustc-parseable even when downstream operations can't
+recover the IR's intent.
+
+### What "IR-faithful" still means
+
+The emitter does **not** try to recover original Rust source — the
+goal is rustc-parseable / type-correct output that mirrors the
+Pure-IR JSON's structure (one Rust construct per AST node).
+Closures arrive as `Box<dyn FnOnce(_) -> _>`; backward fns as
+ordinary `Box<dyn FnOnce>` values; recursive ADTs as
+`Box<Self>`-wrapped variants; etc.
 
 ## Layout
 
