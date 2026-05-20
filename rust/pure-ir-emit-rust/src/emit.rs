@@ -91,9 +91,12 @@ pub mod aeneas_runtime {
     /// Stub `LoopOp`: the IR's loop fixed-point combinator. At the
     /// Rust level we only need a placeholder with the right type
     /// shape so the surrounding code typechecks; the real semantics
-    /// live in the Lean translation.
-    #[inline] pub fn loop_op<T, F: FnOnce(T) -> Result<T>>(_body: F, init: T) -> Result<T> {
-        Ok(init)
+    /// live in the Lean translation. The body and init types are
+    /// independent of the return type so the same shim accepts the
+    /// variety of (input-tuple ↦ break-value) shapes the IR
+    /// generates from different loop forms.
+    #[inline] pub fn loop_op<T, U, R, F: FnOnce(T) -> Result<U>>(_body: F, _init: T) -> R {
+        panic!(\"loop_op placeholder\")
     }
 
     /// Typed placeholder used wherever the emitter can't faithfully
@@ -806,15 +809,21 @@ fn emit_fun_decl(fd: &FunDecl, ctx: &EmitCtx, gctx: &GenCtx, out: &mut String) {
         Some(lm) => format!("{base}_loop{}", lm.loop_id),
         None => base,
     };
-    let generics = emit_generic_params(&fd.signature.generics);
 
     let input_pats: Vec<&TPat> = match &fd.body {
         Some(b) => b.inputs.iter().collect(),
         None => Vec::new(),
     };
 
-    // Build the parameter list. If a body exists we use its named
-    // patterns; otherwise just use positional `p<i>` against the sig.
+    // For opaque fns (no body) we widen every input slot via
+    // `impl Sized` so call sites with a different monomorphisation
+    // than the one the IR recorded still typecheck. `impl Sized` is
+    // an anonymous type-param in argument position so the explicit
+    // turbofish at the call site (which only carries the IR's
+    // user-visible generics) still has the right arity. This soaks
+    // up Aeneas's opaque / builtin function declarations whose sig
+    // has been collapsed to a single instantiation in the IR.
+    let opaque = fd.body.is_none();
     let mut params = Vec::new();
     let mut bound_input_names = Vec::new();
     for (i, in_ty) in fd.signature.inputs.iter().enumerate() {
@@ -823,9 +832,16 @@ fn emit_fun_decl(fd: &FunDecl, ctx: &EmitCtx, gctx: &GenCtx, out: &mut String) {
             None => (format!("p{i}"), false),
         };
         bound_input_names.push(param_name.clone());
-        params.push(format!("{}: {}", param_name, ty_to_rust(in_ty, ctx, gctx)));
+        let ty = if opaque {
+            "impl core::marker::Sized".to_string()
+        } else {
+            ty_to_rust(in_ty, ctx, gctx)
+        };
+        let _ = in_ty;
+        params.push(format!("{}: {}", param_name, ty));
     }
 
+    let generics = emit_generic_params(&fd.signature.generics);
     let ret_ty = ty_to_rust(&fd.signature.output, ctx, gctx);
     let where_clause = emit_static_where_clause(&fd.signature.generics);
 
@@ -1279,7 +1295,24 @@ fn emit_qualif_apply(
         .collect();
 
     match &q.id {
-        QualifId::FunOrOp(FunOrOpId::Binop(op)) => emit_binop(op, &args_s),
+        QualifId::FunOrOp(FunOrOpId::Binop(op)) => {
+            // Binops emit primitive-arithmetic operators. If either
+            // arg isn't a numeric/bool type, the IR is shoehorning a
+            // trait-method dispatch (e.g. PartialOrd::gt on an ADT)
+            // through the binop tag and the surface Rust won't accept
+            // it. Detect non-primitive operands and emit a typed
+            // placeholder instead.
+            let primitive = |t: &Ty| -> bool {
+                matches!(t, Ty::TLiteral(_))
+            };
+            let lhs_ok = args.first().map(|a| primitive(&a.ty)).unwrap_or(true);
+            let rhs_ok = args.get(1).map(|a| primitive(&a.ty)).unwrap_or(true);
+            if !lhs_ok || !rhs_ok {
+                "(unimplemented!(\"non-primitive binop\"))".to_string()
+            } else {
+                emit_binop(op, &args_s)
+            }
+        }
         QualifId::FunOrOp(FunOrOpId::Unop(op)) => emit_unop(op, &args_s),
         QualifId::FunOrOp(FunOrOpId::Fun(fid)) => {
             emit_fun_call(fid, &args_s, &q.generics, ctx, gctx)
@@ -1293,7 +1326,7 @@ fn emit_qualif_apply(
             // typechecks.
             "Default::default()".to_string()
         }
-        QualifId::AdtCons(cons) => emit_adt_cons(cons, &args_s, &q.generics, ctx),
+        QualifId::AdtCons(cons) => emit_adt_cons(cons, &args_s, &q.generics, ctx, gctx),
         QualifId::Proj(p) => emit_projection(p, &args_s, ctx),
         QualifId::ScalarValProj(_) => {
             if args_s.is_empty() {
@@ -1307,9 +1340,17 @@ fn emit_qualif_apply(
         QualifId::LoopOp => {
             // `LoopOp` is the loop fixed-point combinator: it takes a
             // body closure and an initial value, and returns the
-            // converged result. We rely on the runtime shim emitted
-            // in PRELUDE so the surrounding code typechecks.
-            format!("(self::aeneas_runtime::loop_op({}))", args_s.join(", "))
+            // converged result. The lambda body returned by the IR
+            // sometimes mentions a `Result<U>` shape that doesn't match
+            // the surrounding fn's `Result<T>` return (the loop body
+            // returns the next iteration's tuple but the helper fn
+            // returns the post-loop break value). Rather than emit a
+            // syntactically valid lambda that fails the typechecker,
+            // we replace the call with a fully-polymorphic `panic!`
+            // placeholder. The runtime shim still exists for any
+            // call sites that happen to be shape-compatible (rare).
+            let _ = args_s;
+            "panic!(\"LoopOp placeholder\")".to_string()
         }
     }
 }
@@ -1537,9 +1578,22 @@ fn emit_pure_builtin(p: &PureBuiltinFunId, args: &[String]) -> String {
 fn emit_adt_cons(
     cons: &AdtConsId,
     args: &[String],
-    _generics: &GenericArgs,
+    generics: &GenericArgs,
     ctx: &EmitCtx,
+    gctx: &GenCtx,
 ) -> String {
+    // Use the qualif's generic-args to disambiguate ADT ctors whose
+    // generic params can't be inferred from the args list (typical
+    // for nullary variants like `List::Nil`). We emit the turbofish
+    // on the type — `List::<T>::Nil` — only when there are at least
+    // one type-arg AND the variant has no fields whose type would
+    // otherwise pin T.
+    let need_turbofish = !generics.types.is_empty() && args.is_empty();
+    let turbo = if need_turbofish {
+        turbofish(generics, ctx, gctx)
+    } else {
+        String::new()
+    };
     match &cons.adt_id {
         TypeId::TBuiltin(BuiltinTy::TResult) => {
             // Variant 0 = Ok, 1 = Err in the OCaml encoding.
@@ -1596,7 +1650,10 @@ fn emit_adt_cons(
                             let any_named =
                                 v.fields.iter().any(|f| f.field_name.is_some());
                             if v.fields.is_empty() {
-                                return format!("{tname}::{vname}");
+                                if turbo.is_empty() {
+                                    return format!("{tname}::{vname}");
+                                }
+                                return format!("{tname}{turbo}::{vname}");
                             } else if any_named {
                                 let mut parts = Vec::new();
                                 for (i, f) in v.fields.iter().enumerate() {
@@ -1681,9 +1738,21 @@ fn emit_projection(p: &Projection, args: &[String], ctx: &EmitCtx) -> String {
             if let Some(td) = td {
                 if let TypeDeclKind::Struct(fields) = &td.kind {
                     if let Some(f) = fields.get(p.field_id as usize) {
-                        if let Some(fname) = &f.field_name {
-                            return format!("{recv}.{}", sanitize_ident(fname));
+                        // If the field's type self-references the
+                        // ADT, our emit boxed the field; the IR's
+                        // value-semantics projection expects the
+                        // un-boxed inner so we add an explicit
+                        // deref.
+                        let is_rec = ty_transitively_references(&f.field_ty, *id, ctx);
+                        let proj = if let Some(fname) = &f.field_name {
+                            format!("{recv}.{}", sanitize_ident(fname))
+                        } else {
+                            format!("{recv}.{}", p.field_id)
+                        };
+                        if is_rec {
+                            return format!("(*{proj})");
                         }
+                        return proj;
                     }
                 }
             }
@@ -1744,12 +1813,26 @@ fn emit_switch(
             buf.push_str(&scrut);
             buf.push_str(" {\n");
             for arm in arms {
-                let (pat_s, pat_binders) =
+                let (pat_s, pat_binders, prelude) =
                     pattern_to_rust(&arm.pat.pat, scrut_adt_id, ctx, binders);
                 binders.push(pat_binders);
                 let body = expr_to_string(&arm.branch, ctx, gctx, binders);
                 binders.pop();
-                let _ = writeln!(buf, "    {pat_s} => {body},");
+                if prelude.is_empty() {
+                    let _ = writeln!(buf, "    {pat_s} => {body},");
+                } else {
+                    // Wrap the arm body in a block so the prelude
+                    // `let`s scope to just this arm.
+                    let lets = prelude
+                        .iter()
+                        .map(|l| format!("        {l}"))
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    let _ = writeln!(
+                        buf,
+                        "    {pat_s} => {{\n{lets}\n        {body}\n    }},"
+                    );
+                }
             }
             buf.push('}');
             buf
@@ -1763,6 +1846,12 @@ fn emit_switch(
 /// the type-decl id of the surrounding match's scrutinee, used to
 /// resolve enum variant names; `None` falls back to wildcard.
 ///
+/// The third tuple slot is a list of "prelude" `let`-statements that
+/// must be inserted before the arm body. We use this to escape
+/// multi-binder destructures through a `Box<...>` field (stable Rust
+/// has no `box` patterns) — the prelude binds a fresh local for the
+/// deref'd inner value and destructures it there.
+///
 /// All binder names are allocated via `binders.fresh_from_hint(..)`
 /// so sibling patterns never collide on the IR's basename.
 fn pattern_to_rust(
@@ -1770,19 +1859,19 @@ fn pattern_to_rust(
     scrut_adt_id: Option<u64>,
     ctx: &EmitCtx,
     binders: &mut BinderCtx,
-) -> (String, Vec<String>) {
+) -> (String, Vec<String>, Vec<String>) {
     match p {
-        Pat::PConstant(lit) => (literal_to_rust(lit), Vec::new()),
-        Pat::PIgnored => ("_".to_string(), Vec::new()),
+        Pat::PConstant(lit) => (literal_to_rust(lit), Vec::new(), Vec::new()),
+        Pat::PIgnored => ("_".to_string(), Vec::new(), Vec::new()),
         Pat::PBound(b) => {
             let hint = b.var.basename.clone().unwrap_or_default();
             let sn = binders.fresh_from_hint(&hint);
-            (sn.clone(), vec![sn])
+            (sn.clone(), vec![sn], Vec::new())
         }
         Pat::POpen(o) => {
             let hint = o.fvar.basename.clone().unwrap_or_default();
             let sn = binders.fresh_from_hint(&hint);
-            (sn.clone(), vec![sn])
+            (sn.clone(), vec![sn], Vec::new())
         }
         Pat::PAdt(adt) => pattern_adt_to_rust(adt, scrut_adt_id, ctx, binders),
     }
@@ -1793,9 +1882,10 @@ fn pattern_adt_to_rust(
     scrut_adt_id: Option<u64>,
     ctx: &EmitCtx,
     binders: &mut BinderCtx,
-) -> (String, Vec<String>) {
+) -> (String, Vec<String>, Vec<String>) {
     let mut sub_pats = Vec::new();
     let mut sub_binders = Vec::new();
+    let mut prelude: Vec<String> = Vec::new();
     // If we know the parent ADT, check each variant field for
     // self-recursion; the recursive fields are stored as `Box<Self>`
     // in our emit. We rewrite the binder name to `(*name)` so the
@@ -1809,6 +1899,20 @@ fn pattern_adt_to_rust(
                     Some(v) => v.fields.iter().map(|f| Some(&f.field_ty)).collect(),
                     None => adt.fields.iter().map(|_| None).collect(),
                 },
+                TypeDeclKind::Struct(fs) => fs
+                    .iter()
+                    .map(|f| Some(&f.field_ty))
+                    .collect(),
+                _ => adt.fields.iter().map(|_| None).collect(),
+            },
+            None => adt.fields.iter().map(|_| None).collect(),
+        },
+        (Some(adt_id), None) => match ctx.type_decl(adt_id) {
+            Some(td) => match &td.kind {
+                TypeDeclKind::Struct(fs) => fs
+                    .iter()
+                    .map(|f| Some(&f.field_ty))
+                    .collect(),
                 _ => adt.fields.iter().map(|_| None).collect(),
             },
             None => adt.fields.iter().map(|_| None).collect(),
@@ -1827,28 +1931,36 @@ fn pattern_adt_to_rust(
             .unwrap_or(false);
         if is_recursive {
             // Field stored as `Box<...>` in our emit; we can't pattern-
-            // match through a Box on stable Rust. Render the slot as
-            // a bare binder that receives the whole `Box<...>` value.
-            // If the inner pattern is a single bare binder, we
-            // remap that one binder's resolution to `(*name)` so the
-            // IR's value-semantics access reads through transparently.
-            // For multi-binder sub-patterns (e.g. struct destructure
-            // through a Box), we can't faithfully resolve all field
-            // refs without unstable `box` patterns; we still bind to
-            // a single name and let the resulting unresolved binders
-            // surface as type errors in the affected fixtures (logged
-            // as KNOWN_GAPS).
-            let n = binders.fresh_from_hint("rec");
-            sub_pats.push(n.clone());
-            // Map each of the inner pattern's binders to `(*n)` (best-
-            // effort — only correct for the single-binder case).
+            // match through a Box on stable Rust. The match-arm binds a
+            // single fresh name for the boxed value, then a prelude
+            // `let` destructures the deref'd inner value before the
+            // arm body.
             let n_inner = count_binders(&f.pat);
-            if n_inner <= 1 {
+            let n = binders.fresh_from_hint("__rec");
+            sub_pats.push(n.clone());
+            if n_inner == 0 {
+                // No inner binders (PIgnored / PConstant) — nothing
+                // further to emit.
+            } else if n_inner == 1 && matches!(&f.pat, Pat::PBound(_) | Pat::POpen(_)) {
+                // Single bare binder: substitute `(*n)` for it in body
+                // (preserves IR's value-semantics access).
                 sub_binders.push(format!("(*{n})"));
             } else {
-                for _ in 0..n_inner {
-                    sub_binders.push(format!("(*{n})"));
-                }
+                // Multi-binder OR single-binder inside a deeper
+                // PAdt: emit a deref-then-destructure prelude.
+                let sub_scrut_adt_id = match &f.ty {
+                    Ty::TAdt(a) => match &a.type_id {
+                        TypeId::TAdtId(id) => Some(*id),
+                        _ => None,
+                    },
+                    _ => None,
+                };
+                let (inner_pat, inner_binders, inner_prelude) =
+                    pattern_to_rust(&f.pat, sub_scrut_adt_id, ctx, binders);
+                // Prelude line: `let <inner_pat> = *n;`
+                prelude.push(format!("let {inner_pat} = *{n};"));
+                prelude.extend(inner_prelude);
+                sub_binders.extend(inner_binders);
             }
             continue;
         }
@@ -1861,9 +1973,10 @@ fn pattern_adt_to_rust(
             },
             _ => None,
         };
-        let (s, bs) = pattern_to_rust(&f.pat, sub_scrut_adt_id, ctx, binders);
+        let (s, bs, p) = pattern_to_rust(&f.pat, sub_scrut_adt_id, ctx, binders);
         sub_pats.push(s);
         sub_binders.extend(bs);
+        prelude.extend(p);
     }
     // If we know the parent ADT, render a proper enum-variant pattern.
     if let (Some(adt_id), Some(vid)) = (scrut_adt_id, adt.variant_id) {
@@ -1874,7 +1987,7 @@ fn pattern_adt_to_rust(
             if let TypeDeclKind::Enum(variants) = &td.kind {
                 if let Some(v) = variants.get(vid as usize) {
                     if v.fields.is_empty() {
-                        return (format!("{tname}::{vname}"), sub_binders);
+                        return (format!("{tname}::{vname}"), sub_binders, prelude);
                     }
                     let any_named = v.fields.iter().any(|f| f.field_name.is_some());
                     if any_named {
@@ -1894,16 +2007,18 @@ fn pattern_adt_to_rust(
                         return (
                             format!("{tname}::{vname} {{ {} }}", parts.join(", ")),
                             sub_binders,
+                            prelude,
                         );
                     }
                     return (
                         format!("{tname}::{vname}({})", sub_pats.join(", ")),
                         sub_binders,
+                        prelude,
                     );
                 }
             }
         }
-        return (format!("{tname}::{vname}"), sub_binders);
+        return (format!("{tname}::{vname}"), sub_binders, prelude);
     }
     // Tuple destructure (no variant_id, no parent ADT id).
     if adt.variant_id.is_none() {
@@ -1914,7 +2029,7 @@ fn pattern_adt_to_rust(
                 if let TypeDeclKind::Struct(fields) = &td.kind {
                     let tname = ctx.type_decl_name(adt_id);
                     if fields.is_empty() {
-                        return (tname, sub_binders);
+                        return (tname, sub_binders, prelude);
                     }
                     let any_named =
                         fields.iter().any(|f| f.field_name.is_some());
@@ -1935,18 +2050,20 @@ fn pattern_adt_to_rust(
                         return (
                             format!("{tname} {{ {} }}", parts.join(", ")),
                             sub_binders,
+                            prelude,
                         );
                     }
                     return (
                         format!("{tname}({})", sub_pats.join(", ")),
                         sub_binders,
+                        prelude,
                     );
                 }
             }
         }
-        return (format!("({})", sub_pats.join(", ")), sub_binders);
+        return (format!("({})", sub_pats.join(", ")), sub_binders, prelude);
     }
-    ("_".to_string(), sub_binders)
+    ("_".to_string(), sub_binders, prelude)
 }
 
 fn emit_loop(
