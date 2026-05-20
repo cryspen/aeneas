@@ -6,7 +6,6 @@
 # `skip` disables the gate entirely for this crate. `auto` (the
 # default) lets the harness run it.
 [gates]
-g_byte = "auto"
 g_rust = "auto"
 # g_lean and g_rfl are not yet implemented — leave as `auto`.
 
@@ -16,15 +15,9 @@ g_rust = "auto"
 
 # Example: a decl whose API the emit reshapes incompatibly (e.g.
 # `fn(x: &mut u32) -> ()` becomes `fn(x: u32) -> u32`). The G_rust
-# gate skips it; G_byte still runs.
+# gate skips it.
 [decls."mycrate::reshapes_api"]
 g_rust = { skip = "api_reshape (signature change)" }
-
-# Example: a fixture whose L₀ ≠ L₁ output is known and harmless
-# (e.g. whitespace or banner differences). Suppresses the
-# mismatch → divergent reclassification.
-[decls."mycrate::known_divergent_fn"]
-g_byte = { divergent = "whitespace + banner only" }
 
 # Future: per-decl test-vector specs for the swap-based G_rust path.
 # Currently unused — the source-tests-as-oracle workflow takes the

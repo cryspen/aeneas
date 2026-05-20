@@ -1,5 +1,6 @@
 import AeneasCheck.Translate.Forward
 import AeneasCheck.Translate.Loops
+import AeneasCheck.Translate.LlbcTrusted
 import AeneasCheck.Pure.Pretty
 
 /-!
@@ -15,6 +16,7 @@ End-to-end pipeline:
 namespace AeneasCheck.Translate
 
 open AeneasCheck Raw Pure LLBCSharp
+open AeneasCheck.Translate.LlbcTrusted (typeDecls funDecls traitDecls traitImpls)
 
 structure TranslatedCrate where
   decls : Array Decl
@@ -60,17 +62,11 @@ def isStdlibTypeDecl (qualifiedName : String) : Bool :=
   | "core::option::Option"
   | "core::result::Result"
   | "core::cmp::Ordering"
-  | "core::ops::control_flow::ControlFlow"
-  -- Bug 4g: don't emit a fixture-local `Range` — the shim's
-  -- `Aeneas.Std.Range` is the type returned by `core.iter.range.
-  -- Range.step_by` et al., and emitting a parallel `iterators.Range`
-  -- creates two distinct types Lean refuses to unify at the
-  -- wrapper-call site.
-  | "core::ops::range::Range" => true
+  | "core::ops::control_flow::ControlFlow" => true
   | _ => false
 
 /-- M9.7k / M9.7o-E5a: build the [TypeDeclMap] used by the
-    per-function translator from `cc.llbcProgram.typeDecls`.
+    per-function translator from `LlbcTrusted.typeDecls cc`.
 
     The map's `name` slot is the *bare* last segment of the LLBC
     item-meta name (e.g. `test_crate::Pair` → `Pair`). Union / alias /
@@ -79,7 +75,7 @@ def isStdlibTypeDecl (qualifiedName : String) : Bool :=
     consumers). -/
 def buildTypeDeclMapFromLlbc (cc : CrateCert) : TypeDeclMap := Id.run do
   let mut m : TypeDeclMap := {}
-  for td in cc.llbcProgram.typeDecls do
+  for td in typeDecls cc do
     let bareName := bareNameOfQualified td.itemMeta.name
     match td.kind with
     | .struct fields =>
@@ -92,16 +88,10 @@ def buildTypeDeclMapFromLlbc (cc : CrateCert) : TypeDeclMap := Id.run do
       let counts : Array Nat := variants.map fun v => v.fields.size
       m := m.insert td.id
         { name := bareName, fieldNames := #[], variantFieldCounts := counts }
-    -- Bug 4d/4f follow-up: record opaque stdlib ADTs (StepBy, Iter,
-    -- IterMut, ChunksExact, NonZero, …) with their bare name and the
-    -- `isOpaque := true` tag so the typed-fallback path can dispatch
-    -- on `info.name` and synthesise an appropriate Unit-pinned shim
-    -- placeholder when the cert elides the local's binding.
-    -- `isOpaque` keeps `llbcTyToPTyWithVars` on the U32 fallback so
-    -- function-signature emission doesn't introduce unknown
-    -- `StepBy T`-style heads.
-    | .opaque =>
-      m := m.insert td.id { name := bareName, fieldNames := #[], isOpaque := true }
+    -- Opaque ADTs are intentionally absent from `tdm`; the catch-all
+    -- `none` arm in [llbcTyToPTyWithVars] then maps them to the
+    -- `U32` fallback. This matches the pre-Bug-4f behaviour.
+    | .opaque => ()
     | .union _ | .tAlias _ => ()
   return m
 
@@ -440,25 +430,25 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
   -- populated.
   let tdm := buildTypeDeclMapFromLlbc cc
   let structs : Array StructDecl :=
-    cc.llbcProgram.typeDecls.filterMap (structDeclOfLlbcTypeDecl tdm crateName)
+    (typeDecls cc).filterMap (structDeclOfLlbcTypeDecl tdm crateName)
   let enums : Array EnumDecl :=
-    cc.llbcProgram.typeDecls.filterMap (enumDeclOfLlbcTypeDecl tdm crateName)
+    (typeDecls cc).filterMap (enumDeclOfLlbcTypeDecl tdm crateName)
   -- M9.7l: build the `traitNameById` / `traitNameByQualified` lookups
-  -- from `cc.llbcProgram.traitDecls`. Lifting + impl pretty-name
+  -- from `LlbcTrusted.traitDecls cc`. Lifting + impl pretty-name
   -- computation come from the LlbcTraitDecl / LlbcTraitImpl shapes.
-  let traitDecls : Array Pure.TraitDecl :=
-    cc.llbcProgram.traitDecls.map (traitDeclOfLlbcTraitDecl tdm crateName)
+  let traitDeclsP : Array Pure.TraitDecl :=
+    (traitDecls cc).map (traitDeclOfLlbcTraitDecl tdm crateName)
   let traitNameById : Std.HashMap Nat String :=
-    cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+    (traitDecls cc).foldl (init := {}) fun acc td =>
       acc.insert td.id (bareNameOfQualified td.itemMeta.name)
   let traitNameByQualified : Std.HashMap String String :=
-    cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+    (traitDecls cc).foldl (init := {}) fun acc td =>
       acc.insert td.itemMeta.name (bareNameOfQualified td.itemMeta.name)
   let traitQualifiedNameById : Std.HashMap Nat String :=
-    cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+    (traitDecls cc).foldl (init := {}) fun acc td =>
       acc.insert td.id td.itemMeta.name
-  let traitImpls : Array Pure.TraitImpl :=
-    cc.llbcProgram.traitImpls.map
+  let traitImplsP : Array Pure.TraitImpl :=
+    (traitImpls cc).map
       (traitImplOfLlbcTraitImpl tdm traitNameById traitQualifiedNameById crateName)
   -- M9.5l: build a per-fn-id → pretty-name table so the Forward
   -- translator can rewrite EvCall `fn_name` to its standard-backend
@@ -471,9 +461,9 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
       | none => acc
   -- M9.5o / M9.7l: build a `fn_name → "<TraitName>.<methodName>.default"`
   -- table for default-method body functions, sourced from
-  -- `cc.llbcProgram.traitDecls`.
+  -- `LlbcTrusted.traitDecls cc`.
   let defaultRenameByName : Std.HashMap String String :=
-    cc.llbcProgram.traitDecls.foldl (init := {}) fun acc td =>
+    (traitDecls cc).foldl (init := {}) fun acc td =>
       td.methods.foldl (init := acc) fun acc m =>
         if m.hasDefault then
           let bare := bareNameOfQualified td.itemMeta.name
@@ -488,8 +478,8 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
   -- as fallback for any cert function with no matching LLBC entry —
   -- shouldn't happen for a consistent crate.
   let lfById : Std.HashMap Nat Raw.LlbcFunDecl :=
-    cc.llbcProgram.funDecls.foldl (init := {}) fun acc lf =>
-      acc.insert lf.id lf
+    (funDecls cc).foldl (init := {}) fun acc lf =>
+      acc.insert (LlbcTrusted.idOf lf) lf
   let lookupLf (f : Raw.FunCert) : Raw.LlbcFunDecl :=
     lfById.getD f.fnId { id := f.fnId, itemMeta := { name := f.fnName } }
   let mut decls : Array Decl := #[]
@@ -549,13 +539,14 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
     ) fun acc k v => acc.insert k v
   -- M9.5o / M9.7l: attach `traitBoundParams` to each decl by reading
   -- the function's trait clauses from
-  -- `cc.llbcProgram.funDecls[matching].signature.generics.traitClauses`.
+  -- `(LlbcTrusted.funDecls cc)[matching].signature.generics.traitClauses`.
   decls := decls.map fun d =>
     let body := rewriteCalleeNames allCalleeRenames d.body
     let traitBoundParams : Array Pure.TraitBoundParam :=
-      match cc.llbcProgram.funDecls.find? (·.itemMeta.name == d.qualifiedName) with
+      match (funDecls cc).find?
+              (fun lf => (LlbcTrusted.itemMetaNameOf lf) == d.qualifiedName) with
       | some fd =>
-        fd.signature.generics.traitClauses.map
+        (LlbcTrusted.signatureOf fd).generics.traitClauses.map
           (traitBoundParamOf traitNameByQualified d.typeParams)
       | none => #[]
     -- M9.5o: a body that references `TraitClause@N::method` resolves
@@ -604,6 +595,6 @@ def translateCrate (cc : CrateCert) (strictJoin : Bool := false) :
         traitBoundParams := #[] }
     else
       { d with traitBoundParams }
-  return { decls, structs, enums, traitDecls, traitImpls }
+  return { decls, structs, enums, traitDecls := traitDeclsP, traitImpls := traitImplsP }
 
 end AeneasCheck.Translate

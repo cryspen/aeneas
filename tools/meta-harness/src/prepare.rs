@@ -7,9 +7,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// Resolved intermediate artefacts for one input. `cert_path` is what
-/// the gates read; `llbc_path` is threaded into g_byte when the cert
-/// came from a `--llbc` or `--crate` invocation (where it isn't
-/// co-located with the cert).
+/// the gates read; `llbc_path` is preserved for diagnostic use when
+/// the cert came from a `--llbc` or `--crate` invocation.
 pub struct Prepared {
     pub cert_path: PathBuf,
     pub llbc_path: Option<PathBuf>,

@@ -4,12 +4,13 @@ import AeneasCheck
 `lake exe aeneas-check` entry point.
 
 Usage:
-  aeneas-check <cert.json>                  [--out …] [--rust-model …]    -- v3+
-  aeneas-check <llbc.json> <cert.json>      [--out …] [--rust-model …]    -- legacy
+  aeneas-check <cert.json>                  [--rust-model …]    -- v3+
+  aeneas-check <llbc.json> <cert.json>      [--rust-model …]    -- legacy
 
-Pipeline: parse → typecheck → replay → translate → (Lean/Rust emit).
-The `--out` and `--rust-model` flags are optional; without them the
-checker just validates the cert and prints a summary.
+Pipeline: parse → typecheck → replay → translate → (Rust emit).
+The `--rust-model` flag is optional; without it the checker just
+validates the cert and prints a summary. The Lean-emit backend was
+retired in Phase 2a — only the Rust differential-model emit remains.
 
 M9.7f: cert v3 embeds the post-pre-pass LLBC inside the cert itself
 (`cc.llbcProgram`), so the separate `<llbc.json>` argument is no
@@ -21,9 +22,8 @@ been updated yet.
 open AeneasCheck Json Typecheck LLBCSharp Translate Backends
 
 def usage : String :=
-  "Usage: aeneas-check <cert.json> [--out <generated.lean>] [--rust-model <model.rs>]\n" ++
-  "                    [--skip-decl <name> ...] [--only-decl <crate::path> ...]\n" ++
-  "       aeneas-check <llbc.json> <cert.json> [--out …] [--rust-model …]    (legacy, llbc.json ignored)"
+  "Usage: aeneas-check <cert.json> [--rust-model <model.rs>]\n" ++
+  "       aeneas-check <llbc.json> <cert.json> [--rust-model …]    (legacy, llbc.json ignored)"
 
 /-- Find `--flag value` in args, return value if present. -/
 def findFlag (args : List String) (flag : String) : Option String :=
@@ -32,18 +32,6 @@ def findFlag (args : List String) (flag : String) : Option String :=
   | f :: v :: rest =>
     if f = flag then some v else findFlag (v :: rest) flag
   | [_] => none
-
-/-- Session 5 (Item 2): collect every `--flag value` occurrence into
-    a list. Used by `--skip-decl <name>` to drop named decls from the
-    Lean emit so a fixture's well-emitted subset can ship without
-    dragging the broken siblings along. -/
-def findFlagsAll (args : List String) (flag : String) : List String :=
-  match args with
-  | [] => []
-  | f :: v :: rest =>
-    if f = flag then v :: findFlagsAll rest flag
-    else findFlagsAll (v :: rest) flag
-  | [_] => []
 
 /-- M9.7f: pick the cert path and the remaining args from the CLI tail.
 
@@ -92,14 +80,6 @@ def main (args : List String) : IO UInt32 := do
           let parts := f.fnName.splitOn "::"
           parts.headD "crate"
         | [] => "crate"
-      let skipNames := findFlagsAll rest "--skip-decl"
-      let onlyNames := findFlagsAll rest "--only-decl"
-      match findFlag rest "--out" with
-      | some outPath =>
-        let src := emitTranslatedCrate crateName tc skipNames onlyNames
-        IO.FS.writeFile outPath src
-        IO.println s!"  wrote Lean source: {outPath}"
-      | none => pure ()
       match findFlag rest "--rust-model" with
       | some rustPath =>
         let src := emitTranslatedCrateRust crateName tc

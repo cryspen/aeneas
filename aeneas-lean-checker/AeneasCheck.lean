@@ -6,7 +6,7 @@ import AeneasCheck.Typecheck.Consistency
 import AeneasCheck.LLBCSharp.Replay
 import AeneasCheck.Pure.Pretty
 import AeneasCheck.Translate.Driver
-import AeneasCheck.Backends.LeanEmit
+import AeneasCheck.Translate.LlbcTrusted
 import AeneasCheck.Backends.RustEmit
 
 /-!
@@ -15,7 +15,9 @@ Top-level module for the Aeneas Lean checker.
 The checker takes a Charon-produced LLBC + an Aeneas-produced cert
 (format defined in `src/cert/cert_schema.json`), replays the LLBC#
 trace deterministically against the program, and translates the
-result to a Pure IR that can be emitted as Lean or Rust source.
+result to a Pure IR that can be emitted as a Rust model (for
+differential testing). The Lean-emit backend was retired in Phase 2a;
+only the verified replayer + the Rust-model emit remain.
 
 Trust boundary: this checker plus the Lean kernel are the TCB for any
 proof done over its output. The OCaml symbolic interpreter is

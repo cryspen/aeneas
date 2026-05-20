@@ -58,8 +58,6 @@ pub fn run_sweep(
     sweep_dir: &Path,
     gates: &[String],
     manifest: &Manifest,
-    aeneas: &Path,
-    aeneas_check: &Path,
     source_crate: Option<&Path>,
 ) -> Result<SweepReport> {
     let cert_paths = enumerate_certs(sweep_dir)?;
@@ -127,31 +125,12 @@ pub fn run_sweep(
         for gate in gates {
             match gate.as_str() {
                 "" | "none" => continue,
-                "g_byte" => gates::g_byte::run(
-                    cert,
-                    cert_path,
-                    aeneas,
-                    aeneas_check,
-                    manifest,
-                    &mut report,
-                )?,
                 "g_rust" => {
                     let run = test_run.as_ref().expect("g_rust active → test_run computed");
                     gates::g_rust::run_with_test_run_filtered(
                         cert,
                         run,
                         &excluded_per_fixture[idx],
-                        manifest,
-                        &mut report,
-                    )?;
-                }
-                "c_lean" => {
-                    let lean_diff_dir = gates::c_lean::default_lean_diff_dir();
-                    gates::c_lean::run(
-                        cert,
-                        cert_path,
-                        aeneas_check,
-                        &lean_diff_dir,
                         manifest,
                         &mut report,
                     )?;

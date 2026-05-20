@@ -1,4 +1,0 @@
-.lake/
-lake-manifest.json
-rust-runner/target/
-rust-runner/Cargo.lock

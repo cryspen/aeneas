@@ -47,7 +47,7 @@ struct Cli {
     #[arg(long)]
     source_crate: Option<PathBuf>,
 
-    /// Gates to run. Comma-separated. Default: g_byte.
+    /// Gates to run. Comma-separated. Default: g_rust.
     #[arg(long, value_delimiter = ',')]
     gates: Option<Vec<String>>,
 
@@ -194,12 +194,10 @@ fn run() -> Result<i32> {
     }
 
     let manifest = manifest::load(cli.manifest.as_deref(), cli.krate.as_deref())?;
-    let aeneas = resolve_aeneas(&cli)?;
     let aeneas_check = resolve_aeneas_check(&cli)?;
 
     let mut active_gates = cli.gates.clone().unwrap_or_else(default_gates);
     active_gates.retain(|g| match g.as_str() {
-        "g_byte" => manifest.gates.g_byte.as_deref() != Some("skip"),
         "g_rust" => manifest.gates.g_rust.as_deref() != Some("skip"),
         "g_lean" => manifest.gates.g_lean.as_deref() != Some("skip"),
         "g_rfl" => manifest.gates.g_rfl.as_deref() != Some("skip"),
@@ -213,8 +211,6 @@ fn run() -> Result<i32> {
             dir,
             &active_gates,
             &manifest,
-            &aeneas,
-            &aeneas_check,
             source,
         )?;
         sweep_report.write_json(&cli.report_json)?;
@@ -227,7 +223,7 @@ fn run() -> Result<i32> {
         return Ok(sweep_report.exit_code());
     }
 
-    let prepared = resolve_cert_input(&cli, &aeneas)?;
+    let prepared = resolve_cert_input(&cli)?;
     let cert_path = prepared.cert_path.clone();
     let cert = Cert::load(&cert_path)
         .with_context(|| format!("loading cert {}", cert_path.display()))?;
@@ -238,15 +234,6 @@ fn run() -> Result<i32> {
     for gate in &active_gates {
         match gate.as_str() {
             "" | "none" => continue,
-            "g_byte" => gates::g_byte::run_with_llbc(
-                &cert,
-                &cert_path,
-                prepared.llbc_path.as_deref(),
-                &aeneas,
-                &aeneas_check,
-                &manifest,
-                &mut report,
-            )?,
             "g_rust" => {
                 let src = cli.source_crate.as_deref().or(cli.krate.as_deref()).ok_or_else(|| {
                     anyhow::anyhow!("g_rust requires --source-crate or --crate")
@@ -256,17 +243,6 @@ fn run() -> Result<i32> {
                     &cert_path,
                     &aeneas_check,
                     src,
-                    &manifest,
-                    &mut report,
-                )?
-            }
-            "c_lean" => {
-                let lean_diff_dir = gates::c_lean::default_lean_diff_dir();
-                gates::c_lean::run(
-                    &cert,
-                    &cert_path,
-                    &aeneas_check,
-                    &lean_diff_dir,
                     &manifest,
                     &mut report,
                 )?
@@ -288,10 +264,10 @@ fn run() -> Result<i32> {
 }
 
 fn default_gates() -> Vec<String> {
-    vec!["g_byte".into()]
+    vec!["g_rust".into()]
 }
 
-fn resolve_cert_input(cli: &Cli, aeneas: &Path) -> Result<prepare::Prepared> {
+fn resolve_cert_input(cli: &Cli) -> Result<prepare::Prepared> {
     if let Some(p) = &cli.cert {
         return Ok(prepare::Prepared {
             cert_path: p.clone(),
@@ -300,11 +276,13 @@ fn resolve_cert_input(cli: &Cli, aeneas: &Path) -> Result<prepare::Prepared> {
         });
     }
     if let Some(p) = &cli.llbc {
-        return prepare::from_llbc(p, aeneas, cli.work_dir.as_deref());
+        let aeneas = resolve_aeneas(cli)?;
+        return prepare::from_llbc(p, &aeneas, cli.work_dir.as_deref());
     }
     if let Some(p) = &cli.krate {
+        let aeneas = resolve_aeneas(cli)?;
         let charon = resolve_charon(cli)?;
-        return prepare::from_crate(p, &charon, aeneas, cli.work_dir.as_deref());
+        return prepare::from_crate(p, &charon, &aeneas, cli.work_dir.as_deref());
     }
     bail!("one of --crate, --llbc, --cert is required")
 }

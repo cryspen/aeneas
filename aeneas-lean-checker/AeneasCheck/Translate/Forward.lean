@@ -1,5 +1,6 @@
 import AeneasCheck.Pure.Syntax
 import AeneasCheck.LLBCSharp.Replay
+import AeneasCheck.Translate.LlbcTrusted
 
 /-!
 Translate a CheckedTrace into a Pure decl.
@@ -88,19 +89,11 @@ structure TypeDeclInfo where
       variant id. Empty for struct decls; populated for enum decls
       (zero for C-style nullary variants). -/
   variantFieldCounts : Array Nat := #[]
-  /-- Bug 4d/4f follow-up: `true` when the cert recorded this ADT as
-      `Opaque` (a stdlib type with no body — `StepBy`, `Iter`,
-      `IterMut`, `ChunksExact`, `NonZero`, …). The translator keeps
-      these in `TypeDeclMap` so the typed-fallback path can dispatch
-      on `name`, but `llbcTyToPTyWithVars` still maps them to the
-      legacy `U32` fallback (rather than emitting an unknown
-      `StepBy T` head into function signatures). -/
-  isOpaque : Bool := false
   deriving Repr, Inhabited
 
 /-- M9.5b: a TypeDeclId → TypeDeclInfo lookup, keyed by the integer
     ADT id used by `LlbcTy.tAdt`. The Driver builds this from
-    `cc.llbcProgram.typeDecls`. -/
+    `LlbcTrusted.typeDecls cc`. -/
 abbrev TypeDeclMap := Std.HashMap Nat TypeDeclInfo
 
 /-- M9.7k: bare last `::`-segment of a fully-qualified path. Mirrors
@@ -138,47 +131,6 @@ partial def llbcTyToPTyWithVars
         match args[0]? with
         | some inner => llbcTyToPTyWithVars tdm typeParams inner
         | none => .lit (.int .u32)
-      -- Bug 4g: iterator-adapter transparency. Each wrapper maps
-      -- to whatever the corresponding shim's `next`/`into_iter`
-      -- call actually flows through, so the wrapper-sig type
-      -- aligns with the call-site binding.
-      --
-      -- * `StepBy<X>` → `X` (the inner iterable flows through; the
-      --   Range.step_by shim returns Range Usize, so the cert's
-      --   StepBy<Range<Usize>> renders as Range Usize).
-      -- * `Iter<T>` / `IterMut<T>` → `Slice T` (the shim's
-      --   Slice.iter / Slice.iter_mut returns the same Slice).
-      -- * `IntoIter<T>` → `Vec T` (the shim's Vec.into_iter returns
-      --   the same Vec; the cert's wrapper type IntoIter<T> wraps
-      --   the Vec value).
-      else if info.name == "StepBy" then
-        match args[0]? with
-        | some inner => llbcTyToPTyWithVars tdm typeParams inner
-        | none => .lit (.int .u32)
-      else if info.name == "Iter" ∨ info.name == "IterMut" then
-        match args[0]? with
-        | some inner => .slice (llbcTyToPTyWithVars tdm typeParams inner)
-        | none => .lit (.int .u32)
-      else if info.name == "IntoIter" then
-        match args[0]? with
-        | some inner => .adt "Vec" #[llbcTyToPTyWithVars tdm typeParams inner]
-        | none => .lit (.int .u32)
-      -- Bug 4g: `Vec<T, A>` (where `A : Allocator`). The shim is
-      -- mono-arg `alloc.vec.Vec α`; drop the Allocator generic so the
-      -- emitted type `Vec U32` matches the shim's signature.
-      else if info.name == "Vec" then
-        match args[0]? with
-        | some inner => .adt "Vec" #[llbcTyToPTyWithVars tdm typeParams inner]
-        | none => .lit (.int .u32)
-      -- Bug 4d/4f follow-up: opaque stdlib ADTs are in `tdm` so the
-      -- placeholder synthesiser can dispatch on `info.name`, but
-      -- signature-emission falls back to U32 by default — emitting
-      -- a bare `<TypeName> T` head would resolve to an unknown
-      -- identifier unless a top-level alias exists. Only the
-      -- transparent-wrapper cases above and the `Vec` alias case
-      -- are safe to surface; everything else stays on U32.
-      else if info.isOpaque then
-        .lit (.int .u32)
       else
         let pargs := args.map (llbcTyToPTyWithVars tdm typeParams)
         .adt info.name pargs
@@ -306,61 +258,6 @@ private def vm1FallbackCompatible : LlbcTy → LlbcTy → Bool
     | .tArray _ _, .tAdt _ _ | .tAdt _ _, .tArray _ _ => false
     | _, _ => true
 
-/-- Bug 4f follow-up: render an `LlbcTy` to a Lean type string, for
-    use in typed-placeholder emission. Returns `none` when the type
-    contains a `tVar` (type-variable) — those require `typeParams` to
-    resolve, which `placeholderPExprOfWith` doesn't carry. Concrete
-    cases (scalars, slices/arrays of scalars, named opaque ADTs)
-    render directly; the caller wraps the placeholder in
-    `((<expr> : <typeStr>))` so Lean has enough info to elaborate
-    even when the call site doesn't constrain the type parameter
-    (e.g. `Slice.len Slice.placeholder` whose result is `Result Usize`
-    regardless of element type). -/
-partial def renderConcreteLlbcTy (tdm : TypeDeclMap) : LlbcTy → Option String
-  | .litTy (.int k) =>
-    match k with
-    | .u8 => some "Std.U8" | .u16 => some "Std.U16" | .u32 => some "Std.U32"
-    | .u64 => some "Std.U64" | .u128 => some "Std.U128"
-    | .usize => some "Std.Usize"
-    | .i8 => some "Std.I8" | .i16 => some "Std.I16" | .i32 => some "Std.I32"
-    | .i64 => some "Std.I64" | .i128 => some "Std.I128"
-    | .isize => some "Std.Isize"
-  | .litTy .bool => some "Bool"
-  | .litTy .char => some "Char"
-  | .litTy (.float _) => some "Float"
-  | .tRef _ inner _ => renderConcreteLlbcTy tdm inner
-  | .tSlice elem =>
-    (renderConcreteLlbcTy tdm elem).map fun s => s!"Aeneas.Std.Slice {s}"
-  | .tArray elem n =>
-    (renderConcreteLlbcTy tdm elem).map fun s =>
-      s!"Aeneas.Std.Array {s} (Aeneas.Std.Usize.ofNat {n})"
-  | .tAdt id args =>
-    match tdm[id]? with
-    | some info =>
-      -- Render args one-by-one; bail on any tVar.
-      let argStrs : Option (Array String) :=
-        args.foldlM (init := #[]) fun acc a =>
-          (renderConcreteLlbcTy tdm a).map (acc.push ·)
-      argStrs.map fun strs =>
-        if strs.isEmpty then info.name
-        else
-          let parens (s : String) : String :=
-            if s.contains ' ' ∧ !s.startsWith "(" then s!"({s})" else s
-          s!"{info.name} {String.intercalate " " (strs.toList.map parens)}"
-    | none => none
-  | .tTuple #[] => some "Unit"
-  | _ => none
-
-/-- Bug 4f follow-up: wrap a placeholder expression with a Lean type
-    ascription `((<e> : <typeStr>))` when the LLBC type renders
-    concretely (no `tVar`s). The pretty printer's `__typed::`
-    handler turns this into the ascription on emit. Returns `e`
-    unchanged when the type cannot be rendered. -/
-def withTypedAscription (tdm : TypeDeclMap) (t : LlbcTy) (e : PExpr) : PExpr :=
-  match renderConcreteLlbcTy tdm t with
-  | some s => .app s!"__typed::{s}" #[e]
-  | none => e
-
 /-- Phase 4a-3: `tdm`-aware variant of [placeholderPExprOf] that can
     synthesise a struct-literal placeholder for an ADT type. When the
     type is a `tAdt` whose `TypeDeclInfo` has the same number of
@@ -378,38 +275,19 @@ def withTypedAscription (tdm : TypeDeclMap) (t : LlbcTy) (e : PExpr) : PExpr :=
 partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
   | .litTy (.int k) => .lit (.scalar k 0)
   | .litTy .bool => .lit (.bool false)
-  | t@(.tAdt id args) =>
+  | .tAdt id args =>
     match tdm[id]? with
     | some info =>
       -- Struct case (no variants): emit `{ f₁ := 0, …, fₙ := 0 }`
       -- when fields and generic args line up 1-1.
-      if info.variantFieldCounts.isEmpty ∧ ¬info.isOpaque
+      if info.variantFieldCounts.isEmpty
           ∧ info.fieldNames.size == args.size then
         let fields : Array (String × PExpr) :=
           info.fieldNames.zipWith (fun fname fty =>
             (fname, placeholderPExprOfWith tdm fty)) args
         .recordLit fields (some info.name)
-      else
-        -- Bug 4d: stdlib-ADT placeholder synthesis. Recognise common
-        -- stdlib types by their bare name so a missing-identifier
-        -- placeholder synthesised at an enum/opaque slot doesn't fall
-        -- through to `0#u32`. The shim helpers are Unit-pinned; the
-        -- typed-ascription wrapper [withTypedAscription] then
-        -- annotates the call site with the concrete LLBC type so
-        -- callers like `Slice.len Slice.placeholder` (whose return
-        -- is independent of α) still elaborate.
-        let raw : Option PExpr :=
-          match info.name with
-          | "Option" => some (.app "Option.placeholder" #[])
-          | "ChunksExact" => some (.app "ChunksExact.placeholder" #[])
-          | _ => none
-        match raw with
-        | some r => withTypedAscription tdm t r
-        | none => .lit (.scalar .u32 0)
-    | none =>
-      -- Bug 4d: opaque ADTs aren't in tdm. Fall through to
-      -- `0#u32` here — opaque-tdm population is a separate sub-bug.
-      .lit (.scalar .u32 0)
+      else .lit (.scalar .u32 0)
+    | none => .lit (.scalar .u32 0)
   -- Bug 4 (Array placeholder synthesis): mirror the `.tAdt` placeholder
   -- logic for fixed-length arrays. `use_static::PREFIX` declares a
   -- `[u8; 1]` static whose linear walk never writes vm[0]; without
@@ -422,12 +300,6 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
   | .tArray elemTy n =>
     let elem := placeholderPExprOfWith tdm elemTy
     match n with
-    | 0 =>
-      -- Bug 4d: empty-array placeholder. Use the Unit-pinned shim so
-      -- the call site doesn't leave `α` as an unresolved metavariable
-      -- through the typical `Array.ofList List.nil →
-      -- ArrayToSliceShared → Slice.iter → ...` chain.
-      .app "Aeneas.Std.Array.empty" #[]
     | 1 =>
       .app "Aeneas.Std.Array.singleton" #[elem]
     | _ =>
@@ -438,11 +310,9 @@ partial def placeholderPExprOfWith (tdm : TypeDeclMap) : LlbcTy → PExpr
   -- Bug 4b: typed placeholders for `Slice α` and reference shapes —
   -- needed when the cert elides a local's initialiser (Charon
   -- drops const-item reads like `S::SLICE` from the event stream)
-  -- and the lookup falls through to the typed-fallback path. The
-  -- shim helpers `Slice.placeholder` / `Array.placeholder` infer
-  -- `α` from surrounding context.
-  | t@(.tSlice _) =>
-    withTypedAscription tdm t (.app "Aeneas.Std.Slice.placeholder" #[])
+  -- and the lookup falls through to the typed-fallback path.
+  | .tSlice _ =>
+    .app "Aeneas.Std.Slice.placeholder" #[]
   -- Peel references at the value level (Rust borrows are erased
   -- after monomorphisation, so a `&T` slot pure-value-wise *is* a
   -- `T`).
@@ -938,7 +808,7 @@ structure WalkState where
       survives when the param uses the user's source name (`y`)
       rather than the synthesised `x{N}` form the legacy `x`-prefix
       check assumed. Seeded once at translateFunWith / translateLoopFun
-      from `lf.localsNames` (or the synthesised `paramName` fallback
+      from `LlbcTrusted.localsNamesArr lf` (or the synthesised `paramName` fallback
       when no source name is available). -/
   paramNameMap : Std.HashMap String Nat := {}
   /-- Session 7 Item 1d follow-up: forward map from input-local index
@@ -2467,7 +2337,7 @@ structure BackSig where
   deriving Repr, Inhabited
 
 /-- M9.5b / M9.7o-E5b: build the [BackSig] from a structured
-    `LlbcSignature` (sourced from `cc.llbcProgram.funDecls`). Uses
+    `LlbcSignature` (sourced via `LlbcTrusted.funDecls cc`). Uses
     [llbcTyToPTyWithVars] to convert input/output types to `PTy` and
     the structured borrow detectors ([isMutRefLlbc] etc.) to compute
     the back-closure shape. -/
@@ -3012,14 +2882,11 @@ partial def propagateRefsFromStatement
       else
         let elems : Array PExpr := resolvedOpts.map (·.getD (.lit (.scalar .u32 0)))
         match elems.size with
-        | 0 =>
-          -- Zero-length array literal `[]`: emit the Unit-pinned shim
-          -- so the surrounding chain doesn't leave `α` unresolved.
-          vm.insert place.local_ (.app "Aeneas.Std.Array.empty" #[])
         | 1 =>
           vm.insert place.local_ (.app "Aeneas.Std.Array.singleton" #[elems[0]!])
         | _ =>
           -- Build a List.cons chain: List.cons e₁ (List.cons e₂ … List.nil).
+          -- Zero-length arrays fall through to `Array.ofList List.nil`.
           let chain : PExpr :=
             elems.foldr (init := .app "List.nil" #[]) fun e acc =>
               .app "List.cons" #[e, acc]
@@ -3064,7 +2931,7 @@ end
     threads it through. -/
 def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
     (lf : Raw.LlbcFunDecl) (_t : CheckedTrace) : Decl :=
-  let lsig := lf.signature
+  let lsig := LlbcTrusted.signatureOf lf
   let numParams := lsig.inputs.size
   -- M9.5i: the function's type-parameter names flow into both the
   -- emitted `Decl.typeParams` (for the `{T : Type}` binder line) and
@@ -3072,14 +2939,14 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- output type resolves to `.tyVar (typeParams[K])`.
   let typeParams := lsig.generics.types
   -- Session 7 Item 1d: prefer the source-level name from
-  -- `lf.localsNames[i+1]?` over the synthesised `x{i+1}`. Returns
+  -- `LlbcTrusted.localName lf (i+1)` over the synthesised `x{i+1}`. Returns
   -- the synthesised name as a fallback when the local is unnamed
   -- (return slot, MIR-introduced temp) or `localsNames` is empty
   -- (opaque body / older cert). Charon stores locals in index order
   -- with index 0 = return slot, 1..N = inputs, so paramI refers to
   -- local index `i + 1`.
   let effectiveParamName (i : Nat) : String :=
-    match lf.localsNames[i + 1]? with
+    match LlbcTrusted.localName lf (i + 1) with
     | some (some n) => n
     | _ => paramName (i + 1)
   let params : Array Param :=
@@ -3126,9 +2993,9 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
     for i in [0:numParams] do
       m := m.insert (i + 1) (.var (effectiveParamName i))
     return m
-  let seedAcc : SeedAcc := match lf.body with
+  let seedAcc : SeedAcc := match LlbcTrusted.bodyOf lf with
     | some b => seedGlobalRefsFromBlock genericTypeNames genericConstNames
-                  lf.localsNames b { vm := inputSeedVm }
+                  (LlbcTrusted.localsNamesArr lf) b { vm := inputSeedVm }
     | none => { vm := inputSeedVm }
   let initVm : VarMap := Id.run do
     let mut m : VarMap := seedAcc.vm
@@ -3150,14 +3017,15 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- parameter types in scope.
   let initLocalTypes : Std.HashMap Nat Raw.LlbcTy := Id.run do
     let mut m : Std.HashMap Nat Raw.LlbcTy := {}
-    if lf.localsTypes.isEmpty then
+    let ltys := LlbcTrusted.localsTypesArr lf
+    if ltys.isEmpty then
       for i in [0:numParams] do
         match lsig.inputs[i]? with
         | some t => m := m.insert (i + 1) t
         | none => ()
     else
-      for i in [0:lf.localsTypes.size] do
-        m := m.insert i lf.localsTypes[i]!
+      for i in [0:ltys.size] do
+        m := m.insert i ltys[i]!
     return m
   -- Session 5 (Item 1): seed the initial walk-state with the binds
   -- the global-ref seed pass produced. These prepend the body so the
@@ -3189,15 +3057,15 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- consults to keep pattern slots aligned with the seed pass's
   -- vm-seeded names.
   let variantBinders : Std.HashMap (Nat × Nat) String :=
-    match lf.body with
+    match LlbcTrusted.bodyOf lf with
     | none => {}
     | some body =>
-      collectVariantBindersBlock lf.localsNames body {}
+      collectVariantBindersBlock (LlbcTrusted.localsNamesArr lf) body {}
   let finalSt0 : WalkState :=
     walkEvents f.events
       { vm := initVm, numParams, tdm, localTypes := initLocalTypes,
         binds := seedAcc.binds, paramNameMap, paramNameByLocal,
-        localsNames := lf.localsNames, variantBinders }
+        localsNames := LlbcTrusted.localsNamesArr lf, variantBinders }
   -- Bug 2 (uninitialised locals): the cert event stream often flattens
   -- away Charon's `Assign(localTgt, Ref(localSrc.deref, _))` /
   -- `Assign(localTgt, Use(...))` borrow chains. The LLBC body still
@@ -3205,7 +3073,7 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
   -- post-call values (e.g. the call's `t0` binding into the
   -- return slot `local 0`) along the LLBC chain.
   let propagatedVm : VarMap :=
-    match lf.body with
+    match LlbcTrusted.bodyOf lf with
     | some b => propagateRefsFromBlock b finalSt0.vm
     | none => finalSt0.vm
   let finalSt : WalkState := { finalSt0 with vm := propagatedVm }
@@ -3391,7 +3259,7 @@ def translateFunWith (tdm : TypeDeclMap) (f : Raw.FunCert)
     trailer
     -- Session 7 Item 1a: thread Charon's `attr_info.public` so the
     -- docstring can carry the `Visibility: public` line.
-    isPublic := lf.itemMeta.isPublic }
+    isPublic := LlbcTrusted.itemMetaPublicOf lf }
 
 /-- M9.5b / M9.7o-E5b: back-compat wrapper around [translateFunWith]
     with an empty type-decl map and a synthetic empty `LlbcFunDecl`.

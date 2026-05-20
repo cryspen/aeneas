@@ -1,6 +1,7 @@
 import AeneasCheck.Pure.Syntax
 import AeneasCheck.LLBCSharp.Replay
 import AeneasCheck.Translate.Forward
+import AeneasCheck.Translate.LlbcTrusted
 
 /-!
 M12.1 — T-Loop-Fixpoint forward translation.
@@ -107,7 +108,7 @@ def stateName (idx : Nat) : String :=
     invariant on a function with a known body). -/
 def stateLocalTy (tdm : TypeDeclMap) (typeParams : Array String)
     (lf : Raw.LlbcFunDecl) (local_ : Nat) : PTy :=
-  match lf.localsTypes[local_]? with
+  match LlbcTrusted.localType lf local_ with
   | some t => llbcTyToPTyWithVars tdm typeParams t
   | none => placeholderTy
 
@@ -424,12 +425,12 @@ def buildTopLevelLoopFn (fnName : String) (typeParams : Array String)
 def translateLoopFun (tdm : TypeDeclMap) (f : Raw.FunCert)
     (lf : Raw.LlbcFunDecl) : Option (Array Decl) := do
   let (invIdx, endIdx, _loopId, inv) ← findLoopBracket f.events
-  let lsig := lf.signature
+  let lsig := LlbcTrusted.signatureOf lf
   let typeParams := lsig.generics.types
   let numParams := lsig.inputs.size
   -- Session 7 Item 1d: mirror translateFunWith's effectiveParamName.
   let effectiveParamName (i : Nat) : String :=
-    match lf.localsNames[i + 1]? with
+    match LlbcTrusted.localName lf (i + 1) with
     | some (some n) => n
     | _ => paramName (i + 1)
   let params : Array Param :=

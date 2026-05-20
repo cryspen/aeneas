@@ -18,8 +18,6 @@ pub struct Manifest {
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct GateToggles {
     #[serde(default)]
-    pub g_byte: Option<String>,
-    #[serde(default)]
     pub g_rust: Option<String>,
     #[serde(default)]
     pub g_lean: Option<String>,
@@ -29,10 +27,8 @@ pub struct GateToggles {
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct DeclOverride {
-    /// G_byte override. e.g. `{ skip = "wrapping_add shim" }` or
+    /// Per-decl gate override. e.g. `{ skip = "api_reshape" }` or
     /// `{ divergent = "<reason>" }`.
-    #[serde(default)]
-    pub g_byte: Option<DeclVerdict>,
     #[serde(default)]
     pub g_rust: Option<DeclVerdict>,
 }
