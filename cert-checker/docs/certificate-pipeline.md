@@ -179,10 +179,10 @@ hierarchy of Fig. 1 corresponds to the Lean module layout:
 make bin/aeneas
 
 # Lean checker (Lean-core only, ~1s warm)
-cd aeneas-lean-checker && lake build
+cd cert-checker/aeneas-lean-checker && lake build
 
 # Soundness proof (Mathlib, ~1s warm)
-cd aeneas-lean-soundness && lake build
+cd cert-checker/aeneas-lean-soundness && lake build
 ```
 
 ### Vertical-slice gate (G1)
@@ -190,22 +190,22 @@ cd aeneas-lean-soundness && lake build
 End-to-end Rust → cert → Lean → Rust model → cargo test:
 
 ```bash
-bash scripts/check-vertical-slice.sh
+bash cert-checker/scripts/check-vertical-slice.sh
 ```
 
 ### Other gates
 
 * **G2** — Direct (hand-written) Lean checker tests:
-  `cd aeneas-lean-checker && for f in tests/Direct/*.lean; do lake env lean "$f"; done`
+  `cd cert-checker/aeneas-lean-checker && for f in tests/Direct/*.lean; do lake env lean "$f"; done`
 * **G4** — 89-fixture sweep:
   ```bash
   for f in tests/llbc/*.cert.json; do
-    aeneas-lean-checker/.lake/build/bin/aeneas-check "$f" > /dev/null || echo "FAIL: $f"
+    cert-checker/aeneas-lean-checker/.lake/build/bin/aeneas-check "$f" > /dev/null || echo "FAIL: $f"
   done
   ```
 * **G5** — Axiom-hygiene check (TCB must remain `[propext, Classical.choice, Quot.sound]`):
   ```bash
-  cd aeneas-lean-soundness
+  cd cert-checker/aeneas-lean-soundness
   lake env lean tests/AxiomCheck.lean | diff - tests/axioms.golden.txt
   ```
 * **G6** — No-sorry under `Soundness/`:
@@ -214,16 +214,16 @@ bash scripts/check-vertical-slice.sh
 * **G_rust** — Differential property tests (post-Phase-2a: the
   primary emit-correctness signal):
   ```bash
-  ./tools/meta-harness/target/release/meta-harness --sweep tests/llbc \
-    --gates g_rust --source-crate tests/lean-checker/differential
-  (cd tests/lean-checker/differential && cargo test --release --tests)
+  ./cert-checker/meta-harness/target/release/meta-harness --sweep tests/llbc \
+    --gates g_rust --source-crate cert-checker/differential
+  (cd cert-checker/differential && cargo test --release --tests)
   ```
   Baseline: 53 pass / 3090 skip across 89 fixtures (86 cargo tests).
 * **Z1 trust-audit gate** — every LLBC-metadata read in
   `Translate/{Forward,Loops,Driver}.lean` must route through
   `AeneasCheck.Translate.LlbcTrusted`:
   ```bash
-  bash scripts/check-llbc-trust.sh
+  bash cert-checker/scripts/check-llbc-trust.sh
   ```
   Run before every cert-walker PR.
 
@@ -237,7 +237,7 @@ charon rustc --preset=aeneas --dest-file=my.llbc -- src/my.rs --crate-type=lib
 bin/aeneas -emit-cert my.llbc
 
 # 3. cert.json → Rust model (replay + emit)
-aeneas-lean-checker/.lake/build/bin/aeneas-check my.cert.json --rust-model my_model.rs
+cert-checker/aeneas-lean-checker/.lake/build/bin/aeneas-check my.cert.json --rust-model my_model.rs
 ```
 
 ---

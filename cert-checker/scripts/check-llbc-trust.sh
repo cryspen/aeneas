@@ -3,7 +3,8 @@
 # must go through `AeneasCheck.Translate.LlbcTrusted`. Run from repo
 # root. Exits non-zero on any raw access in Forward/Loops/Driver.
 set -euo pipefail
-ROOT=aeneas-lean-checker/AeneasCheck/Translate
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$REPO_ROOT/cert-checker/aeneas-lean-checker/AeneasCheck/Translate"
 PATTERNS='lf\.signature\b|lf\.localsTypes\b|lf\.localsNames\b|lf\.body\b|lf\.generics\b|lf\.itemMeta\b|cc\.llbcProgram\b'
 hits=$(grep -rEn "$PATTERNS" "$ROOT/Forward.lean" "$ROOT/Loops.lean" "$ROOT/Driver.lean" || true)
 if [ -n "$hits" ]; then

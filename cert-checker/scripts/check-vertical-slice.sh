@@ -4,10 +4,11 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+BUNDLE="$ROOT/cert-checker"
 TESTS="$ROOT/tests"
-CHECKER="$ROOT/aeneas-lean-checker"
-DIFF="$TESTS/lean-checker/differential"
+CHECKER="$BUNDLE/aeneas-lean-checker"
+DIFF="$BUNDLE/differential"
 AENEAS="$ROOT/bin/aeneas"
 CHARON="${CHARON:-/Users/karthik/charon/charon/target/release/charon}"
 

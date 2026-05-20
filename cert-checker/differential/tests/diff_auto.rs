@@ -13,43 +13,43 @@
 
 #![allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 
-#[path = "../../../src/aggregates_basic.rs"]
+#[path = "../../../tests/src/aggregates_basic.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod aggregates_basic_src;
-#[path = "../../../src/arrays.rs"]
+#[path = "../../../tests/src/arrays.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod arrays_src;
-#[path = "../../../src/arrays_defs.rs"]
+#[path = "../../../tests/src/arrays_defs.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod arrays_defs_src;
-#[path = "../../../src/bitwise.rs"]
+#[path = "../../../tests/src/bitwise.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod bitwise_src;
-#[path = "../../../src/calls.rs"]
+#[path = "../../../tests/src/calls.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod calls_src;
 #[path = "../src/fixtures/chunks_exact.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod chunks_exact_src;
-#[path = "../../../src/compare_simple.rs"]
+#[path = "../../../tests/src/compare_simple.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod compare_simple_src;
-#[path = "../../../src/constants.rs"]
+#[path = "../../../tests/src/constants.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod constants_src;
-#[path = "../../../src/demo.rs"]
+#[path = "../../../tests/src/demo.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod demo_src;
-#[path = "../../../src/deref.rs"]
+#[path = "../../../tests/src/deref.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod deref_src;
-#[path = "../../../src/incr_cert.rs"]
+#[path = "../../../tests/src/incr_cert.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod incr_cert_src;
-#[path = "../../../src/loops.rs"]
+#[path = "../../../tests/src/loops.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod loops_src;
-#[path = "../../../src/loops_simple.rs"]
+#[path = "../../../tests/src/loops_simple.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod loops_simple_src;
 #[path = "../src/fixtures/no_nested_borrows.rs"]
@@ -58,16 +58,16 @@ mod no_nested_borrows_src;
 #[path = "../src/fixtures/paper.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod paper_src;
-#[path = "../../../src/scalars.rs"]
+#[path = "../../../tests/src/scalars.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod scalars_src;
 #[path = "../src/fixtures/step_by.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod step_by_src;
-#[path = "../../../src/traits.rs"]
+#[path = "../../../tests/src/traits.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod traits_src;
-#[path = "../../../src/traits_basic.rs"]
+#[path = "../../../tests/src/traits_basic.rs"]
 #[allow(unused_variables, dead_code, non_snake_case, unused_parens, unused_mut)]
 mod traits_basic_src;
 

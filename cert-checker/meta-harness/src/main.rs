@@ -141,9 +141,9 @@ fn run() -> Result<i32> {
             anyhow::anyhow!("--regen-models requires --sweep <cert-dir>")
         })?;
         let aeneas_check = resolve_aeneas_check(&cli)?;
-        let default_diff = PathBuf::from("tests/lean-checker/differential");
+        let default_diff = PathBuf::from("cert-checker/differential");
         let diff_crate = cli.diff_crate.as_deref().unwrap_or(&default_diff);
-        let default_model = PathBuf::from("tests/lean-checker/differential/src/model.rs");
+        let default_model = PathBuf::from("cert-checker/differential/src/model.rs");
         let model_path = cli
             .tests_model_path
             .as_deref()
@@ -174,7 +174,7 @@ fn run() -> Result<i32> {
         let src = cli.tests_src_dir.as_deref().ok_or_else(|| {
             anyhow::anyhow!("--generate-tests requires --tests-src-dir <fixture-source-dir>")
         })?;
-        let default_model = PathBuf::from("tests/lean-checker/differential/src/model.rs");
+        let default_model = PathBuf::from("cert-checker/differential/src/model.rs");
         let model_path = cli.tests_model_path.as_deref().unwrap_or(&default_model);
         let summary = generate::generate_for_cert_dir(dir, src, model_path, &cli.tests_out)?;
         eprintln!(
