@@ -100,6 +100,13 @@ let () =
          The cert (fmt_version >= 3) embeds the post-pre-pass LLBC \
          program directly, so a companion .llbc.json file is no longer \
          emitted." );
+      ( "-dump-pure-ir",
+        Arg.String set_dump_pure_ir,
+        " Dump the Pure IR as JSON to <dest_dir>/<crate>.pure.json at \
+         the given pipeline stage. Format is <stage>:<dest_dir>. \
+         Stages: post-s2p (Phase 1), post-micro and pre-extract \
+         (Phase 3, not yet implemented). Consumed by the rust/pure-ir/ \
+         Rust crate." );
       ( "-backend",
         Arg.Symbol (backend_names, set_backend),
         " Specify the target backend (" ^ String.concat ", " backend_names ^ ")"

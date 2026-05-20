@@ -2130,5 +2130,42 @@ let translate_crate (filename : string) (dest_dir : string)
   (* Translate the module to the pure AST *)
   let trans_ctx, trans_crate = translate_crate_to_pure crate marked_ids in
 
+  (* Phase 1 Pure-IR dump hook: emits a <crate>.pure.json at the
+     [post-s2p] stage when [-dump-pure-ir post-s2p:<dest>] was passed.
+     [post-micro] and [pre-extract] are reserved for Phase 3 and raise
+     at runtime if requested. See
+     {!documentation/pure-ir-json-export-plan.md}. *)
+  (match !Config.dump_pure_ir with
+  | Some ("post-s2p", dest) ->
+      let base =
+        let bn = Filename.basename filename in
+        match Filename.chop_suffix_opt ~suffix:".llbc" bn with
+        | Some n -> n
+        | None -> bn
+      in
+      let main_fun_decls =
+        List.map (fun (t : fun_and_loops) -> t.f) trans_crate.fun_decls
+      in
+      let json =
+        PureJson.crate_to_json ~crate_name:base ~stage:"post-s2p"
+          ~type_decls:trans_crate.type_decls ~fun_decls:main_fun_decls
+          ~global_decls:trans_crate.global_decls
+          ~trait_decls:trans_crate.trait_decls
+          ~trait_impls:trans_crate.trait_impls
+      in
+      let path = Filename.concat dest (base ^ ".pure.json") in
+      let oc = open_out path in
+      Yojson.Basic.pretty_to_channel oc json;
+      output_char oc '\n';
+      close_out oc;
+      log#linfo (lazy ("Pure-IR dump: " ^ path))
+  | Some (("post-micro" | "pre-extract"), _) ->
+      failwith
+        "-dump-pure-ir: stages post-micro and pre-extract are not yet \
+         implemented (Phase 3)"
+  | Some (stage, _) ->
+      failwith ("-dump-pure-ir: unknown stage " ^ stage)
+  | None -> ());
+
   extract_translated_crate filename dest_dir subdir crate trans_ctx trans_crate
     extracted_opaque
