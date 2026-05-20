@@ -253,7 +253,7 @@ rejects unknown versions with a clear error.
 
 Acceptance: one fixture parses cleanly. CI not yet wired.
 
-### Phase 2 — full constructor coverage (3–5 days)
+### Phase 2 — full constructor coverage (3–5 days) — landed
 
 Cover every `Pure.expr` constructor + every `Pure.ty` constructor +
 `fun_decl` + `type_decl` envelope. Mechanical pattern: one match arm
@@ -274,6 +274,39 @@ fixture-coverage matrix.
 
 Acceptance: all 89 fixtures parse on the `post-s2p` stage. No
 "UNSUPPORTED" stubs remain in `PureJson.ml`.
+
+**What landed (May 2026):**
+
+- `src/pure/PureJson.ml{,.mli}` was rewritten end-to-end: every
+  constructor of `Pure.ty`, `Pure.literal`, `Pure.qualif`,
+  `Pure.tpat`/`Pure.pat`, `Pure.binop`/`Pure.unop`, and `Pure.expr`
+  is now encoded. The decl envelope covers the real `FunSig`
+  (generics, explicit_info, known_info, preds, inputs, output,
+  fwd_info, back_effect_info), `FunBody` with real `tpat list`
+  inputs, `FunDecl` (loop_id, loop_pos, builtin_info-as-tag, src,
+  backend_attributes, signature, body), `TypeDecl`
+  (Struct/Enum/Opaque), `GlobalDecl`, `TraitDecl`, `TraitImpl`, and
+  the generic `'a binder`.
+- `rust/pure-ir/src/ast.rs` mirrors that emit one-for-one. Phase-1
+  stub structs are replaced. Recursive `Expr` payloads are `Box`-ed
+  to keep the type finite-sized.
+- `rust/pure-ir/src/parser.rs` now disables serde_json's default
+  128-level recursion guard and uses `serde_stacker` to handle
+  deeply-nested expression chains (notably `curve25519`'s let/app
+  cascades).
+- `rust/pure-ir/tests/parse_all_fixtures.rs` (new): walks all 89
+  `tests/llbc/*.llbc` fixtures, spawns `bin/aeneas
+  -dump-pure-ir post-s2p:<tmp>`, asserts the dump contains no
+  `"UNSUPPORTED"` substring, and parses each via `pure_ir::parse`.
+  89/89 fixtures pass. Three (`closures`, `raw_pointers`,
+  `issue-804-closure-return-ref`) are `known-failure` /
+  `[!lean] skip` in the harness; aeneas exits non-zero after partial
+  translation but the dump is still written and parses cleanly.
+- Per the plan's defaults, spans, `item_meta`, `llbc_generics`, and
+  `mplace` are stripped from the emit. `emeta` and `builtin_info`
+  variant payloads are summarised by their tag (the Rust consumer
+  has no need for their internal structure yet). The decisions are
+  documented in `src/pure/PureJson.mli`.
 
 ### Phase 3 — additional stages + tests (2 days)
 
@@ -386,12 +419,12 @@ notes).
 
 ## Acceptance summary
 
-| Phase | Deliverable | Acceptance |
-|---|---|---|
-| 1 | Minimal OCaml emit + Rust parse | 1 fixture round-trips by eye |
-| 2 | Full constructor coverage | 89 fixtures parse on `post-s2p` |
-| 3 | All stages + CI | 267 JSON files parse; goldens stable |
-| 4 | First Rust backend prototype | One new backend writes useful output |
+| Phase | Deliverable | Acceptance | Status |
+|---|---|---|---|
+| 1 | Minimal OCaml emit + Rust parse | 1 fixture round-trips by eye | done (commit `f950d1fe`) |
+| 2 | Full constructor coverage | 89 fixtures parse on `post-s2p` | done (May 2026, 89/89) |
+| 3 | All stages + CI | 267 JSON files parse; goldens stable | not started |
+| 4 | First Rust backend prototype | One new backend writes useful output | not started |
 
 Phases 1–3 are this campaign. Phase 4 launches a separate workstream
 per new backend.
