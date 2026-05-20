@@ -8,6 +8,9 @@ description = "Phase 4 MVP: emit IR-faithful Rust source from Pure-IR JSON."
 pure-ir = { path = "../pure-ir" }
 serde_json = { version = "1", features = ["unbounded_depth"] }
 
+[dev-dependencies]
+proptest = "1"
+
 [[bin]]
 name = "pir2rs"
 path = "src/bin/pir2rs.rs"
