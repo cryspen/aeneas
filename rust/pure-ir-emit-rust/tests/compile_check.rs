@@ -27,184 +27,98 @@ const STAGES: &[&str] = &["post-s2p", "post-micro", "pre-extract"];
 /// `(fixture_name, stage, reason)`. We aim to keep this list short —
 /// the canonical target is ≤15 entries (95%+ pair coverage). Larger
 /// gaps point at a structural limitation in the emitter.
+///
+/// The bulk of remaining gaps are *move-of-FnOnce / Vec / Box
+/// backward-fn* cases: Aeneas's IR re-uses backward closures in
+/// branch arms, but stable Rust requires single-consumption of
+/// `Box<dyn FnOnce>` / non-`Copy` values. Solving these requires
+/// closure-reuse rewrites that are outside the mechanical-fix
+/// buckets.
 const KNOWN_GAPS: &[(&str, &str, &str)] = &[
-    // -- Multi-use of move-only backward closures (Box<dyn FnOnce>):
-    //    Aeneas's IR re-uses backward fns in branch arms; Rust requires
-    //    a single consumption. ~25 pairs (post-s2p mostly) are
-    //    blocked by this; we list the fixtures here as a class.
+    // -- Move-of-FnOnce-backward-fn: backward closures called more
+    //    than once in branch arms (Aeneas's value-semantics model
+    //    doesn't carry single-use constraints).
+    ("adt-borrows", "post-micro", "move-of-FnOnce-backward-fn"),
     ("adt-borrows", "post-s2p", "move-of-FnOnce-backward-fn"),
-    ("arrays", "post-s2p", "move-of-Vec-in-backward-fn"),
+    ("adt-borrows", "pre-extract", "move-of-FnOnce-backward-fn"),
     ("calls", "post-s2p", "move-of-FnOnce-backward-fn"),
-    ("dyn", "post-s2p", "move-of-FnOnce-backward-fn"),
     ("dyn", "post-micro", "move-of-FnOnce-backward-fn"),
+    ("dyn", "post-s2p", "move-of-FnOnce-backward-fn"),
     ("dyn", "pre-extract", "move-of-FnOnce-backward-fn"),
-    ("drop_bug", "post-s2p", "move-of-Vec-backward-fn"),
-    ("drop_bug", "post-micro", "move-of-Vec-backward-fn"),
-    ("drop_bug", "pre-extract", "move-of-Vec-backward-fn"),
     ("hashmap", "post-s2p", "move-of-FnOnce-backward-fn"),
-    ("issue-270-loop-list", "post-s2p", "move-of-Box-backward-fn"),
     ("iterators", "post-s2p", "move-of-FnOnce-backward-fn"),
     ("joins", "post-s2p", "move-of-FnOnce-backward-fn"),
-    ("loops", "post-s2p", "move-of-Vec-backward-fn"),
-    ("loops-rec", "post-s2p", "move-of-Vec-backward-fn"),
-    ("mini_tree", "post-s2p", "move-of-Box-recursive-struct"),
-    ("mut-borrow-in-shared-borrow", "post-s2p", "move-of-Vec-backward-fn"),
-    ("traits", "post-s2p", "move-of-T-generic-backward-fn"),
-    // -- Multi-binder destructure through a Box<T> (recursive ADTs);
-    //    stable Rust has no `box` patterns:
-    ("list-borrows", "post-s2p", "destructure-Box-LCell-needs-box-pattern"),
-    ("list-borrows", "post-micro", "destructure-Box-LCell-needs-box-pattern"),
-    ("list-borrows", "pre-extract", "destructure-Box-LCell-needs-box-pattern"),
-    ("nested-borrows", "post-s2p", "destructure-Box-LCell-needs-box-pattern"),
-    ("nested-borrows", "post-micro", "destructure-Box-LCell-needs-box-pattern"),
-    ("nested-borrows", "pre-extract", "destructure-Box-LCell-needs-box-pattern"),
-    // -- Loop bodies in post-micro / pre-extract pass tuples to
-    //    `loop_op` that don't match the helper fn's positional args;
-    //    we model `loop_op` via the runtime shim with a fixed shape.
+    // -- loop_op-positional-arg-mismatch: the runtime LoopOp shim
+    //    panic-stub still accepts the call site shape, but the
+    //    surrounding code uses the loop output via tuple bindings
+    //    whose moved values are then re-used (a move-of-Vec
+    //    derivative). Listed under the loop-op tag for continuity.
     ("arrays", "post-micro", "loop_op-positional-arg-mismatch"),
     ("arrays", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("assert-cfg", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("assert-cfg", "pre-extract", "loop_op-positional-arg-mismatch"),
     ("drop", "post-micro", "loop_op-positional-arg-mismatch"),
     ("drop", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("iterators", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("iterators", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("iterators-array", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("iterators-array", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("iterators-scalar", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("iterators-scalar", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("issue-789-loop-ctx-match", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("issue-789-loop-ctx-match", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("issue-807-missing-symbolic-value", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("issue-807-missing-symbolic-value", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("loop_shared_loan_in_join", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("loop_shared_loan_in_join", "pre-extract", "loop_op-positional-arg-mismatch"),
     ("hashmap", "post-micro", "loop_op-positional-arg-mismatch"),
     ("hashmap", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("loops-issues", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("loops-issues", "pre-extract", "loop_op-positional-arg-mismatch"),
     ("loops-adts", "post-micro", "loop_op-positional-arg-mismatch"),
     ("loops-adts", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("rename_attribute", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("rename_attribute", "pre-extract", "loop_op-positional-arg-mismatch"),
-    // -- Big crates with many interacting placeholders:
-    ("curve25519", "post-s2p", "vast-trait-method-surface"),
-    ("curve25519", "post-micro", "vast-trait-method-surface"),
-    ("curve25519", "pre-extract", "vast-trait-method-surface"),
-    // -- Mutually-recursive ADTs with multi-binder Box destructures:
-    ("no_nested_borrows", "post-s2p", "destructure-Box-multi-binder"),
-    ("no_nested_borrows", "post-micro", "destructure-Box-multi-binder"),
-    ("no_nested_borrows", "pre-extract", "destructure-Box-multi-binder"),
-    // -- Type-changing struct updates (functional update of generic
-    //    args), can't be done in surface Rust without rebuilding all
-    //    fields:
-    ("dynamic_size", "post-s2p", "type-changing-struct-update"),
-    ("dynamic_size", "post-micro", "type-changing-struct-update"),
-    ("dynamic_size", "pre-extract", "type-changing-struct-update"),
-    // -- Big trait+impl surface; emit can't refine method dispatch
-    //    without trait-decl/-impl lookups:
+    // -- Move-of-Vec-backward-fn: same family as move-of-FnOnce but
+    //    the moved value is a `Vec<T>` returned from a backward fn.
+    ("drop_bug", "post-micro", "move-of-Vec-backward-fn"),
+    ("drop_bug", "post-s2p", "move-of-Vec-backward-fn"),
+    ("drop_bug", "pre-extract", "move-of-Vec-backward-fn"),
+    ("loops", "post-s2p", "move-of-Vec-backward-fn"),
+    ("loops-rec", "post-s2p", "move-of-Vec-backward-fn"),
+    ("mut-borrow-in-shared-borrow", "post-micro", "move-of-Vec-backward-fn"),
+    ("mut-borrow-in-shared-borrow", "post-s2p", "move-of-Vec-backward-fn"),
+    ("mut-borrow-in-shared-borrow", "pre-extract", "move-of-Vec-backward-fn"),
+    // -- Destructure-Box: multi-binder Box patterns (the
+    //    `Pat::PAdt` inside `Box<Inner>` reaches a self-recursive
+    //    field twice in the same expression — the IR's
+    //    value-semantics access doesn't fit Rust's affine drop).
+    ("list-borrows", "post-micro", "destructure-Box-LCell-needs-box-pattern"),
+    ("list-borrows", "pre-extract", "destructure-Box-LCell-needs-box-pattern"),
+    ("nested-borrows", "post-micro", "destructure-Box-LCell-needs-box-pattern"),
+    ("nested-borrows", "post-s2p", "destructure-Box-LCell-needs-box-pattern"),
+    ("nested-borrows", "pre-extract", "destructure-Box-LCell-needs-box-pattern"),
+    // -- FnOnce-coercion-shape-mismatch: closure-typed values flow
+    //    through positions that need stricter coercion.
+    ("closures", "post-micro", "FnOnce-coercion-shape-mismatch"),
+    ("closures", "post-s2p", "FnOnce-coercion-shape-mismatch"),
+    ("closures", "pre-extract", "FnOnce-coercion-shape-mismatch"),
+    // -- type-changing-array-update: functional updates of arrays
+    //    that change the element type's generics.
+    ("issue-803-self-in-array", "post-micro", "type-changing-array-update"),
+    ("issue-803-self-in-array", "post-s2p", "type-changing-array-update"),
+    ("issue-803-self-in-array", "pre-extract", "type-changing-array-update"),
+    // -- PartialOrd-via-trait-method-placeholder: binop on a
+    //    transparent newtype — the IR encodes `self.0 > 1` as a
+    //    binop on the wrapping type, but the surface receiver is
+    //    the ADT.
     ("traits", "post-micro", "PartialOrd-via-trait-method-placeholder"),
     ("traits", "pre-extract", "PartialOrd-via-trait-method-placeholder"),
-    ("constants-lean", "post-micro", "cvar-non-literal-receiver"),
-    ("constants-lean", "pre-extract", "cvar-non-literal-receiver"),
-    // -- aeneas runtime-shape mismatches (impl_alloc_*_index, etc.)
-    //    whose call sites pass tuple shapes that don't match the
-    //    stubbed helper signature:
-    ("loops-rec", "post-micro", "stubbed-builtin-arity"),
-    ("loops-rec", "pre-extract", "stubbed-builtin-arity"),
-    ("loops-sequences", "post-micro", "stubbed-builtin-arity"),
-    ("loops-sequences", "pre-extract", "stubbed-builtin-arity"),
-    ("loops-nested", "post-micro", "stubbed-builtin-arity"),
-    ("loops-nested", "pre-extract", "stubbed-builtin-arity"),
-    ("loops-nested-rec", "post-micro", "stubbed-builtin-arity"),
-    ("loops-nested-rec", "pre-extract", "stubbed-builtin-arity"),
-    ("derive", "post-s2p", "stubbed-builtin-arity"),
-    ("derive", "post-micro", "stubbed-builtin-arity"),
-    ("derive", "pre-extract", "stubbed-builtin-arity"),
-    ("issue-803-self-in-array", "post-s2p", "type-changing-array-update"),
-    ("issue-803-self-in-array", "post-micro", "type-changing-array-update"),
-    ("issue-803-self-in-array", "pre-extract", "type-changing-array-update"),
-    ("issue-804-closure-return-ref", "post-s2p", "closure-return-ref-not-IR-faithful"),
-    ("issue-804-closure-return-ref", "post-micro", "closure-return-ref-not-IR-faithful"),
-    ("issue-804-closure-return-ref", "pre-extract", "closure-return-ref-not-IR-faithful"),
-    // -- Recursive-projection / inner-pattern cases:
-    ("issue-194-recursive-struct-projector", "post-micro", "destructure-Box-multi-binder"),
-    ("issue-194-recursive-struct-projector", "pre-extract", "destructure-Box-multi-binder"),
-    ("issue-134-loop-shared-borrows", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("issue-134-loop-shared-borrows", "pre-extract", "loop_op-positional-arg-mismatch"),
-    // -- Aeneas exits non-zero (post-s2p only) but post-micro/pre-
-    //    extract succeed for these — kept here for completeness:
-    ("closures", "post-s2p", "FnOnce-coercion-shape-mismatch"),
-    ("issue-440-type-error", "post-micro", "partially-moved-x"),
-    ("issue-440-type-error", "pre-extract", "partially-moved-x"),
-    ("string-chars", "post-s2p", "fmt::Arguments-typed-array-arg"),
-    ("string-chars", "post-micro", "fmt::Arguments-typed-array-arg"),
-    ("string-chars", "pre-extract", "fmt::Arguments-typed-array-arg"),
-    ("order", "post-s2p", "arg-order-from-recursive-helper"),
+    // -- arg-order-from-recursive-helper: binop applied to a
+    //    transparent-newtype `Wrap` receiver (same family as
+    //    PartialOrd-via-trait-method-placeholder).
     ("order", "post-micro", "arg-order-from-recursive-helper"),
     ("order", "pre-extract", "arg-order-from-recursive-helper"),
-    ("multi_region", "post-s2p", "duplicate-back-fn-binders"),
-    ("multi_region", "post-micro", "duplicate-back-fn-binders"),
-    ("multi_region", "pre-extract", "duplicate-back-fn-binders"),
-    ("multi-target", "post-s2p", "global-recursive-fwd-ref"),
-    ("multi-target", "post-micro", "global-recursive-fwd-ref"),
-    ("multi-target", "pre-extract", "global-recursive-fwd-ref"),
-    ("issue-815-global-referencing-fallible-global", "post-s2p", "global-fwd-decl"),
-    ("issue-815-global-referencing-fallible-global", "post-micro", "global-fwd-decl"),
-    ("issue-815-global-referencing-fallible-global", "pre-extract", "global-fwd-decl"),
-    ("issue-270-loop-list", "post-micro", "destructure-Box-multi-binder"),
-    ("issue-270-loop-list", "pre-extract", "destructure-Box-multi-binder"),
-    ("range", "post-s2p", "trait-method-Iterator-Range"),
-    ("range", "post-micro", "trait-method-Iterator-Range"),
-    ("range", "pre-extract", "trait-method-Iterator-Range"),
-    ("as_mut", "post-s2p", "trait-method-AsMut"),
-    ("as_mut", "post-micro", "trait-method-AsMut"),
-    ("as_mut", "pre-extract", "trait-method-AsMut"),
-    ("array_slice_index", "post-s2p", "trait-method-Index-IndexMut"),
-    ("array_slice_index", "post-micro", "trait-method-Index-IndexMut"),
-    ("array_slice_index", "pre-extract", "trait-method-Index-IndexMut"),
-    ("builtin-auto", "post-s2p", "AsRef-trait-method-placeholder"),
-    ("builtin-auto", "post-micro", "AsRef-trait-method-placeholder"),
-    ("builtin-auto", "pre-extract", "AsRef-trait-method-placeholder"),
-    ("from_to", "post-s2p", "From-Into-via-trait-method-placeholder"),
-    ("from_to", "post-micro", "From-Into-via-trait-method-placeholder"),
-    ("from_to", "pre-extract", "From-Into-via-trait-method-placeholder"),
-    ("deref", "post-s2p", "Deref-DerefMut-trait-method-placeholder"),
-    ("deref", "post-micro", "Deref-DerefMut-trait-method-placeholder"),
-    ("deref", "pre-extract", "Deref-DerefMut-trait-method-placeholder"),
-    ("slices_basic", "post-s2p", "slice-as-ref-trait-method"),
-    ("slices_basic", "post-micro", "slice-as-ref-trait-method"),
-    ("slices_basic", "pre-extract", "slice-as-ref-trait-method"),
-    ("slices", "post-s2p", "slice-trait-method-placeholder"),
-    ("slices", "post-micro", "slice-trait-method-placeholder"),
-    ("slices", "pre-extract", "slice-trait-method-placeholder"),
-    ("reborrows", "post-s2p", "binder-id-skew-via-shared-borrow"),
-    ("reborrows", "post-micro", "binder-id-skew-via-shared-borrow"),
-    ("reborrows", "pre-extract", "binder-id-skew-via-shared-borrow"),
-    ("static", "post-s2p", "static-global-fwd-ref"),
-    ("static", "post-micro", "static-global-fwd-ref"),
-    ("static", "pre-extract", "static-global-fwd-ref"),
-    ("step_by", "post-s2p", "Iterator::step_by-trait-method"),
-    ("step_by", "post-micro", "Iterator::step_by-trait-method"),
-    ("step_by", "pre-extract", "Iterator::step_by-trait-method"),
-    ("paper", "post-s2p", "list-Box-binder-skew"),
-    ("paper", "post-micro", "list-Box-binder-skew"),
-    ("paper", "pre-extract", "list-Box-binder-skew"),
-    ("chunks_exact", "post-s2p", "chunks_exact-iterator-trait"),
-    ("chunks_exact", "post-micro", "chunks_exact-iterator-trait"),
-    ("chunks_exact", "pre-extract", "chunks_exact-iterator-trait"),
-    // -- Post-micro shape mismatches that surface only after loop
-    //    decomposition. Same family as the loop_op cases above:
-    ("adt-borrows", "post-micro", "move-of-FnOnce-backward-fn"),
-    ("adt-borrows", "pre-extract", "move-of-FnOnce-backward-fn"),
-    ("closures", "post-micro", "FnOnce-coercion-shape-mismatch"),
-    ("closures", "pre-extract", "FnOnce-coercion-shape-mismatch"),
-    ("loops", "post-micro", "loop_op-positional-arg-mismatch"),
-    ("loops", "pre-extract", "loop_op-positional-arg-mismatch"),
-    ("mini_tree", "post-micro", "destructure-Box-multi-binder"),
-    ("mini_tree", "pre-extract", "destructure-Box-multi-binder"),
-    ("mut-borrow-in-shared-borrow", "post-micro", "move-of-Vec-backward-fn"),
-    ("mut-borrow-in-shared-borrow", "pre-extract", "move-of-Vec-backward-fn"),
+    // -- closure-return-ref-not-IR-faithful: closure returns a
+    //    borrow that the IR doesn't carry.
+    ("issue-804-closure-return-ref", "post-micro", "closure-return-ref-not-IR-faithful"),
+    ("issue-804-closure-return-ref", "pre-extract", "closure-return-ref-not-IR-faithful"),
+    // -- destructure-Box-multi-binder: transparent newtype `IdType`
+    //    where the body returns `IdType<T>` but the signature wants
+    //    `T` — requires a transparent-newtype unwrap rewrite.
+    ("no_nested_borrows", "post-micro", "destructure-Box-multi-binder"),
+    ("no_nested_borrows", "pre-extract", "destructure-Box-multi-binder"),
+    // -- partially-moved-x: ADT field move from a value that is
+    //    later still in scope.
+    ("issue-440-type-error", "post-micro", "partially-moved-x"),
+    ("issue-440-type-error", "pre-extract", "partially-moved-x"),
+    // -- Single-fixture residuals (one (fixture, stage) each):
+    ("issue-270-loop-list", "post-s2p", "move-of-Box-backward-fn"),
+    ("mini_tree", "post-s2p", "move-of-Box-recursive-struct"),
+    ("traits", "post-s2p", "move-of-T-generic-backward-fn"),
+    ("arrays", "post-s2p", "move-of-Vec-in-backward-fn"),
 ];
 
 fn repo_root() -> PathBuf {
