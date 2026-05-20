@@ -14,3 +14,7 @@ proptest = "1"
 [[bin]]
 name = "pir2rs"
 path = "src/bin/pir2rs.rs"
+
+[[bin]]
+name = "gen-diff-tests"
+path = "src/bin/gen-diff-tests.rs"
