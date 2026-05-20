@@ -117,12 +117,6 @@ def Valid (e : Event) (Ω : LLBCState) : Prop :=
   | .endAbs _ _ _ _ => True
   | .symExpandMutBorrow _ bid innerSv _ _ _ =>
       Ω.loanIdFresh bid ∧ Ω.symValIdFresh innerSv
-  -- `proj` has no `LStep` constructor at M10 — `EvProj` revival is
-  -- M11+ work (plan §14.8). Mark as `False` so
-  -- `Valid_iff_LStep_exists` remains vacuously consistent on this
-  -- branch; the Phase-D case-split will surface the gap if a cert
-  -- ever emits a `proj` event.
-  | .proj _ _ _ => False
   -- Fig. 11 — join rules ---
   | .join _ _ _ witnesses => ∃ Ω', JoinChain Ω witnesses.toList Ω'
   -- §5.2 — loop fixpoint ---
@@ -145,10 +139,7 @@ corresponding `Valid` arm.
 * `(←)`: per-event inversion — given an `LStep` proof, extract
   the premises by `cases` on the constructor. Each arm
   discharges the `Valid` clause for the matching event shape.
-
-The `proj` arm is doubly vacuous: `Valid (.proj …) = False` and
-`LStep` has no `.proj` constructor, so both sides reduce to
-`False`. -/
+-/
 theorem Valid_iff_LStep_exists (e : Event) (Ω : LLBCState) :
     Valid e Ω ↔ ∃ Ω', LStep Ω e Ω' := by
   constructor
@@ -198,9 +189,6 @@ theorem Valid_iff_LStep_exists (e : Event) (Ω : LLBCState) :
     | symExpandMutBorrow _ _ _ _ _ _ =>
       obtain ⟨hBF, hIF⟩ := hV
       exact ⟨_, LStep.symExpandMutBorrow hBF hIF⟩
-    | proj _ _ _ =>
-      -- Valid is False — contradiction.
-      exact absurd hV (by intro h; exact h)
     | join _ _ _ witnesses =>
       obtain ⟨Ω', hChain⟩ := hV
       exact ⟨Ω', LStep.join hChain⟩

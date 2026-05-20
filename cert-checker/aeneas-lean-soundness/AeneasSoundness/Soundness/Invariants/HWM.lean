@@ -827,7 +827,6 @@ theorem loanHwm_preserved_stepEvent
         LoanHwmInvariant.preserve_env_replace hStep1 _
       -- Step 3: removeAbsShape preserves.
       exact LoanHwmInvariant.preserve_removeAbsShape hStep2 _
-  | proj _ _ _ => cases hStep
   | symExpandMutBorrow svId bid _innerSv _parentAbs substLocals substLoans =>
     -- Body: substLocals env-fold + substLoans loans-fold + addLoan.
     simp only [stepSymExpandMutBorrow] at hStep
@@ -1375,7 +1374,6 @@ theorem hwm_preserved_stepEvent
     refine ⟨HwmInvariant.preserve_removeAbsShape hInvPre _, ?_, ?_⟩
     · rw [removeAbsShape_loanIdHwm]; exact Nat.le_of_eq hLoanEq
     · rw [removeAbsShape_absIdHwm]; exact Nat.le_of_eq hAbsEq
-  | proj _ _ _ => cases hStep
   | symExpandMutBorrow _svId _bid _innerSv _parentAbs _substLocals _substLoans =>
     -- Imperative body (two for-loops over substLocals/substLoans);
     -- consume `hShape`.

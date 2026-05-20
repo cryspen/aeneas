@@ -1376,12 +1376,6 @@ theorem stepEvent_sound :
     -- `hRep` and `hStep`.
     exact stepEndAbs_sound st st' Ω hRep absId finalValues releasedLoans tokenClearLocals
       hStep
-  | proj absId p sv =>
-    -- The replayer rejects `.proj` events with `.error`; `hStep`'s
-    -- `.error _ = .ok st'` is a contradiction. (`Valid (.proj _ _ _)
-    -- = False` on the paper side; this dispatch keeps the two in
-    -- sync — a cert that ever emits `EvProj` is rejected by both.)
-    simp [stepEvent] at hStep
   | symExpandMutBorrow svId bid innerSv parentAbs substLocals substLoans =>
     -- M10.x.8: `CertGen_faithful.symExpandMutBorrow` retired. The
     -- paper-side rule's post-state was strengthened with a substLocals
