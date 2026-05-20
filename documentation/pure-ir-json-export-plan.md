@@ -344,7 +344,7 @@ stub. `SUPPORTED_FMT_VERSION` bumped to 2. A new test
 fixture round-trips a non-empty `AttrDocComment` list end-to-end.
 The 89-fixture sweep stays green at v2.
 
-### Phase 3 — additional stages + tests (2 days)
+### Phase 3 — additional stages + tests (2 days) — landed
 
 1. Wire `post-micro` and `pre-extract` dump points in
    `Translate.ml`.
@@ -366,6 +366,53 @@ The 89-fixture sweep stays green at v2.
 
 Acceptance: full CI integration. 89 × 3 = 267 JSON files all
 parseable. Goldens stable.
+
+**What landed (May 2026):**
+
+- `src/Translate.ml` was refactored to expose a true post-S2P hook
+  point. `translate_crate_to_pure` now accepts an optional
+  `post_s2p_hook` callback that fires inside the function, between
+  the symbolic-to-pure pass and the micro-pass loop, with the raw
+  `Pure.fun_decl list`. `translate_crate` wires three callers:
+  - **`post-s2p`** — fires from the new callback, capturing the
+    pre-micro IR.
+  - **`post-micro`** — fires right after `translate_crate_to_pure`
+    returns. The IR has been simplified and loop bodies extracted
+    into separate `fun_decl`s; the dump flattens the main fn plus
+    loop-aux fns into one list.
+  - **`pre-extract`** — fires immediately before
+    `extract_translated_crate`. Same IR shape as `post-micro`, but
+    kept as a separate stage so future passes inserted between
+    micro and extract have a clearly-named pinpoint.
+- All three stages write `<crate>.pure.json` to `<dest>`; the
+  `"stage"` field inside the JSON disambiguates. The `failwith` for
+  unimplemented stages is gone.
+- `rust/pure-ir/tests/parse_all_fixtures.rs` was extended into a
+  three-stage sweep (renamed test fn:
+  `sweep_all_fixtures_all_stages`). 89 fixtures × 3 stages = 267
+  aeneas spawns, all green. Wall time ~100s.
+- `rust/pure-ir/tests/parse_goldens.rs` (new): 5 fixtures × 3 stages
+  = 15 committed goldens under `rust/pure-ir/tests/golden/`. Picked
+  to span the IR shapes the sweep tests in bulk:
+  - `incr_cert` (trivial body, mut-borrow forward+backward)
+  - `loops_simple` (loop decomposition; visible 1→2 fun_decl growth
+    across stages)
+  - `traits_basic` (trait + impl)
+  - `enums_basic` (enum payload variants)
+  - `arrays_defs` (array ops; the larger `arrays.llbc` was rejected
+    at 16MB JSON — too big to commit)
+  Goldens regenerate via `PURE_IR_BLESS=1 cargo test --test
+  parse_goldens`. The test normalises `item_meta.span.file`
+  (strips everything up to and including `tests/src/` / `tests/llbc/`)
+  before comparing, so goldens don't diff per machine.
+- `Makefile` got a new `dump-pure-ir-sweep` target (depends on
+  `build-bin-dir`) that runs all four pure-ir crate tests. Not yet
+  wired into the GH Actions workflow — the existing `.github/
+  workflows/ci.yml` runs everything through `nix build`, and the
+  `aeneas-tests` derivation in `flake.nix` would need to grow a
+  separate Rust-toolchain step to invoke the cargo tests on the
+  `rust/pure-ir/` crate. Left to a follow-up; the `gmake` target
+  is the manual entry point.
 
 ### Phase 4 — first backend prototype (varies)
 
@@ -464,7 +511,7 @@ notes).
 | 1 | Minimal OCaml emit + Rust parse | 1 fixture round-trips by eye | done (commit `f950d1fe`) |
 | 2 | Full constructor coverage | 89 fixtures parse on `post-s2p` | done (May 2026, 89/89) |
 | 2-spans | Always-on spans + `attr_info` (fmt v2) | 89 fixtures still parse; spans + attrs survive end-to-end | done (May 2026) |
-| 3 | All stages + CI | 267 JSON files parse; goldens stable | not started |
+| 3 | All stages + CI | 267 JSON files parse; goldens stable | done (May 2026) |
 | 4 | First Rust backend prototype | One new backend writes useful output | not started |
 
 Phases 1–3 are this campaign. Phase 4 launches a separate workstream

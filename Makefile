@@ -200,6 +200,17 @@ cargo-test:
 	done
 	@echo "# Rust unit tests done"
 
+# Sweep all 89 .llbc fixtures through the Pure-IR JSON dump at all three
+# stages (post-s2p, post-micro, pre-extract) and verify that the
+# `rust/pure-ir/` crate parses every output cleanly. This is the Phase-3
+# acceptance test from documentation/pure-ir-json-export-plan.md.
+# Wall time ~100s. Depends on `build-bin-dir` for `bin/aeneas`.
+.PHONY: dump-pure-ir-sweep
+dump-pure-ir-sweep: build-bin-dir
+	@echo "# Pure-IR JSON: 89 fixtures x 3 stages = 267 dumps"
+	cd rust/pure-ir && $(CARGO_CMD) test --test parse_all_fixtures --test parse_goldens --test parse_incr_cert --test parse_spans_and_attrs
+	@echo "# Pure-IR sweep done"
+
 # Replay the Lean tests and time them
 .PHONY: timed-lean
 timed-lean:
