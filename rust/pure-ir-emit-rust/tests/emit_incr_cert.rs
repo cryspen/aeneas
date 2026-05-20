@@ -32,11 +32,16 @@ fn emit_for(stage: &str) -> String {
 fn incr_cert_emits_both_functions() {
     let out = emit_for("post-s2p");
     // The two original Rust fns should appear in the emitted source.
-    // Naming is `flat_path_ident`: short for 2-segment paths, otherwise
-    // disambiguated by def_id.
-    assert!(out.contains("pub fn incr("), "missing fn incr:\n{out}");
+    // Naming is `flat_path_ident`: every fn gets `_<def_id>` suffixed
+    // to avoid the duplicate-name collisions that arise when a fixture
+    // contains multiple decls sharing a short name (common across
+    // trait + impl + free-fn).
     assert!(
-        out.contains("pub fn incr_local("),
+        out.contains("pub fn incr_cert_incr_") && out.contains("(x: u32)"),
+        "missing fn incr_cert_incr_<n>(x:u32):\n{out}"
+    );
+    assert!(
+        out.contains("incr_local"),
         "missing fn incr_local:\n{out}"
     );
 }
