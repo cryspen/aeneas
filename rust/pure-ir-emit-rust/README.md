@@ -113,10 +113,75 @@ pure-ir-emit-rust/
 │   ├── lib.rs          # crate root; pub fn emit_crate(...)
 │   ├── emit.rs         # the emitter (one helper per AST node type)
 │   └── bin/pir2rs.rs   # CLI entrypoint
+├── scripts/
+│   └── regen-diff-models.sh   # regenerate tests/models/<fix>_pir.rs
 └── tests/
-    ├── emit_incr_cert.rs   # focused incr_cert tests
-    └── compile_check.rs    # whitelist sweep + rustc shell-out
+    ├── emit_incr_cert.rs       # focused incr_cert tests
+    ├── compile_check.rs        # whitelist sweep + rustc shell-out
+    ├── diff.rs                 # R₀ ↔ R₂ proptest harness
+    ├── common/ref_impl.rs      # R₀ wrappers (reshaped to functional form)
+    └── models/                 # committed R₂ outputs (regen on demand)
 ```
+
+## Differential proptest harness
+
+`tests/diff.rs` runs proptest blocks comparing **R₀** (hand-curated
+reference implementations in `tests/common/ref_impl.rs`, reshaped to
+the IR's functional `T -> Result<T>` shape) against **R₂** (the
+emitter output at the `pre-extract` stage, committed under
+`tests/models/<fixture>_pir.rs`).
+
+Run with:
+
+```bash
+cargo test -p pure-ir-emit-rust --test diff
+```
+
+Each proptest block samples random inputs and asserts the R₀ wrapper
+agrees with the R₂ model function. Both sides return `Result<T, ()>`
+because the IR threads the `can_fail` monad through every primitive
+that can fail (`checked_add`, `checked_shl`, etc.); `Err(())` is
+preserved across the comparison.
+
+### Regenerating models
+
+After an emitter change, refresh `tests/models/`:
+
+```bash
+./scripts/regen-diff-models.sh
+```
+
+The script invokes `bin/aeneas -dump-pure-ir pre-extract:…` on each
+fixture in its hard-coded `FIXTURES` list, then runs `pir2rs` on the
+resulting JSON. The hard-coded list is a strict subset of the
+`KNOWN_GAPS`-green fixtures: it excludes fixtures whose runtime path
+hits an `unimplemented!()` opaque shim (most trait-method calls, e.g.
+`u32::wrapping_add`) or a `LoopOp placeholder` (loops). Extend the
+list as new code paths come online in the emitter.
+
+### Coverage today
+
+| Fixture | Fn pairs | Notes |
+|---|---|---|
+| `incr_cert` | 2 | `incr`, `incr_local` (mut-borrow → forward) |
+| `constants` | 3 | `incr`, `mk_pair0`, `add` |
+| `bitwise` | 5 | `xor`, `or`, `and`, `shift_u32`, `shift_i32` |
+| `compare_simple` | 2 | `id_u32`, `incr_val` (`add_u32` ignored — opaque shim) |
+| `aggregates_basic` | 2 | `mk_tuple`, `mk_pair` (field-by-field cmp) |
+| `enums_basic` | 1 | `flip` (Sign enum, pivot through u8 tag) |
+| `enums_payload` | 3 | `value`, `wrap`, `zero` (NumOrZero, pivot through u8 tag) |
+| `traits_basic` | 1 | `use_numeric` (impl-method dispatch) |
+| `demo` | 3 | `mul2_add1`, `use_mul2_add1`, `incr` |
+
+**22 proptest blocks pass; 3 `#[ignore]`d** with inline
+`EMITTER GAP:` / `DIFF NON-UNIFORM:` annotations:
+
+  * `compare_simple_add_u32`, `demo_mod_add` — trait-method routing
+    through `unimplemented!()` opaque bodies (same family as
+    `trait-method-* placeholder` in the compile-check coverage
+    table).
+  * `demo_i32_id` — recursive identity fn, depth-bounded by input;
+    not a uniform `any::<i32>()` candidate without a custom strategy.
 
 See `documentation/pure-ir-json-export-plan.md` § Phase 4 for the
 broader campaign context.
