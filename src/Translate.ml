@@ -302,15 +302,6 @@ let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
       ^ compute_local_uses_error_message trans_ctx (IdFun fdef.def_id));
     None
 
-type translated_crate = {
-  type_decls : Pure.type_decl list;
-  builtin_fun_sigs : Pure.fun_sig BuiltinFunIdMap.t;
-  fun_decls : pure_fun_translation list;
-  global_decls : Pure.global_decl list;
-  trait_decls : Pure.trait_decl list;
-  trait_impls : Pure.trait_impl list;
-}
-
 (* TODO: factor out the return type *)
 let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
     trans_ctx * translated_crate =
@@ -607,8 +598,8 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
       type_decls trait_impls pure_translations
   in
 
-  (* Return *)
-  ( trans_ctx,
+  (* Assemble the translated crate *)
+  let translated =
     {
       type_decls;
       builtin_fun_sigs;
@@ -616,7 +607,21 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
       global_decls;
       trait_decls;
       trait_impls;
-    } )
+      specs = [];
+    }
+  in
+
+  (* Gather specs/proofs *)
+  let translated_with_specs =
+    let spec_producers =
+      []
+      (* other producers can be added here *)
+    in
+    List.fold_left (fun crate p -> p trans_ctx crate) translated spec_producers
+  in
+
+  (* Return *)
+  (trans_ctx, translated_with_specs)
 
 type gen_ctx = ExtractBase.extraction_ctx
 
@@ -1470,6 +1475,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
     global_decls = trans_globals;
     trait_decls = trans_trait_decls;
     trait_impls = trans_trait_impls;
+    specs = trans_specs;
   } =
     trans_crate
   in
@@ -1543,6 +1549,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
       trans_trait_impls;
       trans_types;
       trans_funs;
+      specs = trans_specs;
       builtin_sigs;
       trans_globals;
       functions_with_decreases_clause = rec_functions;
