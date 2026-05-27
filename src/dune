@@ -128,7 +128,9 @@
   (ignore-stderr
    (with-stdout-to
     %{target}
-    (system "git describe --always --dirty 2>/dev/null || echo")))))
+    ;; Prefer AENEAS_GIT_SHA (set by the Nix flake, which has no .git in its sandbox)
+    ;; and fall back to `git describe` for normal local builds.
+    (system "if [ -n \"$AENEAS_GIT_SHA\" ]; then echo \"$AENEAS_GIT_SHA\"; else git describe --always --dirty 2>/dev/null || echo; fi")))))
 
 ;; Step 2: generate GitVersion.ml from the captured hash.
 ;; Produces `let commit = Some "<hash>"` or `let commit = None` if git is unavailable.

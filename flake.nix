@@ -110,6 +110,10 @@
               duneVersion = "3";
               src = ./src;
               OCAMLPARAM = "_,warn-error=+A"; # Turn all warnings into errors.
+              # The Nix sandbox has no .git directory, so pass the git rev explicitly.
+              # `self.shortRev` is available on clean checkouts; `self.dirtyShortRev`
+              # covers working-tree builds (requires Nix ≥ 2.14).
+              AENEAS_GIT_SHA = self.shortRev or self.dirtyShortRev or "unknown";
               propagatedBuildInputs = [
                 easy_logging
                 charon-ml
