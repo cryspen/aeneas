@@ -98,6 +98,7 @@
   ReorderDecls
   SCC
   Scalars
+  Spec
   StringUtils
   Substitute
   SymbolicAst
