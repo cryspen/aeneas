@@ -1926,8 +1926,7 @@ let ctx_compute_trait_impl_name_raw (ctx : extraction_ctx)
                       self_name = crate
                       || String.starts_with ~prefix:(crate ^ ".") self_name
                     in
-                    if already_prefixed then name_parts
-                    else crate :: name_parts
+                    if already_prefixed then name_parts else crate :: name_parts
                 | _ -> name_parts
               else name_parts
             in

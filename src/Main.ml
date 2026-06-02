@@ -214,8 +214,8 @@ let () =
          ExtractBuiltinLean.ml. Items like the `Clone` impl for arrays are \
          extracted using the standard name-mangling scheme rather than \
          hand-tuned names such as `core.array.CloneArray.clone`, and the \
-         associated shape overrides (keep_params, can_fail, etc.) are \
-         ignored." );
+         associated shape overrides (keep_params, can_fail, etc.) are ignored."
+      );
       ( "-all-computable",
         Arg.Set all_computable,
         " For Lean: do not insert `noncomputable section` at the top of the \

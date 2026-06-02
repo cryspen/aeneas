@@ -1210,12 +1210,12 @@ let filter_marker_traits (crate : crate) : crate =
     visitor#visit_crate () crate
 
 (** Under [-core-models-lib], remove the [assert_receiver_is_total_eq] method
-    from the [core::cmp::Eq] trait declaration, from any impls of [Eq], and
-    drop the corresponding function declarations. This is a Rust-only,
+    from the [core::cmp::Eq] trait declaration, from any impls of [Eq], and drop
+    the corresponding function declarations. This is a Rust-only,
     [#[doc(hidden)]] method with an empty default body that Aeneas's own
-    standard library handles via a hand-tuned override; an external library
-    like [core_models] doesn't model it, so emitting an impl field for it
-    would not typecheck against [core_models]'s [Eq] structure. *)
+    standard library handles via a hand-tuned override; an external library like
+    [core_models] doesn't model it, so emitting an impl field for it would not
+    typecheck against [core_models]'s [Eq] structure. *)
 let filter_eq_assert_receiver_method (crate : crate) : crate =
   if not !Config.core_models_lib then crate
   else
@@ -1232,8 +1232,7 @@ let filter_eq_assert_receiver_method (crate : crate) : crate =
         (fun id (decl : trait_decl) acc ->
           if
             acc = None
-            && NameMatcher.match_name mctx match_config pat
-                 decl.item_meta.name
+            && NameMatcher.match_name mctx match_config pat decl.item_meta.name
           then Some id
           else acc)
         crate.trait_decls None
@@ -1264,7 +1263,8 @@ let filter_eq_assert_receiver_method (crate : crate) : crate =
                         methods =
                           TraitMethodId.Map.filter
                             (fun mid _ ->
-                              not (TraitMethodId.Set.mem mid filtered_method_ids))
+                              not
+                                (TraitMethodId.Set.mem mid filtered_method_ids))
                             d.methods;
                       })
               crate.trait_decls
@@ -1311,19 +1311,20 @@ let filter_eq_assert_receiver_method (crate : crate) : crate =
                           not (FunDeclId.Set.mem id !dropped_fun_decl_ids))
                         ids
                     in
-                    if ids = [] then None
-                    else Some (FunGroup (RecGroup ids))
-                | MixedGroup g ->
+                    if ids = [] then None else Some (FunGroup (RecGroup ids))
+                | MixedGroup g -> (
                     let is_dropped (id : item_id) =
                       match id with
                       | IdFun id -> FunDeclId.Set.mem id !dropped_fun_decl_ids
                       | _ -> false
                     in
-                    (match g with
+                    match g with
                     | NonRecGroup id ->
                         if is_dropped id then None else Some (MixedGroup g)
                     | RecGroup ids ->
-                        let ids = List.filter (fun id -> not (is_dropped id)) ids in
+                        let ids =
+                          List.filter (fun id -> not (is_dropped id)) ids
+                        in
                         if ids = [] then None
                         else Some (MixedGroup (RecGroup ids)))
                 | _ -> Some g)

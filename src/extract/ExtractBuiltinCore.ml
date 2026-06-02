@@ -49,13 +49,13 @@ let mk_lean_only_unless_core_models_lib (funs : 'a list) : 'a list =
   | Lean -> if !core_models_lib then [] else funs
   | _ -> []
 
-(** Returns [[]] when the [-core-models-lib] CLI option is on, otherwise
-    returns the input list unchanged. Used to disable Rust core library
-    overrides that produce hand-tuned, Lean-style flat names (e.g.
-    [core.convert.num.FromU16U8.from]) and the associated shape overrides
-    (e.g. [~can_fail:false]) for sections that are otherwise applied to all
-    backends. The flag is rejected on non-Lean backends, so this only ever
-    affects Lean. *)
+(** Returns [[]] when the [-core-models-lib] CLI option is on, otherwise returns
+    the input list unchanged. Used to disable Rust core library overrides that
+    produce hand-tuned, Lean-style flat names (e.g.
+    [core.convert.num.FromU16U8.from]) and the associated shape overrides (e.g.
+    [~can_fail:false]) for sections that are otherwise applied to all backends.
+    The flag is rejected on non-Lean backends, so this only ever affects Lean.
+*)
 let unless_core_models_lib (funs : 'a list) : 'a list =
   if !core_models_lib then [] else funs
 

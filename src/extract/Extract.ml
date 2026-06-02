@@ -30,11 +30,10 @@ let texpr_to_string (ctx : extraction_ctx) =
     in place).
 
     A type parameter is dropped iff it is unused in the function's inputs,
-    output, and predicates. A trait clause is dropped iff every type variable
-    it references is itself being dropped (i.e., it is "orphan" — only
-    constraining dropped parameters). The "used" set is saturated through
-    trait clauses so that a parameter pulled in by a kept clause is itself
-    kept.
+    output, and predicates. A trait clause is dropped iff every type variable it
+    references is itself being dropped (i.e., it is "orphan" — only constraining
+    dropped parameters). The "used" set is saturated through trait clauses so
+    that a parameter pulled in by a kept clause is itself kept.
 
     [scan]: caller-supplied closure that gets invoked with a visitor and may
     visit any extra structures (e.g. a trait_impl's [impl_trait] /
@@ -61,8 +60,7 @@ let compute_allocator_filter
     let body_visitor =
       object
         inherit [_] Pure.iter_type_decl
-        method! visit_type_var_id _ id =
-          used := Pure.TypeVarId.Set.add id !used
+        method! visit_type_var_id _ id = used := Pure.TypeVarId.Set.add id !used
       end
     in
     List.iter (body_visitor#visit_ty ()) inputs;
@@ -143,14 +141,13 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
     else
       let sg = def.f.signature in
       match
-        compute_allocator_filter sg.generics sg.inputs (Some sg.output)
-          sg.preds
+        compute_allocator_filter sg.generics sg.inputs (Some sg.output) sg.preds
       with
       | None -> ctx
       | Some (keep_params, keep_trait_clauses) ->
           let ctx =
-            if FunDeclId.Map.mem def.f.def_id ctx.funs_filter_type_args_map
-            then ctx
+            if FunDeclId.Map.mem def.f.def_id ctx.funs_filter_type_args_map then
+              ctx
             else
               {
                 ctx with
@@ -159,8 +156,7 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
                     ctx.funs_filter_type_args_map;
               }
           in
-          if
-            FunDeclId.Map.mem def.f.def_id ctx.funs_filter_trait_clauses_map
+          if FunDeclId.Map.mem def.f.def_id ctx.funs_filter_trait_clauses_map
           then ctx
           else
             {
@@ -3130,9 +3126,7 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
   let ctx =
     if not !Config.core_models_lib then ctx
     else
-      let assoc_tys =
-        List.map (fun (_, _, ty) -> ty) trait_impl.types
-      in
+      let assoc_tys = List.map (fun (_, _, ty) -> ty) trait_impl.types in
       match
         compute_allocator_filter
           ~extra_trait_decl_refs:[ trait_impl.impl_trait ]

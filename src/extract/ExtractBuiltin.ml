@@ -452,7 +452,8 @@ let builtin_trait_impls_info () : (pattern * Pure.builtin_trait_impl_info) list
             fmt
               ("core::clone::Clone<" ^ ty ^ ">")
               ~extract_name:
-                (Some ("core.clone.Clone" ^ StringUtils.capitalize_first_letter ty))
+                (Some
+                   ("core.clone.Clone" ^ StringUtils.capitalize_first_letter ty))
               ())
           all_int_names
       (* Copy<INT> *)
@@ -461,7 +462,8 @@ let builtin_trait_impls_info () : (pattern * Pure.builtin_trait_impl_info) list
             fmt
               ("core::marker::Copy<" ^ ty ^ ">")
               ~extract_name:
-                (Some ("core.marker.Copy" ^ StringUtils.capitalize_first_letter ty))
+                (Some
+                   ("core.marker.Copy" ^ StringUtils.capitalize_first_letter ty))
               ())
           all_int_names
       (* PartialEq<INT, INT> *)
@@ -471,7 +473,8 @@ let builtin_trait_impls_info () : (pattern * Pure.builtin_trait_impl_info) list
               ("core::cmp::PartialEq<" ^ ty ^ "," ^ ty ^ ">")
               ~extract_name:
                 (Some
-                   ("core.cmp.PartialEq" ^ StringUtils.capitalize_first_letter ty))
+                   ("core.cmp.PartialEq"
+                   ^ StringUtils.capitalize_first_letter ty))
               ())
           all_int_names
       (* Eq<INT> *)
@@ -596,73 +599,79 @@ let mk_builtin_funs () : (pattern * Pure.builtin_fun_info) list =
                 StringUtils.capitalize_first_letter ty ^ ".checked_" ^ op)
               ~can_fail:false ())
           [ "add"; "sub"; "mul"; "div"; "rem" ])
-  (* From<INT, bool> *)
-  @ mk_scalar_fun
-      (fun ty ->
-        "core::convert::num::{core::convert::From<" ^ ty ^ ", bool>}::from")
-      (fun ty ->
-        "core.convert.num.From"
-        ^ StringUtils.capitalize_first_letter ty
-        ^ "Bool.from")
-      ~can_fail:false ()
-  (* From<INT, INT> *)
-  @ List.map
-      (fun (big, small) ->
-        mk_fun
-          ("core::convert::num::{core::convert::From<" ^ big ^ ", " ^ small
-         ^ ">}::from")
-          ~extract_name:
-            (Some
-               ("core.convert.num.From"
-               ^ StringUtils.capitalize_first_letter big
-               ^ StringUtils.capitalize_first_letter small
-               ^ ".from"))
-          ~can_fail:false ())
-      int_and_smaller_list
-  (* Leading zeros *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::leading_zeros")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".leading_zeros")
-      ~can_fail:false ()
-  (* to_le_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::to_le_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_le_bytes")
-      ~can_fail:false ()
-  (* to_be_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::to_be_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_be_bytes")
-      ~can_fail:false ()
-  (* from_le_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::from_le_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".from_le_bytes")
-      ~can_fail:false ()
-  (* from_be_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::from_be_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".from_be_bytes")
-      ~can_fail:false ()
-  (* Clone<bool> *)
-  @ mk_funs
-      (fun fn -> "core::clone::impls::{core::clone::Clone<bool>}::" ^ fn)
-      (fun fn -> "core.clone.impls.CloneBool." ^ fn)
-      [ (false, "clone"); (false, "clone_from") ]
-  (* Clone<INT> *)
-  @ mk_scalar_funs
-      (fun ty fn ->
-        "core::clone::impls::{core::clone::Clone<" ^ ty ^ ">}::" ^ fn)
-      (fun ty fn ->
-        "core.clone.impls.Clone"
-        ^ StringUtils.capitalize_first_letter ty
-        ^ "." ^ fn)
-      [ (false, "clone"); (false, "clone_from") ])
+    (* From<INT, bool> *)
+    @ mk_scalar_fun
+        (fun ty ->
+          "core::convert::num::{core::convert::From<" ^ ty ^ ", bool>}::from")
+        (fun ty ->
+          "core.convert.num.From"
+          ^ StringUtils.capitalize_first_letter ty
+          ^ "Bool.from")
+        ~can_fail:false ()
+    (* From<INT, INT> *)
+    @ List.map
+        (fun (big, small) ->
+          mk_fun
+            ("core::convert::num::{core::convert::From<" ^ big ^ ", " ^ small
+           ^ ">}::from")
+            ~extract_name:
+              (Some
+                 ("core.convert.num.From"
+                 ^ StringUtils.capitalize_first_letter big
+                 ^ StringUtils.capitalize_first_letter small
+                 ^ ".from"))
+            ~can_fail:false ())
+        int_and_smaller_list
+    (* Leading zeros *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::leading_zeros")
+        (fun ty ->
+          "core.num."
+          ^ StringUtils.capitalize_first_letter ty
+          ^ ".leading_zeros")
+        ~can_fail:false ()
+    (* to_le_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::to_le_bytes")
+        (fun ty ->
+          "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_le_bytes")
+        ~can_fail:false ()
+    (* to_be_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::to_be_bytes")
+        (fun ty ->
+          "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_be_bytes")
+        ~can_fail:false ()
+    (* from_le_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::from_le_bytes")
+        (fun ty ->
+          "core.num."
+          ^ StringUtils.capitalize_first_letter ty
+          ^ ".from_le_bytes")
+        ~can_fail:false ()
+    (* from_be_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::from_be_bytes")
+        (fun ty ->
+          "core.num."
+          ^ StringUtils.capitalize_first_letter ty
+          ^ ".from_be_bytes")
+        ~can_fail:false ()
+    (* Clone<bool> *)
+    @ mk_funs
+        (fun fn -> "core::clone::impls::{core::clone::Clone<bool>}::" ^ fn)
+        (fun fn -> "core.clone.impls.CloneBool." ^ fn)
+        [ (false, "clone"); (false, "clone_from") ]
+    (* Clone<INT> *)
+    @ mk_scalar_funs
+        (fun ty fn ->
+          "core::clone::impls::{core::clone::Clone<" ^ ty ^ ">}::" ^ fn)
+        (fun ty fn ->
+          "core.clone.impls.Clone"
+          ^ StringUtils.capitalize_first_letter ty
+          ^ "." ^ fn)
+        [ (false, "clone"); (false, "clone_from") ])
   (* Definitions not for Lean *)
   @ mk_not_lean
       [

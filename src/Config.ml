@@ -599,10 +599,10 @@ let drop_as_no_op = ref true
 (** For Lean only: disable the Rust core library overrides defined in
     [ExtractBuiltinLean.ml].
 
-    With this flag, references to items such as [core::clone::Clone<[T; N]>]
-    are extracted using the standard name-mangling scheme rather than the
-    hand-tuned names like [core.array.CloneArray.clone], and the associated
-    shape overrides ([keep_params], [can_fail], etc.) are ignored. This is
-    useful when extracting against a separate Lean library that mirrors the
-    Rust core API under the standard names. *)
+    With this flag, references to items such as [core::clone::Clone<[T; N]>] are
+    extracted using the standard name-mangling scheme rather than the hand-tuned
+    names like [core.array.CloneArray.clone], and the associated shape overrides
+    ([keep_params], [can_fail], etc.) are ignored. This is useful when
+    extracting against a separate Lean library that mirrors the Rust core API
+    under the standard names. *)
 let core_models_lib = ref false

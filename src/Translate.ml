@@ -14,8 +14,8 @@ open Parallel
 let log = TranslateCore.log
 
 (** When [-core-models-lib] is on, non-local items are skipped from the main
-    extracted files (the user is expected to provide them via a separate
-    Lean library, e.g. [core_models] for [core::*] items). *)
+    extracted files (the user is expected to provide them via a separate Lean
+    library, e.g. [core_models] for [core::*] items). *)
 let skip_for_core_models_lib (is_local : bool) : bool =
   !Config.core_models_lib && not is_local
 
@@ -1329,8 +1329,7 @@ let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
       Printf.fprintf out "Module %s.\n" fi.module_name
   | Lean ->
       Printf.fprintf out "import Aeneas\n";
-      if !Config.core_models_lib then
-        Printf.fprintf out "import CoreModels\n";
+      if !Config.core_models_lib then Printf.fprintf out "import CoreModels\n";
       (* Add the custom imports *)
       List.iter (fun m -> Printf.fprintf out "import %s\n" m) fi.custom_imports;
       (* Add the custom includes *)
