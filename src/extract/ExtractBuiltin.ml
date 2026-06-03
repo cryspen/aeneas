@@ -43,7 +43,7 @@ let builtin_globals () : Pure.builtin_global_info list =
          unit_metadata;
        ];
      ]
-    @ mk_lean_only lean_builtin_consts)
+    @ mk_lean_only_unless_core_models_lib lean_builtin_consts)
 
 let mk_builtin_globals_map () : Pure.builtin_global_info NameMatcherMap.t =
   NameMatcherMap.of_list
@@ -170,7 +170,7 @@ let builtin_types () : Pure.builtin_type_info list =
                   ]);
          };
        ])
-  @ mk_lean_only lean_builtin_types
+  @ mk_lean_only_unless_core_models_lib lean_builtin_types
 
 let mk_builtin_types_map () =
   NameMatcherMap.of_list
@@ -179,6 +179,27 @@ let mk_builtin_types_map () =
        (builtin_types ()))
 
 let builtin_types_map = mk_memoized mk_builtin_types_map
+
+(** Map from rust type name to its builtin info, restricted to the types that
+    carry a [keep_params] filter (i.e. types from which Charon's
+    [hide_allocator] pass leaves a dangling allocator type parameter, such as
+    [alloc::vec::into_iter::IntoIter]).
+
+    Unlike {!builtin_types_map}, this map is *not* emptied under
+    [-core-models-lib]: even when the builtin type overrides are disabled, we
+    still need to drop the dangling allocator type parameter so that the
+    extracted types match the [core_models] library, which models them without
+    an allocator (e.g. [IntoIter T] rather than [IntoIter T Global]). *)
+let mk_builtin_types_keep_params_map () =
+  NameMatcherMap.of_list
+    (List.filter_map
+       (fun (info : Pure.builtin_type_info) ->
+         match info.keep_params with
+         | Some _ -> Some (info.rust_name, info)
+         | None -> None)
+       lean_builtin_types)
+
+let builtin_types_keep_params_map = mk_memoized mk_builtin_types_keep_params_map
 
 let int_and_smaller_list : (string * string) list =
   let uint_names = List.rev [ "u8"; "u16"; "u32"; "u64"; "u128" ] in
@@ -321,7 +342,7 @@ let builtin_trait_decls_info () =
       (* Copy *)
       mk_trait "core::marker::Copy" ~parent_clauses:[ "cloneInst" ] ();
     ]
-  @ mk_lean_only lean_builtin_trait_decls
+  @ mk_lean_only_unless_core_models_lib lean_builtin_trait_decls
 
 let mk_builtin_trait_decls_map () =
   NameMatcherMap.of_list
@@ -408,90 +429,96 @@ let builtin_trait_impls_info () : (pattern * Pure.builtin_trait_impl_info) list
       fmt "core::clone::Clone<bool>"
         ~extract_name:(Some "core::clone::CloneBool") ();
     ]
-  @ mk_lean_only lean_builtin_trait_impls
-  (* From<INT, bool> *)
-  @ List.map
-      (fun ty ->
-        fmt
-          ("core::convert::From<" ^ ty ^ ", bool>")
-          ~extract_name:
-            (Some
-               ("core.convert.From"
-               ^ StringUtils.capitalize_first_letter ty
-               ^ "Bool"))
-          ())
-      all_int_names
-  (* From<INT, INT> *)
-  @ List.map
-      (fun (big, small) ->
-        fmt
-          ("core::convert::From<" ^ big ^ ", " ^ small ^ ">")
-          ~extract_name:
-            (Some
-               ("core.convert.From"
-               ^ StringUtils.capitalize_first_letter big
-               ^ StringUtils.capitalize_first_letter small))
-          ())
-      int_and_smaller_list
-  (* Clone<INT> *)
-  @ List.map
-      (fun ty ->
-        fmt
-          ("core::clone::Clone<" ^ ty ^ ">")
-          ~extract_name:
-            (Some ("core.clone.Clone" ^ StringUtils.capitalize_first_letter ty))
-          ())
-      all_int_names
-  (* Copy<INT> *)
-  @ List.map
-      (fun ty ->
-        fmt
-          ("core::marker::Copy<" ^ ty ^ ">")
-          ~extract_name:
-            (Some ("core.marker.Copy" ^ StringUtils.capitalize_first_letter ty))
-          ())
-      all_int_names
-  (* PartialEq<INT, INT> *)
-  @ List.map
-      (fun ty ->
-        fmt
-          ("core::cmp::PartialEq<" ^ ty ^ "," ^ ty ^ ">")
-          ~extract_name:
-            (Some ("core.cmp.PartialEq" ^ StringUtils.capitalize_first_letter ty))
-          ())
-      all_int_names
-  (* Eq<INT> *)
-  @ List.map
-      (fun ty ->
-        fmt
-          ("core::cmp::Eq<" ^ ty ^ ">")
-          ~extract_name:
-            (Some ("core.cmp.Eq" ^ StringUtils.capitalize_first_letter ty))
-          ())
-      all_int_names
-  (* PartialOrd<INT, INT> *)
-  @ List.map
-      (fun ty ->
-        fmt
-          ("core::cmp::PartialOrd<" ^ ty ^ "," ^ ty ^ ">")
-          ~extract_name:
-            (Some
-               ("core.cmp.PartialOrd" ^ StringUtils.capitalize_first_letter ty))
-          ())
-      all_int_names
-  (* Ord<INT> *)
-  @ List.map
-      (fun ty ->
-        fmt
-          ("core::cmp::Ord<" ^ ty ^ ">")
-          ~extract_name:
-            (Some ("core.cmp.Ord" ^ StringUtils.capitalize_first_letter ty))
-          ())
-      all_int_names
-  (* Default<INT> *)
-  @ List.map
-      (fun ty -> fmt ("core::default::Default<" ^ ty ^ ">") ())
-      all_int_names
+  @ mk_lean_only_unless_core_models_lib lean_builtin_trait_impls
+  @ unless_core_models_lib
+      ((* From<INT, bool> *)
+       List.map
+         (fun ty ->
+           fmt
+             ("core::convert::From<" ^ ty ^ ", bool>")
+             ~extract_name:
+               (Some
+                  ("core.convert.From"
+                  ^ StringUtils.capitalize_first_letter ty
+                  ^ "Bool"))
+             ())
+         all_int_names
+      (* From<INT, INT> *)
+      @ List.map
+          (fun (big, small) ->
+            fmt
+              ("core::convert::From<" ^ big ^ ", " ^ small ^ ">")
+              ~extract_name:
+                (Some
+                   ("core.convert.From"
+                   ^ StringUtils.capitalize_first_letter big
+                   ^ StringUtils.capitalize_first_letter small))
+              ())
+          int_and_smaller_list
+      (* Clone<INT> *)
+      @ List.map
+          (fun ty ->
+            fmt
+              ("core::clone::Clone<" ^ ty ^ ">")
+              ~extract_name:
+                (Some
+                   ("core.clone.Clone" ^ StringUtils.capitalize_first_letter ty))
+              ())
+          all_int_names
+      (* Copy<INT> *)
+      @ List.map
+          (fun ty ->
+            fmt
+              ("core::marker::Copy<" ^ ty ^ ">")
+              ~extract_name:
+                (Some
+                   ("core.marker.Copy" ^ StringUtils.capitalize_first_letter ty))
+              ())
+          all_int_names
+      (* PartialEq<INT, INT> *)
+      @ List.map
+          (fun ty ->
+            fmt
+              ("core::cmp::PartialEq<" ^ ty ^ "," ^ ty ^ ">")
+              ~extract_name:
+                (Some
+                   ("core.cmp.PartialEq"
+                   ^ StringUtils.capitalize_first_letter ty))
+              ())
+          all_int_names
+      (* Eq<INT> *)
+      @ List.map
+          (fun ty ->
+            fmt
+              ("core::cmp::Eq<" ^ ty ^ ">")
+              ~extract_name:
+                (Some ("core.cmp.Eq" ^ StringUtils.capitalize_first_letter ty))
+              ())
+          all_int_names
+      (* PartialOrd<INT, INT> *)
+      @ List.map
+          (fun ty ->
+            fmt
+              ("core::cmp::PartialOrd<" ^ ty ^ "," ^ ty ^ ">")
+              ~extract_name:
+                (Some
+                   ("core.cmp.PartialOrd"
+                   ^ StringUtils.capitalize_first_letter ty))
+              ())
+          all_int_names
+      (* Ord<INT> *)
+      @ List.map
+          (fun ty ->
+            fmt
+              ("core::cmp::Ord<" ^ ty ^ ">")
+              ~extract_name:
+                (Some ("core.cmp.Ord" ^ StringUtils.capitalize_first_letter ty))
+              ())
+          all_int_names
+      (* Default<INT> *)
+      @ List.map
+          (fun ty -> fmt ("core::default::Default<" ^ ty ^ ">") ())
+          all_int_names)
 
 let mk_builtin_trait_impls_map () =
   let m = NameMatcherMap.of_list (builtin_trait_impls_info ()) in
@@ -571,87 +598,101 @@ let mk_builtin_funs () : (pattern * Pure.builtin_fun_info) list =
              funs)
          all_int_names)
   in
-  List.flatten
-    (List.map
-       (fun op ->
-         mk_scalar_fun
-           (fun ty -> "core::num::{" ^ ty ^ "}::checked_" ^ op)
-           (fun ty -> StringUtils.capitalize_first_letter ty ^ ".checked_" ^ op)
-           ~can_fail:false ())
-       [ "add"; "sub"; "mul"; "div"; "rem" ])
-  (* From<INT, bool> *)
-  @ mk_scalar_fun
-      (fun ty ->
-        "core::convert::num::{core::convert::From<" ^ ty ^ ", bool>}::from")
-      (fun ty ->
-        "core.convert.num.From"
-        ^ StringUtils.capitalize_first_letter ty
-        ^ "Bool.from")
-      ~can_fail:false ()
-  (* From<INT, INT> *)
-  @ List.map
-      (fun (big, small) ->
-        mk_fun
-          ("core::convert::num::{core::convert::From<" ^ big ^ ", " ^ small
-         ^ ">}::from")
-          ~extract_name:
-            (Some
-               ("core.convert.num.From"
-               ^ StringUtils.capitalize_first_letter big
-               ^ StringUtils.capitalize_first_letter small
-               ^ ".from"))
-          ~can_fail:false ())
-      int_and_smaller_list
-  (* Leading zeros *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::leading_zeros")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".leading_zeros")
-      ~can_fail:false ()
-  (* to_le_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::to_le_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_le_bytes")
-      ~can_fail:false ()
-  (* to_be_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::to_be_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_be_bytes")
-      ~can_fail:false ()
-  (* from_le_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::from_le_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".from_le_bytes")
-      ~can_fail:false ()
-  (* from_be_bytes *)
-  @ mk_scalar_fun
-      (fun ty -> "core::num::{" ^ ty ^ "}::from_be_bytes")
-      (fun ty ->
-        "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".from_be_bytes")
-      ~can_fail:false ()
-  (* Box::new is erased together with the builtin Box type. *)
+  unless_core_models_lib
+    (List.flatten
+       (List.map
+          (fun op ->
+            mk_scalar_fun
+              (fun ty -> "core::num::{" ^ ty ^ "}::checked_" ^ op)
+              (fun ty ->
+                StringUtils.capitalize_first_letter ty ^ ".checked_" ^ op)
+              ~can_fail:false ())
+          [ "add"; "sub"; "mul"; "div"; "rem" ])
+    (* From<INT, bool> *)
+    @ mk_scalar_fun
+        (fun ty ->
+          "core::convert::num::{core::convert::From<" ^ ty ^ ", bool>}::from")
+        (fun ty ->
+          "core.convert.num.From"
+          ^ StringUtils.capitalize_first_letter ty
+          ^ "Bool.from")
+        ~can_fail:false ()
+    (* From<INT, INT> *)
+    @ List.map
+        (fun (big, small) ->
+          mk_fun
+            ("core::convert::num::{core::convert::From<" ^ big ^ ", " ^ small
+           ^ ">}::from")
+            ~extract_name:
+              (Some
+                 ("core.convert.num.From"
+                 ^ StringUtils.capitalize_first_letter big
+                 ^ StringUtils.capitalize_first_letter small
+                 ^ ".from"))
+            ~can_fail:false ())
+        int_and_smaller_list
+    (* Leading zeros *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::leading_zeros")
+        (fun ty ->
+          "core.num."
+          ^ StringUtils.capitalize_first_letter ty
+          ^ ".leading_zeros")
+        ~can_fail:false ()
+    (* to_le_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::to_le_bytes")
+        (fun ty ->
+          "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_le_bytes")
+        ~can_fail:false ()
+    (* to_be_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::to_be_bytes")
+        (fun ty ->
+          "core.num." ^ StringUtils.capitalize_first_letter ty ^ ".to_be_bytes")
+        ~can_fail:false ()
+    (* from_le_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::from_le_bytes")
+        (fun ty ->
+          "core.num."
+          ^ StringUtils.capitalize_first_letter ty
+          ^ ".from_le_bytes")
+        ~can_fail:false ()
+    (* from_be_bytes *)
+    @ mk_scalar_fun
+        (fun ty -> "core::num::{" ^ ty ^ "}::from_be_bytes")
+        (fun ty ->
+          "core.num."
+          ^ StringUtils.capitalize_first_letter ty
+          ^ ".from_be_bytes")
+        ~can_fail:false ()
+    (* Clone<bool> *)
+    @ mk_funs
+        (fun fn -> "core::clone::impls::{core::clone::Clone<bool>}::" ^ fn)
+        (fun fn -> "core.clone.impls.CloneBool." ^ fn)
+        [ (false, "clone"); (false, "clone_from") ]
+    (* Clone<INT> *)
+    @ mk_scalar_funs
+        (fun ty fn ->
+          "core::clone::impls::{core::clone::Clone<" ^ ty ^ ">}::" ^ fn)
+        (fun ty fn ->
+          "core.clone.impls.Clone"
+          ^ StringUtils.capitalize_first_letter ty
+          ^ "." ^ fn)
+        [ (false, "clone"); (false, "clone_from") ])
+  (* Box::new is erased together with the builtin Box type (see
+     [PureMicroPassesGeneral.eliminate_box_functions]), so its extract name is
+     never printed: this entry only carries the shape overrides ([can_fail:false]
+     and [lift:false]) which make the erased call type-check. Like
+     {!mk_builtin_types_keep_params_map}, it therefore stays active under
+     [-core-models-lib]: the [core_models] library does not get to model
+     [Box::new] because we erase it before extraction, whatever the mode. *)
   @ [
       mk_fun "alloc::boxed::{Box<@T>}::new"
         ~extract_name:(Some "alloc.boxed.Box.new") ~can_fail:false ~lift:false
         ();
     ]
-  (* Clone<bool> *)
-  @ mk_funs
-      (fun fn -> "core::clone::impls::{core::clone::Clone<bool>}::" ^ fn)
-      (fun fn -> "core.clone.impls.CloneBool." ^ fn)
-      [ (false, "clone"); (false, "clone_from") ]
-  (* Clone<INT> *)
-  @ mk_scalar_funs
-      (fun ty fn ->
-        "core::clone::impls::{core::clone::Clone<" ^ ty ^ ">}::" ^ fn)
-      (fun ty fn ->
-        "core.clone.impls.Clone"
-        ^ StringUtils.capitalize_first_letter ty
-        ^ "." ^ fn)
-      [ (false, "clone"); (false, "clone_from") ]
   (* Definitions not for Lean *)
   @ mk_not_lean
       [
@@ -803,7 +844,7 @@ let mk_builtin_funs () : (pattern * Pure.builtin_fun_info) list =
           ();
       ]
   (* Lean-only definitions *)
-  @ mk_lean_only
+  @ mk_lean_only_unless_core_models_lib
       ((* PartialEq, Eq, PartialOrd, Ord *)
        mk_scalar_funs
          (fun ty fun_name ->
