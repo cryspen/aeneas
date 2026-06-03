@@ -136,6 +136,10 @@ let () =
       ( "-lean-default-lakefile",
         Arg.Clear lean_gen_lakefile,
         " Generate a default lakefile.lean (Lean only)" );
+      ( "-specs",
+        Arg.Symbol (spec_config_options, set_spec_config),
+        " Gather and emit specs from the given source. Available: "
+        ^ String.concat ", " spec_config_options );
       ("-print-llbc", Arg.Set print_llbc, " Print the imported LLBC");
       ( "-abort-on-error",
         Arg.Set fail_hard,
@@ -471,6 +475,8 @@ let () =
   if !set_max_recdepth && not (backend () = Lean) then
     fail_with_error
       "The -max-recdepth option is valid only for the Lean backend";
+  if Option.is_some !opt_spec_config && not (backend () = Lean) then
+    fail_with_error "The -specs option is valid only for the Lean backend";
 
   check_arg_implies !diagnose_detailed "-diagnose-detailed"
     !diagnose_micro_passes "-diagnose-micro-passes";
