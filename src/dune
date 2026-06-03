@@ -53,6 +53,8 @@
   ExtractTypes
   FunsAnalysis
   GitVersion
+  HaxSpecs
+  HaxProducer
   Identifiers
   InterpAbs
   InterpBorrowsCore
