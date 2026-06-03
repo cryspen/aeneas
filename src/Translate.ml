@@ -611,17 +611,15 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
     }
   in
 
-  (* Gather specs/proofs *)
-  let translated_with_specs =
-    let spec_producers =
-      []
-      (* other producers can be added here *)
-    in
-    List.fold_left (fun crate p -> p trans_ctx crate) translated spec_producers
+  (* Gather specs/proofs obligations *)
+  let translated =
+    match !Config.opt_spec_config with
+    | Some (Hax, _) -> HaxProducer.gather trans_ctx translated
+    | _ -> translated
   in
 
   (* Return *)
-  (trans_ctx, translated_with_specs)
+  (trans_ctx, translated)
 
 type gen_ctx = ExtractBase.extraction_ctx
 

@@ -26,6 +26,39 @@ let set_backend (b : string) : unit =
          belonging to the proper set *)
       raise (Failure "Unexpected")
 
+(** {1 Specs config} *)
+
+type spec_source = Hax
+type spec_backend = Mvcgen | Step
+type spec_config = spec_source * spec_backend
+
+let spec_config_options = [ "hax"; "hax-step" ]
+
+(** Utility to compute a spec source from an input parameter *)
+let spec_config_of_string (s : string) : spec_config option =
+  match s with
+  | "hax" | "Hax" -> Some (Hax, Mvcgen)
+  | "hax-step" | "Hax-Step" -> Some (Hax, Step)
+  | _ -> None
+
+(** The spec source requested via [-specs] *)
+let opt_spec_config : spec_config option ref = ref None
+
+let set_spec_config (s : string) : unit =
+  match spec_config_of_string s with
+  | Some s -> opt_spec_config := Some s
+  | None ->
+      (* We shouldn't get there: the string should have been checked as
+         belonging to the proper set *)
+      raise (Failure "Unexpected")
+
+(** Returns [true] if the saved config for specs uses Hax annotations as a
+    source *)
+let spec_config_is_hax () =
+  match !opt_spec_config with
+  | Some (Hax, _) -> true
+  | _ -> false
+
 (** Specify the namespace of the extract code.
 
     For instance, if the crate name is [foo] the namespace used for the

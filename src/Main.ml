@@ -136,6 +136,10 @@ let () =
       ( "-lean-default-lakefile",
         Arg.Clear lean_gen_lakefile,
         " Generate a default lakefile.lean (Lean only)" );
+      ( "-specs",
+        Arg.Symbol (spec_config_options, set_spec_config),
+        " Gather and emit specs from the given source. Available: "
+        ^ String.concat ", " spec_config_options );
       ( "-emit-json",
         Arg.Set emit_json,
         " Emit a translation.json file alongside the Lean files (Lean only)" );
@@ -476,6 +480,8 @@ let () =
       "The -max-recdepth option is valid only for the Lean backend";
   if !emit_json && not (backend () = Lean) then
     fail_with_error "The -emit-json option is valid only for the Lean backend";
+  if Option.is_some !opt_spec_config && not (backend () = Lean) then
+    fail_with_error "The -specs option is valid only for the Lean backend";
 
   check_arg_implies !diagnose_detailed "-diagnose-detailed"
     !diagnose_micro_passes "-diagnose-micro-passes";
