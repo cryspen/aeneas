@@ -29,7 +29,7 @@
    ppx_deriving.ord
    visitors.ppx
    aeneas.ppx))
- (libraries charon core_unix ocamlgraph str progress domainslib)
+ (libraries charon core_unix ocamlgraph str progress domainslib yojson)
  (modules
   BorrowCheck
   Builtin
@@ -53,6 +53,7 @@
   ExtractTypes
   FunsAnalysis
   GitVersion
+  HaxAttributes
   HaxSpecs
   HaxProducer
   Identifiers
