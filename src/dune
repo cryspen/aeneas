@@ -37,7 +37,8 @@
   str
   progress
   domainslib
-  ppx_deriving_yojson)
+  ppx_deriving_yojson
+  yojson)
  (modules
   BorrowCheck
   Builtin
@@ -61,6 +62,7 @@
   ExtractTypes
   FunsAnalysis
   GitVersion
+  HaxAttributes
   HaxSpecs
   HaxProducer
   Identifiers
