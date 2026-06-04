@@ -3,10 +3,9 @@
 module F = Format
 
 (** Emit one [Spec.t] entry. *)
-let emit_spec (ctx : ExtractBase.extraction_ctx) (fmt : F.formatter)
-    (s : Spec.t) : unit =
-  ignore (ctx, fmt, s);
-  ()
+let emit_spec ctx fmt (s : Spec.t) =
+  match s.kind with
+  | HaxSpec hs -> ExtractHaxSpecs.emit_spec ctx fmt hs s.span
 
 let extract_specs (ctx : ExtractBase.extraction_ctx) (fmt : F.formatter) =
   if not (List.is_empty ctx.specs) then begin

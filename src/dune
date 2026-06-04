@@ -49,6 +49,7 @@
   ExtractBuiltinCore
   ExtractBuiltinLean
   ExtractErrors
+  ExtractHaxSpecs
   ExtractName
   ExtractSpec
   ExtractTypes
