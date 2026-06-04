@@ -609,6 +609,9 @@ type gen_config = {
   extract_globals : bool;
       (** If [true], generate a definition/declaration for top-level (global)
           declarations *)
+  extract_specs : bool;
+      (** If [true], emit one theorem per gathered {!Spec.t} entry (Lean only).
+          See {!module:ExtractSpec}. *)
   interface : bool;
       (** [true] if we generate an interface file, [false] otherwise. For now,
           this only impacts whether we use [val] or [assume val] for the opaque
@@ -1220,7 +1223,10 @@ let extract_definitions (fmt : Format.formatter) (config : gen_config)
       with CFailure _ ->
         (* An exception was raised: ignore it *)
         ())
-    ctx.crate.declarations
+    ctx.crate.declarations;
+
+  (* Emit hax specs/proofs, if requested. *)
+  if config.extract_specs then ExtractSpec.extract_specs ctx fmt
 
 type extract_file_info = {
   filename : string;
@@ -1809,6 +1815,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_transparent = true;
          extract_opaque = false;
          extract_globals = false;
+         extract_specs = false;
          interface = false;
        }
      in
@@ -2031,7 +2038,21 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          noncomputable = has_opaque && not !Config.all_computable;
        }
      in
-     extract_file fun_config ctx file_info)
+     extract_file fun_config ctx file_info;
+
+     (* Dedicated Spec.lean for the gathered specs/proofs, if any. *)
+     if trans_specs <> [] then
+       let spec_config = { base_gen_config with extract_specs = true } in
+       let file_info =
+         {
+           file_info with
+           filename = extract_filebasename ^ "Specs" ^ ext;
+           module_name = import_prefix ^ "Specs";
+           custom_msg = ": specs/proofs";
+           custom_includes = [ types_module; fun_module ];
+         }
+       in
+       extract_file spec_config ctx file_info)
    else
      let gen_config =
        {
@@ -2045,6 +2066,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_transparent = true;
          extract_opaque = true;
          extract_globals = true;
+         extract_specs = Option.is_some !Config.opt_spec_config;
          interface = false;
        }
      in
