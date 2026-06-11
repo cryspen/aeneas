@@ -12,3 +12,12 @@ val emit_spec :
   HaxSpecs.spec ->
   Meta.span option ->
   unit
+
+(** Emits one [HaxSpecs.obligation] entry. The [span option] is used for errors
+*)
+val emit_obligation :
+  ExtractBase.extraction_ctx ->
+  F.formatter ->
+  HaxSpecs.obligation ->
+  Meta.span option ->
+  unit
