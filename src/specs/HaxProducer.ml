@@ -49,6 +49,7 @@ let update_assoc (role : hax_role) (uid : string) (a : assoc) : assoc =
 let gather (_ctx : TranslateCore.trans_ctx)
     (crate : TranslateCore.translated_crate) : TranslateCore.translated_crate =
   let _, fresh_spec_id = Spec.SpecId.fresh_stateful_generator () in
+  let _, fresh_proof_id = Spec.ProofId.fresh_stateful_generator () in
   let uid_map : Pure.fun_decl Collections.StringMap.t ref =
     ref Collections.StringMap.empty
   in
@@ -133,28 +134,39 @@ let gather (_ctx : TranslateCore.trans_ctx)
     | None -> "absent"
     | Some _ -> "present"
   in
-  let new_specs : Spec.spec list =
+  (* Build the spec (statement of correctness) and the proof obligation that
+     discharges it, for one parent fn's accumulated [AssociatedItem]s. *)
+  let build_entry (parent_id, a) : (Spec.spec * Spec.proof_obligation) option =
+    let pre = Option.bind a.requires_uid (lookup_dec a.parent ~suffix:"pre") in
+    let post =
+      Option.bind a.ensures_uid
+        (lookup_dec a.parent ~suffix:"post" ~is_post:true)
+    in
+    if Option.is_none pre && Option.is_none post then None
+    else (
+      [%ltrace
+        Printf.sprintf "hax-specs:   fn=%s pre=%s post=%s" a.parent.name
+          (shape pre) (shape post)];
+      let span = Some a.parent.item_meta.span in
+      (* One [function_spec] payload, shared between the spec and the proof
+         obligation that discharges it. *)
+      let fspec : HaxSpecs.function_spec = { fn = parent_id; pre; post } in
+      let spec : Spec.spec =
+        { id = fresh_spec_id (); span; kind = HaxSpec (FunctionSpec fspec) }
+      in
+      let obligation : Spec.proof_obligation =
+        {
+          id = fresh_proof_id ();
+          span;
+          kind = HaxProof (FunctionContract { spec = fspec; proof = Admitted });
+        }
+      in
+      Some (spec, obligation))
+  in
+  let new_specs, new_obligations =
     Pure.FunDeclId.Map.bindings !assoc_map
-    |> List.filter_map (fun (parent_id, a) ->
-           let pre =
-             Option.bind a.requires_uid (lookup_dec a.parent ~suffix:"pre")
-           in
-           let post =
-             Option.bind a.ensures_uid
-               (lookup_dec a.parent ~suffix:"post" ~is_post:true)
-           in
-           if Option.is_none pre && Option.is_none post then None
-           else (
-             [%ltrace
-               Printf.sprintf "hax-specs:   fn=%s pre=%s post=%s" a.parent.name
-                 (shape pre) (shape post)];
-             Some
-               ({
-                  id = fresh_spec_id ();
-                  span = Some a.parent.item_meta.span;
-                  kind = HaxSpec (FunctionSpec { fn = parent_id; pre; post });
-                }
-                 : Spec.spec)))
+    |> List.filter_map build_entry
+    |> List.split
   in
 
   (* Pass 3: strip consumed decoration fns from [crate.fun_decls]. *)
@@ -169,4 +181,9 @@ let gather (_ctx : TranslateCore.trans_ctx)
     Printf.sprintf "hax-specs: gathered %d FunctionSpec entries"
       (List.length new_specs)];
 
-  { crate with fun_decls = new_fun_decls; specs = crate.specs @ new_specs }
+  {
+    crate with
+    fun_decls = new_fun_decls;
+    specs = crate.specs @ new_specs;
+    proof_obligations = crate.proof_obligations @ new_obligations;
+  }

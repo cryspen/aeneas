@@ -122,12 +122,10 @@ open Std.Do
 def basic.only_requires.pre (x : Std.U32) : Result Bool := do
   ok (x > 10#u32)
 
-@[step]
-theorem basic.only_requires.spec (x : Std.U32) :
+def basic.only_requires.spec (x : Std.U32) : Prop :=
   (basic.only_requires.pre x).holds →
   basic.only_requires x
   ⦃ res => True ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::only_ensures::post]:
@@ -137,11 +135,9 @@ def basic.only_ensures.post
   (x : Std.U32) (result : Std.U32) : Result Bool := do
   ok (result = x)
 
-@[step]
-theorem basic.only_ensures.spec (x : Std.U32) :
+def basic.only_ensures.spec (x : Std.U32) : Prop :=
   basic.only_ensures x
   ⦃ res => (basic.only_ensures.post x res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::both::pre]:
@@ -156,12 +152,10 @@ def basic.both.pre (x : Std.U32) : Result Bool := do
 def basic.both.post (x : Std.U32) (result : Std.U32) : Result Bool := do
   ok (result > x)
 
-@[step]
-theorem basic.both.spec (x : Std.U32) :
+def basic.both.spec (x : Std.U32) : Prop :=
   (basic.both.pre x).holds →
   basic.both x
   ⦃ res => (basic.both.post x res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::returns_unit::pre]:
@@ -176,12 +170,10 @@ def basic.returns_unit.pre (x : Std.U32) : Result Bool := do
 def basic.returns_unit.post (x : Std.U32) (_ : Unit) : Result Bool := do
   ok true
 
-@[step]
-theorem basic.returns_unit.spec (x : Std.U32) :
+def basic.returns_unit.spec (x : Std.U32) : Prop :=
   (basic.returns_unit.pre x).holds →
   basic.returns_unit x
   ⦃ res => (basic.returns_unit.post x res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::block_in_requires::pre]:
@@ -190,12 +182,10 @@ theorem basic.returns_unit.spec (x : Std.U32) :
 def basic.block_in_requires.pre (x : Std.U32) : Result Bool := do
   ok (x > 10#u32)
 
-@[step]
-theorem basic.block_in_requires.spec (x : Std.U32) :
+def basic.block_in_requires.spec (x : Std.U32) : Prop :=
   (basic.block_in_requires.pre x).holds →
   basic.block_in_requires x
   ⦃ res => True ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::returns_pair::post]:
@@ -208,11 +198,9 @@ def basic.returns_pair.post
   then ok (b = x)
   else ok false
 
-@[step]
-theorem basic.returns_pair.spec (x : Std.U32) :
+def basic.returns_pair.spec (x : Std.U32) : Prop :=
   basic.returns_pair x
   ⦃ res => (basic.returns_pair.post x res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::extra_args::generic::pre]:
@@ -230,12 +218,10 @@ def extra_args.generic.post
   (N : Std.U32) (x : Std.U32) (result : Std.U32) : Result Bool := do
   ok (result < N)
 
-@[step]
-theorem extra_args.generic.spec (N : Std.U32) (x : Std.U32) :
+def extra_args.generic.spec (N : Std.U32) (x : Std.U32) : Prop :=
   (extra_args.generic.pre N x).holds →
   extra_args.generic N x
   ⦃ res => (extra_args.generic.post N x res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::extra_args::traits::pre]:
@@ -260,13 +246,11 @@ def extra_args.traits.post
   := do
   ok (result < 2000#u32)
 
-@[step]
-theorem extra_args.traits.spec {T : Type} (ValInst : extra_args.Val T) 
-  (t : T) (x : Std.U32) :
+def extra_args.traits.spec {T : Type} (ValInst : extra_args.Val T) (t : T)
+  (x : Std.U32) : Prop :=
   (extra_args.traits.pre ValInst t x).holds →
   extra_args.traits ValInst t x
   ⦃ res => (extra_args.traits.post ValInst t x res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::future::incr::pre]:
@@ -282,12 +266,10 @@ def future.incr.post (x : Std.U32) (x_future : Std.U32) : Result Bool := do
   let i ← x + 1#u32
   ok (x_future = i)
 
-@[step]
-theorem future.incr.spec (x : Std.U32) :
+def future.incr.spec (x : Std.U32) : Prop :=
   (future.incr.pre x).holds →
   future.incr x
   ⦃ res => (future.incr.post x res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::future::incr_i::pre]:
@@ -309,12 +291,10 @@ def future.incr_i.post
   let i3 ← i2 + 1#u32
   ok (i1 = i3)
 
-@[step]
-theorem future.incr_i.spec (x : Slice Std.U32) (i : Std.Usize) :
+def future.incr_i.spec (x : Slice Std.U32) (i : Std.Usize) : Prop :=
   (future.incr_i.pre x i).holds →
   future.incr_i x i
   ⦃ res => (future.incr_i.post x i res).holds ⦄
-  := by sorry
 
 
 /-- [hax_specs::future::swap_and_add::pre]:
@@ -342,11 +322,51 @@ def future.swap_and_add.post
     else ok false
   else ok false
 
-@[step]
-theorem future.swap_and_add.spec (x : Std.U32) (y : Std.U32) :
+def future.swap_and_add.spec (x : Std.U32) (y : Std.U32) : Prop :=
   (future.swap_and_add.pre x y).holds →
   future.swap_and_add x y
   ⦃ res => (future.swap_and_add.post x y res).holds ⦄
+
+@[step]
+def basic.only_requires.spec.proof (x : Std.U32) : basic.only_requires.spec x
   := by sorry
+
+@[step]
+def basic.only_ensures.spec.proof (x : Std.U32) : basic.only_ensures.spec x
+  := by sorry
+
+@[step]
+def basic.both.spec.proof (x : Std.U32) : basic.both.spec x := by sorry
+
+@[step]
+def basic.returns_unit.spec.proof (x : Std.U32) : basic.returns_unit.spec x
+  := by sorry
+
+@[step]
+def basic.block_in_requires.spec.proof (x : Std.U32) :
+  basic.block_in_requires.spec x := by sorry
+
+@[step]
+def basic.returns_pair.spec.proof (x : Std.U32) : basic.returns_pair.spec x
+  := by sorry
+
+@[step]
+def extra_args.generic.spec.proof (N : Std.U32) (x : Std.U32) :
+  extra_args.generic.spec N x := by sorry
+
+@[step]
+def extra_args.traits.spec.proof {T : Type} (ValInst : extra_args.Val T)
+  (t : T) (x : Std.U32) : extra_args.traits.spec ValInst t x := by sorry
+
+@[step]
+def future.incr.spec.proof (x : Std.U32) : future.incr.spec x := by sorry
+
+@[step]
+def future.incr_i.spec.proof (x : Slice Std.U32) (i : Std.Usize) :
+  future.incr_i.spec x i := by sorry
+
+@[step]
+def future.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32) :
+  future.swap_and_add.spec x y := by sorry
 
 end hax_specs
