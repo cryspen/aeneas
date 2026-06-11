@@ -170,11 +170,11 @@ let emit_theorem ctx fmt span fn explicit generics output_ty arg_texprs res_id
   in
   emit ctx fmt span fn explicit generics output_ty arg_texprs res_id pre post
 
-(** Emit one [Spec.t] entry: pre/post condition fns + the [@[step]] theorem. *)
-let emit_spec (ctx : ExtractBase.extraction_ctx) fmt (s : HaxSpecs.t) opt_span =
+(** Emit one [Spec.spec] entry *)
+let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
   let open ExtractBase in
   match s with
-  | FunctionSpec { fn; pre; post; proof } -> (
+  | FunctionSpec { fn; pre; post } -> (
       match Pure.FunDeclId.Map.find_opt fn ctx.trans_funs with
       | None ->
           [%warn_opt_span] opt_span
@@ -241,16 +241,16 @@ let emit_spec (ctx : ExtractBase.extraction_ctx) fmt (s : HaxSpecs.t) opt_span =
           let space = ref false in
           let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in
           ExtractTypes.insert_req_space fmt space;
-          F.pp_print_string fmt ":";
+          F.pp_print_string fmt ": Prop :=";
           F.pp_close_box fmt ();
 
           (* Statement shape. *)
           emit_theorem ctx fmt span fn explicit generics sg.output arg_texprs
             res_id pre post;
 
-          (* Proof. *)
-          F.pp_print_cut fmt ();
-          emit_proof fmt proof;
+          (* TODO: the proof now lives in the [obligation] (FunctionContract) and
+           is emitted by a dedicated proof-obligation printer; this spec emitter
+           prints the statement only. *)
           F.pp_close_box fmt ();
           (* inner vbox *)
           F.pp_close_box fmt ();

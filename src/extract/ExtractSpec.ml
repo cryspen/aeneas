@@ -2,12 +2,12 @@
 
 module F = Format
 
-(** Emit one [Spec.t] entry. *)
-let emit_spec ctx fmt (s : Spec.t) =
+(** Emit one [Spec.spec] entry. *)
+let emit_spec ctx fmt (s : Spec.spec) =
   match s.kind with
   | HaxSpec hs -> ExtractHaxSpecs.emit_spec ctx fmt hs s.span
 
-let extract_specs (ctx : ExtractBase.extraction_ctx) (fmt : F.formatter) =
+let extract_specs (ctx : ExtractBase.extraction_ctx) fmt =
   if not (List.is_empty ctx.specs) then begin
     F.pp_print_break fmt 0 0;
     F.pp_print_string fmt "open Std.Do";

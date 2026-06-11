@@ -123,12 +123,11 @@ def basic.only_requires.pre (x : Std.U32) : Result Bool := do
   ok (x < 100#u32)
 
 @[spec]
-theorem basic.only_requires.spec (x : Std.U32) :
+theorem basic.only_requires.spec (x : Std.U32) : Prop :=
   (basic.only_requires.pre x).holds →
   ⦃ ⌜ True ⌝ ⦄
   basic.only_requires x
   ⦃ ⇓ res => ⌜ True ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::only_ensures::post]:
@@ -139,11 +138,10 @@ def basic.only_ensures.post
   ok (result = x)
 
 @[spec]
-theorem basic.only_ensures.spec (x : Std.U32) :
+theorem basic.only_ensures.spec (x : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   basic.only_ensures x
   ⦃ ⇓ res => ⌜ (basic.only_ensures.post x res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::both::pre]:
@@ -159,12 +157,11 @@ def basic.both.post (x : Std.U32) (result : Std.U32) : Result Bool := do
   ok (result > x)
 
 @[spec]
-theorem basic.both.spec (x : Std.U32) :
+theorem basic.both.spec (x : Std.U32) : Prop :=
   (basic.both.pre x).holds →
   ⦃ ⌜ True ⌝ ⦄
   basic.both x
   ⦃ ⇓ res => ⌜ (basic.both.post x res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::returns_unit::pre]:
@@ -180,12 +177,11 @@ def basic.returns_unit.post (x : Std.U32) (_ : Unit) : Result Bool := do
   ok true
 
 @[spec]
-theorem basic.returns_unit.spec (x : Std.U32) :
+theorem basic.returns_unit.spec (x : Std.U32) : Prop :=
   (basic.returns_unit.pre x).holds →
   ⦃ ⌜ True ⌝ ⦄
   basic.returns_unit x
   ⦃ ⇓ res => ⌜ (basic.returns_unit.post x res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::block_in_requires::pre]:
@@ -195,12 +191,11 @@ def basic.block_in_requires.pre (x : Std.U32) : Result Bool := do
   ok (x > 10#u32)
 
 @[spec]
-theorem basic.block_in_requires.spec (x : Std.U32) :
+theorem basic.block_in_requires.spec (x : Std.U32) : Prop :=
   (basic.block_in_requires.pre x).holds →
   ⦃ ⌜ True ⌝ ⦄
   basic.block_in_requires x
   ⦃ ⇓ res => ⌜ True ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::basic::returns_pair::post]:
@@ -214,11 +209,10 @@ def basic.returns_pair.post
   else ok false
 
 @[spec]
-theorem basic.returns_pair.spec (x : Std.U32) :
+theorem basic.returns_pair.spec (x : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   basic.returns_pair x
   ⦃ ⇓ res => ⌜ (basic.returns_pair.post x res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::extra_args::generic::pre]:
@@ -237,12 +231,11 @@ def extra_args.generic.post
   ok (result < N)
 
 @[spec]
-theorem extra_args.generic.spec (N : Std.U32) (x : Std.U32) :
+theorem extra_args.generic.spec (N : Std.U32) (x : Std.U32) : Prop :=
   (extra_args.generic.pre N x).holds →
   ⦃ ⌜ True ⌝ ⦄
   extra_args.generic N x
   ⦃ ⇓ res => ⌜ (extra_args.generic.post N x res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::extra_args::traits::pre]:
@@ -269,12 +262,11 @@ def extra_args.traits.post
 
 @[spec]
 theorem extra_args.traits.spec {T : Type} (ValInst : extra_args.Val T) 
-  (t : T) (x : Std.U32) :
+  (t : T) (x : Std.U32) : Prop :=
   (extra_args.traits.pre ValInst t x).holds →
   ⦃ ⌜ True ⌝ ⦄
   extra_args.traits ValInst t x
   ⦃ ⇓ res => ⌜ (extra_args.traits.post ValInst t x res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::future::incr::pre]:
@@ -291,12 +283,11 @@ def future.incr.post (x : Std.U32) (x_future : Std.U32) : Result Bool := do
   ok (x_future = i)
 
 @[spec]
-theorem future.incr.spec (x : Std.U32) :
+theorem future.incr.spec (x : Std.U32) : Prop :=
   (future.incr.pre x).holds →
   ⦃ ⌜ True ⌝ ⦄
   future.incr x
   ⦃ ⇓ res => ⌜ (future.incr.post x res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::future::incr_i::pre]:
@@ -319,12 +310,11 @@ def future.incr_i.post
   ok (i1 = i3)
 
 @[spec]
-theorem future.incr_i.spec (x : Slice Std.U32) (i : Std.Usize) :
+theorem future.incr_i.spec (x : Slice Std.U32) (i : Std.Usize) : Prop :=
   (future.incr_i.pre x i).holds →
   ⦃ ⌜ True ⌝ ⦄
   future.incr_i x i
   ⦃ ⇓ res => ⌜ (future.incr_i.post x i res).holds ⌝ ⦄
-  := by sorry
 
 
 /-- [hax_specs::future::swap_and_add::pre]:
@@ -353,11 +343,10 @@ def future.swap_and_add.post
   else ok false
 
 @[spec]
-theorem future.swap_and_add.spec (x : Std.U32) (y : Std.U32) :
+theorem future.swap_and_add.spec (x : Std.U32) (y : Std.U32) : Prop :=
   (future.swap_and_add.pre x y).holds →
   ⦃ ⌜ True ⌝ ⦄
   future.swap_and_add x y
   ⦃ ⇓ res => ⌜ (future.swap_and_add.post x y res).holds ⌝ ⦄
-  := by sorry
 
 end hax_specs

@@ -1,8 +1,22 @@
 open Identifiers
 open Meta
 module SpecId = IdGen ()
+module ProofId = IdGen ()
 
-(** The shape of an entry — {b the extensible point}. One arm per shape. *)
-type kind = HaxSpec of HaxSpecs.t [@@deriving show]
+(** The shape of a spec entry *)
+type spec_kind = HaxSpec of HaxSpecs.spec [@@deriving show]
 
-type t = { id : SpecId.id; kind : kind; span : span option } [@@deriving show]
+(** A spec entry: a statement of correctness *)
+type spec = { id : SpecId.id; kind : spec_kind; span : span option }
+[@@deriving show]
+
+(** The shape of a proof-obligation entry *)
+type proof_kind = HaxProof of HaxSpecs.obligation [@@deriving show]
+
+(** A proof obligation: a theorem to discharge *)
+type proof_obligation = {
+  id : ProofId.id;
+  kind : proof_kind;
+  span : span option;
+}
+[@@deriving show]
