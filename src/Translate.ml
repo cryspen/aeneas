@@ -581,6 +581,7 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
       trait_decls;
       trait_impls;
       specs = [];
+      proof_obligations = [];
     }
   in
 
@@ -1250,7 +1251,9 @@ let extract_definitions (fmt : Format.formatter) (config : gen_config)
     ctx.crate.declarations;
 
   (* Emit hax specs/proofs, if requested. *)
-  if config.extract_specs then ExtractSpec.extract_specs ctx fmt
+  if config.extract_specs then (
+    ExtractSpec.extract_specs ctx fmt;
+    ExtractSpec.extract_proof_obligations ctx fmt)
 
 type extract_file_info = {
   filename : string;
@@ -1441,6 +1444,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
     trait_decls = trans_trait_decls;
     trait_impls = trans_trait_impls;
     specs = trans_specs;
+    proof_obligations = trans_proof_obligations;
   } =
     trans_crate
   in
@@ -1515,6 +1519,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
       trans_types;
       trans_funs;
       specs = trans_specs;
+      proof_obligations = trans_proof_obligations;
       builtin_sigs;
       trans_globals;
       functions_with_decreases_clause = rec_functions;
@@ -2071,19 +2076,32 @@ let extract_translated_crate (filename : string) (dest_dir : string)
      in
      extract_file fun_config ctx file_info;
 
-     (* Dedicated Spec.lean for the gathered specs/proofs, if any. *)
-     if trans_specs <> [] then
-       let spec_config = { base_gen_config with extract_specs = true } in
+     (* Dedicated Specs.lean (statements of correctness) and
+        ProofObligations.lean (the obligations), if any *)
+     let specs_module = import_prefix ^ "Specs" in
+     let spec_config = { base_gen_config with extract_specs = true } in
+     (if trans_specs <> [] then
+        let file_info =
+          {
+            file_info with
+            filename = extract_filebasename ^ "Specs" ^ ext;
+            module_name = specs_module;
+            custom_msg = ": specs (statements of correctness)";
+            custom_includes = [ types_module; fun_module ];
+          }
+        in
+        extract_file spec_config { ctx with proof_obligations = [] } file_info);
+     if trans_proof_obligations <> [] then
        let file_info =
          {
            file_info with
-           filename = extract_filebasename ^ "Specs" ^ ext;
-           module_name = import_prefix ^ "Specs";
-           custom_msg = ": specs/proofs";
-           custom_includes = [ types_module; fun_module ];
+           filename = extract_filebasename ^ "ProofObligations" ^ ext;
+           module_name = import_prefix ^ "ProofObligations";
+           custom_msg = ": proof obligations";
+           custom_includes = [ types_module; fun_module; specs_module ];
          }
        in
-       extract_file spec_config ctx file_info)
+       extract_file spec_config { ctx with specs = [] } file_info)
    else
      let gen_config =
        {

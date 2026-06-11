@@ -26,19 +26,25 @@ module Helpers = struct
   let emit_wp (fmt : F.formatter) (k : unit -> unit) : unit =
     Extract.emit_delim fmt "⦃" k "⦄"
 
-  (** Emit [(<cond> <generics> <args>).holds] for a fn [f] *)
-  let emit_holds span ctx fmt explicit generics args (f : Pure.fun_decl) =
-    let name = ExtractBase.ctx_get_local_function span f.def_id None ctx in
-    F.pp_open_hovbox fmt 0;
-    F.pp_print_string fmt ("(" ^ name);
-    (* Generic args, matching the condition fn's generic binders. *)
+  (** Emit [<name> <generics> <args>] — an application head applied to its
+      generic and value arguments (caller controls the surrounding box). *)
+  let emit_app span ctx fmt explicit generics args (name : string) =
+    F.pp_print_string fmt name;
+    (* Generic args, matching the head's generic binders. *)
     ExtractTypes.extract_generic_args span ctx fmt Pure.TypeDeclId.Set.empty
       ~explicit:(Some explicit) generics;
     List.iter
       (fun te ->
         F.pp_print_space fmt ();
         Extract.extract_texpr span ctx fmt ~inside:true ~inside_do:false te)
-      args;
+      args
+
+  (** Emit [(<cond> <generics> <args>).holds] for a fn [f] *)
+  let emit_holds span ctx fmt explicit generics args (f : Pure.fun_decl) =
+    let name = ExtractBase.ctx_get_local_function span f.def_id None ctx in
+    F.pp_open_hovbox fmt 0;
+    F.pp_print_string fmt "(";
+    emit_app span ctx fmt explicit generics args name;
     F.pp_print_string fmt ").holds";
     F.pp_close_box fmt ()
 end
@@ -57,6 +63,21 @@ let emit_proof fmt (p : HaxSpecs.proof) =
 let emit_conditions ctx fmt ~pre ~post =
   Option.iter (emit_cond ctx fmt) pre;
   Option.iter (emit_cond ctx fmt) post
+
+(** Compute the [<fn>.spec] definition name for a hax-annotated function: the
+    formatted function name followed by the [.spec] suffix. The single source of
+    truth for the spec name — used by both the spec declaration ({!emit_spec})
+    and the proof obligation that references it ({!emit_obligation}). *)
+let compute_spec_name (def : Pure.fun_decl) (ctx : ExtractBase.extraction_ctx) :
+    string =
+  let fname =
+    ExtractBase.ctx_compute_fun_global_name_no_suffix def.item_meta def.src
+      ~is_trait_decl_field:false ctx
+  in
+  let lp_suffix =
+    ExtractBase.default_fun_suffix def.num_loops def.loop_id def.loop_pos
+  in
+  fname ^ lp_suffix ^ ".spec"
 
 (** Prelude shared by both statement styles: register the result variable (a
     collision-safe fvar), build the [.holds] / application printers, emit the
@@ -189,7 +210,6 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
           let ctx = ctx |> reg pre |> reg post in
           let parent = ft.f in
           let span = parent.item_meta.span in
-          let parent_name = ctx_get_local_function span fn None ctx in
           let sg = parent.signature in
           let explicit = sg.explicit_info in
           let generics = PureUtils.generic_args_of_params sg.generics in
@@ -220,23 +240,17 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
 
           emit_conditions ctx fmt ~pre ~post;
 
-          (* Theorem header: [@[<attr>] theorem <fn>.spec <binders> :], where the
-           attribute ([step] / [spec]) follows the configured spec backend. A
-           leading break separates it from the preceding condition decl. *)
-          let attr =
-            match current_spec_backend () with
-            | Config.Mvcgen -> "spec"
-            | Config.Step -> "step"
-          in
+          (* Spec definition header: [def <fn>.spec <binders> : Prop :=] *)
           F.pp_print_break fmt 0 0;
           F.pp_open_vbox fmt 0;
-          ExtractTypes.extract_attributes span ctx fmt parent.item_meta.name
-            None [ attr ] "" [] ~is_external:false;
           F.pp_open_vbox fmt ctx.indent_incr;
           F.pp_open_hovbox fmt ctx.indent_incr;
-          F.pp_print_string fmt "theorem";
-          F.pp_print_space fmt ();
-          F.pp_print_string fmt (parent_name ^ ".spec");
+          (match fun_decl_kind_to_qualif SingleNonRec with
+          | Some qualif ->
+              F.pp_print_string fmt qualif;
+              F.pp_print_space fmt ()
+          | None -> ());
+          F.pp_print_string fmt (compute_spec_name parent ctx);
           (* Generic + value binders via the standard param extractor. *)
           let space = ref false in
           let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in
@@ -244,15 +258,102 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
           F.pp_print_string fmt ": Prop :=";
           F.pp_close_box fmt ();
 
-          (* Statement shape. *)
+          (* Statement shape (the def body). *)
           emit_theorem ctx fmt span fn explicit generics sg.output arg_texprs
             res_id pre post;
-
-          (* TODO: the proof now lives in the [obligation] (FunctionContract) and
-           is emitted by a dedicated proof-obligation printer; this spec emitter
-           prints the statement only. *)
           F.pp_close_box fmt ();
           (* inner vbox *)
           F.pp_close_box fmt ();
           (* outer vbox *)
+          F.pp_print_cut fmt ())
+
+(** Emit one [HaxSpecs.obligation] entry as the proof obligation that discharges
+    a spec's statement of correctness:
+    {[
+      @[spec]
+      def foo.spec.proof args : foo.spec args := by sorry
+    ]}
+    The attribute ([step] / [spec]) follows the configured spec backend. *)
+let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
+  let open ExtractBase in
+  match o with
+  | FunctionContract { spec = { fn; _ }; proof } -> (
+      match Pure.FunDeclId.Map.find_opt fn ctx.trans_funs with
+      | None ->
+          [%warn_opt_span] opt_span
+            ("Trying to print a proof obligation for an unknown function '"
+            ^ Pure.FunDeclId.to_string fn
+            ^ "'")
+      | Some ft ->
+          let parent = ft.f in
+          let span = parent.item_meta.span in
+          let sg = parent.signature in
+          let explicit = sg.explicit_info in
+          let generics = PureUtils.generic_args_of_params sg.generics in
+          (* The canonical [<fn>.spec] name, from the shared {!compute_spec_name}
+           (same as the spec declaration). *)
+          let spec_name = compute_spec_name parent ctx in
+
+          (* Open the parent's body binders *)
+          let _, fresh_fvar_id = Pure.FVarId.fresh_stateful_generator () in
+          let parent =
+            {
+              parent with
+              body =
+                Option.map
+                  (fun b ->
+                    snd (PureUtils.open_all_fun_body fresh_fvar_id span b))
+                  parent.body;
+            }
+          in
+          let arg_texprs =
+            match parent.body with
+            | None -> []
+            | Some { inputs; _ } ->
+                List.filter_map (PureUtils.tpat_to_texpr span) inputs
+          in
+
+          (* Blank line before the entry. *)
+          F.pp_print_break fmt 0 0;
+
+          (* Box layout (brackets = boxes):
+             [ [theorem name] binders : [statement] ]  [:= by sorry]
+             The outer [hvbox] keeps the whole theorem on one line if it fits;
+             otherwise [:= by sorry] breaks onto its own line first, and only if
+             the statement box itself still overflows do the binders/type wrap.
+             [extract_attributes]'s trailing break becomes a newline in the vbox. *)
+          let attr =
+            match current_spec_backend () with
+            | Config.Mvcgen -> "spec"
+            | Config.Step -> "step"
+          in
+          F.pp_open_vbox fmt 0;
+          ExtractTypes.extract_attributes span ctx fmt parent.item_meta.name
+            None [ attr ] "" [] ~is_external:false;
+          (* Outer box: [<statement> := by sorry] — break before the proof first. *)
+          F.pp_open_hvbox fmt ctx.indent_incr;
+          (* The theorem statement: [theorem name binders : <type>]. *)
+          F.pp_open_hovbox fmt ctx.indent_incr;
+          F.pp_print_string fmt "theorem";
+          F.pp_print_space fmt ();
+          F.pp_print_string fmt (spec_name ^ ".proof");
+          (* Generic + value binders via the standard param extractor. *)
+          let space = ref false in
+          let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in
+          ExtractTypes.insert_req_space fmt space;
+          F.pp_print_string fmt ":";
+          F.pp_print_space fmt ();
+          (* The statement of correctness, in its own box:
+             [<fn>.spec <generics> <args>]. *)
+          F.pp_open_hovbox fmt 0;
+          emit_app span ctx fmt explicit generics arg_texprs spec_name;
+          F.pp_close_box fmt ();
+          F.pp_close_box fmt ();
+          (* statement hovbox *)
+          F.pp_print_space fmt ();
+          emit_proof fmt proof;
+          F.pp_close_box fmt ();
+          (* outer hvbox *)
+          F.pp_close_box fmt ();
+          (* attribute vbox *)
           F.pp_print_cut fmt ())
