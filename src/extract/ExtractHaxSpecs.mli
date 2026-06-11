@@ -5,11 +5,10 @@ module F = Format
 (** Emits a [HaxSpecs.proof] entry. *)
 val emit_proof : F.formatter -> HaxSpecs.proof -> unit
 
-(** Emits one [HaxSpecs.t] entry. The [span option] is used for error reporting
-    when the spec refers to an unknown function. *)
+(** Emits one [HaxSpecs.spec] entry. The [span option] is used for errors *)
 val emit_spec :
   ExtractBase.extraction_ctx ->
   F.formatter ->
-  HaxSpecs.t ->
+  HaxSpecs.spec ->
   Meta.span option ->
   unit

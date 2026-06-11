@@ -133,7 +133,7 @@ let gather (_ctx : TranslateCore.trans_ctx)
     | None -> "absent"
     | Some _ -> "present"
   in
-  let new_specs : Spec.t list =
+  let new_specs : Spec.spec list =
     Pure.FunDeclId.Map.bindings !assoc_map
     |> List.filter_map (fun (parent_id, a) ->
            let pre =
@@ -149,14 +149,12 @@ let gather (_ctx : TranslateCore.trans_ctx)
                Printf.sprintf "hax-specs:   fn=%s pre=%s post=%s" a.parent.name
                  (shape pre) (shape post)];
              Some
-               {
-                 Spec.id = fresh_spec_id ();
-                 span = Some a.parent.item_meta.span;
-                 kind =
-                   HaxSpec
-                     (FunctionSpec
-                        { fn = parent_id; pre; post; proof = HaxSpecs.Admitted });
-               }))
+               ({
+                  id = fresh_spec_id ();
+                  span = Some a.parent.item_meta.span;
+                  kind = HaxSpec (FunctionSpec { fn = parent_id; pre; post });
+                }
+                 : Spec.spec)))
   in
 
   (* Pass 3: strip consumed decoration fns from [crate.fun_decls]. *)

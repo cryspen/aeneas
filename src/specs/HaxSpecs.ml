@@ -5,13 +5,17 @@
     only pre/post on standalone functions. *)
 
 (** Type for spec objects *)
-type t =
-  | FunctionSpec of {
-      fn : Pure.FunDeclId.id;  (** Precondition *)
-      pre : Pure.fun_decl option;  (** Postcondition *)
-      post : Pure.fun_decl option;
-      proof : proof;
-    }
+type spec = FunctionSpec of function_spec [@@deriving show]
+
+and function_spec = {
+  fn : Pure.FunDeclId.id;  (** Precondition *)
+  pre : Pure.fun_decl option;  (** Postcondition *)
+  post : Pure.fun_decl option;
+}
+[@@deriving show]
+
+(** Type for proof-obligation objects (mirrors {!specs}). *)
+and obligation = FunctionContract of { spec : function_spec; proof : proof }
 [@@deriving show]
 
 (** Type for proof objects *)
