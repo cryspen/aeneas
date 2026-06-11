@@ -25,7 +25,7 @@ type translated_crate = {
   global_decls : Pure.global_decl list;
   trait_decls : Pure.trait_decl list;
   trait_impls : Pure.trait_impl list;
-  specs : Spec.t list;
+  specs : Spec.spec list;
 }
 
 let trans_ctx_to_fmt_env (ctx : trans_ctx) : Print.fmt_env =
