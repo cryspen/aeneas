@@ -20,3 +20,9 @@ and obligation = FunctionContract of { spec : function_spec; proof : proof }
 
 (** Type for proof objects *)
 and proof = Admitted [@@deriving show]
+
+(** The extra Lean modules hax specs need to elaborate *)
+let required_imports () : string list =
+  match Config.spec_backend () with
+  | Some Config.Mvcgen -> [ "Hax" ]
+  | Some Config.Step | None -> []

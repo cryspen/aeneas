@@ -1841,6 +1841,12 @@ let extract_translated_crate (filename : string) (dest_dir : string)
   in
   let has_opaque = has_opaque_types || has_opaque_funs in
 
+  (* Extra Lean imports the gathered specs require (empty when there are none);
+     the source-specific logic lives in {!Spec.required_imports}. *)
+  let spec_imports =
+    if trans_specs = [] then [] else Spec.required_imports ()
+  in
+
   (* Extract one or several files, depending on the configuration *)
   (if !Config.split_files then (
      let base_gen_config =
@@ -2090,6 +2096,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
             filename = extract_filebasename ^ "Specs" ^ ext;
             module_name = specs_module;
             custom_msg = ": specs (statements of correctness)";
+            custom_imports = spec_imports;
             custom_includes = [ types_module; fun_module ];
           }
         in
@@ -2132,7 +2139,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          rust_module_name = crate.name;
          module_name = crate_name;
          custom_msg = "";
-         custom_imports = [];
+         custom_imports = spec_imports;
          custom_includes = [];
          noncomputable = has_opaque && not !Config.all_computable;
        }
