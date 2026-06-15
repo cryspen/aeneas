@@ -79,6 +79,11 @@ let compute_spec_name (def : Pure.fun_decl) (ctx : ExtractBase.extraction_ctx) :
   in
   fname ^ lp_suffix ^ ".spec"
 
+(** Names of the emitted proof obligations *)
+let emitted_obligation_names : string list ref = ref []
+
+let get_emitted_obligation_names () = !emitted_obligation_names
+
 (** Prelude shared by both statement styles: register the result variable (a
     collision-safe fvar), build the [.holds] / application printers, emit the
     (shared) optional precondition hypothesis [(<fn>.pre <args>).holds →] *)
@@ -334,7 +339,10 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
           F.pp_open_hovbox fmt ctx.indent_incr;
           F.pp_print_string fmt "theorem";
           F.pp_print_space fmt ();
-          F.pp_print_string fmt (spec_name ^ ".proof");
+          (* Record the name *)
+          let obligation_name = spec_name ^ ".proof" in
+          emitted_obligation_names := obligation_name :: !emitted_obligation_names;
+          F.pp_print_string fmt obligation_name;
           (* Generic + value binders via the standard param extractor. *)
           let space = ref false in
           let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in

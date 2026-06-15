@@ -267,6 +267,10 @@ let generate_lib_entry_point = ref false
 (** For Lean, controls whether we generate a lakefile or not. *)
 let lean_gen_lakefile = ref false
 
+(** For Lean, controls whether we write a sidecar JSON manifest listing the
+    names of the emitted proof obligations *)
+let proof_manifest = ref false
+
 (** If true, treat the unit functions (function taking no inputs and returning
     no outputs) as unit tests: evaluate them with the interpreter and check that
     they don't panic. *)
