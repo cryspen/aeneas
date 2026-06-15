@@ -1,4 +1,4 @@
-(** Lean printer for {!Spec.t} entries. *)
+(** Lean printer for {!Spec.spec} and {!Spec.proof_obligation} entries. *)
 
 module F = Format
 

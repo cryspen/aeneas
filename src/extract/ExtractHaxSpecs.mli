@@ -1,9 +1,6 @@
-(** Lean printer for {!HaxSpec.spec} entries. *)
+(** Lean printer for {!HaxSpecs.spec} entries. *)
 
 module F = Format
-
-(** Emits a [HaxSpecs.proof] entry. *)
-val emit_proof : F.formatter -> HaxSpecs.proof -> unit
 
 (** Emits one [HaxSpecs.spec] entry. The [span option] is used for errors *)
 val emit_spec :
