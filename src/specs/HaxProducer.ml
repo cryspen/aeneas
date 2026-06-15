@@ -3,9 +3,10 @@
     Hax encodes [#[hax_lib::requires(...)]] / [#[hax_lib::ensures(|r| ...)]]
     annotations as separate "decoration" functions plus [_hax::json] attributes
     that link a real function to its pre/post decorations by UUID. This module
-    parses those attributes, and the [gather] producer folds them into {!Spec.t}
-    entries (consuming the decoration functions). The [_hax::json] attribute
-    payloads are parsed by {!HaxAttributes}. *)
+    parses those attributes, and the [gather] producer folds them into
+    {!Spec.spec} / {!Spec.proof_obligation} entries (consuming the decoration
+    functions). The [_hax::json] attribute payloads are parsed by
+    {!HaxAttributes}. *)
 
 open HaxAttributes
 
@@ -81,7 +82,8 @@ let gather (_ctx : TranslateCore.trans_ctx)
         f.item_meta.attr_info.attributes)
     crate.fun_decls;
 
-  (* Pass 2: resolve uids to decoration fns and build [Spec.t] entries.
+  (* Pass 2: resolve uids to decoration fns and build [Spec.spec] /
+     [Spec.proof_obligation] entries.
 
      A decoration fn is reused as a proper function: we rename it to
      [<parent>::<suffix>] and mark it [reducible], so the standard function

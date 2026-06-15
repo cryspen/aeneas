@@ -644,8 +644,8 @@ type gen_config = {
       (** If [true], generate a definition/declaration for top-level (global)
           declarations *)
   extract_specs : bool;
-      (** If [true], emit one theorem per gathered {!Spec.t} entry (Lean only).
-          See {!module:ExtractSpec}. *)
+      (** If [true], emit the gathered {!Spec.spec} and {!Spec.proof_obligation}
+          entries (Lean only). See {!module:ExtractSpec}. *)
   interface : bool;
       (** [true] if we generate an interface file, [false] otherwise. For now,
           this only impacts whether we use [val] or [assume val] for the opaque
