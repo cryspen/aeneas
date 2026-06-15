@@ -14,7 +14,7 @@ and function_spec = {
 }
 [@@deriving show]
 
-(** Type for proof-obligation objects (mirrors {!specs}). *)
+(** Type for proof-obligation objects. *)
 and obligation = FunctionContract of { spec : function_spec; proof : proof }
 [@@deriving show]
 

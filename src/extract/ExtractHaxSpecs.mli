@@ -1,4 +1,4 @@
-(** Lean printer for {!HaxSpecs.spec} entries. *)
+(** Lean printer for {!HaxSpecs.spec} and {!HaxSpecs.obligation} entries. *)
 
 module F = Format
 

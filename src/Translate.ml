@@ -611,8 +611,11 @@ type gen_config = {
       (** If [true], generate a definition/declaration for top-level (global)
           declarations *)
   extract_specs : bool;
-      (** If [true], emit the gathered {!Spec.spec} and {!Spec.proof_obligation}
-          entries (Lean only). See {!module:ExtractSpec}. *)
+      (** If [true], emit the gathered {!Spec.spec} entries (Lean only). See
+          {!module:ExtractSpec}. *)
+  extract_proof_obligations : bool;
+      (** If [true], emit the gathered {!Spec.proof_obligation} entries (Lean
+          only). See {!module:ExtractSpec}. *)
   interface : bool;
       (** [true] if we generate an interface file, [false] otherwise. For now,
           this only impacts whether we use [val] or [assume val] for the opaque
@@ -1226,10 +1229,10 @@ let extract_definitions (fmt : Format.formatter) (config : gen_config)
         ())
     ctx.crate.declarations;
 
-  (* Emit hax specs/proofs, if requested. *)
-  if config.extract_specs then (
-    ExtractSpec.extract_specs ctx fmt;
-    ExtractSpec.extract_proof_obligations ctx fmt)
+  (* Emit hax specs/proof obligations, if requested. *)
+  if config.extract_specs then ExtractSpec.extract_specs ctx fmt;
+  if config.extract_proof_obligations then
+    ExtractSpec.extract_proof_obligations ctx fmt
 
 type extract_file_info = {
   filename : string;
@@ -1323,7 +1326,7 @@ let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
       List.iter (fun m -> Printf.fprintf out "import %s\n" m) fi.custom_includes;
       (* Always open the Primitives namespace *)
       Printf.fprintf out "open Aeneas Aeneas.Std Result ControlFlow Error\n";
-      (* In Mvcgen mode, we need to open Std.Do *)
+      (* For writing specs with Std.Do Hoare triples *)
       (match Config.spec_backend () with
       | Some Config.Mvcgen -> Printf.fprintf out "open Std.Do\n"
       | Some Config.Step | None -> ());
@@ -1831,6 +1834,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_opaque = false;
          extract_globals = false;
          extract_specs = false;
+         extract_proof_obligations = false;
          interface = false;
        }
      in
@@ -2058,8 +2062,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
      (* Dedicated Specs.lean (statements of correctness) and
         ProofObligations.lean (the obligations), if any *)
      let specs_module = import_prefix ^ "Specs" in
-     let spec_config = { base_gen_config with extract_specs = true } in
      (if trans_specs <> [] then
+        let specs_config = { base_gen_config with extract_specs = true } in
         let file_info =
           {
             file_info with
@@ -2070,8 +2074,11 @@ let extract_translated_crate (filename : string) (dest_dir : string)
             custom_includes = [ types_module; fun_module ];
           }
         in
-        extract_file spec_config { ctx with proof_obligations = [] } file_info);
+        extract_file specs_config ctx file_info);
      if trans_proof_obligations <> [] then
+       let obligations_config =
+         { base_gen_config with extract_proof_obligations = true }
+       in
        let file_info =
          {
            file_info with
@@ -2081,7 +2088,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
            custom_includes = [ types_module; fun_module; specs_module ];
          }
        in
-       extract_file spec_config { ctx with specs = [] } file_info)
+       extract_file obligations_config ctx file_info)
    else
      let gen_config =
        {
@@ -2096,6 +2103,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_opaque = true;
          extract_globals = true;
          extract_specs = Config.spec_config_enabled ();
+         extract_proof_obligations = Config.spec_config_enabled ();
          interface = false;
        }
      in
