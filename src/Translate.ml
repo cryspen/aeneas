@@ -616,7 +616,7 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
   let translated =
     match !Config.opt_spec_config with
     | Some (Hax, _) -> HaxProducer.gather trans_ctx translated
-    | _ -> translated
+    | None -> translated
   in
 
   (* Return *)
@@ -1394,8 +1394,9 @@ let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
       else
         Printf.fprintf out "open Aeneas Aeneas.Std Result ControlFlow Error\n";
       (* In Mvcgen mode, we need to open Std.Do *)
-      if Config.spec_backend () = Some Config.Mvcgen then
-        Printf.fprintf out "open Std.Do\n";
+      (match Config.spec_backend () with
+      | Some Config.Mvcgen -> Printf.fprintf out "open Std.Do\n"
+      | Some Config.Step | None -> ());
       (* It happens that we generate duplicated namespaces, like `betree.betree`.
          We deactivate the linter for this, because otherwise it leads to too much
          noise. *)
