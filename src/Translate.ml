@@ -2159,7 +2159,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_transparent = true;
          extract_opaque = true;
          extract_globals = true;
-         extract_specs = Option.is_some !Config.opt_spec_config;
+         extract_specs = Config.spec_config_enabled ();
          interface = false;
        }
      in

@@ -176,9 +176,7 @@ let emit_theorem_mvcgen ctx fmt span fn explicit generics output_ty arg_texprs
 
 (** The spec backend selected via [-specs] (defaults to [Step]). *)
 let current_spec_backend () : Config.spec_backend =
-  match !Config.opt_spec_config with
-  | Some (_, b) -> b
-  | None -> Config.Step
+  Option.value (Config.spec_backend ()) ~default:Config.Step
 
 (** Emit the theorem statement shape, dispatching on the spec backend configured
     via [-specs]. *)
