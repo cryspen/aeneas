@@ -270,8 +270,8 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
 (** Emit one [HaxSpecs.obligation] entry as the proof obligation that discharges
     a spec's statement of correctness:
     {[
-      @[spec]
-      def foo.spec.proof args : foo.spec args := by sorry
+      @[spec]/@[step]
+      theorem foo.spec.proof args : foo.spec args := by sorry
     ]}
     The attribute ([step] / [spec]) follows the configured spec backend. *)
 let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =

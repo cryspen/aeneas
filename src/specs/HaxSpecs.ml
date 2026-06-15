@@ -8,9 +8,9 @@
 type spec = FunctionSpec of function_spec [@@deriving show]
 
 and function_spec = {
-  fn : Pure.FunDeclId.id;  (** Precondition *)
-  pre : Pure.fun_decl option;  (** Postcondition *)
-  post : Pure.fun_decl option;
+  fn : Pure.FunDeclId.id;
+  pre : Pure.fun_decl option;  (** Precondition *)
+  post : Pure.fun_decl option;  (** Postcondition *)
 }
 [@@deriving show]
 
