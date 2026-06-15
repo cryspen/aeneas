@@ -82,8 +82,8 @@ let compute_spec_name (def : Pure.fun_decl) (ctx : ExtractBase.extraction_ctx) :
 (** Prelude shared by both statement styles: register the result variable (a
     collision-safe fvar), build the [.holds] / application printers, emit the
     (shared) optional precondition hypothesis [(<fn>.pre <args>).holds →] *)
-let emit_theorem_prelude ctx fmt span (fn : Pure.FunDeclId.id) explicit generics
-    output_ty arg_texprs res_id ~(pre : Pure.fun_decl option)
+let emit_statement_prelude ctx fmt span (fn : Pure.FunDeclId.id) explicit
+    generics output_ty arg_texprs res_id ~(pre : Pure.fun_decl option)
     ~(post : Pure.fun_decl option) =
   let open ExtractBase in
   (* Register the postcondition's result variable *)
@@ -126,20 +126,20 @@ let emit_theorem_prelude ctx fmt span (fn : Pure.FunDeclId.id) explicit generics
   in
   (emit_fn_call, res_name, emit_post_content)
 
-(** Emits a [Step]-style statement:
+(** Emits the [Step]-style spec statement — the body of
+    [def foo.spec … : Prop :=] (the
+    [@[step] theorem foo.spec.proof … := by sorry] wrapper is the obligation,
+    emitted separately):
     {[
-      @[step]
-      theorem foo.spec args :
-        (foo.pre args).holds →
-        foo args
-        ⦃ res => (foo.post args res).holds ⦄
-        := by sorry
+      (foo.pre args).holds →
+      foo args
+      ⦃ res => (foo.post args res).holds ⦄
     ]} *)
-let emit_theorem_step ctx fmt span fn explicit generics output_ty arg_texprs
+let emit_statement_step ctx fmt span fn explicit generics output_ty arg_texprs
     res_id pre post =
   let emit_fn_call, res_name, emit_post_content =
-    emit_theorem_prelude ctx fmt span fn explicit generics output_ty arg_texprs
-      res_id ~pre ~post
+    emit_statement_prelude ctx fmt span fn explicit generics output_ty
+      arg_texprs res_id ~pre ~post
   in
   line fmt emit_fn_call;
   line fmt (fun () ->
@@ -148,21 +148,21 @@ let emit_theorem_step ctx fmt span fn explicit generics output_ty arg_texprs
           F.pp_print_space fmt ();
           emit_post_content ()))
 
-(** Emits an [Mvcgen]-style statement:
+(** Emits the [Mvcgen]-style spec statement — the body of
+    [def foo.spec … : Prop :=] (the
+    [@[spec] theorem foo.spec.proof … := by sorry] wrapper is the obligation,
+    emitted separately):
     {[
-      @[spec]
-      theorem foo.spec args :
-        (foo.pre args).holds →
-        ⦃ ⌜ True ⌝ ⦄
-        foo args
-        ⦃ ⇓ res => ⌜ (foo.post args res).holds ⌝ ⦄
-        := by sorry
+      (foo.pre args).holds →
+      ⦃ ⌜ True ⌝ ⦄
+      foo args
+      ⦃ ⇓ res => ⌜ (foo.post args res).holds ⌝ ⦄
     ]} *)
-let emit_theorem_mvcgen ctx fmt span fn explicit generics output_ty arg_texprs
+let emit_statement_mvcgen ctx fmt span fn explicit generics output_ty arg_texprs
     res_id pre post =
   let emit_fn_call, res_name, emit_post_content =
-    emit_theorem_prelude ctx fmt span fn explicit generics output_ty arg_texprs
-      res_id ~pre ~post
+    emit_statement_prelude ctx fmt span fn explicit generics output_ty
+      arg_texprs res_id ~pre ~post
   in
   let emit_pure k = Extract.emit_delim fmt "⌜" k "⌝" in
   line fmt (fun () ->
@@ -178,14 +178,14 @@ let emit_theorem_mvcgen ctx fmt span fn explicit generics output_ty arg_texprs
 let current_spec_backend () : Config.spec_backend =
   Option.value (Config.spec_backend ()) ~default:Config.Step
 
-(** Emit the theorem statement shape, dispatching on the spec backend configured
+(** Emit the spec statement shape, dispatching on the spec backend configured
     via [-specs]. *)
-let emit_theorem ctx fmt span fn explicit generics output_ty arg_texprs res_id
+let emit_statement ctx fmt span fn explicit generics output_ty arg_texprs res_id
     pre post =
   let emit =
     match current_spec_backend () with
-    | Config.Mvcgen -> emit_theorem_mvcgen
-    | Config.Step -> emit_theorem_step
+    | Config.Mvcgen -> emit_statement_mvcgen
+    | Config.Step -> emit_statement_step
   in
   emit ctx fmt span fn explicit generics output_ty arg_texprs res_id pre post
 
@@ -257,7 +257,7 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
           F.pp_close_box fmt ();
 
           (* Statement shape (the def body). *)
-          emit_theorem ctx fmt span fn explicit generics sg.output arg_texprs
+          emit_statement ctx fmt span fn explicit generics sg.output arg_texprs
             res_id pre post;
           F.pp_close_box fmt ();
           (* inner vbox *)
