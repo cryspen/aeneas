@@ -20,3 +20,9 @@ type proof_obligation = {
   span : span option;
 }
 [@@deriving show]
+
+(** The extra Lean modules the configured spec source needs to elaborate *)
+let required_imports () : string list =
+  match !Config.opt_spec_config with
+  | Some (Config.Hax, _) -> HaxSpecs.required_imports ()
+  | None -> []
