@@ -1323,6 +1323,9 @@ let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
       List.iter (fun m -> Printf.fprintf out "import %s\n" m) fi.custom_includes;
       (* Always open the Primitives namespace *)
       Printf.fprintf out "open Aeneas Aeneas.Std Result ControlFlow Error\n";
+      (* In Mvcgen mode, we need to open Std.Do *)
+      if Config.spec_backend () = Some Config.Mvcgen then
+        Printf.fprintf out "open Std.Do\n";
       (* It happens that we generate duplicated namespaces, like `betree.betree`.
          We deactivate the linter for this, because otherwise it leads to too much
          noise. *)
