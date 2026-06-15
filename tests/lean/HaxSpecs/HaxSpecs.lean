@@ -2,6 +2,7 @@
 -- [hax_specs]
 import Aeneas
 open Aeneas Aeneas.Std Result ControlFlow Error
+open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -112,8 +113,6 @@ def future.swap_and_add
   (x : Std.U32) (y : Std.U32) : Result (Std.U32 × Std.U32 × Std.U32) := do
   let i ← x + y
   ok (i, y, x)
-
-open Std.Do
 
 
 /-- [hax_specs::basic::only_requires::pre]:

@@ -52,12 +52,18 @@ let set_spec_config (s : string) : unit =
          belonging to the proper set *)
       raise (Failure "Unexpected")
 
+(** Returns [true] if the config for specs is enabled. *)
+let spec_config_enabled () = Option.is_some !opt_spec_config
+
 (** Returns [true] if the saved config for specs uses Hax annotations as a
     source *)
 let spec_config_is_hax () =
   match !opt_spec_config with
   | Some (Hax, _) -> true
   | _ -> false
+
+(** The spec backend selected via [-specs], if specs are enabled. *)
+let spec_backend () : spec_backend option = Option.map snd !opt_spec_config
 
 (** Specify the namespace of the extract code.
 
