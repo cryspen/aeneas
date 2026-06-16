@@ -29,7 +29,7 @@ axiom Shared1U32.Insts.CoreOpsArithAddShared0U32U32.add
 /-- [hax_specs::basic::only_requires]:
     Source: 'src/lib.rs', lines 6:4-8:5 -/
 def basic.only_requires (x : Std.U32) : Result Std.U32 := do
-  ok x
+  x + 1#u32
 
 /-- [hax_specs::basic::only_ensures]:
     Source: 'src/lib.rs', lines 11:4-13:5 -/
@@ -113,14 +113,12 @@ def future.swap_and_add
   let i ← x + y
   ok (i, y, x)
 
-open Std.Do
-
 
 /-- [hax_specs::basic::only_requires::pre]:
-    Source: 'src/lib.rs', lines 5:4-5:23 -/
+    Source: 'src/lib.rs', lines 5:4-5:24 -/
 @[reducible]
 def basic.only_requires.pre (x : Std.U32) : Result Bool := do
-  ok (x > 10#u32)
+  ok (x < 100#u32)
 
 def basic.only_requires.spec (x : Std.U32) : Prop :=
   (basic.only_requires.pre x).holds →
@@ -144,7 +142,7 @@ def basic.only_ensures.spec (x : Std.U32) : Prop :=
     Source: 'src/lib.rs', lines 15:4-15:23 -/
 @[reducible]
 def basic.both.pre (x : Std.U32) : Result Bool := do
-  ok (x > 10#u32)
+  ok (x < 10#u32)
 
 /-- [hax_specs::basic::both::post]:
     Source: 'src/lib.rs', lines 16:4-16:35 -/
@@ -328,45 +326,51 @@ def future.swap_and_add.spec (x : Std.U32) (y : Std.U32) : Prop :=
   ⦃ res => (future.swap_and_add.post x y res).holds ⦄
 
 @[step]
-def basic.only_requires.spec.proof (x : Std.U32) : basic.only_requires.spec x
+theorem basic.only_requires.spec.proof (x : Std.U32) :
+  basic.only_requires.spec x
   := by sorry
 
 @[step]
-def basic.only_ensures.spec.proof (x : Std.U32) : basic.only_ensures.spec x
+theorem basic.only_ensures.spec.proof (x : Std.U32) : basic.only_ensures.spec x
   := by sorry
 
 @[step]
-def basic.both.spec.proof (x : Std.U32) : basic.both.spec x := by sorry
+theorem basic.both.spec.proof (x : Std.U32) : basic.both.spec x := by sorry
 
 @[step]
-def basic.returns_unit.spec.proof (x : Std.U32) : basic.returns_unit.spec x
+theorem basic.returns_unit.spec.proof (x : Std.U32) : basic.returns_unit.spec x
   := by sorry
 
 @[step]
-def basic.block_in_requires.spec.proof (x : Std.U32) :
-  basic.block_in_requires.spec x := by sorry
-
-@[step]
-def basic.returns_pair.spec.proof (x : Std.U32) : basic.returns_pair.spec x
+theorem basic.block_in_requires.spec.proof (x : Std.U32) :
+  basic.block_in_requires.spec x
   := by sorry
 
 @[step]
-def extra_args.generic.spec.proof (N : Std.U32) (x : Std.U32) :
-  extra_args.generic.spec N x := by sorry
+theorem basic.returns_pair.spec.proof (x : Std.U32) : basic.returns_pair.spec x
+  := by sorry
 
 @[step]
-def extra_args.traits.spec.proof {T : Type} (ValInst : extra_args.Val T)
-  (t : T) (x : Std.U32) : extra_args.traits.spec ValInst t x := by sorry
+theorem extra_args.generic.spec.proof (N : Std.U32) (x : Std.U32) :
+  extra_args.generic.spec N x
+  := by sorry
 
 @[step]
-def future.incr.spec.proof (x : Std.U32) : future.incr.spec x := by sorry
+theorem extra_args.traits.spec.proof {T : Type} (ValInst : extra_args.Val T)
+  (t : T) (x : Std.U32) : extra_args.traits.spec ValInst t x
+  := by sorry
 
 @[step]
-def future.incr_i.spec.proof (x : Slice Std.U32) (i : Std.Usize) :
-  future.incr_i.spec x i := by sorry
+theorem future.incr.spec.proof (x : Std.U32) : future.incr.spec x := by sorry
 
 @[step]
-def future.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32) :
-  future.swap_and_add.spec x y := by sorry
+theorem future.incr_i.spec.proof (x : Slice Std.U32) (i : Std.Usize) :
+  future.incr_i.spec x i
+  := by sorry
+
+@[step]
+theorem future.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32) :
+  future.swap_and_add.spec x y
+  := by sorry
 
 end hax_specs
