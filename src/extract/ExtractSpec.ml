@@ -1,4 +1,6 @@
-(** Lean printer for {!Spec.spec} and {!Spec.proof_obligation} entries. *)
+(** Dispatcher from the generic {!Spec} IR to the concrete spec printer.
+
+    Currently, guarded by a config flag to be only for the Lean backend. *)
 
 module F = Format
 
