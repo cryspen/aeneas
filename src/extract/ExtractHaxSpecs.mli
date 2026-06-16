@@ -2,6 +2,9 @@
 
 module F = Format
 
+(** Record of proof-obligation names emitted *)
+val get_emitted_obligation_names : unit -> string list
+
 (** Emits one [HaxSpecs.spec] entry. The [span option] is used for errors *)
 val emit_spec :
   ExtractBase.extraction_ctx ->

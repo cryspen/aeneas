@@ -2212,7 +2212,17 @@ let extract_translated_crate (filename : string) (dest_dir : string)
         close_out out;
 
         (* Logging *)
-        log#linfo (lazy ("Generated: " ^ filename)))
+        log#linfo (lazy ("Generated: " ^ filename)));
+
+      (* Write the JSON manifest of the emitted proof-obligation names *)
+      if !Config.proof_manifest then
+        let filename = extract_filebasename ^ "ProofObligations.json" in
+        let out = open_out filename in
+        Yojson.Safe.pretty_to_channel out
+          (ExtractSpec.proof_obligations_manifest_json ());
+        output_char out '\n';
+        close_out out;
+        log#linfo (lazy ("Generated: " ^ filename))
 
 (** Translate a crate and write the synthesized code to an output file. *)
 let translate_crate (filename : string) (dest_dir : string)

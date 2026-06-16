@@ -140,6 +140,10 @@ let () =
         Arg.Symbol (spec_config_options, set_spec_config),
         " Gather and emit specs from the given source. Available: "
         ^ String.concat ", " spec_config_options );
+      ( "-proof-manifest",
+        Arg.Set proof_manifest,
+        " Write a JSON manifest ProofObligations.json in the extraction folder, \
+         listing the emitted proof-obligation names (Lean only)" );
       ("-print-llbc", Arg.Set print_llbc, " Print the imported LLBC");
       ( "-abort-on-error",
         Arg.Set fail_hard,
@@ -461,6 +465,8 @@ let () =
     "-decreases-clauses";
   check_arg_implies !generate_lib_entry_point "-gen-lib-entry" !split_files
     "-split-files";
+  check_arg_implies !proof_manifest "-proof-manifest"
+    (Option.is_some !opt_spec_config) "-specs";
   check_arg_not !generate_lib_entry_point "-gen-lib-entry"
     (Option.is_some !subdir) "-subdir";
   if !lean_gen_lakefile && not (backend () = Lean) then
