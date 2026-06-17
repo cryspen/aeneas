@@ -30,10 +30,17 @@ let texpr_to_string (ctx : extraction_ctx) =
     in place).
 
     A type parameter is dropped iff it is unused in the function's inputs,
-    output, and predicates. A trait clause is dropped iff every type variable it
-    references is itself being dropped (i.e., it is "orphan" — only constraining
-    dropped parameters). The "used" set is saturated through trait clauses so
-    that a parameter pulled in by a kept clause is itself kept.
+    output, predicates, and body. A trait clause is dropped iff every type
+    variable it references is itself being dropped (i.e., it is "orphan" — only
+    constraining dropped parameters). The "used" set is saturated through trait
+    clauses so that a parameter pulled in by a kept clause is itself kept.
+
+    Scanning the body matters: a parameter unused in the signature can still be
+    genuinely used inside the body — typically a trait clause whose method is
+    called (e.g. [A::op_a()]), which references [A] through the call's trait
+    ref. Dropping such a parameter/clause would produce ill-typed calls. The
+    dangling allocator parameters this filter targets are never referenced in
+    the body.
 
     [scan]: caller-supplied closure that gets invoked with a visitor and may
     visit any extra structures (e.g. a trait_impl's [impl_trait] /
@@ -50,9 +57,9 @@ let compute_allocator_filter
     ?(extra_trait_decl_refs : Pure.trait_decl_ref list = [])
     ?(extra_trait_refs : Pure.trait_ref list = [])
     ?(type_args_filter : Pure.type_decl_id -> bool list option = fun _ -> None)
-    (generics : Pure.generic_params) (inputs : Pure.ty list)
-    (output : Pure.ty option) (preds : Pure.predicates) :
-    (bool list * bool list) option =
+    ?(body : Pure.texpr option = None) (generics : Pure.generic_params)
+    (inputs : Pure.ty list) (output : Pure.ty option) (preds : Pure.predicates)
+    : (bool list * bool list) option =
   let type_params = generics.types in
   let trait_clauses = generics.trait_clauses in
   if type_params = [] then None
@@ -98,6 +105,26 @@ let compute_allocator_filter
     body_visitor#visit_predicates () preds;
     List.iter (body_visitor#visit_trait_decl_ref ()) extra_trait_decl_refs;
     List.iter (body_visitor#visit_trait_ref ()) extra_trait_refs;
+    (* Also scan the function body, so a parameter used only there (e.g. a
+       trait clause whose method is called) counts as used. See the doc above. *)
+    (match body with
+    | None -> ()
+    | Some body ->
+        let expr_visitor =
+          object (self)
+            inherit [_] Pure.iter_expr as super
+
+            method! visit_ty env t =
+              match t with
+              | Pure.TAdt (type_id, generics)
+                when visit_filtered_ty_args self env type_id generics -> ()
+              | _ -> super#visit_ty env t
+
+            method! visit_type_var_id _ id =
+              used := Pure.TypeVarId.Set.add id !used
+          end
+        in
+        expr_visitor#visit_texpr () body);
     let clause_tvars (c : Pure.trait_param) : Pure.TypeVarId.Set.t =
       let s = ref Pure.TypeVarId.Set.empty in
       let v =
@@ -178,8 +205,9 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
       let type_args_filter id =
         TypeDeclId.Map.find_opt id ctx.types_filter_type_args_map
       in
+      let body = Option.map (fun (b : Pure.fun_body) -> b.body) def.f.body in
       match
-        compute_allocator_filter ~type_args_filter sg.generics sg.inputs
+        compute_allocator_filter ~type_args_filter ~body sg.generics sg.inputs
           (Some sg.output) sg.preds
       with
       | None -> ctx
