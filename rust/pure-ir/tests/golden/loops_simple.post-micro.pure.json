@@ -1,0 +1,1112 @@
+{
+  "crate_name": "loops_simple",
+  "fun_decls": [
+    {
+      "backend_attributes": {
+        "reducible": true
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "App",
+            "payload": {
+              "arg": {
+                "e": {
+                  "kind": "Const",
+                  "payload": {
+                    "kind": "VScalar",
+                    "payload": {
+                      "signed": false,
+                      "ty": "U32",
+                      "value": "0"
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              },
+              "fun": {
+                "e": {
+                  "kind": "App",
+                  "payload": {
+                    "arg": {
+                      "e": {
+                        "kind": "BVar",
+                        "payload": {
+                          "id": 0,
+                          "scope": 0
+                        }
+                      },
+                      "ty": {
+                        "kind": "TLiteral",
+                        "payload": {
+                          "kind": "TUInt",
+                          "payload": "U32"
+                        }
+                      }
+                    },
+                    "fun": {
+                      "e": {
+                        "kind": "Qualif",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": []
+                          },
+                          "id": {
+                            "kind": "FunOrOp",
+                            "payload": {
+                              "kind": "Fun",
+                              "payload": {
+                                "kind": "FromLlbc",
+                                "payload": {
+                                  "kind": {
+                                    "kind": "FunId",
+                                    "payload": {
+                                      "kind": "FRegular",
+                                      "payload": 0
+                                    }
+                                  },
+                                  "loop": {
+                                    "is_body": false,
+                                    "loop_id": 0
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TArrow",
+                        "payload": {
+                          "input": {
+                            "kind": "TLiteral",
+                            "payload": {
+                              "kind": "TUInt",
+                              "payload": "U32"
+                            }
+                          },
+                          "output": {
+                            "kind": "TArrow",
+                            "payload": {
+                              "input": {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              },
+                              "output": {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": [
+                                      {
+                                        "kind": "TLiteral",
+                                        "payload": {
+                                          "kind": "TUInt",
+                                          "payload": "U32"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "type_id": {
+                                    "kind": "TBuiltin",
+                                    "payload": {
+                                      "kind": "TResult",
+                                      "payload": null
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TArrow",
+                  "payload": {
+                    "input": {
+                      "kind": "TLiteral",
+                      "payload": {
+                        "kind": "TUInt",
+                        "payload": "U32"
+                      }
+                    },
+                    "output": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [],
+                          "trait_refs": [],
+                          "types": [
+                            {
+                              "kind": "TLiteral",
+                              "payload": {
+                                "kind": "TUInt",
+                                "payload": "U32"
+                              }
+                            }
+                          ]
+                        },
+                        "type_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TResult",
+                            "payload": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TLiteral",
+                    "payload": {
+                      "kind": "TUInt",
+                      "payload": "U32"
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": [
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "n",
+                  "ty": {
+                    "kind": "TLiteral",
+                    "payload": {
+                      "kind": "TUInt",
+                      "payload": "U32"
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TLiteral",
+              "payload": {
+                "kind": "TUInt",
+                "payload": "U32"
+              }
+            }
+          }
+        ]
+      },
+      "builtin_info": null,
+      "def_id": 0,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "loops_simple"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "count_to"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub fn count_to(n: u32) -> u32 {\n    let mut i: u32 = 0;\n    while i < n {\n        i = i + 1;\n    }\n    i\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 13,
+          "end_col": 1,
+          "end_line": 19,
+          "file": "loops_simple.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "loops_simple::count_to",
+      "num_loops": 1,
+      "signature": {
+        "back_effect_info": [],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": []
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": true,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [],
+          "types": []
+        },
+        "inputs": [
+          {
+            "kind": "TLiteral",
+            "payload": {
+              "kind": "TUInt",
+              "payload": "U32"
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": []
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TopLevelItem",
+        "payload": null
+      }
+    },
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "App",
+            "payload": {
+              "arg": {
+                "e": {
+                  "kind": "BVar",
+                  "payload": {
+                    "id": 1,
+                    "scope": 0
+                  }
+                },
+                "ty": {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              },
+              "fun": {
+                "e": {
+                  "kind": "App",
+                  "payload": {
+                    "arg": {
+                      "e": {
+                        "kind": "Lambda",
+                        "payload": {
+                          "body": {
+                            "e": {
+                              "kind": "App",
+                              "payload": {
+                                "arg": {
+                                  "e": {
+                                    "kind": "BVar",
+                                    "payload": {
+                                      "id": 0,
+                                      "scope": 0
+                                    }
+                                  },
+                                  "ty": {
+                                    "kind": "TLiteral",
+                                    "payload": {
+                                      "kind": "TUInt",
+                                      "payload": "U32"
+                                    }
+                                  }
+                                },
+                                "fun": {
+                                  "e": {
+                                    "kind": "App",
+                                    "payload": {
+                                      "arg": {
+                                        "e": {
+                                          "kind": "BVar",
+                                          "payload": {
+                                            "id": 0,
+                                            "scope": 1
+                                          }
+                                        },
+                                        "ty": {
+                                          "kind": "TLiteral",
+                                          "payload": {
+                                            "kind": "TUInt",
+                                            "payload": "U32"
+                                          }
+                                        }
+                                      },
+                                      "fun": {
+                                        "e": {
+                                          "kind": "Qualif",
+                                          "payload": {
+                                            "generics": {
+                                              "const_generics": [],
+                                              "trait_refs": [],
+                                              "types": []
+                                            },
+                                            "id": {
+                                              "kind": "FunOrOp",
+                                              "payload": {
+                                                "kind": "Fun",
+                                                "payload": {
+                                                  "kind": "FromLlbc",
+                                                  "payload": {
+                                                    "kind": {
+                                                      "kind": "FunId",
+                                                      "payload": {
+                                                        "kind": "FRegular",
+                                                        "payload": 0
+                                                      }
+                                                    },
+                                                    "loop": {
+                                                      "is_body": true,
+                                                      "loop_id": 0
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "ty": {
+                                          "kind": "TArrow",
+                                          "payload": {
+                                            "input": {
+                                              "kind": "TLiteral",
+                                              "payload": {
+                                                "kind": "TUInt",
+                                                "payload": "U32"
+                                              }
+                                            },
+                                            "output": {
+                                              "kind": "TArrow",
+                                              "payload": {
+                                                "input": {
+                                                  "kind": "TLiteral",
+                                                  "payload": {
+                                                    "kind": "TUInt",
+                                                    "payload": "U32"
+                                                  }
+                                                },
+                                                "output": {
+                                                  "kind": "TAdt",
+                                                  "payload": {
+                                                    "generics": {
+                                                      "const_generics": [],
+                                                      "trait_refs": [],
+                                                      "types": [
+                                                        {
+                                                          "kind": "TAdt",
+                                                          "payload": {
+                                                            "generics": {
+                                                              "const_generics": [],
+                                                              "trait_refs": [],
+                                                              "types": [
+                                                                {
+                                                                  "kind": "TLiteral",
+                                                                  "payload": {
+                                                                    "kind": "TUInt",
+                                                                    "payload": "U32"
+                                                                  }
+                                                                },
+                                                                {
+                                                                  "kind": "TLiteral",
+                                                                  "payload": {
+                                                                    "kind": "TUInt",
+                                                                    "payload": "U32"
+                                                                  }
+                                                                }
+                                                              ]
+                                                            },
+                                                            "type_id": {
+                                                              "kind": "TBuiltin",
+                                                              "payload": {
+                                                                "kind": "TLoopResult",
+                                                                "payload": null
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      ]
+                                                    },
+                                                    "type_id": {
+                                                      "kind": "TBuiltin",
+                                                      "payload": {
+                                                        "kind": "TResult",
+                                                        "payload": null
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "ty": {
+                                    "kind": "TArrow",
+                                    "payload": {
+                                      "input": {
+                                        "kind": "TLiteral",
+                                        "payload": {
+                                          "kind": "TUInt",
+                                          "payload": "U32"
+                                        }
+                                      },
+                                      "output": {
+                                        "kind": "TAdt",
+                                        "payload": {
+                                          "generics": {
+                                            "const_generics": [],
+                                            "trait_refs": [],
+                                            "types": [
+                                              {
+                                                "kind": "TAdt",
+                                                "payload": {
+                                                  "generics": {
+                                                    "const_generics": [],
+                                                    "trait_refs": [],
+                                                    "types": [
+                                                      {
+                                                        "kind": "TLiteral",
+                                                        "payload": {
+                                                          "kind": "TUInt",
+                                                          "payload": "U32"
+                                                        }
+                                                      },
+                                                      {
+                                                        "kind": "TLiteral",
+                                                        "payload": {
+                                                          "kind": "TUInt",
+                                                          "payload": "U32"
+                                                        }
+                                                      }
+                                                    ]
+                                                  },
+                                                  "type_id": {
+                                                    "kind": "TBuiltin",
+                                                    "payload": {
+                                                      "kind": "TLoopResult",
+                                                      "payload": null
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            ]
+                                          },
+                                          "type_id": {
+                                            "kind": "TBuiltin",
+                                            "payload": {
+                                              "kind": "TResult",
+                                              "payload": null
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TAdt",
+                                      "payload": {
+                                        "generics": {
+                                          "const_generics": [],
+                                          "trait_refs": [],
+                                          "types": [
+                                            {
+                                              "kind": "TLiteral",
+                                              "payload": {
+                                                "kind": "TUInt",
+                                                "payload": "U32"
+                                              }
+                                            },
+                                            {
+                                              "kind": "TLiteral",
+                                              "payload": {
+                                                "kind": "TUInt",
+                                                "payload": "U32"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "type_id": {
+                                          "kind": "TBuiltin",
+                                          "payload": {
+                                            "kind": "TLoopResult",
+                                            "payload": null
+                                          }
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "type_id": {
+                                  "kind": "TBuiltin",
+                                  "payload": {
+                                    "kind": "TResult",
+                                    "payload": null
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "pat": {
+                            "pat": {
+                              "kind": "PBound",
+                              "payload": {
+                                "mplace": null,
+                                "var": {
+                                  "basename": "i",
+                                  "ty": {
+                                    "kind": "TLiteral",
+                                    "payload": {
+                                      "kind": "TUInt",
+                                      "payload": "U32"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TLiteral",
+                              "payload": {
+                                "kind": "TUInt",
+                                "payload": "U32"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TArrow",
+                        "payload": {
+                          "input": {
+                            "kind": "TLiteral",
+                            "payload": {
+                              "kind": "TUInt",
+                              "payload": "U32"
+                            }
+                          },
+                          "output": {
+                            "kind": "TAdt",
+                            "payload": {
+                              "generics": {
+                                "const_generics": [],
+                                "trait_refs": [],
+                                "types": [
+                                  {
+                                    "kind": "TAdt",
+                                    "payload": {
+                                      "generics": {
+                                        "const_generics": [],
+                                        "trait_refs": [],
+                                        "types": [
+                                          {
+                                            "kind": "TLiteral",
+                                            "payload": {
+                                              "kind": "TUInt",
+                                              "payload": "U32"
+                                            }
+                                          },
+                                          {
+                                            "kind": "TLiteral",
+                                            "payload": {
+                                              "kind": "TUInt",
+                                              "payload": "U32"
+                                            }
+                                          }
+                                        ]
+                                      },
+                                      "type_id": {
+                                        "kind": "TBuiltin",
+                                        "payload": {
+                                          "kind": "TLoopResult",
+                                          "payload": null
+                                        }
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              "type_id": {
+                                "kind": "TBuiltin",
+                                "payload": {
+                                  "kind": "TResult",
+                                  "payload": null
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "fun": {
+                      "e": {
+                        "kind": "Qualif",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              },
+                              {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              }
+                            ]
+                          },
+                          "id": {
+                            "kind": "LoopOp",
+                            "payload": null
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TArrow",
+                        "payload": {
+                          "input": {
+                            "kind": "TArrow",
+                            "payload": {
+                              "input": {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              },
+                              "output": {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": [
+                                      {
+                                        "kind": "TAdt",
+                                        "payload": {
+                                          "generics": {
+                                            "const_generics": [],
+                                            "trait_refs": [],
+                                            "types": [
+                                              {
+                                                "kind": "TLiteral",
+                                                "payload": {
+                                                  "kind": "TUInt",
+                                                  "payload": "U32"
+                                                }
+                                              },
+                                              {
+                                                "kind": "TLiteral",
+                                                "payload": {
+                                                  "kind": "TUInt",
+                                                  "payload": "U32"
+                                                }
+                                              }
+                                            ]
+                                          },
+                                          "type_id": {
+                                            "kind": "TBuiltin",
+                                            "payload": {
+                                              "kind": "TLoopResult",
+                                              "payload": null
+                                            }
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "type_id": {
+                                    "kind": "TBuiltin",
+                                    "payload": {
+                                      "kind": "TResult",
+                                      "payload": null
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "output": {
+                            "kind": "TArrow",
+                            "payload": {
+                              "input": {
+                                "kind": "TLiteral",
+                                "payload": {
+                                  "kind": "TUInt",
+                                  "payload": "U32"
+                                }
+                              },
+                              "output": {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": [
+                                      {
+                                        "kind": "TLiteral",
+                                        "payload": {
+                                          "kind": "TUInt",
+                                          "payload": "U32"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  "type_id": {
+                                    "kind": "TBuiltin",
+                                    "payload": {
+                                      "kind": "TResult",
+                                      "payload": null
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "ty": {
+                  "kind": "TArrow",
+                  "payload": {
+                    "input": {
+                      "kind": "TLiteral",
+                      "payload": {
+                        "kind": "TUInt",
+                        "payload": "U32"
+                      }
+                    },
+                    "output": {
+                      "kind": "TAdt",
+                      "payload": {
+                        "generics": {
+                          "const_generics": [],
+                          "trait_refs": [],
+                          "types": [
+                            {
+                              "kind": "TLiteral",
+                              "payload": {
+                                "kind": "TUInt",
+                                "payload": "U32"
+                              }
+                            }
+                          ]
+                        },
+                        "type_id": {
+                          "kind": "TBuiltin",
+                          "payload": {
+                            "kind": "TResult",
+                            "payload": null
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TLiteral",
+                    "payload": {
+                      "kind": "TUInt",
+                      "payload": "U32"
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": [
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "n",
+                  "ty": {
+                    "kind": "TLiteral",
+                    "payload": {
+                      "kind": "TUInt",
+                      "payload": "U32"
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TLiteral",
+              "payload": {
+                "kind": "TUInt",
+                "payload": "U32"
+              }
+            }
+          },
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "i",
+                  "ty": {
+                    "kind": "TLiteral",
+                    "payload": {
+                      "kind": "TUInt",
+                      "payload": "U32"
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TLiteral",
+              "payload": {
+                "kind": "TUInt",
+                "payload": "U32"
+              }
+            }
+          }
+        ]
+      },
+      "builtin_info": null,
+      "def_id": 0,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "loops_simple"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "count_to"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub fn count_to(n: u32) -> u32 {\n    let mut i: u32 = 0;\n    while i < n {\n        i = i + 1;\n    }\n    i\n}",
+        "span": {
+          "beg_col": 4,
+          "beg_line": 15,
+          "end_col": 5,
+          "end_line": 17,
+          "file": "loops_simple.rs"
+        }
+      },
+      "loop_id": {
+        "is_body": false,
+        "loop_id": 0
+      },
+      "loop_pos": [
+        0
+      ],
+      "name": "loops_simple::count_to",
+      "num_loops": 1,
+      "signature": {
+        "back_effect_info": [],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": []
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": true,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [],
+          "types": []
+        },
+        "inputs": [
+          {
+            "kind": "TLiteral",
+            "payload": {
+              "kind": "TUInt",
+              "payload": "U32"
+            }
+          },
+          {
+            "kind": "TLiteral",
+            "payload": {
+              "kind": "TUInt",
+              "payload": "U32"
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": []
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TLiteral",
+                  "payload": {
+                    "kind": "TUInt",
+                    "payload": "U32"
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TopLevelItem",
+        "payload": null
+      }
+    }
+  ],
+  "global_decls": [],
+  "pure_ir_fmt_version": 2,
+  "stage": "post-micro",
+  "trait_decls": [],
+  "trait_impls": [],
+  "type_decls": []
+}

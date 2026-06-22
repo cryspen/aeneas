@@ -1,0 +1,904 @@
+{
+  "crate_name": "enums_basic",
+  "fun_decls": [
+    {
+      "backend_attributes": {
+        "reducible": false
+      },
+      "body": {
+        "body": {
+          "e": {
+            "kind": "Switch",
+            "payload": {
+              "body": {
+                "kind": "Match",
+                "payload": [
+                  {
+                    "branch": {
+                      "e": {
+                        "kind": "App",
+                        "payload": {
+                          "arg": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TAdtId",
+                                      "payload": 0
+                                    },
+                                    "variant_id": 1
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "type_id": {
+                                  "kind": "TAdtId",
+                                  "payload": 0
+                                }
+                              }
+                            }
+                          },
+                          "fun": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TAdt",
+                                      "payload": {
+                                        "generics": {
+                                          "const_generics": [],
+                                          "trait_refs": [],
+                                          "types": []
+                                        },
+                                        "type_id": {
+                                          "kind": "TAdtId",
+                                          "payload": 0
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    },
+                                    "variant_id": 0
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TArrow",
+                              "payload": {
+                                "input": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": []
+                                    },
+                                    "type_id": {
+                                      "kind": "TAdtId",
+                                      "payload": 0
+                                    }
+                                  }
+                                },
+                                "output": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TAdt",
+                                          "payload": {
+                                            "generics": {
+                                              "const_generics": [],
+                                              "trait_refs": [],
+                                              "types": []
+                                            },
+                                            "type_id": {
+                                              "kind": "TAdtId",
+                                              "payload": 0
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": []
+                                  },
+                                  "type_id": {
+                                    "kind": "TAdtId",
+                                    "payload": 0
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TResult",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pat": {
+                      "pat": {
+                        "kind": "PAdt",
+                        "payload": {
+                          "fields": [],
+                          "variant_id": 0
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": []
+                          },
+                          "type_id": {
+                            "kind": "TAdtId",
+                            "payload": 0
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "branch": {
+                      "e": {
+                        "kind": "App",
+                        "payload": {
+                          "arg": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TAdtId",
+                                      "payload": 0
+                                    },
+                                    "variant_id": 0
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "type_id": {
+                                  "kind": "TAdtId",
+                                  "payload": 0
+                                }
+                              }
+                            }
+                          },
+                          "fun": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TAdt",
+                                      "payload": {
+                                        "generics": {
+                                          "const_generics": [],
+                                          "trait_refs": [],
+                                          "types": []
+                                        },
+                                        "type_id": {
+                                          "kind": "TAdtId",
+                                          "payload": 0
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    },
+                                    "variant_id": 0
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TArrow",
+                              "payload": {
+                                "input": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": []
+                                    },
+                                    "type_id": {
+                                      "kind": "TAdtId",
+                                      "payload": 0
+                                    }
+                                  }
+                                },
+                                "output": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TAdt",
+                                          "payload": {
+                                            "generics": {
+                                              "const_generics": [],
+                                              "trait_refs": [],
+                                              "types": []
+                                            },
+                                            "type_id": {
+                                              "kind": "TAdtId",
+                                              "payload": 0
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": []
+                                  },
+                                  "type_id": {
+                                    "kind": "TAdtId",
+                                    "payload": 0
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TResult",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pat": {
+                      "pat": {
+                        "kind": "PAdt",
+                        "payload": {
+                          "fields": [],
+                          "variant_id": 1
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": []
+                          },
+                          "type_id": {
+                            "kind": "TAdtId",
+                            "payload": 0
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "branch": {
+                      "e": {
+                        "kind": "App",
+                        "payload": {
+                          "arg": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TAdtId",
+                                      "payload": 0
+                                    },
+                                    "variant_id": 2
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TAdt",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": []
+                                },
+                                "type_id": {
+                                  "kind": "TAdtId",
+                                  "payload": 0
+                                }
+                              }
+                            }
+                          },
+                          "fun": {
+                            "e": {
+                              "kind": "Qualif",
+                              "payload": {
+                                "generics": {
+                                  "const_generics": [],
+                                  "trait_refs": [],
+                                  "types": [
+                                    {
+                                      "kind": "TAdt",
+                                      "payload": {
+                                        "generics": {
+                                          "const_generics": [],
+                                          "trait_refs": [],
+                                          "types": []
+                                        },
+                                        "type_id": {
+                                          "kind": "TAdtId",
+                                          "payload": 0
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "id": {
+                                  "kind": "AdtCons",
+                                  "payload": {
+                                    "adt_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    },
+                                    "variant_id": 0
+                                  }
+                                }
+                              }
+                            },
+                            "ty": {
+                              "kind": "TArrow",
+                              "payload": {
+                                "input": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": []
+                                    },
+                                    "type_id": {
+                                      "kind": "TAdtId",
+                                      "payload": 0
+                                    }
+                                  }
+                                },
+                                "output": {
+                                  "kind": "TAdt",
+                                  "payload": {
+                                    "generics": {
+                                      "const_generics": [],
+                                      "trait_refs": [],
+                                      "types": [
+                                        {
+                                          "kind": "TAdt",
+                                          "payload": {
+                                            "generics": {
+                                              "const_generics": [],
+                                              "trait_refs": [],
+                                              "types": []
+                                            },
+                                            "type_id": {
+                                              "kind": "TAdtId",
+                                              "payload": 0
+                                            }
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "type_id": {
+                                      "kind": "TBuiltin",
+                                      "payload": {
+                                        "kind": "TResult",
+                                        "payload": null
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": [
+                              {
+                                "kind": "TAdt",
+                                "payload": {
+                                  "generics": {
+                                    "const_generics": [],
+                                    "trait_refs": [],
+                                    "types": []
+                                  },
+                                  "type_id": {
+                                    "kind": "TAdtId",
+                                    "payload": 0
+                                  }
+                                }
+                              }
+                            ]
+                          },
+                          "type_id": {
+                            "kind": "TBuiltin",
+                            "payload": {
+                              "kind": "TResult",
+                              "payload": null
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pat": {
+                      "pat": {
+                        "kind": "PAdt",
+                        "payload": {
+                          "fields": [],
+                          "variant_id": 2
+                        }
+                      },
+                      "ty": {
+                        "kind": "TAdt",
+                        "payload": {
+                          "generics": {
+                            "const_generics": [],
+                            "trait_refs": [],
+                            "types": []
+                          },
+                          "type_id": {
+                            "kind": "TAdtId",
+                            "payload": 0
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "scrutinee": {
+                "e": {
+                  "kind": "BVar",
+                  "payload": {
+                    "id": 0,
+                    "scope": 0
+                  }
+                },
+                "ty": {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": []
+                    },
+                    "type_id": {
+                      "kind": "TAdtId",
+                      "payload": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ty": {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": [
+                  {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": []
+                      },
+                      "type_id": {
+                        "kind": "TAdtId",
+                        "payload": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "type_id": {
+                "kind": "TBuiltin",
+                "payload": {
+                  "kind": "TResult",
+                  "payload": null
+                }
+              }
+            }
+          }
+        },
+        "inputs": [
+          {
+            "pat": {
+              "kind": "PBound",
+              "payload": {
+                "mplace": null,
+                "var": {
+                  "basename": "s",
+                  "ty": {
+                    "kind": "TAdt",
+                    "payload": {
+                      "generics": {
+                        "const_generics": [],
+                        "trait_refs": [],
+                        "types": []
+                      },
+                      "type_id": {
+                        "kind": "TAdtId",
+                        "payload": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "ty": {
+              "kind": "TAdt",
+              "payload": {
+                "generics": {
+                  "const_generics": [],
+                  "trait_refs": [],
+                  "types": []
+                },
+                "type_id": {
+                  "kind": "TAdtId",
+                  "payload": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "builtin_info": null,
+      "def_id": 0,
+      "is_global_decl_body": false,
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "enums_basic"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "flip"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub fn flip(s: Sign) -> Sign {\n    match s {\n        Sign::Pos => Sign::Neg,\n        Sign::Neg => Sign::Pos,\n        Sign::Zero => Sign::Zero,\n    }\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 15,
+          "end_col": 1,
+          "end_line": 21,
+          "file": "enums_basic.rs"
+        }
+      },
+      "loop_id": null,
+      "loop_pos": [],
+      "name": "enums_basic::flip",
+      "num_loops": 0,
+      "signature": {
+        "back_effect_info": [],
+        "explicit_info": {
+          "explicit_const_generics": [],
+          "explicit_types": []
+        },
+        "fwd_info": {
+          "effect_info": {
+            "can_diverge": false,
+            "can_fail": true,
+            "is_rec": false
+          },
+          "ignore_output": false
+        },
+        "generics": {
+          "const_generics": [],
+          "trait_clauses": [],
+          "types": []
+        },
+        "inputs": [
+          {
+            "kind": "TAdt",
+            "payload": {
+              "generics": {
+                "const_generics": [],
+                "trait_refs": [],
+                "types": []
+              },
+              "type_id": {
+                "kind": "TAdtId",
+                "payload": 0
+              }
+            }
+          }
+        ],
+        "known_from_trait_refs": {
+          "known_const_generics": [],
+          "known_types": []
+        },
+        "output": {
+          "kind": "TAdt",
+          "payload": {
+            "generics": {
+              "const_generics": [],
+              "trait_refs": [],
+              "types": [
+                {
+                  "kind": "TAdt",
+                  "payload": {
+                    "generics": {
+                      "const_generics": [],
+                      "trait_refs": [],
+                      "types": []
+                    },
+                    "type_id": {
+                      "kind": "TAdtId",
+                      "payload": 0
+                    }
+                  }
+                }
+              ]
+            },
+            "type_id": {
+              "kind": "TBuiltin",
+              "payload": {
+                "kind": "TResult",
+                "payload": null
+              }
+            }
+          }
+        },
+        "preds": {
+          "trait_type_constraints": []
+        }
+      },
+      "src": {
+        "kind": "TopLevelItem",
+        "payload": null
+      }
+    }
+  ],
+  "global_decls": [],
+  "pure_ir_fmt_version": 2,
+  "stage": "pre-extract",
+  "trait_decls": [],
+  "trait_impls": [],
+  "type_decls": [
+    {
+      "def_id": 0,
+      "explicit_info": {
+        "explicit_const_generics": [],
+        "explicit_types": []
+      },
+      "generics": {
+        "const_generics": [],
+        "trait_clauses": [],
+        "types": []
+      },
+      "item_meta": {
+        "attr_info": {
+          "attributes": [],
+          "inline": null,
+          "public": true,
+          "rename": null
+        },
+        "is_local": true,
+        "lang_item": null,
+        "name": [
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "enums_basic"
+            }
+          },
+          {
+            "kind": "PeIdent",
+            "payload": {
+              "disambiguator": 0,
+              "name": "Sign"
+            }
+          }
+        ],
+        "opacity": "Transparent",
+        "source_text": "pub enum Sign {\n    Pos,\n    Neg,\n    Zero,\n}",
+        "span": {
+          "beg_col": 0,
+          "beg_line": 9,
+          "end_col": 1,
+          "end_line": 13,
+          "file": "enums_basic.rs"
+        }
+      },
+      "kind": {
+        "kind": "Enum",
+        "payload": [
+          {
+            "discriminant": 0,
+            "fields": [],
+            "ty": {
+              "kind": "TInt",
+              "payload": "Isize"
+            },
+            "variant_name": "Pos"
+          },
+          {
+            "discriminant": 1,
+            "fields": [],
+            "ty": {
+              "kind": "TInt",
+              "payload": "Isize"
+            },
+            "variant_name": "Neg"
+          },
+          {
+            "discriminant": 2,
+            "fields": [],
+            "ty": {
+              "kind": "TInt",
+              "payload": "Isize"
+            },
+            "variant_name": "Zero"
+          }
+        ]
+      },
+      "name": "enums_basic::Sign",
+      "preds": {
+        "trait_type_constraints": []
+      }
+    }
+  ]
+}
