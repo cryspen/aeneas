@@ -514,7 +514,6 @@ let json_pure_builtin_fun_id (id : pure_builtin_fun_id) : Yojson.Basic.t =
   | ToResult -> tagged "ToResult" `Null
   | Discriminant -> tagged "Discriminant" `Null
   | ResultUnwrapMut -> tagged "ResultUnwrapMut" `Null
-  | GetTarget -> tagged "GetTarget" `Null
 
 (** Charon's [LlbcAst.fun_id] (alias of [Types.fun_id]) — either a regular
     Charon decl-id or a builtin. We summarise the builtin variant as a
