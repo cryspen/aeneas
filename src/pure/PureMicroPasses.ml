@@ -219,17 +219,69 @@ let passes :
 (** Apply all the micro-passes to a function.
 
     When [!Config.diagnose_detailed] is on, also returns per-pass timings. *)
+(** Whether a definition must be preserved verbatim from the value-eliminating
+    micro-passes. Its body may hold references that are live *out of band*: for a
+    hax quote carrier the antiquotes ([${...}]) are read through the verbatim
+    string, so the dataflow analysis sees the bindings as dead and
+    [filter_useless] / [inline_useless_var_assignments] would drop them (along
+    with the very [FunId]s the consumer needs).
+
+    Near-term we recognize hax quote carriers by their [_hax::json] [ItemQuote]
+    marker, *confirmed* by decoding the payload rather than substring-matching it.
+    This is intended to migrate to a first-class [#[aeneas::preserve]] attribute
+    stamped into [backend_attributes], usable by any frontend (see [reducible]). *)
+let is_preserved (def : fun_decl) : bool =
+  let is_item_quote_payload (args : string) : bool =
+    (* [args] is the source text of the [_hax::json] string-literal argument: a
+       JSON string whose content is the [AttrPayload] JSON. Decode both layers
+       and confirm the [ItemQuote] tag. *)
+    try
+      match Yojson.Basic.from_string args with
+      | `String payload -> (
+          match Yojson.Basic.from_string payload with
+          | `Assoc fields -> List.mem_assoc "ItemQuote" fields
+          | _ -> false)
+      | _ -> false
+    with _ -> false
+  in
+  List.exists
+    (function
+      | Meta.AttrUnknown { path = "_hax::json"; args = Some a } ->
+          is_item_quote_payload a
+      | _ -> false)
+    def.item_meta.attr_info.attributes
+
+(** The value-eliminating micro-passes: those that drop, inline, or merge
+    bindings/calls, and would therefore remove the out-of-band-live references of
+    an [is_preserved] definition. The cosmetic/structural passes
+    ([compute_pretty_names], [remove_meta], …) are *not* listed, so a preserved
+    def still gets clean names and meta-stripping — only its bindings are kept. *)
+let is_value_eliminating_pass (pass_name : string) : bool =
+  List.exists
+    (fun prefix -> String.starts_with ~prefix pass_name)
+    [
+      "inline_useless_var_assignments";
+      "simplify_let_bindings";
+      "simplify_lambdas";
+      "apply_beta_reduction";
+      "simplify_duplicate_calls";
+      "merge_let_app_then_decompose_tuple";
+      "filter_useless";
+    ]
+
 let apply_passes_to_def (ctx : ctx) (def : fun_decl) :
     fun_decl * (string * float) list =
   let collect = !Config.diagnose_detailed in
   let timings = ref [] in
+  (* Exempt preserved definitions (e.g. hax quote carriers) from the
+     value-eliminating passes, so their out-of-band-live references survive. *)
+  let preserved = is_preserved def in
   let result =
     List.fold_left
       (fun def (option, pass_name, pass) ->
         let apply =
-          match option with
-          | None -> true
-          | Some option -> option ()
+          (match option with None -> true | Some option -> option ())
+          && not (preserved && is_value_eliminating_pass pass_name)
         in
 
         if apply then (
