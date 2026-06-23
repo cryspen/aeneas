@@ -251,23 +251,30 @@ let is_preserved (def : fun_decl) : bool =
       | _ -> false)
     def.item_meta.attr_info.attributes
 
-(** The value-eliminating micro-passes: those that drop, inline, or merge
-    bindings/calls, and would therefore remove the out-of-band-live references of
-    an [is_preserved] definition. The cosmetic/structural passes
-    ([compute_pretty_names], [remove_meta], …) are *not* listed, so a preserved
-    def still gets clean names and meta-stripping — only its bindings are kept. *)
-let is_value_eliminating_pass (pass_name : string) : bool =
+(** The micro-passes that are *safe* to run on an [is_preserved] definition (a
+    hax quote carrier). Only [compute_pretty_names] — everything else is skipped.
+    A quote carrier's antiquote references are live only *out of band* (read
+    through the verbatim string by the backend), so:
+
+    - the value-eliminating / monad-simplifying passes ([filter_useless],
+      [inline_useless_var_assignments], [simplify_let_then_ok], …) would drop the
+      [FunId] reference of an [${expr}] antiquote, which looks dead;
+
+    - [remove_meta] in particular would drop a [$:{ty}] (= [None::<ty>])
+      antiquote: those lower to a meta *assignment value* ([EMeta.Assignment]),
+      not a live [let]-binding, so stripping meta deletes them.
+
+    An allowlist (rather than a denylist of the known offenders) is used
+    deliberately — it is robust to new passes being added, and it keeps the
+    carrier body close to its post-symbolic form so the backend's structural walk
+    (which descends into meta assignment values) recovers *every* antiquote, in
+    source order, matching the template's [SPLIT_QUOTE] slots. The carrier is
+    consumed verbatim — it is never extracted as ordinary code — so skipping its
+    normalizing passes is harmless. *)
+let is_preserve_safe_pass (pass_name : string) : bool =
   List.exists
     (fun prefix -> String.starts_with ~prefix pass_name)
-    [
-      "inline_useless_var_assignments";
-      "simplify_let_bindings";
-      "simplify_lambdas";
-      "apply_beta_reduction";
-      "simplify_duplicate_calls";
-      "merge_let_app_then_decompose_tuple";
-      "filter_useless";
-    ]
+    [ "compute_pretty_names" ]
 
 let apply_passes_to_def (ctx : ctx) (def : fun_decl) :
     fun_decl * (string * float) list =
@@ -281,7 +288,7 @@ let apply_passes_to_def (ctx : ctx) (def : fun_decl) :
       (fun def (option, pass_name, pass) ->
         let apply =
           (match option with None -> true | Some option -> option ())
-          && not (preserved && is_value_eliminating_pass pass_name)
+          && not (preserved && not (is_preserve_safe_pass pass_name))
         in
 
         if apply then (
