@@ -2131,7 +2131,10 @@ let translate_crate (filename : string) (dest_dir : string)
     in
     let path = Filename.concat dest (crate_base ^ ".pure.json") in
     let oc = open_out path in
-    Yojson.Basic.pretty_to_channel oc json;
+    (* Compact (not pretty) JSON: the Rust `pure_ir::parse` consumer is the only
+       reader and is whitespace-insensitive, and pretty-printing inflated the
+       dump ~5.8x (e.g. Mandrake 52MB -> 9MB). *)
+    Yojson.Basic.to_channel oc json;
     output_char oc '\n';
     close_out oc;
     log#linfo (lazy ("Pure-IR dump (" ^ stage ^ "): " ^ path))
