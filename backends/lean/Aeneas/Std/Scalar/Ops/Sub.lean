@@ -137,7 +137,7 @@ Theorems with a specification which only uses integers
 theorem UScalar.sub_spec {ty} {x y : UScalar ty} :
     spec_partial (x - y)
       (fun z => z.val = x.val - y.val ∧ y.val ≤ x.val)
-      (fun e => e = .integerOverflow ∧ x.val < y.val)
+      (fun | .integerOverflow => x.val < y.val | _ => False)
       False := by
   have h := @sub_equiv ty x y
   simp only [spec_partial]
@@ -148,7 +148,7 @@ theorem UScalar.sub_spec {ty} {x y : UScalar ty} :
 theorem IScalar.sub_spec {ty} {x y : IScalar ty} :
     spec_partial (x - y)
       (fun z => (↑z : Int) = ↑x - ↑y)
-      (fun e => e = .integerOverflow ∧ (↑x - ↑y < IScalar.min ty ∨ ↑x - ↑y > IScalar.max ty))
+      (fun | .integerOverflow => ↑x - ↑y < IScalar.min ty ∨ ↑x - ↑y > IScalar.max ty | _ => False)
       False := by
   have h := @sub_equiv ty x y
   simp only [spec_partial]
@@ -158,14 +158,14 @@ theorem IScalar.sub_spec {ty} {x y : IScalar ty} :
 uscalar @[step] theorem «%S».sub_spec {x y : «%S»} :
     spec_partial (x - y)
       (fun z => z.val = x.val - y.val ∧ y.val ≤ x.val)
-      (fun e => e = .integerOverflow ∧ x.val < y.val)
+      (fun | .integerOverflow => x.val < y.val | _ => False)
       False :=
   @UScalar.sub_spec _ x y
 
 iscalar @[step] theorem «%S».sub_spec {x y : «%S»} :
     spec_partial (x - y)
       (fun z => (↑z : Int) = ↑x - ↑y)
-      (fun e => e = .integerOverflow ∧ (↑x - ↑y < «%S».min ∨ ↑x - ↑y > «%S».max))
+      (fun | .integerOverflow => ↑x - ↑y < «%S».min ∨ ↑x - ↑y > «%S».max | _ => False)
       False := by
   convert @IScalar.sub_spec _ x y <;> scalar_tac
 

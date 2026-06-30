@@ -59,7 +59,7 @@ theorem Array.subslice_spec {α : Type u} {n : Usize} [Inhabited α] (a : Array 
       (fun s =>
         s.val = a.val.slice r.start.val r.end.val ∧
         (∀ i, i + r.start.val < r.end.val → s.val[i]! = a.val[r.start.val + i]!))
-      (fun e => e = .panic ∧ ¬ (r.start.val < r.end.val ∧ r.end.val ≤ a.val.length))
+      (fun | .panic => ¬ (r.start.val < r.end.val ∧ r.end.val ≤ a.val.length) | _ => False)
       False
   := by
   unfold subslice
@@ -89,8 +89,9 @@ theorem Array.update_subslice_spec {α : Type u} {n : Usize} [Inhabited α] (a :
         (∀ i, i < r.start.val → na[i]! = a[i]!) ∧
         (∀ i, r.start.val ≤ i → i < r.end.val → na[i]! = s[i - r.start.val]!) ∧
         (∀ i, r.end.val ≤ i → i < n.val → na[i]! = a[i]!))
-      (fun e => e = .panic ∧
-        ¬ (r.start.val < r.end.val ∧ r.end.val ≤ a.length ∧ s.val.length = r.end.val - r.start.val))
+      (fun | .panic =>
+              ¬ (r.start.val < r.end.val ∧ r.end.val ≤ a.length ∧ s.val.length = r.end.val - r.start.val)
+           | _ => False)
       False := by
   unfold update_subslice
   split <;> rename_i h <;> simp [spec_partial]
@@ -255,7 +256,7 @@ theorem Array.index_SliceIndexRangeUsizeSlice.step {T : Type} {N : Usize} [Inhab
       (fun (s : Slice T) =>
         s.val = a.val.slice r.start r.end ∧
         s.length = r.end.val - r.start.val)
-      (fun e => e = .panic ∧ ¬ (r.start ≤ r.end ∧ r.end ≤ N))
+      (fun | .panic => ¬ (r.start ≤ r.end ∧ r.end ≤ N) | _ => False)
       False := by
   simp only [Array.index_SliceIndexRangeUsizeSlice]
   have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length]
@@ -274,7 +275,7 @@ theorem Array.index_mut_SliceIndexRangeUsizeSlice.step {T : Type} {N : Usize} [I
         s.val = a.val.slice r.start r.end ∧
         s.length = r.end.val - r.start.val ∧
         ∀ s', (back s').val = a.val.setSlice! r.start.val s'.val)
-      (fun e => e = .panic ∧ ¬ (r.start ≤ r.end ∧ r.end ≤ N))
+      (fun | .panic => ¬ (r.start ≤ r.end ∧ r.end ≤ N) | _ => False)
       False := by
   simp only [core.array.Array.index_mut, core.ops.index.IndexMutSlice,
     core.slice.index.Slice.index_mut]
@@ -304,7 +305,7 @@ theorem Array.index_mut_SliceIndexRangeToUsizeSlice {T : Type} {N : Usize}
         s.val = a.val.slice 0 r.end ∧
         s.length = r.end.val ∧
         ∀ s', (back s').val = a.val.setSlice! 0 s'.val)
-      (fun e => e = .panic ∧ ¬ r.end ≤ N)
+      (fun | .panic => ¬ r.end ≤ N | _ => False)
       False := by
   simp only [core.array.Array.index_mut, core.ops.index.IndexMutSlice,
     core.slice.index.Slice.index_mut]
@@ -333,7 +334,7 @@ theorem Array.index_mut_SliceIndexRangeFromUsizeSlice {T : Type} {N : Usize}
         s.val = a.val.drop r.start ∧
         s.length = N.val - r.start.val ∧
         ∀ s', (back s').val = a.val.setSlice! r.start.val s'.val)
-      (fun e => e = .panic ∧ ¬ r.start ≤ N)
+      (fun | .panic => ¬ r.start ≤ N | _ => False)
       False := by
   simp only [core.array.Array.index_mut, core.ops.index.IndexMutSlice,
     core.slice.index.Slice.index_mut]

@@ -63,7 +63,7 @@ opaque myAdd (x y : U32) : Result U32
 axiom myAdd_spec_partial (x y : U32) :
   spec_partial (myAdd x y)
     (fun z => z.val = x.val + y.val)
-    (fun e => e = .integerOverflow ∧ x.val + y.val > U32.max)
+    (fun | .integerOverflow => x.val + y.val > U32.max | _ => False)
     False
 
 -- Pushing `¬` through `>` should produce `≤`.
@@ -91,7 +91,7 @@ opaque myAddSigned (x y : I32) : Result I32
 axiom myAddSigned_spec_partial (x y : I32) :
   spec_partial (myAddSigned x y)
     (fun z => z.val = x.val + y.val)
-    (fun e => e = .integerOverflow ∧ (x.val + y.val > I32.max ∨ x.val + y.val < I32.min))
+    (fun | .integerOverflow => (x.val + y.val > I32.max ∨ x.val + y.val < I32.min) | _ => False)
     False
 
 /--

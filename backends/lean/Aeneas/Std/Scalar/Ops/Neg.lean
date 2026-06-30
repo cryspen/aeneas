@@ -17,7 +17,7 @@ def IScalar.neg {ty : IScalarTy} (x : IScalar ty) : Result (IScalar ty) := IScal
 theorem IScalar.neg_step {ty} (x: IScalar ty) :
     spec_partial (IScalar.neg x)
       (fun r => r = -x.val)
-      (fun e => e = .integerOverflow ∧ (x : Int) = IScalar.min ty)
+      (fun | .integerOverflow => (x : Int) = IScalar.min ty | _ => False)
       False := by
   simp only [neg, tryMk, Result.ofOption]
   have h := tryMkOpt_eq ty (-x.val)
@@ -66,7 +66,7 @@ instance {ty} : HNeg (IScalar ty) (Result (IScalar ty)) where hNeg x := IScalar.
 theorem HNeg.hNeg.step {ty} (x: IScalar ty) :
     spec_partial (HNeg.hNeg x : Result (IScalar ty))
       (fun r => r = -x.val)
-      (fun e => e = .integerOverflow ∧ (x : Int) = IScalar.min ty)
+      (fun | .integerOverflow => (x : Int) = IScalar.min ty | _ => False)
       False := by
   show spec_partial (IScalar.neg x) _ _ _
   exact IScalar.neg_step x

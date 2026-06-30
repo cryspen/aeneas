@@ -338,7 +338,48 @@ where
 /-- Simp lemmas shared by `simplifyStepHypotheses` and `simplifyMvcgenHypotheses -/
 private def commonPushNotLemmas : Array Name :=
   #[``gt_iff_lt, ``ge_iff_le, ``not_or, ``not_lt, ``not_le, ``or_imp, ``imp_true_iff, ``not_true,
-    ``true_implies]
+    ``true_implies, ``forall_and, ``true_and, ``and_true]
+
+
+/-- To bring a match on `Error` into canonical form, the following lemma is helpful.
+It's used in `canonicalizeFailPostcond` below.  -/
+private theorem error_pred_eq_disj (p : Aeneas.Std.Error → Prop) :
+    p = fun e =>
+      (e = .assertionFailure    ∧ p .assertionFailure)    ∨
+      (e = .integerOverflow     ∧ p .integerOverflow)     ∨
+      (e = .divisionByZero      ∧ p .divisionByZero)      ∨
+      (e = .arrayOutOfBounds    ∧ p .arrayOutOfBounds)    ∨
+      (e = .maximumSizeExceeded ∧ p .maximumSizeExceeded) ∨
+      (e = .panic               ∧ p .panic)               ∨
+      (e = .undef               ∧ p .undef) := by
+  funext e; cases e <;> simp
+
+/-- If the failure postcondition `p_fail` of `spec_partial` is written as a `match`
+    of the shape `fun | Cᵢ => Pᵢ | … | _ => False`, return a proof of the
+    same `spec_partial` but with `p_fail` replaced by the equivalent disjunction
+    `fun e => (e = C₁ ∧ p_fail C₁) ∨ … ∨ (e = Cₖ ∧ p_fail Cₖ)`.
+
+    Returns `thApp` unchanged if `p_fail` is not such a `match`. -/
+private def canonicalizeFailPostcond (thApp : Expr) : MetaM Expr := do
+  try
+    let ty ← instantiateMVars (← inferType thApp)
+    let fn := ty.getAppFn
+    unless fn.isConstOf ``Aeneas.Std.WP.spec_partial do return thApp
+    let args := ty.getAppArgs
+    unless args.size == 5 do return thApp
+    let p_fail := args[3]!
+    -- Only rewrite when `p_fail` is a `match` on the error; leave the `e = c ∧ P` form, constants,
+    -- etc. untouched (rewriting them would only add work for the downstream simp set to undo).
+    let isMatch ← withLocalDeclD `e (.const ``Aeneas.Std.Error []) fun e =>
+      return (← matchMatcherApp? (p_fail.beta #[e]).headBeta).isSome
+    unless isMatch do return thApp
+    -- `heq : p_fail = fun e => ⋁ᵢ (e = Cᵢ ∧ p_fail Cᵢ)`; transport `thApp` across it along the
+    -- motive `fun pf => spec_partial x p_ok pf p_div`.
+    let heq ← mkAppM ``error_pred_eq_disj #[p_fail]
+    let motive ← withLocalDeclD `pf (← inferType p_fail) fun pf =>
+      mkLambdaFVars #[pf] (mkAppN fn (args.set! 3 pf))
+    mkEqMP (← mkCongrArg motive heq) thApp
+  catch _ => return thApp
 
 /-- Try to simplify the arguments produced by `spec_of_spec_partial` -/
 private def simplifyStepHypotheses (mvarFail mvarDiv : Expr) : MetaM Unit := do
@@ -365,7 +406,7 @@ private def saveStepPartialSpecFromThm (ext : Extension) (attrKind : AttributeKi
   let levelParams := sig.levelParams
   let newName ← forallTelescope ty fun fvars _ => do
     let thConst := Lean.mkConst thDecl.name (levelParams.map Level.param)
-    let thApp := mkAppN thConst fvars
+    let thApp ← canonicalizeFailPostcond (mkAppN thConst fvars)
     let bridge ← mkAppM ``Aeneas.Std.WP.spec_of_spec_partial #[thApp]
     let (extraMVars, _, _) ← forallMetaTelescope (← inferType bridge)
     unless extraMVars.size = 2 do
@@ -443,7 +484,7 @@ end
 private def simplifyMvcgenHypotheses (mvarOk mvarFail mvarDiv : Expr) : MetaM Unit := do
   let simpCtx ← mkSimpOnlyContext (#[
       ``mvcgen_fail_failEq_iff, ``mvcgen_fail_False_iff,
-      ``mvcgen_div_False_iff, ``mvcgen_uncurry', ``and_imp] ++ commonPushNotLemmas)
+      ``mvcgen_div_False_iff, ``mvcgen_uncurry', ``and_imp, ``forall_eq] ++ commonPushNotLemmas)
   let simplify (mv : Expr) (name : String) : MetaM Unit := do
     trace[Step] "simplifyMvcgenHypotheses: {name} type: {← inferType mv}"
     try
@@ -463,7 +504,7 @@ private def saveMvcgenPartialSpecFromThm (stx : Syntax) (attrKind : AttributeKin
   let thName := thDecl.name
   forallTelescope sig.type fun fvars _ => do
     let thConst := Lean.mkConst thName (sig.levelParams.map .param)
-    let thApp := mkAppN thConst fvars
+    let thApp ← canonicalizeFailPostcond (mkAppN thConst fvars)
     let bridge ← mkAppOptM ``Aeneas.Std.WP.spec_partial_to_mvcgen
       #[none, none, none, none, none, some thApp]
     let (extraMVars, _, _) ← forallMetaTelescope (← inferType bridge)

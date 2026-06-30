@@ -120,7 +120,7 @@ theorem IScalar.rem_spec {ty} (x : IScalar ty) {y : IScalar ty} (hzero : y.val �
 uscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
     spec_partial (x % y)
       (fun z => (↑z : Nat) = ↑x % ↑y)
-      (fun e => e = .divisionByZero ∧ (↑y : Nat) = 0)
+      (fun | .divisionByZero => (↑y : Nat) = 0 | _ => False)
       False := by
   have hxy : (x % y : Result _) = UScalar.rem x y := rfl
   rw [hxy]
@@ -134,7 +134,7 @@ uscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
 iscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
     spec_partial (x % y)
       (fun z => (↑z : Int) = Int.tmod ↑x ↑y)
-      (fun e => e = .divisionByZero ∧ (↑y : Int) = 0)
+      (fun | .divisionByZero => (↑y : Int) = 0 | _ => False)
       False := by
   have hxy : (x % y : Result _) = IScalar.rem x y := rfl
   rw [hxy]

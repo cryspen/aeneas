@@ -159,7 +159,7 @@ theorem IScalar.mul_spec {ty} {x y : IScalar ty}
 uscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
     spec_partial (x * y)
       (fun z => (↑z : Nat) = ↑x * ↑y)
-      (fun e => e = .integerOverflow ∧ ↑x * ↑y > «%S».max)
+      (fun | .integerOverflow => ↑x * ↑y > «%S».max | _ => False)
       False := by
   have h := UScalar.mul_equiv x y
   show spec_partial (UScalar.mul x y) _ _ _
@@ -169,7 +169,7 @@ uscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
 iscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
     spec_partial (x * y)
       (fun z => (↑z : Int) = ↑x * ↑y)
-      (fun e => e = .integerOverflow ∧ (↑x * ↑y < «%S».min ∨ ↑x * ↑y > «%S».max))
+      (fun | .integerOverflow => ↑x * ↑y < «%S».min ∨ ↑x * ↑y > «%S».max | _ => False)
       False := by
   have h := IScalar.mul_equiv x y
   show spec_partial (IScalar.mul x y) _ _ _

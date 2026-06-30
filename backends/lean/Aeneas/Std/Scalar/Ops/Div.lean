@@ -418,7 +418,7 @@ theorem IScalar.div_spec {ty} {x y : IScalar ty}
 uscalar @[step] theorem «%S».div_spec (x : «%S») {y : «%S»} :
     spec_partial (x / y)
       (fun z => (↑z : Nat) = ↑x / ↑y)
-      (fun e => e = .divisionByZero ∧ (↑y : Nat) = 0)
+      (fun | .divisionByZero => (↑y : Nat) = 0 | _ => False)
       False := by
   have hxy : (x / y : Result _) = UScalar.div x y := rfl
   rw [hxy]
@@ -432,8 +432,9 @@ uscalar @[step] theorem «%S».div_spec (x : «%S») {y : «%S»} :
 iscalar @[step] theorem «%S».div_spec {x y : «%S»} :
     spec_partial (x / y)
       (fun z => (↑z : Int) = Int.tdiv ↑x ↑y)
-      (fun e => (e = .divisionByZero ∧ (↑y : Int) = 0) ∨
-                (e = .integerOverflow ∧ (↑x : Int) = «%S».min ∧ (↑y : Int) = -1))
+      (fun | .divisionByZero => (↑y : Int) = 0
+           | .integerOverflow => (↑x : Int) = «%S».min ∧ (↑y : Int) = -1
+           | _ => False)
       False := by
   have hxy : (x / y : Result _) = IScalar.div x y := rfl
   rw [hxy]
