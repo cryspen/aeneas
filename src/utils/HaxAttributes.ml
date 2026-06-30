@@ -3,7 +3,7 @@
     Hax encodes [#[hax_lib::requires(...)]] / [#[hax_lib::ensures(|r| ...)]]
     annotations (and several internal markers) as [_hax::json] attributes
     carrying a JSON payload. This module decodes those payloads; the consumers
-    ({!HaxProducer.gather} and the late-skip pre-pass) decide what to do with
+    ({!HaxProducer.produce} and the late-skip pre-pass) decide what to do with
     them. *)
 
 let log = Logging.translate_log

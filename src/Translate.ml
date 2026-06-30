@@ -615,7 +615,7 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
   (* Gather specs/proofs obligations *)
   let translated =
     match !Config.opt_spec_config with
-    | Some (Hax, _) -> HaxProducer.gather trans_ctx translated
+    | Some (Hax, _) -> HaxProducer.produce trans_ctx translated
     | None -> translated
   in
 
@@ -644,10 +644,10 @@ type gen_config = {
       (** If [true], generate a definition/declaration for top-level (global)
           declarations *)
   extract_specs : bool;
-      (** If [true], emit the gathered {!Spec.spec} entries (Lean only). See
+      (** If [true], emit the produced {!Spec.spec} entries (Lean only). See
           {!module:ExtractSpec}. *)
   extract_proof_obligations : bool;
-      (** If [true], emit the gathered {!Spec.proof_obligation} entries (Lean
+      (** If [true], emit the produced {!Spec.proof_obligation} entries (Lean
           only). See {!module:ExtractSpec}. *)
   interface : bool;
       (** [true] if we generate an interface file, [false] otherwise. For now,
@@ -1886,7 +1886,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
   in
   let has_opaque = has_opaque_types || has_opaque_funs in
 
-  (* Extra Lean imports the gathered specs require (empty when there are none);
+  (* Extra Lean imports the produced specs require (empty when there are none);
      the source-specific logic lives in {!Spec.required_imports}. *)
   let spec_imports =
     if trans_specs = [] then [] else Spec.required_imports ()

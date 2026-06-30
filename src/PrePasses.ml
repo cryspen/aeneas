@@ -2380,8 +2380,8 @@ let fix_closure_lifetimes (crate : crate) (f : fun_decl) : fun_decl =
     marker tells consumers "this item is hax-internal, don't include it in the
     extracted output". This pass acts on that marker by filtering every
     top-level decl list of the {b LLBC} crate, before Pure translation runs —
-    that way translation, gathering and extraction all see a consistent crate
-    with no late_skip items.
+    that way translation, spec/proof-obligation production and extraction all
+    see a consistent crate with no late_skip items.
 
     The [_hax::json] payload is parsed via {!HaxAttributes.parse_attr}; this
     module just decides whether each item should be kept. *)
@@ -2391,8 +2391,7 @@ module HaxLateSkipFilterPrePass = struct
 
   (** [true] iff the item should be dropped: it carries [late_skip] and is NOT
       also a decoration fn (i.e. doesn't carry a [Uid]). Decoration fns have
-      [late_skip + Uid] but are consumed by {!HaxProducer.gather}; we must keep
-      them in the crate so gather can pick them up. *)
+      [late_skip + Uid] but are consumed by {!HaxProducer.produce} *)
   let drop_item (attr_info : Charon.Meta.attr_info) : bool =
     let payloads =
       List.filter_map HaxAttributes.parse_attr attr_info.attributes

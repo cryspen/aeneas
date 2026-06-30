@@ -1,9 +1,9 @@
-(** The hax specs gatherer.
+(** The hax specs producer.
 
     Hax encodes [#[hax_lib::requires(...)]] / [#[hax_lib::ensures(|r| ...)]]
     annotations as separate "decoration" functions plus [_hax::json] attributes
     that link a real function to its pre/post decorations by UUID. This module
-    parses those attributes, and the [gather] producer folds them into
+    parses those attributes, and the [produce] producer folds them into
     {!Spec.spec} / {!Spec.proof_obligation} entries (consuming the decoration
     functions). The [_hax::json] attribute payloads are parsed by
     {!HaxAttributes}. *)
@@ -47,7 +47,7 @@ let update_assoc (role : hax_role) (uid : string) (a : assoc) : assoc =
 (** Read a hax-annotated crate: emit one [FunctionSpec] per real fn that carries
     [AssociatedItem] attribute(s), and strip the decoration fns whose bodies
     have been folded into those specs. *)
-let gather (_ctx : TranslateCore.trans_ctx)
+let produce (_ctx : TranslateCore.trans_ctx)
     (crate : TranslateCore.translated_crate) : TranslateCore.translated_crate =
   let _, fresh_spec_id = Spec.SpecId.fresh_stateful_generator () in
   let _, fresh_proof_id = Spec.ProofId.fresh_stateful_generator () in
@@ -180,7 +180,7 @@ let gather (_ctx : TranslateCore.trans_ctx)
   in
 
   [%linfo
-    Printf.sprintf "hax-specs: gathered %d FunctionSpec entries"
+    Printf.sprintf "hax-specs: produced %d FunctionSpec entries"
       (List.length new_specs)];
 
   {
