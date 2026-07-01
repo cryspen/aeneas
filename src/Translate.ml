@@ -302,15 +302,6 @@ let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
       ^ compute_local_uses_error_message trans_ctx (IdFun fdef.def_id));
     None
 
-type translated_crate = {
-  type_decls : Pure.type_decl list;
-  builtin_fun_sigs : Pure.fun_sig BuiltinFunIdMap.t;
-  fun_decls : pure_fun_translation list;
-  global_decls : Pure.global_decl list;
-  trait_decls : Pure.trait_decl list;
-  trait_impls : Pure.trait_impl list;
-}
-
 (* TODO: factor out the return type *)
 let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
     trans_ctx * translated_crate =
@@ -607,8 +598,8 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
       type_decls trait_impls pure_translations
   in
 
-  (* Return *)
-  ( trans_ctx,
+  (* Assemble the translated crate *)
+  let translated =
     {
       type_decls;
       builtin_fun_sigs;
@@ -616,7 +607,20 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
       global_decls;
       trait_decls;
       trait_impls;
-    } )
+      specs = [];
+      proof_obligations = [];
+    }
+  in
+
+  (* Gather specs/proofs obligations *)
+  let translated =
+    match !Config.opt_spec_config with
+    | Some (Hax, _) -> HaxProducer.produce trans_ctx translated
+    | None -> translated
+  in
+
+  (* Return *)
+  (trans_ctx, translated)
 
 type gen_ctx = ExtractBase.extraction_ctx
 
@@ -639,6 +643,12 @@ type gen_config = {
   extract_globals : bool;
       (** If [true], generate a definition/declaration for top-level (global)
           declarations *)
+  extract_specs : bool;
+      (** If [true], emit the produced {!Spec.spec} entries (Lean only). See
+          {!module:ExtractSpec}. *)
+  extract_proof_obligations : bool;
+      (** If [true], emit the produced {!Spec.proof_obligation} entries (Lean
+          only). See {!module:ExtractSpec}. *)
   interface : bool;
       (** [true] if we generate an interface file, [false] otherwise. For now,
           this only impacts whether we use [val] or [assume val] for the opaque
@@ -1277,7 +1287,12 @@ let extract_definitions (fmt : Format.formatter) (config : gen_config)
       with CFailure _ ->
         (* An exception was raised: ignore it *)
         ())
-    ctx.crate.declarations
+    ctx.crate.declarations;
+
+  (* Emit hax specs/proof obligations, if requested. *)
+  if config.extract_specs then ExtractSpec.extract_specs ctx fmt;
+  if config.extract_proof_obligations then
+    ExtractSpec.extract_proof_obligations ctx fmt
 
 type extract_file_info = {
   filename : string;
@@ -1381,6 +1396,10 @@ let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
       end
       else
         Printf.fprintf out "open Aeneas Aeneas.Std Result ControlFlow Error\n";
+      (* In Mvcgen mode, we need to open Std.Do *)
+      (match Config.spec_backend () with
+      | Some Config.Mvcgen -> Printf.fprintf out "open Std.Do\n"
+      | Some Config.Step | None -> ());
       (* It happens that we generate duplicated namespaces, like `betree.betree`.
          We deactivate the linter for this, because otherwise it leads to too much
          noise. *)
@@ -1470,6 +1489,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
     global_decls = trans_globals;
     trait_decls = trans_trait_decls;
     trait_impls = trans_trait_impls;
+    specs = trans_specs;
+    proof_obligations = trans_proof_obligations;
   } =
     trans_crate
   in
@@ -1543,6 +1564,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
       trans_trait_impls;
       trans_types;
       trans_funs;
+      specs = trans_specs;
+      proof_obligations = trans_proof_obligations;
       builtin_sigs;
       trans_globals;
       functions_with_decreases_clause = rec_functions;
@@ -1863,6 +1886,12 @@ let extract_translated_crate (filename : string) (dest_dir : string)
   in
   let has_opaque = has_opaque_types || has_opaque_funs in
 
+  (* Extra Lean imports the produced specs require (empty when there are none);
+     the source-specific logic lives in {!Spec.required_imports}. *)
+  let spec_imports =
+    if trans_specs = [] then [] else Spec.required_imports ()
+  in
+
   (* Extract one or several files, depending on the configuration *)
   (if !Config.split_files then (
      let base_gen_config =
@@ -1876,6 +1905,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_transparent = true;
          extract_opaque = false;
          extract_globals = false;
+         extract_specs = false;
+         extract_proof_obligations = false;
          interface = false;
        }
      in
@@ -2098,7 +2129,38 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          noncomputable = has_opaque && not !Config.all_computable;
        }
      in
-     extract_file fun_config ctx file_info)
+     extract_file fun_config ctx file_info;
+
+     (* Dedicated Specs.lean (statements of correctness) and
+        ProofObligations.lean (the obligations), if any *)
+     let specs_module = import_prefix ^ "Specs" in
+     (if trans_specs <> [] then
+        let specs_config = { base_gen_config with extract_specs = true } in
+        let file_info =
+          {
+            file_info with
+            filename = extract_filebasename ^ "Specs" ^ ext;
+            module_name = specs_module;
+            custom_msg = ": specs (statements of correctness)";
+            custom_imports = spec_imports;
+            custom_includes = [ types_module; fun_module ];
+          }
+        in
+        extract_file specs_config ctx file_info);
+     if trans_proof_obligations <> [] then
+       let obligations_config =
+         { base_gen_config with extract_proof_obligations = true }
+       in
+       let file_info =
+         {
+           file_info with
+           filename = extract_filebasename ^ "ProofObligations" ^ ext;
+           module_name = import_prefix ^ "ProofObligations";
+           custom_msg = ": proof obligations";
+           custom_includes = [ types_module; fun_module; specs_module ];
+         }
+       in
+       extract_file obligations_config ctx file_info)
    else
      let gen_config =
        {
@@ -2112,6 +2174,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_transparent = true;
          extract_opaque = true;
          extract_globals = true;
+         extract_specs = Config.spec_config_enabled ();
+         extract_proof_obligations = Config.spec_config_enabled ();
          interface = false;
        }
      in
@@ -2125,7 +2189,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          rust_module_name = crate.name;
          module_name = crate_name;
          custom_msg = "";
-         custom_imports = [];
+         custom_imports = spec_imports;
          custom_includes = [];
          noncomputable = has_opaque && not !Config.all_computable;
        }
