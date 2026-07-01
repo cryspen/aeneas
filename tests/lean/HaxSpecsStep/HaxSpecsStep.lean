@@ -17,7 +17,7 @@ noncomputable section
 
 namespace hax_specs
 
-/-- [core::ops::arith::{core::ops::arith::Add<&0 (u32), u32> for &1 (u32)}::add]:
+/-- [core::ops::arith::{impl core::ops::arith::Add<&'_0 u32, u32> for &'_1 u32}::add]:
     Source: '/rustc/library/core/src/internal_macros.rs', lines 49:12-49:68
     Name pattern: [core::ops::arith::{core::ops::arith::Add<&'1 u32, &'0 u32, u32>}::add]
     Visibility: public -/
@@ -71,13 +71,13 @@ def extra_args.generic (N : Std.U32) (x : Std.U32) : Result Std.U32 := do
 structure extra_args.Val (Self : Type) where
   value : Self → Result Std.U32
 
-/-- [hax_specs::extra_args::{hax_specs::extra_args::Val for u32}::value]:
+/-- [hax_specs::extra_args::{impl hax_specs::extra_args::Val for u32}::value]:
     Source: 'src/lib.rs', lines 63:8-65:9 -/
 def U32.Insts.Hax_specsExtra_argsVal.value
   (self : Std.U32) : Result Std.U32 := do
   ok self
 
-/-- Trait implementation: [hax_specs::extra_args::{hax_specs::extra_args::Val for u32}]
+/-- Trait implementation: [hax_specs::extra_args::{impl hax_specs::extra_args::Val for u32}]
     Source: 'src/lib.rs', lines 62:4-66:5 -/
 @[reducible]
 def U32.Insts.Hax_specsExtra_argsVal : extra_args.Val Std.U32 := {
