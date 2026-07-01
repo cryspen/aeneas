@@ -40,7 +40,8 @@
   str
   progress
   domainslib
-  ppx_deriving_yojson)
+  ppx_deriving_yojson
+  yojson)
  (modules
   BorrowCheck
   Builtin
@@ -60,10 +61,15 @@
   ExtractBuiltinCore
   ExtractBuiltinLean
   ExtractErrors
+  ExtractHaxSpecs
   ExtractName
+  ExtractSpec
   ExtractTypes
   FunsAnalysis
   GitVersion
+  HaxAttributes
+  HaxSpecs
+  HaxProducer
   Identifiers
   InterpAbs
   InterpBorrowsCore
@@ -111,6 +117,7 @@
   ReorderDecls
   SCC
   Scalars
+  Spec
   StringUtils
   Substitute
   SymbolicAst
