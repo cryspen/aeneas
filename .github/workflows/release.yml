@@ -40,36 +40,44 @@ jobs:
   build:
     name: Build (${{ matrix.artifact_name }})
     needs: prepare
-    runs-on: ${{ matrix.os }}
+    # The self-hosted runner only exists on aeneasverif/aeneas. On forks (and
+    # any other repo), fall back to the GitHub-hosted `matrix.os` runner.
+    runs-on: ${{ (matrix.self_hosted && github.repository == 'aeneasverif/aeneas') && fromJSON('["self-hosted","linux","nix"]') || matrix.os }}
     permissions:
       contents: write
       actions: write
+    env:
+      # True only when actually running on the self-hosted runner (which has
+      # nix pre-installed).
+      is_self_hosted: ${{ matrix.self_hosted && github.repository == 'aeneasverif/aeneas' }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: [self-hosted, linux, nix]
+          # On the main repo this runs on the self-hosted runner; on forks it
+          # falls back to `os` (see `runs-on` and `is_self_hosted` above).
+          - os: ubuntu-24.04
             artifact_name: aeneas-linux-x86_64
             nix_attr: aeneas-static-release
-            nix_machine: true
+            self_hosted: true
           - os: ubuntu-24.04-arm
             artifact_name: aeneas-linux-aarch64
             nix_attr: aeneas-static-release
-            nix_machine: false
+            self_hosted: false
           - os: macos-15-intel
             artifact_name: aeneas-macos-x86_64
             nix_attr: aeneas-release
-            nix_machine: false
+            self_hosted: false
           - os: macos-latest
             artifact_name: aeneas-macos-aarch64
             nix_attr: aeneas-release
-            nix_machine: false
+            self_hosted: false
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install nix
-        if: ${{ ! matrix.nix_machine }}
+        if: ${{ env.is_self_hosted != 'true' }}
         uses: nixbuild/nix-quick-install-action@v30
         with:
           nix_conf: |
@@ -79,7 +87,7 @@ jobs:
             extra-trusted-public-keys = hacl.cachix.org-1:FzsZ2xsByOwKwIWNPII7yMOelJNDZ12mDAj3d1eGX0c=
 
       - name: Restore Nix Cache
-        if: ${{ ! matrix.nix_machine }}
+        if: ${{ env.is_self_hosted != 'true' }}
         id: restore-nix-cache
         uses: nix-community/cache-nix-action/restore@v6
         with:
@@ -102,7 +110,7 @@ jobs:
           chmod -R +w dist_staging
 
       - name: Install elan (Lean toolchain manager)
-        if: ${{ ! matrix.nix_machine }}
+        if: ${{ env.is_self_hosted != 'true' }}
         run: |
           set -eo pipefail
 
@@ -123,7 +131,7 @@ jobs:
 
           script="$PWD/scripts/ci-precompile-lean.sh"
           cd dist_staging/backends/lean
-          if [[ "${{ matrix.nix_machine }}" == "true" ]]; then
+          if [[ "$is_self_hosted" == "true" ]]; then
             nix develop ../../.. --command "$script"
           else
             "$script"
@@ -171,7 +179,7 @@ jobs:
           files: ${{ matrix.artifact_name }}.tar.gz
 
       - name: Save Nix Cache
-        if: ${{ always() && ! matrix.nix_machine }}
+        if: ${{ always() && env.is_self_hosted != 'true' }}
         uses: nix-community/cache-nix-action/save@v6
         with:
           primary-key: ${{ steps.restore-nix-cache.outputs.primary-key }}
