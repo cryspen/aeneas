@@ -188,7 +188,7 @@ directly.
 
 `uncurry` is purely internal to Aeneas' elaboration pipeline and should never
 be directly manipulated by the user. -/
-@[inline] def uncurry {α β γ} (f : α → β → γ) : α × β → γ :=
+@[inline, spec] def uncurry {α β γ} (f : α → β → γ) : α × β → γ :=
   fun (a, b) => f a b
 
 @[simp, grind =] theorem uncurry_apply_pair {α β γ} (f : α → β → γ) (a : α) (b : β) :
