@@ -825,16 +825,6 @@ namespace Aeneas.Std.WP
 open Std Result
 open Std.Do
 
-abbrev Result.postShape : PostShape := (.except (ULift Error) (.except PUnit .pure))
-
-instance Result.instWP : WP Result.{u} postShape where
-  wp x := {
-    trans Q := match x with | .ok a => Q.1 a | .fail e => Q.2.1 (ULift.up e) | .div => Q.2.2.1 .unit
-    conjunctiveRaw Q₁ Q₂ := by
-      apply SPred.bientails.of_eq
-      cases x <;> simp
-  }
-
 abbrev willYield {α : Type u} (r : α) (Q : PostCond α Result.postShape) : Prop :=
   (Q.1 r).down
 
