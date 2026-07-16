@@ -1003,3 +1003,68 @@ theorem loop_spec
 end
 
 end Aeneas.Std
+
+/-!
+# Partial-correctness specifications
+-/
+
+namespace Aeneas.Std.WP
+
+open Aeneas.Std Result
+open Std.Do
+
+/-- Partial-correctness variant of `spec`.
+
+`partialSpec x p_ok p_fail p_div` reads as: "if `x` reduces to `ok a` then `p_ok a` holds; if it
+reduces to `fail e` then `p_fail e` holds; if it diverges then `p_div` holds". Unlike `spec`, it
+does not assume the program terminates without exception. -/
+@[expose]
+def partialSpec {α} (x : Result α)
+    (p_ok : α → Prop) (p_fail : Error → Prop) (p_div : Prop) : Prop :=
+  match x.match with
+  | .ok a => p_ok a
+  | .vis (.fail e) _ => p_fail e
+  | .div => p_div
+
+@[simp, grind =, agrind =]
+theorem partialSpec_ok (a : α) (p_ok : α → Prop) p_fail p_div :
+    partialSpec (ok a) p_ok p_fail p_div ↔ p_ok a := by
+  simp [partialSpec]
+
+@[simp, grind =, agrind =]
+theorem partialSpec_fail (e : Error) p_ok p_fail p_div :
+    partialSpec (α := α) (fail e) p_ok p_fail p_div ↔ p_fail e := by
+  simp [partialSpec]
+
+@[simp, grind =, agrind =]
+theorem partialSpec_div (p_ok : α → Prop) p_fail p_div :
+    partialSpec div p_ok p_fail p_div ↔ p_div := by
+  simp [partialSpec]
+
+/-- Derive a total-correctness `spec` from `partialSpec` by ruling out the failure and divergence
+cases. Used by `@[step]` to generate a step-tactic lemma from a `partialSpec` theorem. -/
+theorem spec_of_partialSpec
+    {α} {x : Result α} {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
+    (h : partialSpec x p_ok p_fail p_div)
+    (h_fail : ∀ e, ¬ p_fail e) (h_div : ¬ p_div) :
+    spec x p_ok := by
+  cases x with
+  | ret a => simpa [partialSpec] using h
+  | vis i k => cases i; simp [partialSpec] at h; exact absurd h (h_fail _)
+  | div => simp [partialSpec] at h; exact absurd h h_div
+
+/-- Lift an Aeneas partial-correctness spec to an mvcgen-compatible `Triple`. -/
+theorem partialSpec_to_mvcgen {α : Type u} {x : Result α}
+    {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
+    (h : partialSpec x p_ok p_fail p_div)
+    {Q : PostCond α Result.postShape}
+    (h_ok   : ∀ r, p_ok r → PostCond.ok Q r)
+    (h_fail : ∀ e, p_fail e → PostCond.fail Q e)
+    (h_div  : p_div → PostCond.div Q) :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ Q ⦄ := by
+  cases x with
+  | ret a => simp_all [partialSpec, Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp_all [partialSpec, Triple, WP.wp, PredTrans.apply]
+  | div => simp_all [partialSpec, Triple, WP.wp, PredTrans.apply]
+
+end Aeneas.Std.WP
