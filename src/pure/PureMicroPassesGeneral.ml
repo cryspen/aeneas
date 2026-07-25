@@ -1248,15 +1248,25 @@ let simplify_let_branching (ctx : ctx) (def : fun_decl) =
   let simplify_aux (monadic : bool) (pats : tpat list) (bound : texpr)
       (next : texpr) : tpat * texpr * texpr =
     let num_outs = List.length pats in
-    (* We will accumulate the outputs we find in this array *)
-    let outs = Array.init num_outs (fun _ -> []) in
-    let push_to_outs i el =
-      Array.set outs i (TExprSet.of_list el :: Array.get outs i)
-    in
 
     (* Compute the set of variables which are bound inside the bound expression
        (we will ignored those, as they were not introduced before) *)
     let bound_fvars = texpr_get_bound_fvars bound in
+
+    (* We will accumulate the outputs we find in this array *)
+    let outs = Array.init num_outs (fun _ -> []) in
+    let push_to_outs i el =
+      (* Hoisted outputs must not reference branch-local binders (with a single
+         ok endpoint the intersection degenerates to that endpoint's raw args),
+         so we drop candidates whose free variables intersect [bound_fvars]. *)
+      let el =
+        List.filter
+          (fun (e : texpr) ->
+            FVarId.Set.disjoint (texpr_get_fvars e) bound_fvars)
+          el
+      in
+      Array.set outs i (TExprSet.of_list el :: Array.get outs i)
+    in
 
     (* Small helper.
 
