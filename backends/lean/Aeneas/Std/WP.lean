@@ -825,15 +825,6 @@ namespace Aeneas.Std.WP
 open Std Result
 open Std.Do
 
-abbrev willYield {α : Type u} (r : α) (Q : PostCond α Result.postShape) : Prop :=
-  (Q.1 r).down
-
-abbrev willFail {α : Type u} (e : Error) (Q : PostCond α Result.postShape) : Prop :=
-  (Q.2.1 (.up e)).down
-
-abbrev willDiverge {α : Type u} (Q : PostCond α Result.postShape) : Prop :=
-  (Q.2.2.1 .unit).down
-
 instance : LawfulMonad Result where
     map_const := by intros; rfl
     id_map := by intros _ x; cases x <;> rfl

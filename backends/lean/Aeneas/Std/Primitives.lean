@@ -287,6 +287,15 @@ instance Result.instWP : WP Result.{u} postShape where
       cases x <;> simp
   }
 
+abbrev willYield {α : Type u} (r : α) (Q : PostCond α Result.postShape) : Prop :=
+  (Q.1 r).down
+
+abbrev willFail {α : Type u} (e : Error) (Q : PostCond α Result.postShape) : Prop :=
+  (Q.2.1 (.up e)).down
+
+abbrev willDiverge {α : Type u} (Q : PostCond α Result.postShape) : Prop :=
+  (Q.2.2.1 .unit).down
+
 end
 
 /-!
@@ -309,6 +318,7 @@ def loop {α : Type u} {β : Type v} (body : α → Result (ControlFlow α β)) 
 partial_fixpoint
 
 section
+open Aeneas.Std
 open Std.Do
 
 /-- `mvcgen` spec for the `loop` combinator.
@@ -328,8 +338,8 @@ theorem loop_spec
   (h_inv_init : inv init)
   (h_body : ∀ x, inv x → ⦃ ⌜ True ⌝ ⦄ body x ⦃ post⟨
     fun cf => match cf with
-      | .cont r => ⌜ inv r ∧ (rel (termination r) (termination x) ∨ (P.2.2.1 ()).down) ⌝
-      | .done r => P.1 r,
+      | .cont r => ⌜ inv r ∧ (rel (termination r) (termination x) ∨ willDiverge P) ⌝
+      | .done r => ⌜ willYield r P ⌝,
     P.2.1, P.2.2.1⟩ ⦄) :
   ⦃ ⌜ True ⌝ ⦄ loop body init ⦃ P ⦄ := by
   suffices h : ∀ x, inv x → (wp⟦loop body x⟧ P).down by
