@@ -805,3 +805,201 @@ want to introduce in the context -/
 theorem forall_unit {p : Prop} : (Unit → p) ↔ p := by simp
 
 end Aeneas.Std.WP
+
+/-!
+# `mvcgen` specs
+
+Accessors for the postconditions of `Result` programs, `@[spec]` lemmas for `mvcgen`, and lemmas
+relating triples to `Result.ok`.
+-/
+
+namespace Aeneas.Std
+
+open Std.Do WP Result
+open Aeneas.Data.Coinductive
+
+/-- The post-shape of `Result` in `mvcgen`: a failure (`Error`), any other effect, divergence. -/
+abbrev Result.postShape : PostShape :=
+  .except (ULift Error) (.except PUnit (.except PUnit .pure))
+
+abbrev PostCond.okAssertion {α : Type u} (Q : PostCond α Result.postShape) (r : α) :
+    Assertion Result.postShape :=
+  Q.1 r
+
+abbrev PostCond.ok {α : Type u} (Q : PostCond α Result.postShape) (r : α) : Prop :=
+  (Q.1 r).down
+
+abbrev PostCond.failAssertion {α : Type u} (Q : PostCond α Result.postShape) (e : ULift Error) :
+    Assertion Result.postShape :=
+  Q.2.1 e
+
+abbrev PostCond.fail {α : Type u} (Q : PostCond α Result.postShape) (e : Error) : Prop :=
+  (Q.2.1 (.up e)).down
+
+/-- The postcondition for effects other than failure (`Result` has none at the moment). -/
+abbrev PostCond.otherAssertion {α : Type u} (Q : PostCond α Result.postShape) :
+    PUnit → Assertion Result.postShape :=
+  Q.2.2.1
+
+abbrev PostCond.divAssertion {α : Type u} (Q : PostCond α Result.postShape) :
+    PUnit → Assertion Result.postShape :=
+  Q.2.2.2.1
+
+abbrev PostCond.div {α : Type u} (Q : PostCond α Result.postShape) : Prop :=
+  (Q.2.2.2.1 .unit).down
+
+@[spec]
+theorem Result.ok_spec {α : Type u} {a : α} {Q : PostCond α Result.postShape}
+    (hQ : PostCond.ok Q a) :
+    ⦃ ⌜ True ⌝ ⦄ Result.ok a ⦃ Q ⦄ := by
+  simpa [Triple, WP.wp, PredTrans.apply]
+
+@[spec]
+theorem Result.fail_spec {α : Type u} {e : Error} {Q : PostCond α Result.postShape}
+    (hQ : PostCond.fail Q e) :
+    ⦃ ⌜ True ⌝ ⦄ (Result.fail e : Result α) ⦃ Q ⦄ := by
+  simpa [Triple, WP.wp, PredTrans.apply]
+
+attribute [spec] uncurry
+
+/-- A triple with postcondition `r = v` is equivalent to the program being `.ok v`. -/
+theorem triple_post_eq_iff_eq {α : Type u} {x : Result α} {v : α} :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ r = v ⌝ ⦄ ↔ x = .ok v := by
+  cases x with
+  | ret a => simp [Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp [Triple, WP.wp, PredTrans.apply]
+  | div => simp [Triple, WP.wp, PredTrans.apply]
+
+/-- If the program equals `.ok v`, then a triple is equivalent to its postcondition on `.ok v`. -/
+theorem triple_iff_post_of_eq_ok {α : Type u} {x : Result α} {v : α} {P : α → Prop}
+    (hx : x = .ok v) : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄ ↔ P v := by
+  subst hx
+  simp [Triple, WP.wp, PredTrans.apply]
+
+/-- A triple is equivalent to the existence of a value `a` such that the program is `.ok a`
+and the postcondition holds on `a`. -/
+theorem triple_iff_exists_ok {α : Type u} {x : Result α} {P : α → Prop} :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄ ↔ ∃ a, x = .ok a ∧ P a := by
+  cases x with
+  | ret a => simp [Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp [Triple, WP.wp, PredTrans.apply]
+  | div => simp [Triple, WP.wp, PredTrans.apply]
+
+/-- Enrich triple's postcondition to contain a triple stating which program produced the value. -/
+theorem triple_with_self {α : Type u} {x : Result α} {P : α → Prop}
+    (h : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄) :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ∧ ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r' => ⌜ r' = r ⌝ ⦄ ⌝ ⦄ := by
+  obtain ⟨a, hx, hPa⟩ := triple_iff_exists_ok.1 h
+  exact (triple_iff_post_of_eq_ok hx).2 ⟨hPa, triple_post_eq_iff_eq.2 hx⟩
+
+/- Modus-ponens-like reasoning on a `noThrow` and a `mayThrow` triple -/
+theorem triple_in_hypothesis {α : Type u} {f : Result α} {Q : α → Assertion Result.postShape}
+    (p : Prop)
+    (h : ⦃ ⌜ True ⌝ ⦄ f ⦃ ⇓ r => Q r ⦄)
+    (hp : ⦃ ⌜ True ⌝ ⦄ f ⦃ ⇓? r => Q r → ⌜ p ⌝ ⦄) :
+    p := by
+  cases f with
+  | ret a => simp_all [Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp_all [Triple, WP.wp, PredTrans.apply]
+  | div => simp_all [Triple, WP.wp, PredTrans.apply]
+
+/-!
+## Loops
+-/
+
+section
+unseal Result
+
+/-- When divergence is allowed, `mvcgen`'s WP of a `Result` program is admissible: the head of
+a chain's supremum (a result or a failure) already occurs in the chain. -/
+theorem wp_admissible_of_div {β : Type u} (P : PostCond β Result.postShape)
+    (hdiv : PostCond.div P) :
+    Lean.Order.admissible (fun r : Result β => (wp⟦r⟧ P).down) := by
+  intro c hc hAll
+  generalize hEq : Lean.Order.CCPO.csup hc = t
+  cases t with
+  | ret v =>
+    have h := hAll _ (ITree.csup_ret_mem hc hEq)
+    rw [show (ITree.ret v : Result β) = Result.ok v from rfl] at h
+    simpa [WP.wp, PredTrans.apply] using h
+  | vis i k =>
+    obtain ⟨k₀, hMem⟩ := ITree.csup_vis_mem hc hEq
+    have h := hAll _ hMem
+    rw [show (ITree.vis i k₀ : Result β) = Result.vis i k₀ from rfl] at h
+    cases i
+    exact h
+  | div => simpa [WP.wp, PredTrans.apply] using hdiv
+
+/-- `mvcgen` spec for the `loop` combinator.
+
+Given a loop invariant `inv`, a well-founded relation `rel` and a termination measure, discharges
+`loop body init` provided each iteration of `body` either finishes (`.done`) satisfying the
+postcondition or continues (`.cont`) preserving the invariant while decreasing the measure. The
+measure does not need to decrease if the postcondition allows divergence. -/
+@[spec]
+theorem loop_spec
+  {α β : Type u} {γ : Sort w}
+  {P : PostCond β Result.postShape}
+  {body : α → Result (ControlFlow α β)} {init : α}
+  (inv : α → Prop)
+  (rel : γ → γ → Prop)
+  (termination : α → γ)
+  (hwf : WellFounded rel)
+  (h_inv_init : inv init)
+  (h_body : ∀ x, inv x → ⦃ ⌜ True ⌝ ⦄ body x ⦃ post⟨
+    fun cf => match cf with
+      | .cont r => ⌜ inv r ∧ (rel (termination r) (termination x) ∨ PostCond.div P) ⌝
+      | .done r => PostCond.okAssertion P r,
+    PostCond.failAssertion P, PostCond.otherAssertion P, PostCond.divAssertion P⟩ ⦄) :
+  ⦃ ⌜ True ⌝ ⦄ loop body init ⦃ P ⦄ := by
+  suffices h : ∀ x, inv x → (wp⟦loop body x⟧ P).down by
+    unfold Triple
+    intro _
+    exact h init h_inv_init
+  -- One iteration: the property holds for the unfolding of the loop if it holds for the
+  -- continuations allowed by `h_body`.
+  have step : ∀ (g : α → Result β) x, inv x →
+      (∀ r, inv r → (rel (termination r) (termination x) ∨ PostCond.div P) →
+        (wp⟦g r⟧ P).down) →
+      (wp⟦Std.bind (body x) (fun r => match r with
+        | ControlFlow.cont x => g x
+        | ControlFlow.done x => Result.ok x)⟧ P).down := by
+    intro g x hinv hg
+    have hb := h_body x hinv trivial
+    revert hb
+    generalize body x = b
+    cases b with
+    | ret cf =>
+      cases cf with
+      | cont r =>
+        simp only [WP.wp, PredTrans.apply, Result.match.ok, bind_ok]
+        exact fun ⟨hi, hr⟩ => hg r hi hr
+      | done r => simp [WP.wp, PredTrans.apply]
+    | vis i k => cases i; simp [WP.wp, PredTrans.apply]
+    | div => simp [WP.wp, PredTrans.apply]
+  by_cases hdiv : PostCond.div P
+  case pos => -- Divergence permitted: fixpoint induction.
+    have hadm : Lean.Order.admissible
+        (fun g : α → Result β => ∀ x, inv x → (wp⟦g x⟧ P).down) := by
+      apply Lean.Order.admissible_pi
+      intro x
+      apply Lean.Order.admissible_pi
+      intro _
+      exact Lean.Order.admissible_apply (β := fun _ => Result β)
+        (fun _ (r : Result β) => (wp⟦r⟧ P).down) x (wp_admissible_of_div P hdiv)
+    exact loop.fixpoint_induct body _ hadm
+      (fun g ih x hinv => step g x hinv (fun r hr _ => ih r hr))
+  case neg => -- Divergence forbidden: well-founded induction on the termination measure.
+    intro x hinv
+    induction hg : termination x using hwf.induction generalizing x
+    rename_i t IH
+    rw [loop.eq_1]
+    refine step _ x hinv (fun r hr hrel => ?_)
+    rcases hrel with hrel | hd
+    · subst hg
+      exact IH (termination r) hrel r hr rfl
+    · exact absurd hd hdiv
+
+end
+
+end Aeneas.Std
