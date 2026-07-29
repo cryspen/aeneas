@@ -528,11 +528,11 @@ open Aeneas.Std WP Result
 
 private theorem mvcgen_fail_failEq_iff {α : Type u} {Q : Std.Do.PostCond α postShape}
     {c : Error} {P : Prop} :
-    (∀ e, (e = c ∧ P) → willFail e Q) ↔ (P → willFail c Q) :=
+    (∀ e, (e = c ∧ P) → PostCond.fail Q e) ↔ (P → PostCond.fail Q c) :=
   ⟨fun h hP => h c ⟨rfl, hP⟩, fun h _ ⟨he, hP⟩ => he ▸ h hP⟩
 
 private theorem mvcgen_fail_False_iff {α : Type u} {Q : Std.Do.PostCond α postShape} :
-    (∀ e, False → willFail e Q) ↔ True :=
+    (∀ e, False → PostCond.fail Q e) ↔ True :=
   ⟨fun _ => trivial, fun _ _ h => h.elim⟩
 
 private theorem mvcgen_div_False_iff {P : Prop} :
