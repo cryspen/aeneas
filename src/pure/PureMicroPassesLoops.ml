@@ -2132,7 +2132,19 @@ let reorder_loop_outputs (ctx : ctx) (def : fun_decl) =
           if not (List.for_all Option.is_some arg_to_index) then None
           else
             let arg_to_index = List.map Option.get arg_to_index in
-            if List.for_all (fun (i, i') -> i = i') arg_to_index then
+            (* Check that the arguments are a true permutation of the pattern
+               variables: the lengths must be equal and the indices must be
+               duplicate-free. Note that the ok-tuple may repeat an fvar when
+               the forward result coincides with a given-back value (e.g.,
+               [return *x] inside a loop over [x : &mut u32] leads to
+               [ok (v, v)]): in this case we simply skip the reordering. *)
+            if
+              List.length args <> List.length patl_fvars
+              || Collections.IntSet.cardinal
+                   (Collections.IntSet.of_list (List.map snd arg_to_index))
+                 <> List.length arg_to_index
+            then None
+            else if List.for_all (fun (i, i') -> i = i') arg_to_index then
               (* Order is the same: no need to reorder *)
               None
             else
