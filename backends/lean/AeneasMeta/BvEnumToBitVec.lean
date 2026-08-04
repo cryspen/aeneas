@@ -3,7 +3,7 @@ Copyright (c) 2025. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 import Lean
-import Lean.Elab.Tactic.BVDecide.Frontend.Normalize.Enums
+import Lean.Meta.Tactic.BVDecide.Normalize.Enums
 
 /-!
 # Eagerly realizing `bv_decide`'s enum conversion constants
@@ -44,7 +44,7 @@ module, turning the lazy per-use realisation into a single deterministic one.
 namespace Aeneas
 
 open Lean Meta Elab
-open Lean.Elab.Tactic.BVDecide.Frontend.Normalize
+open Lean.Meta.Tactic.BVDecide.Normalize
 
 /-- Marker class enabling `deriving BvEnumToBitVec` on an enum inductive.
 
@@ -69,11 +69,14 @@ def realizeBvEnumToBitVec (declName : Name) : CoreM Unit := do
       (parameter-free with only nullary constructors); \
       `bv_decide` only synthesises `enumToBitVec` for such types."
   enableRealizationsForConst declName
-  let act : MetaM Unit := do
-    discard <| getEnumToBitVecFor declName
-    discard <| getEnumToBitVecLeFor declName
-    discard <| getEqIffEnumToBitVecEqFor declName
-  discard <| act.run' {} {}
+  -- `bv_decide` registers these three constants as *reserved names* and realises
+  -- them lazily through a reserved-name action (see
+  -- `Lean.Meta.Tactic.BVDecide.Normalize`). The realiser functions themselves are
+  -- private to that module, so we trigger realisation by name instead. Only
+  -- `enumToBitVecSuffix` is exported; the other two suffixes are inlined here.
+  executeReservedNameAction (.str declName enumToBitVecSuffix)
+  executeReservedNameAction (.str declName "enumToBitVec_le")
+  executeReservedNameAction (.str declName "eq_iff_enumToBitVec_eq")
 
 /-- `#define_bv_decide_toBitVec T` eagerly realises `bv_decide`'s enum
 conversion constants for the enum inductive `T` in the current module.

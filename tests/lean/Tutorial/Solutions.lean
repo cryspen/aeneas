@@ -2,8 +2,12 @@ import Aeneas
 import Tutorial.Tutorial
 open Aeneas Std Result
 
+-- Workaround for leanprover/lean4#14521: the default `get_elem_tactic` (`grind`)
+-- emits kernel-invalid proofs when an index bound depends on `_ ≠ 0#uN` (the
+-- BitVec width `numBits U32` is defeq but not syntactically `32`). `scalar_tac`
+-- discharges these bounds correctly; `grind` stays as a fallback.
 local macro_rules
-| `(tactic| get_elem_tactic) => `(tactic| grind)
+| `(tactic| get_elem_tactic) => `(tactic| first | scalar_tac | grind)
 
 set_option maxHeartbeats 1000000
 
@@ -135,10 +139,30 @@ theorem list_nth_mut1_spec'' {T: Type} [Inhabited T] (l : CList T) (i : U32)
   unfold list_nth_mut1 list_nth_mut1_loop
   /- `step*` repeatedly applies `step`, while doing a case disjunction whenever it
       encounters a branching. Note that one can automatically generate the corresponding
-      proof script by using `step*?`. -/
-  step*
-  simp
-  simp_lists [*]
+      proof script by using `step*?`.
+
+      Workaround for leanprover/lean4#14521: `step*` closes leaf goals with `agrind`,
+      which on the `i ≠ 0#u32` branch here emits a kernel-invalid proof (the BitVec
+      width `numBits U32` is defeq but not syntactically `32`). Until that upstream
+      `grind` bug is fixed, we spell out the case analysis explicitly (as `step*?`
+      would generate it), closing the branches with `scalar_tac`/`simp` instead. -/
+  split
+  · rename_i hd tl
+    split
+    · simp
+      split_conjs
+      · simp_all
+      · intro x
+        simp_all
+    · simp at *
+      step as ⟨ i1, _, hi ⟩
+      step as ⟨ tl1, back ⟩
+      simp
+      split_conjs
+      · simp_lists [*]
+      · intro x'
+        simp [*]
+  · simp at h
 
 /-- Theorem about `list_tail_loop`: verbose version -/
 @[step]

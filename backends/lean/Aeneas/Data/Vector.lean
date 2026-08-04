@@ -108,16 +108,9 @@ theorem getElem!_set! {α : Type u}
     ← Array.getElem!_toList, Array.toList_setIfInBounds]
   simp_lists
 
-@[simp, simp_lists_safe]
-theorem getElem_set! {α : Type u}
-  [Inhabited α] {n i j : ℕ} {x : α} {xs : Vector α n}
-  (hi : i < n ∧ j = i) :
-  (xs.set! i x)[j] = x := by
-  have : i < xs.toArray.size := by scalar_tac
-  simp only [getElem_eq_toArray_getElem, toArray_set!, Array.set!_eq_setIfInBounds,
-    Array.size_setIfInBounds, size_toArray, Array.Inhabited_getElem_eq_getElem!,
-    ← Array.getElem!_toList, Array.toList_setIfInBounds, hi]
-  grind
+-- `Vector.getElem_set!_self` is now provided by the core library; register the
+-- Aeneas simp attribute on it.
+attribute [simp_lists_safe] getElem_set!_self
 
 @[simp, simp_lists_safe]
 theorem getElem!_set!_ne {α : Type u}
@@ -127,13 +120,9 @@ theorem getElem!_set!_ne {α : Type u}
   simp only [getElem!_eq_toArray_getElem!, toArray_set!]
   simp_lists
 
-@[simp, simp_lists_safe]
-theorem getElem_set!_ne {α : Type u}
-  [Inhabited α] {n i j : ℕ} {x : α} {xs : Vector α n}
-  (h : i ≠ j ∧ j < n) :
-  (xs.set! i x)[j] = xs[j] := by
-  simp only [getElem_eq_toArray_getElem, toArray_set!]
-  simp_lists
+-- `Vector.getElem_set!_ne` is now provided by the core library; register the
+-- Aeneas simp attribute on it.
+attribute [simp_lists_safe] getElem_set!_ne
 
 @[simp, simp_lists_safe]
 theorem getElem!_replicate {α : Type u} [Inhabited α] {i n : ℕ} {a : α} (h : i < n) :

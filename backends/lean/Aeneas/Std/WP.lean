@@ -8,8 +8,8 @@ namespace Aeneas.Std.WP
 
 open Std Result
 
-def Post α := (α -> Prop)
-def Pre := Prop
+@[reducible] def Post α := (α -> Prop)
+@[reducible] def Pre := Prop
 
 def Wp α := Post α → Pre
 
@@ -37,7 +37,7 @@ theorem spec_dspec (α) (x : Result α) (p: Post α) : spec x p → dspec x p :=
 theorem dspec_admissible {α} (p : Post α )
   : Lean.Order.admissible (fun x => dspec x p) := by
   apply Lean.Order.admissible_flatOrder
-  simp [dspec]
+  simp [dspec, Lean.Order.FlatOrder.mk]
 
 /-- Variant of `uncurry` used to decompose tuples in post-conditions.
 
@@ -728,7 +728,7 @@ example (x : Nat) :
 
 private theorem massert_spec' (b : Prop) [Decidable b] (h : b) :
   massert b ⦃ _ => True ⦄ := by
-  grind [massert]
+  simp only [massert, if_pos h, spec_ok]
 
 @[simp]
 theorem qimp_spec_unit {α} (P : Unit → Prop) (k : Unit → Result α) (Q : α → Prop) :
@@ -755,11 +755,9 @@ example :
   --
   apply spec_bind'
   · apply massert_spec'; omega
-  simp -failIfUnchanged only [qimp_spec_unit, forall_const]
-  --
-  apply spec_mono'
-  · apply massert_spec'; omega
-  simp -failIfUnchanged only [qimp_unit, forall_const]
+  -- eliminate the quantifier over the `()` output and the trivial precondition
+  intro _ _
+  apply massert_spec'; omega
 
 /- Example with a post-condition manipulating an ∃ -/
 example (zero : List Nat → Result (List Nat))
@@ -773,9 +771,9 @@ example (zero : List Nat → Result (List Nat))
   apply spec_bind'
   · apply zero_spec
   simp -failIfUnchanged only [qimp_spec_iff, imp_exists_iff]
-  rintro s' h0 h1
+  rintro s' h0
   --
-  simp only [pure, spec_ok]
+  simp only [pure, spec_ok, imp, implies_true]
 
 
 end Aeneas.Std.WP
@@ -865,7 +863,16 @@ theorem loop.spec {α : Type u} {β : Type v} {γ : Type w}
   apply @wf.wf.fix γ (fun x' =>
     ∀ x, measure x = x' →
     inv x → loop body x ⦃ post ⦄)
-  grind [loop]
+  intro x1 IH x2 hmeas hinv2
+  -- `body x2` succeeds and its result satisfies the loop invariant post-condition
+  obtain ⟨r, hbr, hr⟩ := WP.spec_imp_exists (hBody x2 hinv2)
+  rw [loop.eq_def, hbr]
+  cases r with
+  | done y => simpa using hr
+  | cont x' =>
+    obtain ⟨hinv', hrel⟩ := hr
+    -- the measure strictly decreases, so we can conclude by well-founded recursion
+    exact IH (measure x') (hmeas ▸ hrel) x' rfl hinv'
 
 theorem loop.spec_decr_nat {α : Type u} {β : Type v}
   (measure : α → Nat)
