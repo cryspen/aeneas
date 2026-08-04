@@ -94,7 +94,7 @@ theorem WP_func_admissible (α β : Type) (arg) (post)
   : Order.admissible fun (f : α → Result β) => WP.dspec (f arg) post := by
   apply Lean.Order.admissible_apply (fun _ fx => WP.dspec fx _)
   apply Lean.Order.admissible_flatOrder
-  simp only [WP.dspec]
+  simp only [WP.dspec, Lean.Order.FlatOrder.mk]
 
 def getParamNames (ty : Expr) : MetaM (Array Name) := do
   forallTelescope ty fun xs _ => do

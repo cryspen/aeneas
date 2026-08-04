@@ -41,7 +41,9 @@ theorem Array.to_slice_mut_spec {α : Type u} {n : Usize} (a : Array α n) :
   (lift (Array.to_slice_mut a))
   ⦃ (s : Slice α) (back : Slice α → Array α n) =>
     s.val = a.val ∧ back = Array.from_slice a ⦄ := by
-  simp [lift, to_slice_mut, to_slice, WP.spec_ok]
+  simp only [lift, to_slice_mut, to_slice]
+  apply (spec_ok _).mpr
+  simp [Std.WP.uncurry']
 
 def Array.subslice {α : Type u} {n : Usize} (a : Array α n) (r : Range Usize) : Result (Slice α) :=
   if r.start.val ≤ r.end.val ∧ r.end.val ≤ a.val.length then
@@ -92,9 +94,14 @@ theorem Array.update_subslice_spec {α : Type u} {n : Usize} [Inhabited α] (a :
            | _ => False)
       False := by
   unfold update_subslice
-  split <;> rename_i h <;> simp [partialSpec]
-  · simp_lists
-  · scalar_tac
+  split
+  · rename_i h
+    simp only [partialSpec]
+    refine ⟨fun i hi => ?_, fun i hi hj => ?_, fun i hi hj => ?_⟩ <;>
+      (simp only [getElem!, Array.getElem?_Nat_eq]; simp_lists)
+  · rename_i h
+    simp [partialSpec]
+    scalar_tac
 
 @[rust_fun "core::array::{core::ops::index::Index<[@T; @N], @I, @O>}::index"]
 def core.array.Array.index
@@ -135,7 +142,8 @@ theorem Array.val_to_slice {α} {n} (a : Array α n) : a.to_slice.val = a.val :=
 @[simp, simp_lists_safe, simp_scalar_safe, scalar_tac a.to_slice, grind =, agrind =]
 theorem Array.length_to_slice (a : Array α n) :
   a.to_slice.length = n := by
-  simp only [Slice.length, Array.to_slice, List.Vector.length_val]
+  simp only [Slice.length, Array.to_slice]
+  exact a.property
 
 @[rust_fun "core::array::equality::{core::cmp::PartialEq<[@T; @N], [@U; @N]>}::eq"]
 def core.array.equality.PartialEqArray.eq
@@ -313,7 +321,11 @@ theorem core.array.TryFromArrayCopySlice.try_from.step
         a.val = s.val ∧ a.length = N
       | .Err () => s.length ≠ N ⦄ := by
   simp only [core.array.TryFromArrayCopySlice.try_from]
-  grind only [usr Usize.cMax_bound, usr Usize.cMax_bound', = spec_ok]
+  split
+  · apply (spec_ok _).mpr
+    exact ⟨rfl, by scalar_tac⟩
+  · apply (spec_ok _).mpr
+    simpa using ‹¬ s.length = N›
 
 @[rust_fun "core::array::{core::convert::TryFrom<&'a [@T; @N], &'a [@T], core::array::TryFromSliceError>}::try_from"]
 def core.array.TryFromSharedArraySlice.try_from
@@ -381,7 +393,9 @@ theorem Array.Insts.CoreConvertAsRefSlice.as_ref.spec
     {T : Type} {N : Usize} (a : Array T N) :
     Array.Insts.CoreConvertAsRefSlice.as_ref a
     ⦃ (s : Slice T) => s.val = a.val ⦄ := by
-  simp [Array.Insts.CoreConvertAsRefSlice.as_ref, WP.spec_ok]
+  simp only [Array.Insts.CoreConvertAsRefSlice.as_ref]
+  apply (spec_ok _).mpr
+  rfl
 
 @[step]
 theorem Array.Insts.CoreConvertAsMutSlice.as_mut.spec
@@ -391,9 +405,13 @@ theorem Array.Insts.CoreConvertAsMutSlice.as_mut.spec
       s.val = a.val ∧
       s.length = N.val ∧
       ∀ s' : Slice T, s'.length = N.val → (back s').val = s'.val ⦄ := by
-  simp [Array.Insts.CoreConvertAsMutSlice.as_mut, WP.spec_ok, Slice.length]
-  intro s' hs'
-  simp [hs']
+  simp only [Array.Insts.CoreConvertAsMutSlice.as_mut]
+  apply (spec_ok _).mpr
+  simp only [Std.WP.uncurry', Slice.length]
+  refine ⟨?_, ?_, fun s' hs' => ?_⟩
+  · trivial
+  · scalar_tac
+  · simp [hs']
 
 @[simp, step_simps]
 theorem Array.index_SliceIndexRangeUsizeSlice {T : Type} {N : Usize}
@@ -414,7 +432,7 @@ theorem Array.index_SliceIndexRangeUsizeSlice.step {T : Type} {N : Usize} [Inhab
       (fun | .panic => ¬ (r.start ≤ r.end ∧ r.end ≤ N) | _ => False)
       False := by
   simp only [Array.index_SliceIndexRangeUsizeSlice]
-  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length]
+  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length, Array.length_eq]
   unfold core.slice.index.SliceIndexRangeUsizeSlice.index
   split <;> rename_i h <;> simp [partialSpec, Array.to_slice, Slice.length]
   · scalar_tac
@@ -434,10 +452,11 @@ theorem Array.index_mut_SliceIndexRangeUsizeSlice.step {T : Type} {N : Usize} [I
       False := by
   simp only [core.array.Array.index_mut, core.ops.index.IndexMutSlice,
     core.slice.index.Slice.index_mut]
-  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length]
+  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length, Array.length_eq]
   unfold core.slice.index.SliceIndexRangeUsizeSlice.index_mut
   split <;> rename_i h <;>
-    simp [partialSpec, Array.from_slice, Array.to_slice, uncurry', Slice.length]
+    simp [partialSpec, Array.from_slice, Array.to_slice, uncurry', Slice.length,
+      List.length_setSlice!, Array.length_eq]
   · simp_lists; scalar_tac
   · scalar_tac
 
@@ -464,10 +483,11 @@ theorem Array.index_mut_SliceIndexRangeToUsizeSlice {T : Type} {N : Usize}
       False := by
   simp only [core.array.Array.index_mut, core.ops.index.IndexMutSlice,
     core.slice.index.Slice.index_mut]
-  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length]
+  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length, Array.length_eq]
   unfold core.slice.index.SliceIndexRangeToUsizeSlice.index_mut
   split <;> rename_i h <;>
-    simp [partialSpec, Array.from_slice, Array.to_slice, uncurry', Slice.length] <;>
+    simp [partialSpec, Array.from_slice, Array.to_slice, uncurry', Slice.length,
+      List.length_setSlice!, Array.length_eq] <;>
     scalar_tac
 
 -- Array index/index_mut with RangeFrom
@@ -493,11 +513,12 @@ theorem Array.index_mut_SliceIndexRangeFromUsizeSlice {T : Type} {N : Usize}
       False := by
   simp only [core.array.Array.index_mut, core.ops.index.IndexMutSlice,
     core.slice.index.Slice.index_mut]
-  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length]
+  have hts : a.to_slice.length = N := by simp [Array.to_slice, Slice.length, Array.length_eq]
   unfold core.slice.index.SliceIndexRangeFromUsizeSlice.index_mut
   split <;> rename_i h <;>
     simp [partialSpec, Array.from_slice, Array.to_slice, uncurry',
-          Slice.length, Slice.drop, List.length_drop];
+          Slice.length, Slice.drop, List.length_drop,
+          List.length_setSlice!, Array.length_eq];
     scalar_tac
 
 @[reducible, rust_trait_impl "core::convert::AsRef<[@T; @N], [@T]>"]

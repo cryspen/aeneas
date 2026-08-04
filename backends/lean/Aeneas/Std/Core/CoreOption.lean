@@ -13,6 +13,6 @@ attribute [agrind =] Option.isSome_none Option.isSome_some
 
 theorem core.option.Option.expect.spec {T : Type} (x : Option T) (msg: Str) (h : x.isSome) :
   expect x msg ⦃ v => x = some v ⦄ := by
-  simp only [expect, Result.ofOption]; grind
+  simp only [expect, Result.ofOption]; cases x <;> simp_all
 
 end Aeneas.Std

@@ -97,7 +97,7 @@ def core.option.Option.unwrap {T : Type} (x : Option T) : Result T :=
 @[step]
 theorem core.option.Option.unwrap.spec {T : Type} (x : Option T) (h : x.isSome) :
   unwrap x ⦃ v => x = some v ⦄ := by
-  simp only [unwrap, ofOption]; grind
+  simp only [unwrap, ofOption]; cases x <;> simp_all
 
 @[step_pure_def, rust_fun "core::option::{core::option::Option<@T>}::unwrap_or" -canFail]
 def core.option.Option.unwrap_or (self : Option T) (default : T) : T :=

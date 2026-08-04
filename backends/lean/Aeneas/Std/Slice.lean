@@ -118,7 +118,7 @@ def Slice.index_usize {α : Type u} (v: Slice α) (i: Usize) : Result α :=
   | some x => ok x
 
 theorem Slice.eq_iff {α} (s0 s1 : Slice α) : s0 = s1 ↔ s0.val = s1.val := by
-  simp only [Slice, Subtype.ext_iff]
+  exact Subtype.ext_iff
 
 @[rust_fun "core::slice::{[@T]}::is_empty", simp]
 def core.slice.Slice.is_empty {T : Type} (s : Slice T) : Result Bool := ok (s.length = 0)
@@ -133,7 +133,7 @@ theorem core.slice.Slice.is_empty_spec {T : Type} (s : Slice T) :
 theorem Slice.index_usize_spec {α : Type u} (v: Slice α) (i: Usize)
   (hbound : i.val < v.length) :
   v.index_usize i ⦃ x => x = v.val[i.val] ⦄ := by
-  grind [index_usize]
+  simp only [index_usize, Slice.getElem?_Usize_eq, List.getElem?_eq_getElem hbound, spec_ok]
 
 @[simp, scalar_tac_simps, simp_lists_hyps_simps, grind =]
 theorem Slice.set_val_eq {α : Type u} (v: Slice α) (i: Usize) (x: α) :
@@ -268,9 +268,9 @@ def Slice.update {α : Type u} (v: Slice α) (i: Usize) (x: α) : Result (Slice 
 theorem Slice.update_spec {α : Type u} (v: Slice α) (i: Usize) (x : α)
   (hbound : i.val < v.length) :
   v.update i x ⦃ nv => nv = v.set i x ⦄ := by
-  simp only [update, set, setAtNat]
-  simp at *
-  simp [*]
+  simp only [update, Slice.getElem?_Usize_eq, List.getElem?_eq_getElem hbound]
+  apply (spec_ok _).mpr
+  rfl
 
 def Slice.index_mut_usize {α : Type u} (v: Slice α) (i: Usize) :
   Result (α × (α → Slice α)) := do
@@ -288,7 +288,8 @@ theorem Slice.index_mut_usize_spec {α : Type u} (v: Slice α) (i: Usize)
 @[simp, simp_lists_safe]
 theorem Slice.update_index_eq α [Inhabited α] (x : Slice α) (i : Usize) (h : i.val < x.val.length) :
   x.set i (x.val[i.val]'h) = x := by
-  simp only [Slice, Subtype.ext_iff, set_val_eq, List.set_getElem_self]
+  apply Subtype.ext
+  simp only [set_val_eq, List.set_getElem_self]
 
 def Slice.subslice {α : Type u} (s : Slice α) (r : Range Usize) : Result (Slice α) :=
   if r.start.val ≤ r.end.val ∧ r.end.val ≤ s.length then
@@ -305,7 +306,10 @@ theorem Slice.subslice_spec {α : Type u} [Inhabited α] (s : Slice α) (r : Ran
   subslice s r ⦃ ns => ns.val = s.slice r.start.val r.end.val ∧
   (∀ i, i + r.start.val < r.end.val → ns[i]! = s[r.start.val + i]!) ⦄
   := by
-  simp_all only [subslice, length, and_self, ite_true, slice, spec_ok, true_and]
+  unfold subslice
+  rw [if_pos ⟨h0, h1⟩]
+  apply (spec_ok _).mpr
+  refine ⟨rfl, ?_⟩
   intro i _
   have := List.getElem!_slice r.start.val r.end.val i s.val (by scalar_tac)
   simp only [List.getElem!_eq_getElem?_getD, getElem!_Nat_eq] at *
@@ -324,9 +328,10 @@ theorem Slice.update_subslice_spec {α : Type u} [Inhabited α] (a : Slice α) (
     (∀ i, i < r.start.val → na[i]! = a[i]!) ∧
     (∀ i, r.start.val ≤ i → i < r.end.val → na[i]! = ss[i - r.start.val]!) ∧
     (∀ i, r.end.val ≤ i → i < a.length → na[i]! = a[i]!) ⦄ := by
-  simp only [update_subslice, length, and_self, ↓reduceDIte, getElem!_Nat_eq,
-    spec_ok, *]
-  simp_lists
+  simp only [update_subslice, length, and_self, ↓reduceDIte, *]
+  apply (spec_ok _).mpr
+  refine ⟨fun i hi => ?_, fun i hi hj => ?_, fun i hi hj => ?_⟩ <;>
+    (simp only [getElem!, Slice.getElem?_Nat_eq]; simp_lists)
 
 @[rust_fun "core::slice::{[@T]}::reverse" -canFail]
 def core.slice.Slice.reverse {T : Type} (s : Slice T) : Slice T :=
@@ -649,7 +654,9 @@ theorem _SliceIndexRangeFromUsizeSlice.index_mut.test {T} (s : Slice T) (r : cor
     back s1 = s
   | _ => False := by
   unfold core.slice.index.SliceIndexRangeFromUsizeSlice.index_mut
-  simp [h]
+  simp only [h, ↓reduceIte, Slice.drop]
+  apply Subtype.ext
+  simp
 
 @[reducible, rust_trait_impl "core::slice::index::private_slice_index::Sealed<core::ops::range::RangeFrom<usize>>"]
 def core.slice.index.private_slice_index.SealedRangeFromUsize :
@@ -692,7 +699,9 @@ theorem Slice.clone_spec {T : Type} {clone : T → Result T} {s : Slice T} (h : 
   Slice.clone clone s ⦃ s' => s = s' ⦄ := by
   simp only [Slice.clone]
   have ⟨ _, h ⟩ := spec_imp_exists (List.clone_spec h)
-  simp [h]
+  simp only [h.1, bind_tc_ok]
+  apply (spec_ok _).mpr
+  exact (Subtype.ext h.2.1).symm
 
 @[rust_fun "core::slice::{[@T]}::split_at"]
 def core.slice.Slice.split_at {T : Type} (s : Slice T) (n : Usize) :
@@ -759,11 +768,13 @@ theorem core.slice.Slice.split_at_mut.spec {T : Type} (s : Slice T) (n : Usize)
   · simp [Slice.length, List.splitAt_eq]
   · simp [List.splitAt_eq]
   · simp [List.splitAt_eq]
-  · split_ifs with hcond
-    · exact ⟨rfl, by simp [Slice.length, List.length_append]; scalar_tac⟩
-    · exfalso; apply hcond
-      simp [Slice.length, List.splitAt_eq] at *
-      exact ⟨by scalar_tac, by scalar_tac⟩
+  · have hc : s0'.length = (s.val.splitAt n.val).1.length ∧ s1'.length = (s.val.splitAt n.val).2.length := by
+      simp only [List.splitAt_eq, List.length_take, List.length_drop, Slice.length]
+      constructor <;> scalar_tac
+    refine ⟨?_, ?_⟩
+    · simp only [hc.1, hc.2, and_self, ↓reduceDIte]
+    · simp only [hc.1, hc.2, and_self, ↓reduceDIte, Slice.length, List.length_append]
+      scalar_tac
 
 @[rust_fun "core::slice::{[@T]}::swap"]
 def core.slice.Slice.swap {T : Type} (s : Slice T) (a b : Usize) : Result (Slice T) := do
@@ -824,7 +835,8 @@ theorem Slice.setSlice!_length {α : Type u} (s : Slice α) (i : ℕ) (s' : List
 theorem Slice.setSlice!_getElem!_prefix {α} [Inhabited α]
   (s : Slice α) (s' : List α) (i j : ℕ) (h : j < i) :
   (s.setSlice! i s')[j]! = s[j]! := by
-  simp only [Slice.setSlice!, Slice.getElem!_Nat_eq]
+  simp only [Slice.getElem!_Nat_eq]
+  simp only [Slice.setSlice!]
   simp_lists
 
 @[simp_lists_safe]
@@ -834,7 +846,8 @@ theorem Slice.setSlice!_getElem_prefix {α}
   have hj' : j < (s.setSlice! i s').length := by
     simpa [Slice.setSlice!_length] using h.2
   have h1 : (s.setSlice! i s')[j]? = s[j]? := by
-    simp only [Slice.getElem?_Nat_eq, Slice.setSlice!]
+    simp only [Slice.getElem?_Nat_eq]
+    simp only [Slice.setSlice!]
     simp_lists [List.setSlice!_getElem?_prefix]
   simp only [Slice.getElem?_Nat_eq, List.getElem?_eq_getElem hj', List.getElem?_eq_getElem h.2,
     Option.some.injEq] at h1
@@ -844,7 +857,8 @@ theorem Slice.setSlice!_getElem_prefix {α}
 theorem Slice.setSlice!_getElem!_middle {α} [Inhabited α]
   (s : Slice α) (s' : List α) (i j : ℕ) (h : i ≤ j ∧ j - i < s'.length ∧ j < s.length) :
   (s.setSlice! i s')[j]! = s'[j - i]! := by
-  simp only [Slice.setSlice!, Slice.getElem!_Nat_eq]
+  simp only [Slice.getElem!_Nat_eq]
+  simp only [Slice.setSlice!]
   simp_lists
 
 @[simp_lists_safe]
@@ -855,7 +869,8 @@ theorem Slice.setSlice!_getElem_middle {α}
     simpa [Slice.setSlice!_length] using h.2.2
   have hji : j - i < s'.length := h.2.1
   have h1 : (s.setSlice! i s')[j]? = s'[j - i]? := by
-    simp only [Slice.getElem?_Nat_eq, Slice.setSlice!]
+    simp only [Slice.getElem?_Nat_eq]
+    simp only [Slice.setSlice!]
     simp_lists [List.setSlice!_getElem?_middle]
   simp only [Slice.getElem?_Nat_eq, List.getElem?_eq_getElem hj', List.getElem?_eq_getElem hji,
     Option.some.injEq] at h1
@@ -864,7 +879,8 @@ theorem Slice.setSlice!_getElem_middle {α}
 theorem Slice.setSlice!_getElem!_suffix {α} [Inhabited α]
   (s : Slice α) (s' : List α) (i j : ℕ) (h : i + s'.length ≤ j) :
   (s.setSlice! i s')[j]! = s[j]! := by
-  simp only [Slice.setSlice!, Slice.getElem!_Nat_eq]
+  simp only [Slice.getElem!_Nat_eq]
+  simp only [Slice.setSlice!]
   simp_lists
 
 theorem Slice.setSlice!_getElem_suffix {α}
@@ -873,7 +889,8 @@ theorem Slice.setSlice!_getElem_suffix {α}
   have hj' : j < (s.setSlice! i s').length := by
     simpa [Slice.setSlice!_length] using h.2
   have h1 : (s.setSlice! i s')[j]? = s[j]? := by
-    simp only [Slice.getElem?_Nat_eq, Slice.setSlice!]
+    simp only [Slice.getElem?_Nat_eq]
+    simp only [Slice.setSlice!]
     simp_lists [List.setSlice!_getElem?_suffix]
   simp only [Slice.getElem?_Nat_eq, List.getElem?_eq_getElem hj', List.getElem?_eq_getElem h.2,
     Option.some.injEq] at h1
@@ -894,9 +911,9 @@ theorem core.slice.index.SliceIndexRangeUsizeSlice.index_mut.step_spec (r : core
   simp only [index_mut, UScalar.le_equiv, Slice.length]
   split
   . simp only [spec_ok, Std.WP.uncurry', true_and]
+    refine ⟨?_, fun s2 => rfl⟩
     simp_lists
     simp_scalar
-    simp_lists [Slice.eq_iff]
   . scalar_tac
 
 @[step]
@@ -907,9 +924,10 @@ theorem core.slice.index.SliceIndexRangeUsizeSlice.index.step_spec {α : Type}
       s1.length = r.end - r.start ⦄ := by
   simp only [core.slice.index.SliceIndexRangeUsizeSlice.index, UScalar.le_equiv, Slice.length]
   split
-  · simp only [spec_ok, true_and]
+  · apply (spec_ok _).mpr
+    refine ⟨rfl, ?_⟩
     simp_lists
-    omega
+    simp_scalar
   · simp only [spec_fail]
     scalar_tac
 
@@ -950,8 +968,11 @@ theorem core.slice.index.SliceIndexRangeToUsizeSlice.index.step_spec
       s1.length = r.end ⦄ := by
   simp only [index]
   split
-  · simp only [spec_ok, Slice.length, true_and]
-    simp; scalar_tac
+  · apply (spec_ok _).mpr
+    refine ⟨rfl, ?_⟩
+    simp only [Slice.length]
+    simp_lists
+    simp_scalar
   · scalar_tac
 
 -- RangeFrom step specs
@@ -991,8 +1012,11 @@ theorem core.slice.index.SliceIndexRangeFromUsizeSlice.index.step_spec
       s1.length = s.length - r.start.val ⦄ := by
   simp only [index]
   split
-  · simp only [spec_ok, Slice.drop, true_and]
-    simp [Slice.length, List.length_drop]
+  · apply (spec_ok _).mpr
+    refine ⟨rfl, ?_⟩
+    simp only [Slice.length]
+    simp_lists
+    simp_scalar
   · scalar_tac
 
 @[step]
@@ -1033,7 +1057,8 @@ theorem Slice.mapM_spec {α β} {f : α → Result β} {s : Slice α} {post : Na
   obtain ⟨l', hl'⟩ := hmapM_ok
   split
   case h_1 xs heq =>
-    simp only [UScalar.lt_equiv, Usize.ofNatCore_val_eq, spec_ok]
+    simp only [UScalar.lt_equiv, Usize.ofNatCore_val_eq]
+    apply (spec_ok _).mpr
     refine ⟨by grind [List.mapM_Result_length], fun i hi => ?_⟩
     have hlen : i < s.len := by have := List.mapM_Result_length heq; simp [Slice.len] at *; omega
     have hthis := List.mapM_Result_ok heq (↑i) (by scalar_tac)
@@ -1086,7 +1111,10 @@ theorem core.slice.Slice.fill.spec {T : Type} (cloneInst : core.clone.Clone T)
     | .div => exfalso; have := hclone; rw [hc] at this; simp at this
   have hmapM := List.mapM_const_ok s.val hcl
   split
-  · rename_i val heq; rw [hmapM] at heq; cases heq; simp [spec_ok, Slice.length, List.length_replicate]
+  · rename_i val heq; rw [hmapM] at heq; cases heq
+    apply (spec_ok _).mpr
+    refine ⟨?_, rfl⟩
+    simp [Slice.length, List.length_replicate]
   · exfalso; simp_all
   · exfalso; simp_all
 

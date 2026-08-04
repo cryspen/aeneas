@@ -741,7 +741,8 @@ theorem intro_uncurry' (p : α × β → Prop) : p = uncurry' (fun x y => p (x, 
   simp only
 
 theorem lift_to_spec x (p0 p1 : α → Prop) (h0 : p0 x) (h1 : p0 = p1) : spec (Std.lift x) p1 := by
-  grind [spec, Std.lift]
+  simp only [Std.lift, spec_ok, ← h1]
+  exact h0
 
 namespace Test
 
