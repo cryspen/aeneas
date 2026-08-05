@@ -1,8 +1,12 @@
 import Aeneas
 open Aeneas Std Result
 
+-- Workaround for leanprover/lean4#14521: the default `get_elem_tactic` (`grind`)
+-- emits kernel-invalid proofs when an index bound depends on `_ ≠ 0#uN` (the
+-- BitVec width `numBits U32` is defeq but not syntactically `32`). `scalar_tac`
+-- discharges these bounds correctly; `grind` stays as a fallback.
 local macro_rules
-| `(tactic| get_elem_tactic) => `(tactic| grind)
+| `(tactic| get_elem_tactic) => `(tactic| first | scalar_tac | grind)
 
 set_option maxHeartbeats 1000000
 

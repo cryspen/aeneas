@@ -463,7 +463,7 @@ where
       {simpThms := #[← Step.stepSimpExt.getTheorems]}
       (.targets #[] true)
     /- We may have proven the goal already -/
-    let tac : Array Syntax.Tactic ← do
+    let tac : Array (TaskOrDone (Option Syntax.Tactic)) ← do
       let genSimp : Bool ← do
         if r.isNone then pure true
         else do

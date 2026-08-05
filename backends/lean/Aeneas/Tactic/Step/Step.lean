@@ -1022,11 +1022,10 @@ def tryApply (info : SpecInfo) (lifting : Option LiftingInfo) (args : Args) (isL
     | some th => do
       trace[Step] "Lookuped up {kind}: {th}"
       -- Apply the theorem
-      let res ← do
-        try
-          let res ← stepWith info lifting args isLet fExpr th
-          pure (some res)
-        catch _ => pure none
+      try
+        let res ← stepWith info lifting args isLet fExpr th
+        pure (some res)
+      catch _ => pure none
   match res with
   | some res => pure (some res)
   | none => pure none
@@ -2069,7 +2068,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
 
   -- `Inhabited α` is not necessary: we add it for the purpose of testing
   theorem get_spec {α} [Inhabited α] (x : Option α) (h : x.isSome) : get x ⦃ _ => True ⦄ := by
-    cases x <;> grind [get]
+    cases x <;> simp_all [get]
 
   example {α} [Inhabited α] (x : Option α) (h : x.isSome) : get x ⦃ _ => True ⦄ := by
     step with get_spec
@@ -2173,7 +2172,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
         intros y
         apply Lean.Order.admissible_apply (fun _ fx => WP.dspec fx _)
         apply Lean.Order.admissible_flatOrder
-        simp only [WP.dspec]
+        simp only [WP.dspec, Lean.Order.FlatOrder.mk]
       · intros
         simp only
         split
