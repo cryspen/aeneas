@@ -268,7 +268,7 @@ def Slice.update {α : Type u} (v: Slice α) (i: Usize) (x: α) : Result (Slice 
 theorem Slice.update_spec {α : Type u} (v: Slice α) (i: Usize) (x : α)
   (hbound : i.val < v.length) :
   v.update i x ⦃ nv => nv = v.set i x ⦄ := by
-  simp only [update, Slice.getElem?_Usize_eq, List.getElem?_eq_getElem hbound]
+  simp only [update, List.getElem?_eq_getElem hbound]
   apply (spec_ok _).mpr
   rfl
 
@@ -331,7 +331,7 @@ theorem Slice.update_subslice_spec {α : Type u} [Inhabited α] (a : Slice α) (
   simp only [update_subslice, length, and_self, ↓reduceDIte, *]
   apply (spec_ok _).mpr
   refine ⟨fun i hi => ?_, fun i hi hj => ?_, fun i hi hj => ?_⟩ <;>
-    (simp only [getElem!, Slice.getElem?_Nat_eq]; simp_lists)
+    (simp only [getElem!]; simp_lists)
 
 @[rust_fun "core::slice::{[@T]}::reverse" -canFail]
 def core.slice.Slice.reverse {T : Type} (s : Slice T) : Slice T :=
@@ -741,7 +741,7 @@ theorem core.slice.Slice.split_at.spec {T : Type} (s : Slice T) (n : Usize)
         s0.length = n.val ∧ s1.length = s.length - n.val ∧
         s0.val = s.val.take n.val ∧ s1.val = s.val.drop n.val ⦄ := by
   unfold core.slice.Slice.split_at
-  simp only [h, ↓reduceDIte, WP.spec_ok, uncurry'_pair]
+  simp only [h, ↓reduceDIte, WP.spec_ok]
   refine ⟨?_, ?_, ?_, ?_⟩ <;>
   simp only [Slice.length, List.splitAt_eq, List.length_take, inf_eq_left, List.length_drop, *]
 

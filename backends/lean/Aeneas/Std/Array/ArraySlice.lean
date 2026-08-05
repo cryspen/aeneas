@@ -98,7 +98,7 @@ theorem Array.update_subslice_spec {α : Type u} {n : Usize} [Inhabited α] (a :
   · rename_i h
     simp only [partialSpec]
     refine ⟨fun i hi => ?_, fun i hi hj => ?_, fun i hi hj => ?_⟩ <;>
-      (simp only [getElem!, Array.getElem?_Nat_eq]; simp_lists)
+      (simp only [getElem!]; simp_lists)
   · rename_i h
     simp [partialSpec]
     scalar_tac

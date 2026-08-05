@@ -224,7 +224,8 @@ theorem Array.update_spec {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (
       False
   := by
   simp only [partialSpec, update, set]
-  cases hopt : v[i]? <;> simp_all <;> rfl
+  cases hopt : v[i]? <;> simp_all
+  rfl
 
 def Array.index_mut_usize {α : Type u} {n : Usize} (v: Array α n) (i: Usize) :
   Result (α × (α -> Array α n)) := do
