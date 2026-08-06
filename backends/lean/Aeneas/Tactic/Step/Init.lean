@@ -571,11 +571,112 @@ private def saveMvcgenPartialSpecFromThm (stx : Syntax) (attrKind : AttributeKin
     let thmTy ← inferType proofTerm
     saveMvcgenDecl attrKind stx thDecl thmTy proofTerm
 
+/-! ## Convert a spec theorem into a spec theorem for `vcgen`
+
+`vcgen` is the successor of `mvcgen`; it is built on the `Std.Internal.Do` metatheory rather than
+on `Std.Do`, so it needs its own spec theorems. They are shaped as entailments
+`pre ⊑ Std.Internal.Do.wp prog post epost`, which `vcgen` accepts alongside
+`Std.Internal.Do.Triple`s and which — unlike `Triple` — do not force the result type into the
+same universe as the assertion language (see the comment in `Aeneas/Std/WP.lean`).
+
+The processing mirrors the `mvcgen` case above: `spec`/`dspec` theorems go through the
+`to_vcgen` conversion lemma registered with `#register_spec_info`, and `partialSpec` theorems go
+through `partialSpec_to_vcgen` plus a simplification pass on the generated side conditions.
+-/
+
+private def saveVcgenDecl (attrKind : AttributeKind) (stx : Syntax)
+    (originalThDecl : AsyncConstantInfo) (thmTy proofTerm : Expr) : MetaM Unit := do
+  let vcgenSpecName := Name.str originalThDecl.name "vcgen_spec"
+  let auxDecl : TheoremVal := {
+    name        := vcgenSpecName
+    levelParams := originalThDecl.sig.get.levelParams
+    type        := thmTy
+    value       := proofTerm
+  }
+  addDecl (.thmDecl auxDecl)
+  addDeclarationRangesFromSyntax vcgenSpecName stx
+  -- Register with @[spec] so vcgen can find it. The `spec` attribute dispatches on the shape of
+  -- the statement, so it lands in the `Std.Internal.Do` spec database used by `vcgen`.
+  Lean.Attribute.add vcgenSpecName `spec .missing attrKind
+  trace[Step] "Registered {vcgenSpecName} as `@[spec]`."
+
+/-- Register a theorem using `spec` (or `dspec`) with `vcgen`. -/
+private def saveVcgenSpecFromThm (stx : Syntax) (attrKind : AttributeKind)
+    (thDecl : AsyncConstantInfo) (ty : Expr) : MetaM Unit := do
+  trace[Step] "saveVcgenSpecFromThm: {thDecl.name}"
+  let (_, info) ← getStepSpecFunArgsExpr ty
+  let some to_vcgen := info.to_vcgen
+    | trace[Step] "No `to_vcgen` conversion function found: {thDecl.name}"
+      return
+  let sig := thDecl.sig.get
+  let thName := thDecl.name
+  forallTelescope sig.type fun fvars _ => do
+    let thConst := Lean.mkConst thName (sig.levelParams.map .param)
+    let thApp := mkAppN thConst fvars
+    /- Wrap with the conversion lemma to produce a `⊑ wp` statement. The lemma's trailing
+       exception-postcondition parameter is left unapplied, so it becomes a leading `∀` of the
+       generated statement and `vcgen` treats it as schematic (no exception VC). -/
+    let proof ← mkAppM to_vcgen #[thApp]
+    let innerTy ← inferType proof
+    let proofTerm ← mkLambdaFVars fvars proof
+    let thmTy ← mkForallFVars fvars innerTy
+    saveVcgenDecl attrKind stx thDecl thmTy proofTerm
+
+section
+open Aeneas.Std WP Result
+
+private theorem vcgen_fail_failEq_iff {epost : VCGen.EPred} {c : Error} {P : Prop} :
+    (∀ e, (e = c ∧ P) → VCGen.willFail e epost) ↔ (P → VCGen.willFail c epost) :=
+  ⟨fun h hP => h c ⟨rfl, hP⟩, fun h _ ⟨he, hP⟩ => he ▸ h hP⟩
+
+private theorem vcgen_fail_False_iff {epost : VCGen.EPred} :
+    (∀ e, False → VCGen.willFail e epost) ↔ True :=
+  ⟨fun _ => trivial, fun _ _ h => h.elim⟩
+
+end
+
+/-- Try to simplify the arguments produced by `partialSpec_to_vcgen`. -/
+private def simplifyVcgenHypotheses (mvarOk mvarFail mvarDiv : Expr) : MetaM Unit := do
+  let simpCtx ← mkSimpOnlyContext (#[
+      ``vcgen_fail_failEq_iff, ``vcgen_fail_False_iff,
+      ``mvcgen_uncurry', ``false_imp_iff, ``and_imp, ``forall_eq] ++ commonSimpLemmas)
+  let simplify (mv : Expr) (name : String) : MetaM Unit := do
+    trace[Step] "simplifyVcgenHypotheses: {name} type: {← inferType mv}"
+    try
+      let (mvarId?, _) ← simpTarget mv.mvarId! simpCtx (simprocs := {})
+      if let some mvarId := mvarId? then
+        discard <| splitAndGoals mvarId
+    catch e => trace[Step] "simplifyVcgenHypotheses: simp on {name} failed: {e.toMessageData}"
+  simplify mvarOk "hOk"
+  simplify mvarFail "hFail"
+  simplify mvarDiv "hDiv"
+
+/-- Register a theorem using `partialSpec` with `vcgen`. -/
+private def saveVcgenPartialSpecFromThm (stx : Syntax) (attrKind : AttributeKind)
+    (thDecl : AsyncConstantInfo) : MetaM Unit := do
+  trace[Step] "saveVcgenPartialSpecFromThm: {thDecl.name}"
+  let sig := thDecl.sig.get
+  let thName := thDecl.name
+  forallTelescope sig.type fun fvars _ => do
+    let thConst := Lean.mkConst thName (sig.levelParams.map .param)
+    let thApp ← canonicalizeFailPostcond (mkAppN thConst fvars)
+    let bridge ← mkAppOptM ``Aeneas.Std.WP.partialSpec_to_vcgen
+      #[none, none, none, none, none, some thApp]
+    let (extraMVars, _, _) ← forallMetaTelescope (← inferType bridge)
+    unless extraMVars.size = 5 do
+      throwError "partialSpec_to_vcgen: expected 5 extra arguments, got {extraMVars.size}"
+    simplifyVcgenHypotheses extraMVars[2]! extraMVars[3]! extraMVars[4]!
+    let proof := mkAppN bridge extraMVars
+    let { expr := proofAbstracted, .. } ← abstractMVars proof
+    let proofTerm ← mkLambdaFVars fvars proofAbstracted
+    let thmTy ← inferType proofTerm
+    saveVcgenDecl attrKind stx thDecl thmTy proofTerm
+
 /-! ## Applying the @[step] attribute
 
-When the `@[step]` attribute is attached to a lemma, we register this lemma both with the `step`
-tactic and with the `mvcgen` tactic. Depending whether the lemma uses the `partialSpec` predicate
-or one of the `step`-internal predicates `spec` and `dspec`, we need to apply different
+When the `@[step]` attribute is attached to a lemma, we register this lemma with the `step` tactic
+and with the `mvcgen` and `vcgen` tactics. Depending whether the lemma uses the `partialSpec`
+predicate or one of the `step`-internal predicates `spec` and `dspec`, we need to apply different
 preprocessing before registering the lemmas.
 -/
 
@@ -586,7 +687,7 @@ def isPartialSpec (ty : Expr) : MetaM Bool := do
   let (spec?, args) := ty₂.consumeMData.withApp (fun f args => (f, args))
   pure (spec?.isConstOf ``Std.WP.partialSpec ∧ args.size = 5)
 
-/-- Register a theorem (either `spec` or `partialSpec`) with `step` and `mvcgen`. -/
+/-- Register a theorem (either `spec` or `partialSpec`) with `step`, `mvcgen` and `vcgen`. -/
 private def applyStepAttr (ext : Extension) (attrKind : AttributeKind) (stx : Syntax)
     (thName : Name) : AttrM Unit := do
   -- Ignore some auxiliary definitions (see the comments for attrIgnoreMutRec)
@@ -605,11 +706,15 @@ private def applyStepAttr (ext : Extension) (attrKind : AttributeKind) (stx : Sy
         catch e => logWarning m!"Could not generate step spec for {thName}: {e.toMessageData}"
         try saveMvcgenPartialSpecFromThm stx attrKind thDecl
         catch e => logWarning m!"Could not generate mvcgen spec for {thName}: {e.toMessageData}"
+        try saveVcgenPartialSpecFromThm stx attrKind thDecl
+        catch e => logWarning m!"Could not generate vcgen spec for {thName}: {e.toMessageData}"
       else
         try saveStepSpecFromThm ext attrKind thName ty
         catch e => logWarning m!"Could not save step spec for {thName}: {e.toMessageData}"
         try saveMvcgenSpecFromThm stx attrKind thDecl ty
         catch e => logWarning m!"Could not generate mvcgen spec for {thName}: {e.toMessageData}"
+        try saveVcgenSpecFromThm stx attrKind thDecl ty
+        catch e => logWarning m!"Could not generate vcgen spec for {thName}: {e.toMessageData}"
 
 /-- Initialize the `step` attribute. -/
 initialize stepAttr : StepSpecAttr ← do

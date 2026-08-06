@@ -29,6 +29,9 @@ structure SpecInfo where
   qimp_elim_tactics : Array Lean.Name
 
   to_mvcgen: Option Name
+  /-- Conversion lemma turning a spec statement into a `vcgen` spec (an entailment
+  `pre ⊑ Std.Internal.Do.wp prog post epost`). See `Aeneas.Std.WP.spec_to_vcgen`. -/
+  to_vcgen: Option Name := none
 
   liftings : Array LiftingInfo
   deriving Inhabited

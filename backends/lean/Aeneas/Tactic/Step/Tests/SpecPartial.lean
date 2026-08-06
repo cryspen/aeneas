@@ -4,8 +4,8 @@ import Aeneas.Tactic.Step
 /-!
 # Tests: `@[step]` accepts `partialSpec` lemmas
 
-For a theorem using `partialSpec`, marking it with `@[step]` should register it for `step*` and
-for `mvcgen`.
+For a theorem using `partialSpec`, marking it with `@[step]` should register it for `step*`, for
+`mvcgen` and for `vcgen`.
 -/
 
 namespace Aeneas.Step.SpecPartialTests
@@ -133,5 +133,60 @@ info: Aeneas.Step.SpecPartialTests.infiniteLoop_partialSpec.mvcgen_spec (Q : Pos
 -/
 #guard_msgs in
 #check infiniteLoop_partialSpec.mvcgen_spec
+
+/-! ## `vcgen`
+
+The `vcgen` counterparts of the generated `mvcgen` specs above. `vcgen` specs are stated as
+entailments `pre ⊑ Std.Internal.Do.wp prog post epost` (see `Aeneas/Std/WP.lean`). -/
+
+section
+open Std.Internal.Do Lean.Order
+
+/-- vcgen: total correctness -/
+example (x y : U32) (h : y.val ≠ 0) :
+    Triple (myDiv x y) True (fun z => z.val = x.val / y.val) (⊥ : VCGen.EPred) := by
+  vcgen <;> simp_all
+
+/-- vcgen: partial correctness (failure is allowed by the exception postcondition) -/
+example (x y : U32) :
+    Triple (myDiv x y) True (fun z => z.val = x.val / y.val) epost⟨fun _ => True, True⟩ := by
+  vcgen <;> simp_all
+
+/--
+info: Aeneas.Step.SpecPartialTests.myDiv_partialSpec.vcgen_spec (x y : U32) (post : U32 → Prop) (epost : VCGen.EPred)
+  (h_ok : ∀ (r : U32), ↑r = ↑x / ↑y → post r) (h_fail : ∀ (e : Error), ↑y = 0 → VCGen.willFail e epost) :
+  True ⊑ Std.Internal.Do.wp (myDiv x y) post epost
+-/
+#guard_msgs in
+#check myDiv_partialSpec.vcgen_spec
+
+-- Pushing `¬` through `>` should produce `≤`, exactly as for the `mvcgen` spec.
+/--
+info: Aeneas.Step.SpecPartialTests.myAdd_partialSpec.vcgen_spec (x y : U32) (post : U32 → Prop) (epost : VCGen.EPred)
+  (h_ok : ∀ (r : U32), ↑r = ↑x + ↑y → post r)
+  (h_fail : U32.max < ↑x + ↑y → VCGen.willFail Error.integerOverflow epost) :
+  True ⊑ Std.Internal.Do.wp (myAdd x y) post epost
+-/
+#guard_msgs in
+#check myAdd_partialSpec.vcgen_spec
+
+/--
+info: Aeneas.Step.SpecPartialTests.myAddSigned_partialSpec.vcgen_spec (x y : I32) (post : I32 → Prop) (epost : VCGen.EPred)
+  (h_ok : ∀ (r : I32), ↑r = ↑x + ↑y → post r)
+  (h_fail_1 : I32.max < ↑x + ↑y → VCGen.willFail Error.integerOverflow epost)
+  (h_fail_2 : ↑x + ↑y < I32.min → VCGen.willFail Error.integerOverflow epost) :
+  True ⊑ Std.Internal.Do.wp (myAddSigned x y) post epost
+-/
+#guard_msgs in
+#check myAddSigned_partialSpec.vcgen_spec
+
+/--
+info: Aeneas.Step.SpecPartialTests.infiniteLoop_partialSpec.vcgen_spec (post : Unit → Prop) (epost : VCGen.EPred)
+  (h_div : VCGen.willDiverge epost) : True ⊑ Std.Internal.Do.wp infiniteLoop post epost
+-/
+#guard_msgs in
+#check infiniteLoop_partialSpec.vcgen_spec
+
+end
 
 end Aeneas.Step.SpecPartialTests
