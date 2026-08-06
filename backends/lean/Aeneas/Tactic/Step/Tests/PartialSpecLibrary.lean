@@ -1,0 +1,56 @@
+module
+import Aeneas.Std.Scalar
+import Aeneas.Std.Slice
+import Aeneas.Tactic.Step
+
+/-!
+# Tests: library operations stated with `partialSpec`
+
+Panicking library operations are specified with `partialSpec`, so that:
+- `step` uses them with the no-panic condition as a hypothesis to discharge;
+- `mvcgen` proves partial correctness (`⇓?`) without any precondition;
+- the success postcondition also implies the no-panic condition.
+-/
+
+namespace Aeneas.Std.PartialSpecLibraryTests
+
+open Aeneas Aeneas.Std Result Std.Do WP
+
+set_option mvcgen.warning false
+set_option linter.deprecated.syntax false
+
+example (x y : U32) (h : y.val ≠ 0) : x / y ⦃ z => z.val = x.val / y.val ⦄ := by
+  step*
+
+example (x y : U32) : ⦃ ⌜ True ⌝ ⦄ (x / y) ⦃ ⇓? z => ⌜ z.val = x.val / y.val ⌝ ⦄ := by
+  mvcgen
+
+example (x y : U32) : ⦃ ⌜ True ⌝ ⦄ (x + y) ⦃ ⇓? z => ⌜ z.val = x.val + y.val ⌝ ⦄ := by
+  mvcgen
+
+/-- The success postcondition of `Slice.update` yields the bounds check. -/
+example (s : Slice U8) (i : Usize) (v : U8) :
+    ⦃ ⌜ True ⌝ ⦄ s.update i v ⦃ ⇓? ns => ⌜ i.val < s.length ∧ ns.length = s.length ⌝ ⦄ := by
+  mvcgen
+  simp_all
+
+example (b : Bool) : ⦃ ⌜ True ⌝ ⦄ massert b ⦃ ⇓? _ => ⌜ b ⌝ ⦄ := by
+  mvcgen
+
+/- ## Universe polymorphism
+
+The converted lemmas keep upstream's universe-polymorphic binders: they apply to slices and arrays
+whose elements live in `Type 1` (here `Type` itself), and `step` uses them there. -/
+
+example (s : Slice Type) (n : Usize) (h : n.val ≤ s.length) :
+    core.slice.Slice.split_at s n ⦃ s0 s1 => s0.length = n.val ∧ s1.length + n.val = s.length ⦄ := by
+  step*
+
+example := @Array.index_SliceIndexRangeUsizeSlice.step Type
+example := @Array.index_mut_SliceIndexRangeUsizeSlice.step Type
+example := @Array.index_mut_SliceIndexRangeToUsizeSlice Type
+example := @Array.index_mut_SliceIndexRangeFromUsizeSlice Type
+example := @core.slice.Slice.split_at.spec Type
+example := @core.slice.Slice.split_at_mut.spec Type
+
+end Aeneas.Std.PartialSpecLibraryTests

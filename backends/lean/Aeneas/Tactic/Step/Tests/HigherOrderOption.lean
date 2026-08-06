@@ -46,7 +46,7 @@ example (x : Option U32) (h : ∀ v, x = some v → v.val + 1 ≤ U32.max) :
   let* ⟨ b, b_post ⟩ ← [ +inferPost ] core.option.Option.is_some_and.spec
   case hf =>
     intros value _
-    let* ⟨ w, w_post ⟩ ← [ +inferPost ] U32.add_spec
+    let* ⟨ w, w_post ⟩ ← [ +inferPost ] U32.add_spec.step_spec
     exact ⟨‹_›, w, w_post, rfl⟩
   cases x <;> agrind
 

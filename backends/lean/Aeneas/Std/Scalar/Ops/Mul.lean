@@ -41,6 +41,18 @@ instance {ty} : HMul (IScalar ty) (IScalar ty) (Result (IScalar ty)) where
 Theorems with a specification which use integers and bit-vectors
 -/
 
+/-- `tryMk` only fails with `integerOverflow`. -/
+theorem UScalar.tryMk_fail {ty} {v : Nat} {e k}
+    (h : (UScalar.tryMk ty v).match = .vis (.fail e) k) : e = .integerOverflow := by
+  simp only [UScalar.tryMk, Result.ofOption] at h
+  split at h <;> simp_all
+
+/-- `tryMk` only fails with `integerOverflow`. -/
+theorem IScalar.tryMk_fail {ty} {v : Int} {e k}
+    (h : (IScalar.tryMk ty v).match = .vis (.fail e) k) : e = .integerOverflow := by
+  simp only [IScalar.tryMk, Result.ofOption] at h
+  split at h <;> simp_all
+
 theorem UScalar.mul_equiv {ty} (x y : UScalar ty) :
   match (mul x y).match with
   | .ok z => x.val * y.val ≤ UScalar.max ty ∧ (↑z : Nat) = ↑x * ↑y ∧ z.bv = x.bv * y.bv
@@ -150,13 +162,34 @@ theorem IScalar.mul_spec {ty} {x y : IScalar ty}
   apply @mul_bv_spec ty x y (by scalar_tac) (by scalar_tac)
   exact fun _ h => h.1
 
-uscalar @[step] theorem «%S».mul_spec {x y : «%S»} (hmax : x.val * y.val ≤ «%S».max) :
-  x * y ⦃ z => (↑z : Nat) = ↑x * ↑y ⦄ :=
-  UScalar.mul_spec (by scalar_tac)
+uscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
+    partialSpec (x * y)
+      (fun z => (↑z : Nat) = ↑x * ↑y)
+      (fun | .integerOverflow => ↑x * ↑y > «%S».max | _ => False)
+      False := by
+  have h := UScalar.mul_equiv x y
+  show partialSpec (UScalar.mul x y) _ _ _
+  simp only [partialSpec]
+  split
+  · simp_all
+  · rename_i heq
+    obtain rfl := UScalar.tryMk_fail heq
+    simp_all; all_goals scalar_tac
+  · simp_all
 
-iscalar @[step] theorem «%S».mul_spec {x y : «%S»}
-  (hmin : «%S».min ≤ ↑x * ↑y) (hmax : ↑x * ↑y ≤ «%S».max) :
-  (x * y) ⦃ z => (↑z : Int) = ↑x * ↑y ⦄ :=
-  IScalar.mul_spec (by scalar_tac) (by scalar_tac)
+iscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
+    partialSpec (x * y)
+      (fun z => (↑z : Int) = ↑x * ↑y)
+      (fun | .integerOverflow => ↑x * ↑y < «%S».min ∨ ↑x * ↑y > «%S».max | _ => False)
+      False := by
+  have h := IScalar.mul_equiv x y
+  show partialSpec (IScalar.mul x y) _ _ _
+  simp only [partialSpec]
+  split
+  · simp_all
+  · rename_i heq
+    obtain rfl := IScalar.tryMk_fail heq
+    simp_all; scalar_tac
+  · simp_all
 
 end Aeneas.Std

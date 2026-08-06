@@ -16,3 +16,4 @@ import Aeneas.Tactic.Step.Tests.IntroOutputsRecursion
 import Aeneas.Tactic.Step.Tests.MvcgenResult
 import Aeneas.Tactic.Step.Tests.SpecPartial
 import Aeneas.Tactic.Step.Tests.EmptySubslice
+import Aeneas.Tactic.Step.Tests.PartialSpecLibrary
