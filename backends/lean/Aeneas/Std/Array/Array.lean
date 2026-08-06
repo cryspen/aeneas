@@ -225,6 +225,7 @@ theorem Array.update_spec {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (
   := by
   simp only [partialSpec, update, set]
   cases hopt : v[i]? <;> simp_all
+  rfl
 
 def Array.index_mut_usize {α : Type u} {n : Usize} (v: Array α n) (i: Usize) :
   Result (α × (α -> Array α n)) := do
@@ -244,8 +245,8 @@ theorem Array.index_mut_usize_spec {α : Type u} {n : Usize} (v: Array α n) (i:
 @[simp]
 theorem Array.set_getElem!_eq {α} {n : Usize} [Inhabited α] (x : Array α n) (i : Usize) :
   x.set i (x.val[i.val]!) = x := by
-  have := @List.set_getElem_self _ x.val i.val
-  simp only [Array, Subtype.ext_iff, set_val_eq, List.set_getElem!]
+  apply Subtype.ext
+  simp only [set_val_eq, List.set_getElem!]
 
 @[simp]
 theorem Array.set_getElem_eq {α} {n : Usize} (x : Array α n) (i : Usize) (h : i.val < x.length) :
@@ -254,15 +255,14 @@ theorem Array.set_getElem_eq {α} {n : Usize} (x : Array α n) (i : Usize) (h : 
     simpa using h
   have hself : x.val.set i.val x.val[i.val] = x.val :=
     List.set_getElem_self (as := x.val) (i := i.val) (h := h')
-  simp only [Array, Subtype.ext_iff, set_val_eq] at hself ⊢
+  apply Subtype.ext
+  simp only [set_val_eq]
   exact hself
 
 @[simp↓, simp_lists_safe↓]
 theorem Array.getElem_set_eq {α} {n : Usize} (v : Array α n) (i : Usize) (x : α) (h : i.val < (v.set i x).length) :
   (v.set i x)[i]'h = x := by
-  cases v
-  unfold set getElem instGetElemArrayUsizeLtNatValLengthValListEq
-  simp only [List.getElem_set_self]
+  simp only [Array.getElem_Usize_eq, Array.set_val_eq, List.getElem_set_self]
 
 @[simp↓, simp_lists_safe↓]
 theorem Array.getElem_set_eq' {α} {n : Usize} (v : Array α n) (i j : Usize) (x : α) (h : j.val < (v.set i x).length)
@@ -274,9 +274,8 @@ theorem Array.getElem_set_eq' {α} {n : Usize} (v : Array α n) (i j : Usize) (x
 theorem Array.getElem_set_neq {α} {n : Usize} (v : Array α n) (i j : Usize) (x : α)
   (h : j.val < (v.set i x).length) (h' : i ≠ j) :
   (v.set i x)[j]'h = v[j] := by
-  cases v
-  unfold set getElem instGetElemArrayUsizeLtNatValLengthValListEq
-  simp only [ne_eq, UScalar.neq_to_neq_val] at *
+  simp only [ne_eq, UScalar.neq_to_neq_val] at h'
+  simp only [Array.getElem_Usize_eq, Array.set_val_eq]
   simp_lists [List.getElem_set_ne]
 
 /-- Small helper (this function doesn't model a specific Rust function) -/
@@ -289,13 +288,19 @@ theorem Array.clone_length {α : Type u} {n : Usize} (clone : α → Result α) 
   simp [Array.clone] at h
   simp [List.clone] at h
   split at h <;> simp_all
+  rename_i heq
+  have := List.mapM_Result_length heq
+  cases s'; simp_all
+  cases h; simp_all
 
 @[step]
 theorem Array.clone_spec {α : Type u} {n : Usize} {clone : α → Result α} {s : Array α n} (h : ∀ x ∈ s.val, clone x = ok x) :
   Array.clone clone s ⦃ s' => s' = s ⦄ := by
   simp only [Array.clone]
   have ⟨ l', h ⟩ := spec_imp_exists (List.clone_spec h)
-  simp [h]
+  simp only [h.1, bind_tc_ok]
+  apply (spec_ok _).mpr
+  exact Subtype.ext h.2.1
 
 @[rust_fun "core::array::{core::clone::Clone<[@T; @N]>}::clone"]
 def core.array.CloneArray.clone
@@ -307,8 +312,9 @@ theorem core.array.CloneArray.clone_spec {T : Type} {N : Usize} (cloneInst : cor
   (h : ∀ x ∈ a.val, cloneInst.clone x = ok x) :
   core.array.CloneArray.clone cloneInst a ⦃ a' => a = a' ⦄:= by
   unfold clone
-  have := spec_imp_exists (Array.clone_spec h)
-  grind
+  have ⟨a', h'⟩ := spec_imp_exists (Array.clone_spec h)
+  rw [h'.1]
+  exact (spec_ok _).mpr h'.2.symm
 
 @[rust_fun "core::array::{core::clone::Clone<[@T; @N]>}::clone_from"]
 def core.array.CloneArray.clone_from {T : Type} {N : Usize} (cloneInst : core.clone.Clone T)
@@ -320,8 +326,9 @@ theorem core.array.CloneArray.clone_from_spec {T : Type} {N : Usize} (cloneInst 
   (self source : Array T N) (h : ∀ x ∈ source.val, cloneInst.clone x = ok x) :
   core.array.CloneArray.clone_from cloneInst self source ⦃ source' => source = source' ⦄ := by
   unfold clone_from
-  have := spec_imp_exists (Array.clone_spec h)
-  grind
+  have ⟨source', h'⟩ := spec_imp_exists (Array.clone_spec h)
+  rw [h'.1]
+  exact (spec_ok _).mpr h'.2.symm
 
 @[reducible, rust_trait_impl "core::clone::Clone<[@T; @N]>"]
 def core.clone.CloneArray {T : Type} (N : Usize)
@@ -337,7 +344,8 @@ def Array.setSlice! {α : Type u} {n} (s : Array α n) (i : ℕ) (s' : List α) 
 theorem Array.setSlice!_getElem!_prefix {α} {n} [Inhabited α]
   (s : Array α n) (s' : List α) (i j : ℕ) (h : j < i) :
   (s.setSlice! i s')[j]! = s[j]! := by
-  simp only [Array.setSlice!, Array.getElem!_Nat_eq]
+  simp only [Array.getElem!_Nat_eq]
+  simp only [Array.setSlice!]
   simp_lists
 
 @[simp_lists_safe]
@@ -346,7 +354,8 @@ theorem Array.setSlice!_getElem_prefix {α} {n}
   (s.setSlice! i s')[j] = s[j] := by
   have hj' : j < (s.setSlice! i s').length := by scalar_tac
   have h1 : (s.setSlice! i s')[j]? = s[j]? := by
-    simp only [Array.getElem?_Nat_eq, Array.setSlice!]
+    simp only [Array.getElem?_Nat_eq]
+    simp only [Array.setSlice!]
     simp_lists [List.setSlice!_getElem?_prefix]
   simp only [Array.getElem?_Nat_eq, List.getElem?_eq_getElem hj', List.getElem?_eq_getElem h.2,
     Option.some.injEq] at h1
@@ -356,7 +365,8 @@ theorem Array.setSlice!_getElem_prefix {α} {n}
 theorem Array.setSlice!_getElem!_middle {α} {n} [Inhabited α]
   (s : Array α n) (s' : List α) (i j : ℕ) (h : i ≤ j ∧ j - i < s'.length ∧ j < s.length) :
   (s.setSlice! i s')[j]! = s'[j - i]! := by
-  simp only [Array.setSlice!, Array.getElem!_Nat_eq]
+  simp only [Array.getElem!_Nat_eq]
+  simp only [Array.setSlice!]
   simp_lists
 
 @[simp_lists_safe]
@@ -367,7 +377,8 @@ theorem Array.setSlice!_getElem_middle {α} {n}
     scalar_tac
   have hji : j - i < s'.length := h.2.1
   have h1 : (s.setSlice! i s')[j]? = s'[j - i]? := by
-    simp only [Array.getElem?_Nat_eq, Array.setSlice!]
+    simp only [Array.getElem?_Nat_eq]
+    simp only [Array.setSlice!]
     simp_lists [List.setSlice!_getElem?_middle]
   simp only [Array.getElem?_Nat_eq, List.getElem?_eq_getElem hj', List.getElem?_eq_getElem hji,
     Option.some.injEq] at h1
@@ -376,7 +387,8 @@ theorem Array.setSlice!_getElem_middle {α} {n}
 theorem Array.setSlice!_getElem!_suffix {α} {n} [Inhabited α]
   (s : Array α n) (s' : List α) (i j : ℕ) (h : i + s'.length ≤ j) :
   (s.setSlice! i s')[j]! = s[j]! := by
-  simp only [Array.setSlice!, Array.getElem!_Nat_eq]
+  simp only [Array.getElem!_Nat_eq]
+  simp only [Array.setSlice!]
   simp_lists
 
 theorem Array.setSlice!_getElem_suffix {α} {n}
@@ -384,7 +396,8 @@ theorem Array.setSlice!_getElem_suffix {α} {n}
   (s.setSlice! i s')[j] = s[j] := by
   have hj' : j < (s.setSlice! i s').length := by scalar_tac
   have h1 : (s.setSlice! i s')[j]? = s[j]? := by
-    simp only [Array.getElem?_Nat_eq, Array.setSlice!]
+    simp only [Array.getElem?_Nat_eq]
+    simp only [Array.setSlice!]
     simp_lists [List.setSlice!_getElem?_suffix]
   simp only [Array.getElem?_Nat_eq, List.getElem?_eq_getElem hj', List.getElem?_eq_getElem h.2,
     Option.some.injEq] at h1

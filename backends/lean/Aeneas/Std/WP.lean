@@ -8,8 +8,8 @@ namespace Aeneas.Std.WP
 
 open Std Result
 
-def Post α := (α -> Prop)
-def Pre := Prop
+@[reducible] def Post α := (α -> Prop)
+@[reducible] def Pre := Prop
 
 def Wp α := Post α → Pre
 
@@ -37,7 +37,7 @@ theorem spec_dspec (α) (x : Result α) (p: Post α) : spec x p → dspec x p :=
 theorem dspec_admissible {α} (p : Post α )
   : Lean.Order.admissible (fun x => dspec x p) := by
   apply Lean.Order.admissible_flatOrder
-  simp [dspec]
+  simp [dspec, Lean.Order.FlatOrder.mk]
 
 /-- Variant of `uncurry` used to decompose tuples in post-conditions.
 
@@ -764,7 +764,7 @@ example (x : Nat) :
 
 private theorem massert_spec' (b : Prop) [Decidable b] (h : b) :
   massert b ⦃ _ => True ⦄ := by
-  grind [massert]
+  simp only [massert, if_pos h, spec_ok]
 
 @[simp]
 theorem qimp_spec_unit {α} (P : Unit → Prop) (k : Unit → Result α) (Q : α → Prop) :
@@ -791,11 +791,9 @@ example :
   --
   apply spec_bind'
   · apply massert_spec'; omega
-  simp -failIfUnchanged only [qimp_spec_unit, forall_const]
-  --
-  apply spec_mono'
-  · apply massert_spec'; omega
-  simp -failIfUnchanged only [qimp_unit, forall_const]
+  -- eliminate the quantifier over the `()` output and the trivial precondition
+  intro _ _
+  apply massert_spec'; omega
 
 /- Example with a post-condition manipulating an ∃ -/
 example (zero : List Nat → Result (List Nat))
@@ -809,9 +807,9 @@ example (zero : List Nat → Result (List Nat))
   apply spec_bind'
   · apply zero_spec
   simp -failIfUnchanged only [qimp_spec_iff, imp_exists_iff]
-  rintro s' h0 h1
+  rintro s' h0
   --
-  simp only [pure, spec_ok]
+  simp only [pure, spec_ok, imp, implies_true]
 
 
 end Aeneas.Std.WP
@@ -915,6 +913,90 @@ theorem triple_in_hypothesis {f : Result α} {Q : α → Assertion _} (p : Prop)
 
 end Aeneas.Std.WP
 
+namespace Aeneas.Std.WP
+
+/-!
+# vcgen
+
+`vcgen` is the successor of `mvcgen`. It is built on a different Hoare-logic metatheory
+(`Std.Internal.Do` instead of `Std.Do`), so it needs its own `WPMonad` instance for `Result`
+(the `WP` interpretation itself is `Result.vcgenWPInst`, see `Aeneas/Std/Primitives.lean`) and
+its own bridges from the Aeneas spec predicates.
+
+Unlike the `mvcgen` bridges above we state the `vcgen` specs in the entailment form
+`pre ⊑ wp x post epost` rather than as `Std.Internal.Do.Triple`s. `vcgen` accepts both forms
+(see `Lean.Elab.Tactic.Do.Internal.SpecAttr.selectProg`), but `Triple` forces the assertion
+language and the result type to live in the *same* universe, which — the assertion language
+being `Prop` — would restrict the specs to `Type 0`. The `wp` entailment form has no such
+constraint, so the generated specs stay universe polymorphic like the theorems they come from.
+-/
+
+open Std Result
+open Std.Internal.Do Lean.Order
+
+instance Result.instVCGenWPMonad : WPMonad Result.{u} Prop VCGen.EPred where
+  toWP _ := Result.vcgenWPInst
+  pure_le_wp_pure _ _ _ := PartialOrder.rel_refl
+  bind_le_wp_bind x _ := fun _ _ => by cases x <;> exact id
+
+/-- Lift an Aeneas total-correctness step spec to a `vcgen`-compatible spec.
+
+A `spec` rules out failure and divergence, so the exception postcondition is arbitrary. -/
+theorem spec_to_vcgen {α : Type u} {x : Result α} {Q : α → Prop}
+    (h : spec x Q) (epost : VCGen.EPred) :
+    (True : Prop) ⊑ wp x Q epost := by
+  obtain ⟨v, hx, hQv⟩ := spec_imp_exists h
+  subst hx
+  exact fun _ => hQv
+
+/-- Lift an Aeneas partial-correctness (divergence-allowing) step spec to a `vcgen`-compatible
+spec. A `dspec` rules out failure but not divergence, hence the `x ≠ div` precondition. -/
+theorem dspec_to_vcgen {α : Type u} {x : Result α} {Q : α → Prop}
+    (h : dspec x Q) (epost : VCGen.EPred) :
+    (¬ x = .div) ⊑ wp x Q epost := by
+  cases x <;> simp_all [dspec, wp, Std.Internal.Do.WP.wpTrans]
+
+/-- Lift an Aeneas `partialSpec` to a `vcgen`-compatible spec. -/
+theorem partialSpec_to_vcgen {α : Type u} {x : Result α}
+    {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
+    (h : partialSpec x p_ok p_fail p_div)
+    {post : α → Prop} {epost : VCGen.EPred}
+    (h_ok   : ∀ r, p_ok r → post r)
+    (h_fail : ∀ e, p_fail e → VCGen.willFail e epost)
+    (h_div  : p_div → VCGen.willDiverge epost) :
+    (True : Prop) ⊑ wp x post epost := by
+  cases x <;> simp only [partialSpec] at h <;> intro _
+  · exact h_ok _ h
+  · exact h_fail _ h
+  · exact h_div h
+
+@[spec]
+theorem Result.ok_vcgen_spec {α : Type} (a : α) {post : α → Prop} {epost : VCGen.EPred} :
+    post a ⊑ wp (Result.ok a) post epost := PartialOrder.rel_refl
+
+@[spec]
+theorem Result.fail_vcgen_spec {α : Type} (e : Error) {post : α → Prop} {epost : VCGen.EPred} :
+    VCGen.willFail e epost ⊑ wp (Result.fail e : Result α) post epost := PartialOrder.rel_refl
+
+@[spec]
+theorem Result.div_vcgen_spec {α : Type} {post : α → Prop} {epost : VCGen.EPred} :
+    VCGen.willDiverge epost ⊑ wp (Result.div : Result α) post epost := PartialOrder.rel_refl
+
+/-- Let `vcgen` see through the `uncurry` that the `do` elaborator introduces for
+tuple-destructuring binds (`let (x, y) ← e`).
+
+We cannot simply register `uncurry`'s unfolding equation, because it is stated for a
+`Prod.mk` discriminant (`uncurry f (a, b) = f a b`) while the continuation of a bind is applied
+to an opaque variable. Phrasing the unfolding as a spec instead lets `vcgen` rewrite
+`uncurry f x` into `f x.1 x.2` and carry on with the continuation. -/
+@[spec]
+theorem uncurry_vcgen_spec {α : Type u} {β : Type v} {γ : Type w}
+    {f : α → β → Result γ} {x : α × β} {post : γ → Prop} {epost : VCGen.EPred} :
+    wp (f x.1 x.2) post epost ⊑ wp (Std.uncurry f x) post epost := by
+  cases x; exact PartialOrder.rel_refl
+
+end Aeneas.Std.WP
+
 namespace Aeneas.Std
 
 /-!
@@ -944,7 +1026,16 @@ theorem loop.spec {α : Type u} {β : Type v} {γ : Type w}
   apply @wf.wf.fix γ (fun x' =>
     ∀ x, measure x = x' →
     inv x → loop body x ⦃ post ⦄)
-  grind [loop]
+  intro x1 IH x2 hmeas hinv2
+  -- `body x2` succeeds and its result satisfies the loop invariant post-condition
+  obtain ⟨r, hbr, hr⟩ := WP.spec_imp_exists (hBody x2 hinv2)
+  rw [loop.eq_def, hbr]
+  cases r with
+  | done y => simpa using hr
+  | cont x' =>
+    obtain ⟨hinv', hrel⟩ := hr
+    -- the measure strictly decreases, so we can conclude by well-founded recursion
+    exact IH (measure x') (hmeas ▸ hrel) x' rfl hinv'
 
 theorem loop.spec_decr_nat {α : Type u} {β : Type v}
   (measure : α → Nat)
@@ -960,6 +1051,77 @@ theorem loop.spec_decr_nat {α : Type u} {β : Type v}
   loop body x ⦃ post ⦄ := by
   have := loop.spec measure inv post body x hBody hInv
   apply this
+
+section
+open Std.Internal.Do Lean.Order
+
+/-- `vcgen` spec for the `loop` combinator.
+
+The `vcgen` counterpart of `loop_spec` (see `Aeneas/Std/Primitives.lean`): given a loop invariant
+`inv`, a well-founded relation `rel` and a termination measure, it discharges `loop body init`
+provided each iteration of `body` either finishes (`.done`) satisfying the postcondition or
+continues (`.cont`) preserving the invariant while decreasing the measure. -/
+@[spec]
+theorem loop_vcgen_spec
+  {α β γ : Type}
+  {post : β → Prop} {epost : VCGen.EPred}
+  {body : α → Result (ControlFlow α β)} {init : α}
+  (inv : α → Prop)
+  (rel : γ → γ → Prop)
+  (termination : α → γ)
+  (hwf : WellFounded rel)
+  (h_inv_init : inv init)
+  (h_body : ∀ x, inv x → (True : Prop) ⊑ wp (body x)
+    (fun cf => match cf with
+      | .cont r => inv r ∧ (rel (termination r) (termination x) ∨ VCGen.willDiverge epost)
+      | .done r => post r) epost) :
+  (True : Prop) ⊑ wp (loop body init) post epost := by
+  suffices h : ∀ x, inv x → wp (loop body x) post epost by
+    exact fun _ => h init h_inv_init
+  by_cases hdiv : VCGen.willDiverge epost
+  case pos => -- Divergence permitted: use partial-fixpoint induction.
+    intro x hinv
+    delta loop
+    refine Lean.Order.fix_induct (loop._proof_1 body)
+      (motive := fun g => ∀ x, inv x → wp (g x) post epost) ?_ ?_ x hinv
+    · apply Lean.Order.admissible_pi
+      intro y
+      apply Lean.Order.admissible_pi
+      intro _
+      apply Lean.Order.admissible_apply (β := fun _ => Result β)
+        (P := fun _ r => wp r post epost) y
+      exact Lean.Order.admissible_flatOrder _ hdiv
+    · intro g IH y hinvy
+      simp only []
+      have hb := h_body y hinvy trivial
+      cases hbe : body y with
+      | ok cf =>
+        rw [hbe] at hb
+        cases cf with
+        | cont r => exact IH r hb.1
+        | done r => exact hb
+      | fail e => rw [hbe] at hb; exact hb
+      | div => rw [hbe] at hb; exact hb
+  case neg => -- Divergence forbidden: termination via WF induction on `rel`.
+    intro x hinv
+    induction hg : termination x using hwf.induction generalizing x
+    rename_i g IH
+    have hb := h_body x hinv trivial
+    rw [loop.eq_1]
+    cases hbe : body x with
+    | ok cf =>
+      rw [hbe] at hb
+      cases cf with
+      | cont r =>
+        obtain ⟨hinvr, hrel | hd⟩ := hb
+        · subst hg
+          exact IH (termination r) hrel r hinvr rfl
+        · exact absurd hd hdiv
+      | done r => exact hb
+    | fail e => rw [hbe] at hb; exact hb
+    | div => rw [hbe] at hb; exact hb
+
+end
 
 end Aeneas.Std
 
@@ -991,6 +1153,7 @@ theorem forall_unit {p : Prop} : (Unit → p) ↔ p := by simp
       ``Std.WP.imp_exists_iff,
       ``forall_unit, ``true_imp_iff]
     to_mvcgen := .some ``Std.WP.spec_to_mvcgen
+    to_vcgen := .some ``Std.WP.spec_to_vcgen
     liftings := #[]
   }
 
@@ -1015,6 +1178,7 @@ theorem forall_unit {p : Prop} : (Unit → p) ↔ p := by simp
       ``Std.WP.imp_exists_iff,
       ``forall_unit, ``true_imp_iff]
     to_mvcgen := .some ``Std.WP.dspec_to_mvcgen
+    to_vcgen := .some ``Std.WP.dspec_to_vcgen
     liftings := #[
       { from_statement := ``Std.WP.spec
         conversion_thm := ``Std.WP.spec_dspec

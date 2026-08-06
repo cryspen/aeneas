@@ -108,13 +108,9 @@ theorem getElem_set! {α : Type u}
   simp only [set!_eq_setIfInBounds, ← getElem_toList, toList_setIfInBounds]
   simp_lists
 
-@[simp, simp_lists_safe]
-theorem getElem!_set!_ne {α : Type u}
-  [Inhabited α] {i j : ℕ} {x : α} {xs : Array α}
-  (h : i ≠ j) :
-  (xs.set! i x)[j]! = xs[j]! := by
-  simp only [set!_eq_setIfInBounds, ← getElem!_toList, toList_setIfInBounds]
-  simp_lists
+-- `Array.getElem!_set!_ne` is now provided by the core library; just register the
+-- Aeneas simp attributes on it.
+attribute [simp, simp_lists_safe] _root_.Array.getElem!_set!_ne
 
 @[simp, simp_lists_safe]
 theorem getElem_set!_ne {α : Type u}

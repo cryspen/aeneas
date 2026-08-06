@@ -129,8 +129,8 @@ theorem core.result.Result.is_ok.step_spec {T E : Type}
     core.result.Result.is_ok r
     ⦃ (b : Bool) => b = r.ok? ⦄ := by
   match r with
-  | .Ok v => grind [is_ok]
-  | .Err e => grind [is_ok]
+  | .Ok v => simp only [is_ok]; exact (WP.spec_ok _).mpr (by simp)
+  | .Err e => simp only [is_ok]; exact (WP.spec_ok _).mpr (by simp)
 
 /-- Step spec for `Result::branch` on an `Ok`: yields `Continue v`. -/
 theorem core.result.Result.Insts.CoreOpsTry.branch_Ok.spec

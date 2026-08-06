@@ -1,5 +1,6 @@
 import Lean
 import Std.Do
+import Std.Internal.Do
 import Aeneas.Std.Global
 import Aeneas.Extract
 import AeneasMeta.BvEnumToBitVec
@@ -307,6 +308,71 @@ abbrev PostCond.divAssertion {α : Type u} (Q : PostCond α Result.postShape) :
 
 abbrev PostCond.div {α : Type u} (Q : PostCond α Result.postShape) : Prop :=
   (Q.2.2.1 .unit).down
+
+end
+
+/-!
+# Register `Result` for `vcgen`'s `WP` type class
+
+`vcgen` is the successor of `mvcgen`; it is built on a different Hoare-logic metatheory
+(`Std.Internal.Do` rather than `Std.Do`), so it needs its own weakest-precondition
+interpretation of `Result`. In that metatheory the assertion language is plain `Prop` (rather
+than `SPred`) and the exception postconditions form a heterogeneous list (`EPost`) rather than
+a `PostShape`-indexed tuple: we use one layer for failures (indexed by the `Error`) and one
+layer for divergence (which carries no data).
+-/
+
+section
+open Std.Internal.Do Lean.Order
+
+namespace VCGen
+
+/-- The exception postconditions of the `Result` monad, as used by `vcgen`: one layer for
+failures (indexed by the `Error` that was raised) and one for divergence. -/
+abbrev EPred : Type := EPost⟨Error → Prop, Prop⟩
+
+/-- The assertion that `epost` allows the program to fail with error `e`. -/
+abbrev willFail (e : Error) (epost : EPred) : Prop := epost.head e
+
+/-- The assertion that `epost` allows the program to diverge. -/
+abbrev willDiverge (epost : EPred) : Prop := epost.tail.head
+
+/-- Companion of `EPost.Cons.head_bot` for the tail. Propositional (not definitional) because `⊥`
+of a complete lattice is `csup ∅` rather than a constructor application. -/
+private theorem tail_bot {eh : Type u} {et : Type v} [CompleteLattice eh] [CompleteLattice et] :
+    EPost.Cons.tail (⊥ : EPost.Cons eh et) = (⊥ : et) := by
+  refine PartialOrder.rel_antisymm ?_ (bot_le _)
+  exact EPost.Cons.le_tail (bot_le (EPost.Cons.mk (⊥ : eh) (⊥ : et)))
+
+/-- The `⊥` exception postcondition — the one the `⦃ _ ⦄ _ ⦃ _ ⦄` notation defaults to, i.e.
+total correctness — forbids failure. -/
+@[simp, grind =]
+theorem willFail_bot (e : Error) : willFail e (⊥ : EPred) = False := by
+  simp [willFail, EPost.Cons.head_bot, Lean.Order.bot_apply]
+
+/-- The `⊥` exception postcondition forbids divergence. -/
+@[simp, grind =]
+theorem willDiverge_bot : willDiverge (⊥ : EPred) = False := by
+  simp [willDiverge, tail_bot, EPost.Cons.head_bot]
+
+end VCGen
+
+/-- WP interpretation of the `Result` monad in terms of `Std.Internal.Do`, used by `vcgen`.
+
+Following the standard library, this is a plain `def` rather than an `instance`: the `WP`
+instance is derived from `Result.instVCGenWPMonad` (see `Aeneas/Std/WP.lean`) through the
+generic `WPMonad → WP` instance, so that there is exactly one `WP` instance for `Result`. -/
+@[instance_reducible] def Result.vcgenWPInst {α : Type u} : WP (Result α) α Prop VCGen.EPred where
+  wpTrans x := ⟨fun post epost =>
+    match x with
+    | .ok a   => post a
+    | .fail e => VCGen.willFail e epost
+    | .div    => VCGen.willDiverge epost⟩
+  wp_trans_monotone x := fun _post _post' _epost _epost' hepost hpost => by
+    cases x with
+    | ok a   => exact hpost a
+    | fail e => exact EPost.Cons.le_head hepost e
+    | div    => exact EPost.Cons.le_head (EPost.Cons.le_tail hepost)
 
 end
 
