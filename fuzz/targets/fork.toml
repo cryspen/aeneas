@@ -1,0 +1,66 @@
+# Fork target: cryspen/aeneas branch dump-pure-ir-minimal (+ uncommitted fixes),
+# binary self-reports 6a3fc35b-dirty. Charon pin v0.1.196.
+# Validated 2026-07-26 (phase 0). NOTE: this binary does NOT include the F4/F6
+# fixes (those live in dev PRs #25/#27) — F4/F6 are expected-reproducible here.
+#
+# ---------------------------------------------------------------------------
+# Environment variables (expanded by the config loader; `:-` gives a default so
+# this file works as-is on the dev machine). Provisioned by `fuzz/setup/`:
+#   AENEAS_FORK_ROOT  repo root of the fork checkout (holds bin/aeneas, backends)
+#                     default: /Users/karthik/aeneas
+#   CHARON_FORK_BIN   absolute path to the fork charon wrapper (v0.1.196)
+#                     default: /Users/karthik/charon/charon/target/release/charon
+# `source fuzz/setup/env.sh` (or run fuzz/setup/build_fork.sh) exports these.
+# ---------------------------------------------------------------------------
+
+name = "fork"
+
+# CRITICAL: use this exact charon path. PATH `charon` is v0.1.218 (rejected by
+# this aeneas); charon-driver invoked directly fails with a dyld error.
+charon_cmd = [
+  "${CHARON_FORK_BIN:-/Users/karthik/charon/charon/target/release/charon}",
+  "rustc", "--preset=aeneas", "--dest-file", "{output}",
+  "--", "--crate-type=rlib", "{input}",
+]
+
+aeneas_cmd = ["${AENEAS_FORK_ROOT:-/Users/karthik/aeneas}/bin/aeneas"]
+
+# -type-check-pure-code does not exist on this branch; `-checks` is the
+# equivalent (extensive sanity + pure type checks, ~100x slower) — used in the
+# verify/minimize path, not on every campaign crate.
+translate_flags = ["-backend", "lean", "-abort-on-error", "-no-progress-bar", "{llbc}", "-dest", "{dest}"]
+checks_flags    = ["-backend", "lean", "-abort-on-error", "-checks", "-no-progress-bar", "{llbc}", "-dest", "{dest}"]
+# -borrow-check is standalone: incompatible with -backend/-dest.
+borrowck_flags  = ["-borrow-check", "-abort-on-error", "-no-progress-bar", "{llbc}"]
+
+lean_backend_dir = "${AENEAS_FORK_ROOT:-/Users/karthik/aeneas}/backends/lean"
+supports_dump_pure_ir = true
+
+[timeout_secs]
+rustc = 30
+charon = 60
+aeneas = 120
+lake = 600
+
+# Exit codes: 0 = success; 1 = clean rejection (message on STDOUT, no
+# backtrace); 2 = crash (uncaught OCaml exception) BUT also arg-usage errors —
+# a "crash" verdict requires a backtrace/"Uncaught exception" on stderr or a
+# "Compiler source:" line on stdout. `[Error]` + "Compiler source: <file>, line
+# N" go to STDOUT; "Uncaught exception:" + Raised at/Called from backtrace go
+# to STDERR.
+
+[[known_findings]]
+id = "F4"
+error_class = "InternalError"
+message = "Internal error, please file an issue"
+file = "pure/PureMicroPassesLoops.ml"
+line = 1818
+issue = "cryspen/aeneas#22"
+
+[[known_findings]]
+id = "F6"
+error_class = "Unreachable"
+message = "Unreachable"
+file = "interp/InterpAbs.ml"
+line = 1671
+issue = "cryspen/aeneas#24"

@@ -1,0 +1,167 @@
+# Recurring Aeneas translation fuzzing campaign.
+#
+# WHAT THIS DOES
+#   Builds aeneas + a version-matched charon via the nix flake
+#   (`nix build .#aeneas` -> result/bin/{aeneas,charon}; charon is pinned by
+#   flake.lock / charon-pin, enforced by the flake's `check-charon-pin`), then
+#   runs a time-budgeted `run --ci` campaign inside the flake dev shell. The
+#   harness exits 3 iff it recorded a NEW (non-deduped, non-expected-reject)
+#   finding versus the committed fuzz/findings/db.json; we surface that as a red
+#   job. Known bugs and expected feature-gate rejections keep the job green.
+#
+# WHY NIX (mirrors ci.yml: runs-on [self-hosted, linux, nix])
+#   `nix build .#aeneas` yields an aeneas + charon pair that are guaranteed
+#   pin-consistent, so there is nothing to pin here by hand. Rust (for the
+#   harness build + the rustc validity gate) and elan (for the optional Lean
+#   oracle) come from the dev shell, exactly as ci.yml runs Lean.
+#
+# SCHEDULE
+#   * nightly  (03:17 UTC)      — fork, fast crash/reject oracles, ~25 min.
+#   * weekly   (Sun 04:17 UTC)  — fork, longer campaign (~90 min), deeper mutation.
+#   * dispatch (manual)         — set a budget/seed and optionally the `lean`
+#                                 oracle (best-effort O3 elaboration).
+#
+# NOTE — SCOPE
+#   The Phase-3 pure-IR stage differential (fuzz/pure-eval, fuzz/stage-diff)
+#   needs the fork-only `-dump-pure-ir` feature and is NOT part of this workflow
+#   (it lives on the dump-pure-ir branch). The native-vs-Lean semantic
+#   differential (fuzz/semdiff) is fork-runnable but heavy (lake warmup) and is
+#   left as a documented opt-in (fuzz/semdiff/RECIPE.md), not a scheduled lane.
+
+name: fuzz
+
+on:
+  schedule:
+    - cron: "17 3 * * *"    # nightly  — fork, fast oracles
+    - cron: "17 4 * * 0"    # weekly   — longer campaign
+  workflow_dispatch:
+    inputs:
+      time_budget:
+        description: "Campaign wall-clock budget (minutes)"
+        type: string
+        default: "25"
+      seed:
+        description: "RNG seed override (blank = derive from run id)"
+        type: string
+        default: ""
+      oracle_scope:
+        description: "fast (crash/reject only) or lean (+O3 elaboration)"
+        type: choice
+        default: fast
+        options: [fast, lean]
+
+# Don't cancel an in-flight campaign because a newer one queued.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: [self-hosted, linux, nix]
+    steps:
+      - uses: actions/checkout@v4
+
+      # aeneas + a pin-matched charon in one build (the flake's postInstall
+      # symlinks charon into the aeneas output).
+      - name: Build aeneas + charon (nix)
+        run: nix build -L .#aeneas
+
+      # Resolve campaign parameters from the trigger into plain env vars, so the
+      # bash below never has to interpolate ${{ }} inside quotes.
+      - name: Select campaign parameters
+        id: params
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.schedule }}" = "17 4 * * 0" ]; then
+            budget=90; depth=4; scope=fast          # weekly
+          else
+            budget="${{ github.event.inputs.time_budget || '25' }}"
+            depth=3
+            scope="${{ github.event.inputs.oracle_scope || 'fast' }}"
+          fi
+          {
+            echo "budget=$budget"
+            echo "depth=$depth"
+            echo "scope=$scope"
+            echo "seed=${{ github.event.inputs.seed || '' }}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run fuzzing campaign
+        id: fuzz
+        env:
+          BUDGET: ${{ steps.params.outputs.budget }}
+          DEPTH: ${{ steps.params.outputs.depth }}
+          SCOPE: ${{ steps.params.outputs.scope }}
+          SEED: ${{ steps.params.outputs.seed }}
+        run: |
+          set -euo pipefail
+          nix develop --command bash -euo pipefail -c '
+            # Rust for the harness build + the rustc validity gate.
+            rustup toolchain install --profile minimal stable >/dev/null 2>&1 || true
+            rustup default stable >/dev/null 2>&1 || true
+
+            # Point the fork target at the nix-built binaries.
+            #   AENEAS_FORK_ROOT -> repo root (backends/lean, tests/src)
+            #   bin/aeneas       -> symlink to the nix aeneas output
+            #   CHARON_FORK_BIN  -> the pin-matched charon
+            export AENEAS_FORK_ROOT="$PWD"
+            export CHARON_FORK_BIN="$PWD/result/bin/charon"
+            mkdir -p bin
+            ln -sf "$PWD/result/bin/aeneas" bin/aeneas
+
+            LEAN_ARG=""
+            [ "$SCOPE" = "lean" ] && LEAN_ARG="--lean-elab"
+            SEED_ARG=""
+            [ -n "$SEED" ] && SEED_ARG="--seed $SEED"
+
+            cd fuzz/harness
+            cargo build --release
+            set +e
+            ./target/release/aeneas-fuzz run --ci \
+              --target ../targets/fork.toml \
+              --seed-dir "$AENEAS_FORK_ROOT/tests/src" \
+              --pack-size 100 \
+              --mutate-depth "$DEPTH" \
+              --time-budget "$BUDGET" \
+              --work "$RUNNER_TEMP/fuzz-work" \
+              --findings "$AENEAS_FORK_ROOT/fuzz/findings" \
+              --summary-out "$RUNNER_TEMP/fuzz-summary.json" \
+              --md-summary-out "$GITHUB_STEP_SUMMARY" \
+              $LEAN_ARG $SEED_ARG
+            rc=$?
+            set -e
+            # GITHUB_OUTPUT / RUNNER_TEMP / BUDGET / ... are inherited into this
+            # nix-develop shell from the step environment.
+            echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          '
+
+      - name: Upload findings + logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-findings-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            fuzz/findings/
+            ${{ runner.temp }}/fuzz-summary.json
+            ${{ runner.temp }}/fuzz-work/**/campaign.jsonl
+          if-no-files-found: warn
+          retention-days: 30
+
+      # Red job only on a NEW finding (harness exit 3). Any other nonzero is an
+      # infra/build failure and also fails.
+      - name: Evaluate result
+        if: always()
+        run: |
+          rc="${{ steps.fuzz.outputs.rc }}"
+          echo "harness exit code: ${rc:-<none>}"
+          if [ "${rc:-1}" = "3" ]; then
+            echo "::error::Fuzzer recorded a NEW finding — see the run summary + uploaded artifact."
+            exit 1
+          fi
+          [ "${rc:-1}" = "0" ] || { echo "::error::Fuzzer harness failed (rc=${rc:-<none>})."; exit 1; }
+
+      # TODO(maintainer): a follow-up could open/append an issue or commit newly
+      # recorded findings back; left manual for now (artifact upload only).

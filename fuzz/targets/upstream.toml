@@ -1,0 +1,63 @@
+# Upstream target: AeneasVerif/aeneas @ main 3a8586fa (2026-07-25),
+# charon pin 527ea8e3 (v0.1.225), built at /tmp/aeneas-upstream.
+# Validated 2026-07-26 (phase 0). F4 and F6 both PRESENT at this commit
+# (empirically reproduced). No -dump-pure-ir here: stage-differential oracles
+# are fork-only.
+#
+# ---------------------------------------------------------------------------
+# Environment variables (expanded by the config loader; `:-` gives a default so
+# this file works as-is on the dev machine). Provisioned by `fuzz/setup/`:
+#   AENEAS_UPSTREAM_ROOT  upstream aeneas checkout (bin/aeneas, backends, charon)
+#                         default: /tmp/aeneas-upstream
+#   CHARON_UPSTREAM_BIN   absolute path to the upstream charon wrapper (v0.1.225)
+#                         default: $AENEAS_UPSTREAM_ROOT/charon/bin/charon
+# `source fuzz/setup/env.sh` (or run fuzz/setup/build_upstream.sh) exports these.
+# ---------------------------------------------------------------------------
+
+name = "upstream"
+
+# charon needs rustup/cargo on PATH at runtime (shells out to the nightly
+# toolchain); charon-driver must sit alongside the charon wrapper.
+# The source file MUST come after `--` at this charon version.
+charon_cmd = [
+  "${CHARON_UPSTREAM_BIN:-/tmp/aeneas-upstream/charon/bin/charon}",
+  "rustc", "--dest-file", "{output}", "--preset=aeneas",
+  "--", "{input}", "--crate-type=rlib", "--allow=unused", "--edition=2021",
+]
+
+aeneas_cmd = ["${AENEAS_UPSTREAM_ROOT:-/tmp/aeneas-upstream}/bin/aeneas"]
+
+translate_flags = ["-backend", "lean", "-abort-on-error", "-no-progress-bar", "{llbc}", "-dest", "{dest}"]
+checks_flags    = ["-backend", "lean", "-abort-on-error", "-checks", "-no-progress-bar", "{llbc}", "-dest", "{dest}"]
+borrowck_flags  = ["-borrow-check", "-abort-on-error", "-no-progress-bar", "{llbc}"]
+
+lean_backend_dir = "${AENEAS_UPSTREAM_ROOT:-/tmp/aeneas-upstream}/backends/lean"
+supports_dump_pure_ir = false
+
+[extra_env]
+# charon shells out to its nightly toolchain, so it needs rustup/cargo at
+# runtime. Prepend the charon bin dir to the *inherited* PATH (via ${PATH}) so
+# the harness process's rustup/cargo stay reachable on any machine.
+PATH = "${AENEAS_UPSTREAM_ROOT:-/tmp/aeneas-upstream}/charon/bin:${PATH:-/usr/bin:/bin}"
+
+[timeout_secs]
+rustc = 30
+charon = 60
+aeneas = 120
+lake = 600
+
+[[known_findings]]
+id = "F4"
+error_class = "InternalError"
+message = "Internal error, please file an issue"
+file = "pure/PureMicroPassesLoops.ml"
+line = 1818
+issue = "cryspen/aeneas#22"
+
+[[known_findings]]
+id = "F6"
+error_class = "Unreachable"
+message = "Unreachable"
+file = "interp/InterpAbs.ml"
+line = 1688
+issue = "cryspen/aeneas#24"

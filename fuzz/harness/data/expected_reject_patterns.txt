@@ -1,0 +1,76 @@
+# Expected-rejection patterns for the aeneas translator (oracle O2).
+#
+# One pattern per line. Blank lines and lines starting with '#' are ignored.
+# Matching is case-insensitive substring matching against the FIRST
+# `[Error] <message>` line aeneas prints on stdout.
+#
+# A rejection whose message matches one of these is an *explicit feature gate*
+# (Unimplemented / unsupported-feature / TODO) and is classified Expected —
+# i.e. NOT a completeness-bug finding. Anything else is Suspicious and kept for
+# triage.
+#
+# Sourced by grepping the aeneas OCaml sources for craise/save_error messages:
+#   grep -rhoE '"[^"]*(not supported|unsupported|nimplemented|not implemented|not handle)[^"]*"' src/
+# Edit this file to tune the harness without recompiling.
+
+# --- generic feature-gate keywords (broad catch-alls) ---
+Unimplemented
+Unsupported
+unsupported
+not supported yet
+not supported
+not yet support
+not handled yet
+not implemented
+is unsupported
+are unsupported
+
+# --- specific messages observed in the sources (for readability/audit) ---
+(Infinite) loops which do not contain breaks are not supported yet
+ADTs containing nested mutable borrows are not supported yet
+Aeneas does not yet support dereferencing raw pointers.
+Aggregated raw pointers are not supported yet
+Arrow types are not supported yet
+Bound regions are not handled yet
+Bound regions are not supported yet
+Breaks to outer loops are not supported yet
+Byte string literals are unsupported
+Constant generics are not supported yet when generating code for HOL4
+Continue to outer loops are not supported yet
+Continues to outer loops not supported yet
+CopyNonOverlapping is not supported yet
+Dynamic trait types are not supported yet
+Early returns inside of loops are not supported yet
+Encountered an unsupported constant
+Float are not supported in Aeneas yet
+Found a case of unsupported nested borrows
+Function pointers are not supported yet
+Generic Associated Types are not supported yet
+Len is not handled yet
+Mixed-recursive declaration groups are not supported
+Mutable borrows inside shared borrows are not supported yet
+Mutable references for lifetime 'static are not supported
+Mutually recursive globals are not supported
+Nested borrows are not supported yet
+Nested loops are not supported yet
+Raw pointer casts are not implemented for HOL4
+Returns inside of nested loops are not supported yet
+The join of nested borrows is not supported yet
+Trait types are not supported yet when generating code for HOL4
+Traits are not supported yet in concrete mode
+Unimplemented binary operation
+Unimplemented use of dynamic traits
+Unimplemented: static region
+Unions are not supported
+unions are not supported
+Unsized cast between dynamic traits
+Unsupported cast to a dynamic trait
+Unsupported constant expression
+Unsupported operation
+Unsupported target pointer size
+Unsupported use of borrows found in type
+Unsupported use of dyn traits
+Unsupported: `dyn Trait` concretization
+unsupported: Body region
+unsupported: PtrMetadata
+Unsupported: transmute

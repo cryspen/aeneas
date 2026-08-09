@@ -1,0 +1,6 @@
+{
+  "kind": "integerOverflow",
+  "msg": "attempt to calculate the remainder with overflow",
+  "name": "test_rem_min",
+  "status": "PANIC"
+}
