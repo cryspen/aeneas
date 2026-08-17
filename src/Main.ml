@@ -226,6 +226,13 @@ let () =
          absent from the model of the trait declaration in the target backend \
          (e.g., Lean). Trait declarations which have no model are not \
          affected." );
+      ( "-extra-includes",
+        Arg.String add_extra_includes,
+        " Include additional modules at the top of every generated file. It is \
+         possible to specify a list of modules if they are separated by commas \
+         without spaces; for instance: '-extra-includes=Foo,Bar.Baz'. For \
+         Lean, the included files must be Lean modules unless \
+         -use-lean-modules is disabled." );
       ( "-core-models-lib",
         Arg.Set core_models_lib,
         " For Lean: disable the Rust core library overrides from \
