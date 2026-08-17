@@ -17,8 +17,7 @@ let log = Logging.builtin_log
 let mk_external_globals_map () : Pure.external_global_info NameMatcherMap.t =
   NameMatcherMap.of_list
     (List.map
-       (fun (info : Pure.external_global_info) ->
-         (parse_pattern info.rust_name, info))
+       (fun (info : Pure.external_global_info) -> (info.rust_name, info))
        (builtin_globals ()))
 
 let external_globals_map = mk_memoized mk_external_globals_map

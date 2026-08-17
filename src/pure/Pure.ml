@@ -186,7 +186,7 @@ type external_type_info = {
 [@@deriving show, ord]
 
 type external_global_info = {
-  rust_name : string;
+  rust_name : NameMatcher.pattern;
   extract_name : string;
   can_fail : bool;
 }
