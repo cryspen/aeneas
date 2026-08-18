@@ -165,19 +165,11 @@ module Json = struct
 
   (** The name of the Rust definition an entry is about, as written in the file.
 
-      Either spelling is accepted: a plain Rust path ([rust_name], which is what
-      [-emit-json] writes) is a valid pattern, while the definitions modelled by
-      hand (impl blocks, instantiations of generic definitions, ...) need the
-      full pattern syntax. *)
+      An entry may give both, in which case ["rust_pattern"] wins *)
   let entry_name (rust_pattern : string option) (rust_name : string option) :
       string =
     match (rust_pattern, rust_name) with
-    | Some name, None | None, Some name -> name
-    | Some _, Some _ ->
-        raise
-          (Entry_error
-             "\"rust_pattern\" and \"rust_name\" can not be given at the same \
-              time")
+    | Some name, _ | None, Some name -> name
     | None, None ->
         raise (Entry_error "missing field \"rust_pattern\" (or \"rust_name\")")
 
