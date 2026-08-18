@@ -4,7 +4,7 @@ module
 public import Aeneas
 public import Hax
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 open Std.Do
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
@@ -32,57 +32,57 @@ namespace hax_specs
 @[rust_fun
   "core::ops::arith::{core::ops::arith::Add<&'1 u32, &'0 u32, u32>}::add"]
 axiom Shared1U32.Insts.CoreOpsArithAddShared0U32U32.add
-  : Std.U32 → Std.U32 → Result Std.U32
+  : Std.U32 → Std.U32 → RustM Std.U32
 
 /-- [hax_specs::basic::only_requires]:
     Source: 'src/lib.rs', lines 6:4-8:5 -/
-def basic.only_requires (x : Std.U32) : Result Std.U32 := do
+def basic.only_requires (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
 /-- [hax_specs::basic::only_ensures]:
     Source: 'src/lib.rs', lines 11:4-13:5 -/
-def basic.only_ensures (x : Std.U32) : Result Std.U32 := do
+def basic.only_ensures (x : Std.U32) : RustM Std.U32 := do
   ok x
 
 /-- [hax_specs::basic::both]:
     Source: 'src/lib.rs', lines 17:4-19:5 -/
-def basic.both (x : Std.U32) : Result Std.U32 := do
+def basic.both (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
 /-- [hax_specs::basic::no_args]:
     Source: 'src/lib.rs', lines 23:4-26:5 -/
-def basic.no_args : Result Unit := do
+def basic.no_args : RustM Unit := do
   ok ()
 
 /-- [hax_specs::basic::returns_unit]:
     Source: 'src/lib.rs', lines 31:4-31:30 -/
-def basic.returns_unit (x : Std.U32) : Result Unit := do
+def basic.returns_unit (x : Std.U32) : RustM Unit := do
   ok ()
 
 /-- [hax_specs::basic::block_in_requires]:
     Source: 'src/lib.rs', lines 35:4-37:5 -/
-def basic.block_in_requires (x : Std.U32) : Result Std.U32 := do
+def basic.block_in_requires (x : Std.U32) : RustM Std.U32 := do
   ok x
 
 /-- [hax_specs::basic::returns_pair]:
     Source: 'src/lib.rs', lines 41:4-43:5 -/
-def basic.returns_pair (x : Std.U32) : Result (Std.U32 × Std.U32) := do
+def basic.returns_pair (x : Std.U32) : RustM (Std.U32 × Std.U32) := do
   ok (x, x)
 
 /-- [hax_specs::extra_args::generic]:
     Source: 'src/lib.rs', lines 53:4-55:5 -/
-def extra_args.generic (N : Std.U32) (x : Std.U32) : Result Std.U32 := do
+def extra_args.generic (N : Std.U32) (x : Std.U32) : RustM Std.U32 := do
   N - x
 
 /-- Trait declaration: [hax_specs::extra_args::Val]
     Source: 'src/lib.rs', lines 58:4-60:5 -/
 structure extra_args.Val (Self : Type _) where
-  value : Self → Result Std.U32
+  value : Self → RustM Std.U32
 
 /-- [hax_specs::extra_args::{impl hax_specs::extra_args::Val for u32}::value]:
     Source: 'src/lib.rs', lines 63:8-65:9 -/
 def U32.Insts.Hax_specsExtra_argsVal.value
-  (self : Std.U32) : Result Std.U32 := do
+  (self : Std.U32) : RustM Std.U32 := do
   ok self
 
 /-- Trait implementation: [hax_specs::extra_args::{impl hax_specs::extra_args::Val for u32}]
@@ -96,20 +96,20 @@ def U32.Insts.Hax_specsExtra_argsVal : extra_args.Val Std.U32 := {
     Source: 'src/lib.rs', lines 70:4-72:5 -/
 def extra_args.traits
   {T : Type _} (ValInst : extra_args.Val T) (t : T) (x : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   let i ← ValInst.value t
   i + x
 
 /-- [hax_specs::future::incr]:
     Source: 'src/lib.rs', lines 81:4-83:5 -/
-def future.incr (x : Std.U32) : Result Std.U32 := do
+def future.incr (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
 /-- [hax_specs::future::incr_i]:
     Source: 'src/lib.rs', lines 89:4-91:5 -/
 def future.incr_i
-  (x : Slice Std.U32) (i : Std.Usize) : Result (Slice Std.U32) := do
+  (x : Slice Std.U32) (i : Std.Usize) : RustM (Slice Std.U32) := do
   let i1 ← Slice.index_usize x i
   let i2 ← i1 + 1#u32
   Slice.update x i i2
@@ -117,7 +117,7 @@ def future.incr_i
 /-- [hax_specs::future::swap_and_add]:
     Source: 'src/lib.rs', lines 95:4-101:5 -/
 def future.swap_and_add
-  (x : Std.U32) (y : Std.U32) : Result (Std.U32 × Std.U32 × Std.U32) := do
+  (x : Std.U32) (y : Std.U32) : RustM (Std.U32 × Std.U32 × Std.U32) := do
   let i ← x + y
   ok (i, y, x)
 
@@ -131,14 +131,14 @@ structure const_generic_ty.MyStruct (N : Std.Usize) where
     Source: 'src/lib.rs', lines 123:8-125:9
     Visibility: public -/
 def const_generic_ty.MyStruct.build
-  (N : Std.Usize) (k : Std.Usize) : Result (const_generic_ty.MyStruct N) := do
+  (N : Std.Usize) (k : Std.Usize) : RustM (const_generic_ty.MyStruct N) := do
   ok { cap := k }
 
 /-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::get]:
     Source: 'src/lib.rs', lines 129:8-131:9
     Visibility: public -/
 def const_generic_ty.MyStruct.get
-  {N : Std.Usize} (self : const_generic_ty.MyStruct N) : Result Std.Usize := do
+  {N : Std.Usize} (self : const_generic_ty.MyStruct N) : RustM Std.Usize := do
   ok self.cap
 
 /-- [hax_specs::implicit_generics::Pair]
@@ -150,14 +150,14 @@ structure implicit_generics.Pair (T : Type _) (N : Std.Usize) where
 /-- [hax_specs::implicit_generics::nothing]:
     Source: 'src/lib.rs', lines 147:4-149:5 -/
 def implicit_generics.nothing
-  (T : Type _) (k : Std.Usize) : Result (Option T) := do
+  (T : Type _) (k : Std.Usize) : RustM (Option T) := do
   ok none
 
 /-- [hax_specs::implicit_generics::of_fst]:
     Source: 'src/lib.rs', lines 153:4-155:5 -/
 def implicit_generics.of_fst
   {T : Type _} (N : Std.Usize) (t : T) :
-  Result (implicit_generics.Pair T N)
+  RustM (implicit_generics.Pair T N)
   := do
   ok { fst := t }
 
@@ -165,7 +165,7 @@ def implicit_generics.of_fst
     Source: 'src/lib.rs', lines 159:4-161:5 -/
 def implicit_generics.empty
   (T : Type _) (N : Std.Usize) (k : Std.Usize) :
-  Result (Option (implicit_generics.Pair T N))
+  RustM (Option (implicit_generics.Pair T N))
   := do
   ok none
 
@@ -174,7 +174,7 @@ def implicit_generics.empty
 def implicit_generics.from_default
   {T : Type _} (N : Std.Usize) (coredefaultDefaultInst : core.default.Default
   T) (k : Std.Usize) :
-  Result (implicit_generics.Pair T N)
+  RustM (implicit_generics.Pair T N)
   := do
   let t ← coredefaultDefaultInst.default
   ok { fst := t }
@@ -183,7 +183,7 @@ mutual
 
 /-- [hax_specs::mutual::is_even]:
     Source: 'src/lib.rs', lines 180:4-182:5 -/
-def mutual.is_even (n : Std.U32) : Result Bool := do
+def mutual.is_even (n : Std.U32) : RustM Bool := do
   if n = 0#u32
   then ok true
   else let i ← n - 1#u32
@@ -192,7 +192,7 @@ partial_fixpoint
 
 /-- [hax_specs::mutual::is_odd]:
     Source: 'src/lib.rs', lines 186:4-188:5 -/
-def mutual.is_odd (n : Std.U32) : Result Bool := do
+def mutual.is_odd (n : Std.U32) : RustM Bool := do
   if n = 0#u32
   then ok false
   else let i ← n - 1#u32
@@ -205,7 +205,7 @@ end
 /-- [hax_specs::basic::only_requires::pre]:
     Source: 'src/lib.rs', lines 5:4-5:24 -/
 @[reducible]
-def basic.only_requires.pre (x : Std.U32) : Result Bool := do
+def basic.only_requires.pre (x : Std.U32) : RustM Bool := do
   ok (x < 100#u32)
 
 def basic.only_requires.spec (x : Std.U32) : Prop :=
@@ -219,7 +219,7 @@ def basic.only_requires.spec (x : Std.U32) : Prop :=
     Source: 'src/lib.rs', lines 10:4-10:36 -/
 @[reducible]
 def basic.only_ensures.post
-  (x : Std.U32) (result : Std.U32) : Result Bool := do
+  (x : Std.U32) (result : Std.U32) : RustM Bool := do
   ok (result = x)
 
 def basic.only_ensures.spec (x : Std.U32) : Prop :=
@@ -231,13 +231,13 @@ def basic.only_ensures.spec (x : Std.U32) : Prop :=
 /-- [hax_specs::basic::both::pre]:
     Source: 'src/lib.rs', lines 15:4-15:23 -/
 @[reducible]
-def basic.both.pre (x : Std.U32) : Result Bool := do
+def basic.both.pre (x : Std.U32) : RustM Bool := do
   ok (x < 10#u32)
 
 /-- [hax_specs::basic::both::post]:
     Source: 'src/lib.rs', lines 16:4-16:35 -/
 @[reducible]
-def basic.both.post (x : Std.U32) (result : Std.U32) : Result Bool := do
+def basic.both.post (x : Std.U32) (result : Std.U32) : RustM Bool := do
   ok (result > x)
 
 def basic.both.spec (x : Std.U32) : Prop :=
@@ -250,13 +250,13 @@ def basic.both.spec (x : Std.U32) : Prop :=
 /-- [hax_specs::basic::returns_unit::pre]:
     Source: 'src/lib.rs', lines 29:4-29:23 -/
 @[reducible]
-def basic.returns_unit.pre (x : Std.U32) : Result Bool := do
+def basic.returns_unit.pre (x : Std.U32) : RustM Bool := do
   ok (x < 10#u32)
 
 /-- [hax_specs::basic::returns_unit::post]:
     Source: 'src/lib.rs', lines 30:4-30:24 -/
 @[reducible]
-def basic.returns_unit.post (x : Std.U32) (_ : Unit) : Result Bool := do
+def basic.returns_unit.post (x : Std.U32) (_ : Unit) : RustM Bool := do
   ok true
 
 def basic.returns_unit.spec (x : Std.U32) : Prop :=
@@ -269,7 +269,7 @@ def basic.returns_unit.spec (x : Std.U32) : Prop :=
 /-- [hax_specs::basic::block_in_requires::pre]:
     Source: 'src/lib.rs', lines 34:4-34:46 -/
 @[reducible]
-def basic.block_in_requires.pre (x : Std.U32) : Result Bool := do
+def basic.block_in_requires.pre (x : Std.U32) : RustM Bool := do
   ok (x > 10#u32)
 
 def basic.block_in_requires.spec (x : Std.U32) : Prop :=
@@ -283,7 +283,7 @@ def basic.block_in_requires.spec (x : Std.U32) : Prop :=
     Source: 'src/lib.rs', lines 40:4-40:41 -/
 @[reducible]
 def basic.returns_pair.post
-  (x : Std.U32) (p : (Std.U32 × Std.U32)) : Result Bool := do
+  (x : Std.U32) (p : (Std.U32 × Std.U32)) : RustM Bool := do
   let (a, b) := p
   if a = x
   then ok (b = x)
@@ -298,7 +298,7 @@ def basic.returns_pair.spec (x : Std.U32) : Prop :=
 /-- [hax_specs::extra_args::generic::pre]:
     Source: 'src/lib.rs', lines 51:4-51:31 -/
 @[reducible]
-def extra_args.generic.pre (N : Std.U32) (x : Std.U32) : Result Bool := do
+def extra_args.generic.pre (N : Std.U32) (x : Std.U32) : RustM Bool := do
   if 0#u32 < x
   then ok (x < N)
   else ok false
@@ -307,7 +307,7 @@ def extra_args.generic.pre (N : Std.U32) (x : Std.U32) : Result Bool := do
     Source: 'src/lib.rs', lines 52:4-52:35 -/
 @[reducible]
 def extra_args.generic.post
-  (N : Std.U32) (x : Std.U32) (result : Std.U32) : Result Bool := do
+  (N : Std.U32) (x : Std.U32) (result : Std.U32) : RustM Bool := do
   ok (result < N)
 
 def extra_args.generic.spec (N : Std.U32) (x : Std.U32) : Prop :=
@@ -322,7 +322,7 @@ def extra_args.generic.spec (N : Std.U32) (x : Std.U32) : Prop :=
 @[reducible]
 def extra_args.traits.pre
   {T : Type _} (ValInst : extra_args.Val T) (t : T) (x : Std.U32) :
-  Result Bool
+  RustM Bool
   := do
   let i ← ValInst.value t
   if i < 1000#u32
@@ -335,7 +335,7 @@ def extra_args.traits.pre
 def extra_args.traits.post
   {T : Type _} (ValInst : extra_args.Val T) (t : T) (x : Std.U32)
   (result : Std.U32) :
-  Result Bool
+  RustM Bool
   := do
   ok (result < 2000#u32)
 
@@ -350,13 +350,13 @@ def extra_args.traits.spec {T : Type _} (ValInst : extra_args.Val T)
 /-- [hax_specs::future::incr::pre]:
     Source: 'src/lib.rs', lines 79:4-79:26 -/
 @[reducible]
-def future.incr.pre (x : Std.U32) : Result Bool := do
+def future.incr.pre (x : Std.U32) : RustM Bool := do
   ok (x < 1000#u32)
 
 /-- [hax_specs::future::incr::post]:
     Source: 'src/lib.rs', lines 80:4-80:41 -/
 @[reducible]
-def future.incr.post (x : Std.U32) (x_future : Std.U32) : Result Bool := do
+def future.incr.post (x : Std.U32) (x_future : Std.U32) : RustM Bool := do
   let i ← x + 1#u32
   ok (x_future = i)
 
@@ -370,7 +370,7 @@ def future.incr.spec (x : Std.U32) : Prop :=
 /-- [hax_specs::future::incr_i::pre]:
     Source: 'src/lib.rs', lines 85:4-85:28 -/
 @[reducible]
-def future.incr_i.pre (x : Slice Std.U32) (i : Std.Usize) : Result Bool := do
+def future.incr_i.pre (x : Slice Std.U32) (i : Std.Usize) : RustM Bool := do
   let i1 := Slice.len x
   ok (i < i1)
 
@@ -379,7 +379,7 @@ def future.incr_i.pre (x : Slice Std.U32) (i : Std.Usize) : Result Bool := do
 @[reducible]
 def future.incr_i.post
   (x : Slice Std.U32) (i : Std.Usize) (x_future : Slice Std.U32) :
-  Result Bool
+  RustM Bool
   := do
   let i1 ← Slice.index_usize x_future i
   let i2 ← Slice.index_usize x i
@@ -396,7 +396,7 @@ def future.incr_i.spec (x : Slice Std.U32) (i : Std.Usize) : Prop :=
 /-- [hax_specs::future::swap_and_add::pre]:
     Source: 'src/lib.rs', lines 93:4-93:39 -/
 @[reducible]
-def future.swap_and_add.pre (x : Std.U32) (y : Std.U32) : Result Bool := do
+def future.swap_and_add.pre (x : Std.U32) (y : Std.U32) : RustM Bool := do
   if x < 1000#u32
   then ok (y < 1000#u32)
   else ok false
@@ -406,7 +406,7 @@ def future.swap_and_add.pre (x : Std.U32) (y : Std.U32) : Result Bool := do
 @[reducible]
 def future.swap_and_add.post
   (x : Std.U32) (y : Std.U32) (t : (Std.U32 × Std.U32 × Std.U32)) :
-  Result Bool
+  RustM Bool
   := do
   let (x_future, y_future, r) := t
   if y_future = x
@@ -429,7 +429,7 @@ def future.swap_and_add.spec (x : Std.U32) (y : Std.U32) : Prop :=
     Source: 'src/lib.rs', lines 146:4-146:24 -/
 @[reducible]
 def implicit_generics.nothing.post
-  {T : Type _} (k : Std.Usize) (o : Option T) : Result Bool := do
+  {T : Type _} (k : Std.Usize) (o : Option T) : RustM Bool := do
   ok true
 
 def implicit_generics.nothing.spec (T : Type _) (k : Std.Usize) : Prop :=
@@ -443,7 +443,7 @@ def implicit_generics.nothing.spec (T : Type _) (k : Std.Usize) : Prop :=
 @[reducible]
 def implicit_generics.of_fst.post
   {T : Type _} {N : Std.Usize} (t : T) (p : implicit_generics.Pair T N) :
-  Result Bool
+  RustM Bool
   := do
   ok true
 
@@ -460,7 +460,7 @@ def implicit_generics.of_fst.spec {T : Type _} (N : Std.Usize) (t : T)
 def implicit_generics.empty.post
   {T : Type _} {N : Std.Usize} (k : Std.Usize)
   (o : Option (implicit_generics.Pair T N)) :
-  Result Bool
+  RustM Bool
   := do
   ok true
 
@@ -477,7 +477,7 @@ def implicit_generics.empty.spec (T : Type _) (N : Std.Usize) (k : Std.Usize)
 def implicit_generics.from_default.pre
   {T : Type _} (N : Std.Usize) (coredefaultDefaultInst : core.default.Default
   T) (k : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   ok (k < 100#usize)
 
@@ -487,7 +487,7 @@ def implicit_generics.from_default.pre
 def implicit_generics.from_default.post
   {T : Type _} {N : Std.Usize} (coredefaultDefaultInst : core.default.Default
   T) (k : Std.Usize) (p : implicit_generics.Pair T N) :
-  Result Bool
+  RustM Bool
   := do
   ok true
 
@@ -507,13 +507,13 @@ def
 /-- [hax_specs::mutual::is_even::pre]:
     Source: 'src/lib.rs', lines 178:4-178:25 -/
 @[reducible]
-def mutual.is_even.pre (n : Std.U32) : Result Bool := do
+def mutual.is_even.pre (n : Std.U32) : RustM Bool := do
   ok (n < 1000#u32)
 
 /-- [hax_specs::mutual::is_even::post]:
     Source: 'src/lib.rs', lines 179:4-179:47 -/
 @[reducible]
-def mutual.is_even.post (n : Std.U32) (result : Bool) : Result Bool := do
+def mutual.is_even.post (n : Std.U32) (result : Bool) : RustM Bool := do
   let i ← n % 2#u32
   ok (result = (i = 0#u32))
 
@@ -527,13 +527,13 @@ def mutual.is_even.spec (n : Std.U32) : Prop :=
 /-- [hax_specs::mutual::is_odd::pre]:
     Source: 'src/lib.rs', lines 184:4-184:25 -/
 @[reducible]
-def mutual.is_odd.pre (n : Std.U32) : Result Bool := do
+def mutual.is_odd.pre (n : Std.U32) : RustM Bool := do
   ok (n < 1000#u32)
 
 /-- [hax_specs::mutual::is_odd::post]:
     Source: 'src/lib.rs', lines 185:4-185:47 -/
 @[reducible]
-def mutual.is_odd.post (n : Std.U32) (result : Bool) : Result Bool := do
+def mutual.is_odd.post (n : Std.U32) (result : Bool) : RustM Bool := do
   let i ← n % 2#u32
   ok (result = (i = 1#u32))
 
@@ -548,7 +548,7 @@ def mutual.is_odd.spec (n : Std.U32) : Prop :=
     Source: 'src/lib.rs', lines 121:8-121:28 -/
 @[reducible]
 def const_generic_ty.MyStruct.build.pre
-  (N : Std.Usize) (k : Std.Usize) : Result Bool := do
+  (N : Std.Usize) (k : Std.Usize) : RustM Bool := do
   ok (k < 100#usize)
 
 /-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::build::post]:
@@ -556,7 +556,7 @@ def const_generic_ty.MyStruct.build.pre
 @[reducible]
 def const_generic_ty.MyStruct.build.post
   {N : Std.Usize} (k : Std.Usize) (ms : const_generic_ty.MyStruct N) :
-  Result Bool
+  RustM Bool
   := do
   ok true
 
@@ -573,7 +573,7 @@ def const_generic_ty.MyStruct.build.spec (N : Std.Usize) (k : Std.Usize)
 @[reducible]
 def const_generic_ty.MyStruct.get.post
   {N : Std.Usize} (self_ : const_generic_ty.MyStruct N) (i : Std.Usize) :
-  Result Bool
+  RustM Bool
   := do
   ok true
 

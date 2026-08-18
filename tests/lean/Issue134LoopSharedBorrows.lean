@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -40,7 +40,7 @@ structure AVLTreeSet where
     Source: 'tests/src/issue-134-loop-shared-borrows.rs', lines 15:8-17:9
     Visibility: public -/
 @[rust_loop]
-def AVLNode.find_loop (current_tree : Option AVLNode) : Result Unit := do
+def AVLNode.find_loop (current_tree : Option AVLNode) : RustM Unit := do
   match current_tree with
   | none => ok ()
   | some current_node => AVLNode.find_loop current_node.child
@@ -49,7 +49,7 @@ partial_fixpoint
 /-- [issue_134_loop_shared_borrows::{issue_134_loop_shared_borrows::AVLNode}::find]:
     Source: 'tests/src/issue-134-loop-shared-borrows.rs', lines 12:4-20:5
     Visibility: public -/
-def AVLNode.find (self : AVLNode) : Result Bool := do
+def AVLNode.find (self : AVLNode) : RustM Bool := do
   AVLNode.find_loop self.child
   ok false
 

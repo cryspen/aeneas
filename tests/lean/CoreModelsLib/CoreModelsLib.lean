@@ -6,7 +6,7 @@ public import CoreModels
 @[expose] public section
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
-open Result ControlFlow Error
+open RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -44,7 +44,7 @@ def Pair.Insts.CoreMarkerStructuralPartialEq : core.marker.StructuralPartialEq
     Source: 'tests/src/core-models-lib.rs', lines 10:9-10:18
     Visibility: public -/
 def Pair.Insts.CoreCmpPartialEqPair.eq
-  (self : Pair) (other : Pair) : Result Bool := do
+  (self : Pair) (other : Pair) : RustM Bool := do
   if self.a = other.a
   then ok (self.b = other.b)
   else ok false
@@ -66,7 +66,7 @@ def Pair.Insts.CoreCmpEq : core.cmp.Eq Pair := {
 /-- [core_models_lib::box_new]:
     Source: 'tests/src/core-models-lib.rs', lines 17:0-19:1
     Visibility: public -/
-def box_new (x : Std.U32) : Result Std.U32 := do
+def box_new (x : Std.U32) : RustM Std.U32 := do
   ok x
 
 /-- [core_models_lib::vec_push]:
@@ -74,7 +74,7 @@ def box_new (x : Std.U32) : Result Std.U32 := do
     Visibility: public -/
 def vec_push
   (v : alloc.vec.Vec Std.U32) (x : Std.U32) :
-  Result (alloc.vec.Vec Std.U32)
+  RustM (alloc.vec.Vec Std.U32)
   := do
   alloc.vec.Vec.push v x
 
@@ -84,7 +84,7 @@ def vec_push
 @[rust_loop_body]
 def vec_sum_loop.body
   (iter : alloc.vec.into_iter.IntoIter Std.U32) (s : Std.U32) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter Std.U32) × Std.U32)
+  RustM (ControlFlow ((alloc.vec.into_iter.IntoIter Std.U32) × Std.U32)
     Std.U32)
   := do
   let (o, iter1) ←
@@ -101,7 +101,7 @@ def vec_sum_loop.body
 @[rust_loop]
 def vec_sum_loop
   (iter : alloc.vec.into_iter.IntoIter Std.U32) (s : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, s1) => vec_sum_loop.body iter1 s1)
@@ -110,7 +110,7 @@ def vec_sum_loop
 /-- [core_models_lib::vec_sum]:
     Source: 'tests/src/core-models-lib.rs', lines 29:0-35:1
     Visibility: public -/
-def vec_sum (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def vec_sum (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let iter ←
     alloc.vec.Vec.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter.into_iter v
   vec_sum_loop iter 0#u32
@@ -119,18 +119,18 @@ def vec_sum (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
     Source: 'tests/src/core-models-lib.rs', lines 37:0-39:1
     Visibility: public -/
 structure Op (Self : Type _) where
-  apply : Std.U8 → Result Std.U8
+  apply : Std.U8 → RustM Std.U8
 
 /-- [core_models_lib::callee]:
     Source: 'tests/src/core-models-lib.rs', lines 43:0-45:1
     Visibility: public -/
-def callee {C : Type _} (OpInst : Op C) (x : Std.U8) : Result Std.U8 := do
+def callee {C : Type _} (OpInst : Op C) (x : Std.U8) : RustM Std.U8 := do
   OpInst.apply x
 
 /-- [core_models_lib::caller]:
     Source: 'tests/src/core-models-lib.rs', lines 47:0-49:1
     Visibility: public -/
-def caller {C : Type _} (OpInst : Op C) (x : Std.U8) : Result Std.U8 := do
+def caller {C : Type _} (OpInst : Op C) (x : Std.U8) : RustM Std.U8 := do
   callee OpInst x
 
 /-- [core_models_lib::one_loop_unused]: loop body 0:
@@ -139,7 +139,7 @@ def caller {C : Type _} (OpInst : Op C) (x : Std.U8) : Result Std.U8 := do
 @[rust_loop_body]
 def one_loop_unused_loop.body
   (xs : Slice Std.U8) (iter : core.ops.range.Range Std.Usize) (acc : Std.U8) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U8) Std.U8)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.U8) Std.U8)
   := do
   let (o, iter1) ←
     core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
@@ -157,7 +157,7 @@ def one_loop_unused_loop.body
 @[rust_loop]
 def one_loop_unused_loop
   (iter : core.ops.range.Range Std.Usize) (xs : Slice Std.U8) (acc : Std.U8) :
-  Result Std.U8
+  RustM Std.U8
   := do
   loop
     (fun (iter1, acc1) => one_loop_unused_loop.body xs iter1 acc1)
@@ -167,7 +167,7 @@ def one_loop_unused_loop
     Source: 'tests/src/core-models-lib.rs', lines 52:0-58:1
     Visibility: public -/
 def one_loop_unused
-  {C : Type _} (OpInst : Op C) (xs : Slice Std.U8) : Result Std.U8 := do
+  {C : Type _} (OpInst : Op C) (xs : Slice Std.U8) : RustM Std.U8 := do
   let i ← core.slice.Slice.len xs
   let acc ← one_loop_unused_loop { start := 0#usize, «end» := i } xs 0#u8
   OpInst.apply acc
@@ -175,7 +175,7 @@ def one_loop_unused
 /-- [core_models_lib::{impl core::default::Default for core_models_lib::Pair}::default]:
     Source: 'tests/src/core-models-lib.rs', lines 62:4-64:5
     Visibility: public -/
-def Pair.Insts.CoreDefaultDefault.default : Result Pair := do
+def Pair.Insts.CoreDefaultDefault.default : RustM Pair := do
   ok { a := 0#u32, b := 0#u32 }
 
 /-- Trait implementation: [core_models_lib::{impl core::default::Default for core_models_lib::Pair}]
@@ -188,13 +188,13 @@ def Pair.Insts.CoreDefaultDefault : core.default.Default Pair := {
 /-- [core_models_lib::array_to_slice]:
     Source: 'tests/src/core-models-lib.rs', lines 67:0-69:1
     Visibility: public -/
-def array_to_slice (a : Array Std.U32 4#usize) : Result (Slice Std.U32) := do
+def array_to_slice (a : Array Std.U32 4#usize) : RustM (Slice Std.U32) := do
   core.array.Array.as_slice a
 
 /-- [core_models_lib::array_repeat]:
     Source: 'tests/src/core-models-lib.rs', lines 71:0-73:1
     Visibility: public -/
-def array_repeat (x : Std.U32) : Result (Array Std.U32 4#usize) := do
+def array_repeat (x : Std.U32) : RustM (Array Std.U32 4#usize) := do
   core.array.repeat 4#usize core.U32.Insts.CoreCloneClone x
 
 /-- [core_models_lib::option_some]:
@@ -202,7 +202,7 @@ def array_repeat (x : Std.U32) : Result (Array Std.U32 4#usize) := do
     Visibility: public -/
 def option_some
   (xs : alloc.vec.Vec Std.U32) :
-  Result (alloc.vec.Vec (core.option.Option Std.U32))
+  RustM (alloc.vec.Vec (core.option.Option Std.U32))
   := do
   let ii ←
     alloc.vec.Vec.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter.into_iter xs
@@ -221,7 +221,7 @@ def option_some
 /-- [core_models_lib::promoted_slice]:
     Source: 'tests/src/core-models-lib.rs', lines 82:0-85:1
     Visibility: public -/
-def promoted_slice : Result Std.U32 := do
+def promoted_slice : RustM Std.U32 := do
   let s ← core.array.Array.as_slice (Array.make 2#usize [ 1#u32, 2#u32 ])
   Slice.index_usize s 0#usize
 
@@ -234,8 +234,8 @@ def promoted_slice : Result Std.U32 := do
     Source: 'tests/src/core-models-lib.rs', lines 90:0-90:50
     Visibility: public -/
 @[global_simps, irreducible]
-def LOCAL_COMPUTED : Result Std.U32 := do let i ← LOCAL_LIT * 2#u32
-                                          i + 1#u32
+def LOCAL_COMPUTED : RustM Std.U32 := do let i ← LOCAL_LIT * 2#u32
+                                         i + 1#u32
 
 /-- [core_models_lib::LOCAL_STATIC]
     Source: 'tests/src/core-models-lib.rs', lines 91:0-91:33
@@ -245,7 +245,7 @@ def LOCAL_COMPUTED : Result Std.U32 := do let i ← LOCAL_LIT * 2#u32
 /-- [core_models_lib::use_consts]:
     Source: 'tests/src/core-models-lib.rs', lines 96:0-101:1
     Visibility: public -/
-def use_consts (x : Std.U32) : Result Std.U32 := do
+def use_consts (x : Std.U32) : RustM Std.U32 := do
   let m ← core.num.U32.MAX - x
   let i ← LOCAL_COMPUTED
   let i1 ← core.num.U32.wrapping_add m i

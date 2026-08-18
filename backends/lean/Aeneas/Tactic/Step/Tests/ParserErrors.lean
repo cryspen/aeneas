@@ -1,11 +1,11 @@
 module
 import Aeneas.Tactic.Step
 
-open Aeneas Std Result Lean Elab Tactic
+open Aeneas Std RustM Lean Elab Tactic
 
 namespace Aeneas.Tactic.Step.Tests.ParserErrors
 
-def f (n : Nat) : Result Nat := .ok (n + 1)
+def f (n : Nat) : RustM Nat := .ok (n + 1)
 
 theorem f_spec (n : Nat) : f n ⦃ r => r = n + 1 ⦄ := by
   simp [f]

@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -23,13 +23,13 @@ namespace higher_ranked_trait_bounds
 /-- Trait declaration: [higher_ranked_trait_bounds::RefTrait]
     Source: 'tests/src/higher_ranked_trait_bounds.rs', lines 4:0-6:1 -/
 structure RefTrait (Self : Type _) (X : Type _) where
-  get : Self → Result X
+  get : Self → RustM X
 
 /-- [higher_ranked_trait_bounds::use_higher_ranked_trait_bound]:
     Source: 'tests/src/higher_ranked_trait_bounds.rs', lines 9:0-11:1 -/
 def use_higher_ranked_trait_bound
   {P : Type _} (RefTraitPShared0U8Inst : RefTrait P Std.U8) (p : P) :
-  Result Std.U8
+  RustM Std.U8
   := do
   RefTraitPShared0U8Inst.get p
 
@@ -37,7 +37,7 @@ def use_higher_ranked_trait_bound
     Source: 'tests/src/higher_ranked_trait_bounds.rs', lines 14:0-19:1 -/
 def use_higher_ranked_trait_bound_where
   {P : Type _} (RefTraitPShared0U8Inst : RefTrait P Std.U8) (p : P) :
-  Result Std.U8
+  RustM Std.U8
   := do
   RefTraitPShared0U8Inst.get p
 
@@ -46,7 +46,7 @@ def use_higher_ranked_trait_bound_where
 def call_fn_ref
   {T0 : Type _} (coreopsfunctionFnT0TupleSharedU8U8Inst : core.ops.function.Fn
   T0 Std.U8 Std.U8) (g : T0) (x : Std.U8) :
-  Result Std.U8
+  RustM Std.U8
   := do
   coreopsfunctionFnT0TupleSharedU8U8Inst.call g x
 
@@ -55,7 +55,7 @@ def call_fn_ref
 def call_fnmut_ref
   {T0 : Type _} (coreopsfunctionFnMutT0TupleSharedU8TupleInst :
   core.ops.function.FnMut T0 Std.U8 Unit) (g : T0) (x : Std.U8) :
-  Result Unit
+  RustM Unit
   := do
   let (_, g1) ← coreopsfunctionFnMutT0TupleSharedU8TupleInst.call_mut g x
   let _ ← coreopsfunctionFnMutT0TupleSharedU8TupleInst.call_mut g1 x
@@ -66,7 +66,7 @@ def call_fnmut_ref
 def call_fnonce_ref
   {T0 : Type _} (coreopsfunctionFnOnceT0TupleSharedU8U8Inst :
   core.ops.function.FnOnce T0 Std.U8 Std.U8) (g : T0) (x : Std.U8) :
-  Result Std.U8
+  RustM Std.U8
   := do
   coreopsfunctionFnOnceT0TupleSharedU8U8Inst.call_once g x
 
@@ -76,7 +76,7 @@ def call_fn_two_refs
   {T0 : Type _} (coreopsfunctionFnT0PairSharedU8SharedU8U8Inst :
   core.ops.function.Fn T0 (Std.U8 × Std.U8) Std.U8) (g : T0) (x : Std.U8)
   (y : Std.U8) :
-  Result Std.U8
+  RustM Std.U8
   := do
   coreopsfunctionFnT0PairSharedU8SharedU8U8Inst.call g (x, y)
 
@@ -85,7 +85,7 @@ def call_fn_two_refs
 def ignore_higher_ranked_fn
   {T0 : Type _} (coreopsfunctionFnT0TupleSharedTupleTupleInst :
   core.ops.function.Fn T0 Unit Unit) (_g : T0) :
-  Result Unit
+  RustM Unit
   := do
   ok ()
 

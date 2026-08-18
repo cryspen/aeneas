@@ -12,7 +12,7 @@ subslice-update operations must succeed whenever `start ≤ end ≤ len`.
 
 namespace Aeneas.Std.EmptySubsliceTests
 
-open Aeneas Aeneas.Std Result
+open Aeneas Aeneas.Std RustM
 
 example (s : Slice U8) (i : Usize) (h : i.val ≤ s.length) :
     Slice.subslice s ⟨i, i⟩ ⦃ ns => ns.length = 0 ⦄ := by

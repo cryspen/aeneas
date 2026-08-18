@@ -13,9 +13,9 @@ namespace DspecInduction
 
 namespace Test
 
-open Aeneas.Std Result Aeneas.Step
+open Aeneas.Std RustM Aeneas.Step
 
-def simple_diverge (x : Std.I32) : Result Std.I32 := do
+def simple_diverge (x : Std.I32) : RustM Std.I32 := do
   if x = 0#i32
   then ok 10#i32
   else
@@ -59,7 +59,7 @@ theorem test_div_tactic (x : Std.I32) : Std.WP.dspec (simple_diverge x) (fun res
       step
       simp [*]
 
-def simple_diverge_2' (x y : Std.I32) : Result Std.I32 := do
+def simple_diverge_2' (x y : Std.I32) : RustM Std.I32 := do
   if x = y#i32
   then ok 10#i32
   else
@@ -95,24 +95,24 @@ theorem test_div_2_tactic (x y : Std.I32) : Std.WP.dspec (simple_diverge_2' x y)
       simp [*]
 
 
-def dummy_hash (_i : Std.U32) : Result Std.U32 := do
+def dummy_hash (_i : Std.U32) : RustM Std.U32 := do
   ok 1000#u32
 
 open ControlFlow
 
 def pseudo_random_loop.body
-  (state : Std.U32) : Result (ControlFlow Std.U32 Std.U32) := do
+  (state : Std.U32) : RustM (ControlFlow Std.U32 Std.U32) := do
   if state < 100#u32
   then let state1 ← dummy_hash state
        ok (cont state1)
   else ok (done state)
 
-def pseudo_random_loop (state : Std.U32) : Result Std.U32 := do
+def pseudo_random_loop (state : Std.U32) : RustM Std.U32 := do
   loop
     (fun state1 => pseudo_random_loop.body state1)
     state
 
-@[reducible] def pseudo_random : Result Std.U32 := do
+@[reducible] def pseudo_random : RustM Std.U32 := do
   pseudo_random_loop 0#u32
 
 
@@ -140,22 +140,22 @@ theorem pseudo_random_spec :
     grind
 
 -- these two examples demonstrate how .fixpoint_induct theorems can take various forms.
-def first_arg_const (x y : Nat) : Result Nat :=
+def first_arg_const (x y : Nat) : RustM Nat :=
   if x = 0 then .ok 0
   else first_arg_const x (y + 1)
 partial_fixpoint
 
-def second_arg_const (x y : Nat) : Result Nat :=
+def second_arg_const (x y : Nat) : RustM Nat :=
   if y = 0 then .ok 0
   else second_arg_const (x + 1) y
 partial_fixpoint
 
 -- note how the two induction principles differ:
 /--
-info: Aeneas.DspecInduction.Test.first_arg_const.fixpoint_induct (x : ℕ) (motive : (ℕ → Result ℕ) → Prop)
+info: Aeneas.DspecInduction.Test.first_arg_const.fixpoint_induct (x : ℕ) (motive : (ℕ → RustM ℕ) → Prop)
   (adm : Lean.Order.admissible motive)
   (h :
-    ∀ (first_arg_const : ℕ → Result ℕ),
+    ∀ (first_arg_const : ℕ → RustM ℕ),
       motive first_arg_const → motive fun y => if x = 0 then ok 0 else first_arg_const (y + 1)) :
   motive (first_arg_const x)
 -/
@@ -163,10 +163,10 @@ info: Aeneas.DspecInduction.Test.first_arg_const.fixpoint_induct (x : ℕ) (moti
 #check first_arg_const.fixpoint_induct
 
 /--
-info: Aeneas.DspecInduction.Test.second_arg_const.fixpoint_induct (y : ℕ) (motive : (ℕ → Result ℕ) → Prop)
+info: Aeneas.DspecInduction.Test.second_arg_const.fixpoint_induct (y : ℕ) (motive : (ℕ → RustM ℕ) → Prop)
   (adm : Lean.Order.admissible motive)
   (h :
-    ∀ (second_arg_const : ℕ → Result ℕ),
+    ∀ (second_arg_const : ℕ → RustM ℕ),
       motive second_arg_const → motive fun x => if y = 0 then ok 0 else second_arg_const (x + 1)) :
   motive fun x => second_arg_const x y
 -/
@@ -197,16 +197,16 @@ elab "#admissible_thms " t:term : command => Command.liftTermElabM do
 
 /-- info: [Aeneas.Std.WP.dspec_func_admissible] -/
 #guard_msgs in
-#admissible_thms Lean.Order.admissible (fun f : Nat → Result Nat => WP.dspec (f 0) (fun _ => True))
+#admissible_thms Lean.Order.admissible (fun f : Nat → RustM Nat => WP.dspec (f 0) (fun _ => True))
 
 -- the key is `WP.dspec ?e ?post`: the argument of `WP.dspec` is not inspected
 /-- info: [Aeneas.Std.WP.dspec_func_admissible] -/
 #guard_msgs in
-#admissible_thms Lean.Order.admissible (fun _ : Nat → Result Nat => WP.dspec (.ok 0) (fun _ => True))
+#admissible_thms Lean.Order.admissible (fun _ : Nat → RustM Nat => WP.dspec (.ok 0) (fun _ => True))
 
 /-- info: [] -/
 #guard_msgs in
-#admissible_thms Lean.Order.admissible (fun _ : Nat → Result Nat => True)
+#admissible_thms Lean.Order.admissible (fun _ : Nat → RustM Nat => True)
 
 end Test
 

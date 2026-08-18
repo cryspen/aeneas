@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -33,7 +33,7 @@ axiom core.iter.traits.iterator.Iterator.map.default
   (IteratorInst : core.iter.traits.iterator.Iterator Self Clause0_Item)
   (opsfunctionFnMutFTupleClause0_ItemBInst : core.ops.function.FnMut F
   Clause0_Item B) :
-  Self → F → Result (core.iter.adapters.map.Map Self F)
+  Self → F → RustM (core.iter.adapters.map.Map Self F)
 
 /-- [core::iter::adapters::map::{impl core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}::next]:
     Source: '/rustc/library/core/src/iter/adapters/map.rs', lines 106:4-106:35
@@ -46,7 +46,7 @@ axiom core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.next
   (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I
   Clause0_Item) (opsfunctionFnMutFTupleClause0_ItemBInst :
   core.ops.function.FnMut F Clause0_Item B) :
-  core.iter.adapters.map.Map I F → Result ((Option B) ×
+  core.iter.adapters.map.Map I F → RustM ((Option B) ×
     (core.iter.adapters.map.Map I F))
 
 /-- Trait implementation: [core::iter::adapters::map::{impl core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}]
@@ -79,7 +79,7 @@ def
   {I : Type _} (coreitertraitsiteratorIteratorIU32Inst :
   core.iter.traits.iterator.Iterator I Std.U32) (c : indexed_squares.closure I)
   (tupled_args : (Std.Usize × Std.U32)) :
-  Result (Std.U32 × (indexed_squares.closure I))
+  RustM (Std.U32 × (indexed_squares.closure I))
   := do
   let (i, x) := tupled_args
   let i1 ← lift (UScalar.cast .U32 i)
@@ -93,7 +93,7 @@ def
   {I : Type _} (coreitertraitsiteratorIteratorIU32Inst :
   core.iter.traits.iterator.Iterator I Std.U32) (c : indexed_squares.closure I)
   (p : (Std.Usize × Std.U32)) :
-  Result Std.U32
+  RustM Std.U32
   := do
   let (i, _) ←
     indexed_squares.closure.Insts.CoreOpsFunctionFnMutTuplePairUsizeU32U32.call_mut
@@ -133,7 +133,7 @@ def indexed_squares.closure.Insts.CoreOpsFunctionFnMutTuplePairUsizeU32U32 {I :
 def indexed_squares
   {I : Type _} (coreitertraitsiteratorIteratorIU32Inst :
   core.iter.traits.iterator.Iterator I Std.U32) (iter : I) :
-  Result (alloc.vec.Vec Std.U32)
+  RustM (alloc.vec.Vec Std.U32)
   := do
   let e ← coreitertraitsiteratorIteratorIU32Inst.enumerate iter
   let m ←
@@ -153,7 +153,7 @@ def indexed_squares
 /-- [issue_1043_iterator_methods::call_it]:
     Source: 'tests/src/issue-1043-iterator-methods.rs', lines 13:0-15:1
     Visibility: public -/
-def call_it (n : Std.U32) : Result (alloc.vec.Vec Std.U32) := do
+def call_it (n : Std.U32) : RustM (alloc.vec.Vec Std.U32) := do
   indexed_squares (core.iter.traits.iterator.IteratorRange
     core.iter.range.StepU32) { start := 0#u32, «end» := n }
 

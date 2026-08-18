@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -22,7 +22,7 @@ namespace print
 
 /-- [print::call_println]:
     Source: 'tests/src/print.rs', lines 4:0-6:1 -/
-def call_println : Result Unit := do
+def call_println : RustM Unit := do
   let a ← core.fmt.Arguments.from_str (toStr "Hello World!\n")
   std.io.stdio._print a
 

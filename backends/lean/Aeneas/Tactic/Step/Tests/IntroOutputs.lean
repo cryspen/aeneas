@@ -5,11 +5,11 @@ import Aeneas.Tactic.Step
 
 /-! # `introOutputs` tests -/
 
-open Aeneas Aeneas.Std Result
+open Aeneas Aeneas.Std RustM
 
 namespace Aeneas.Tactic.Step.Tests.IntroOutputs
 
-def pairProg : Result (Nat × Nat) := ok (1, 2)
+def pairProg : RustM (Nat × Nat) := ok (1, 2)
 
 @[step]
 theorem pairProg_spec : pairProg ⦃ p => p.1 = 1 ∧ p.2 = 2 ⦄ := by
@@ -35,7 +35,7 @@ info: Try this:
 example : (do let p ← pairProg; ok p) ⦃ p => p.1 = 1 ∧ p.2 = 2 ⦄ := by
   step*?
 
-def threeProg : Result (Nat × Nat × Nat) := ok (1, 2, 3)
+def threeProg : RustM (Nat × Nat × Nat) := ok (1, 2, 3)
 
 @[step]
 theorem threeProg_spec : threeProg ⦃ a b c => a = 1 ∧ b = 2 ∧ c = 3 ⦄ := by
@@ -61,7 +61,7 @@ info: Try this:
 example : (do let (x, y) ← threeProg; ok (x + y.1 + y.2)) ⦃ r => r = 6 ⦄ := by
   step*?
 
-def nestedProg : Result ((Nat × Nat) × Nat) := ok ((5, 6), 7)
+def nestedProg : RustM ((Nat × Nat) × Nat) := ok ((5, 6), 7)
 
 @[step]
 theorem nestedProg_spec : nestedProg ⦃ ((a, b), c) => a = 5 ∧ b = 6 ∧ c = 7 ⦄ := by
@@ -101,7 +101,7 @@ info: Try this:
 example : (do let (x, y) ← nestedProg; ok (x, y)) ⦃ a b => a.1 = 5 ∧ a.2 = 6 ∧ b = 7⦄ := by
   step*?
 
-def quadProg : Result ((Nat × Nat) × (Nat × Nat)) := ok ((8, 9), (10, 11))
+def quadProg : RustM ((Nat × Nat) × (Nat × Nat)) := ok ((8, 9), (10, 11))
 
 /-! ## `quadProg_spec` shape × bind-pattern matrix
 
@@ -426,7 +426,7 @@ example : (do let ((a, b), (c, d)) ← quadProg
 end SpecProjection
 
 -- tests for ∃ in postcondition
-def existentialProg : Result (Nat × Nat) := ok (1, 2)
+def existentialProg : RustM (Nat × Nat) := ok (1, 2)
 
 @[step]
 theorem existentialProg_spec : existentialProg ⦃ x y => x = 1 ∧ ∃ z, z > 0 ∧ y = z + 1 ⦄ := by
@@ -447,7 +447,7 @@ example : (do let (x, y) ← existentialProg; ok (x + y)) ⦃ res => res > 2 ⦄
   step with existentialProg_spec as ⟨ x, y, hx, z, hz, h ⟩
 
 /- Outputs must precede existentially quantified variables, including when using nested tuples. -/
-def nestedExistentialProg : Result ((Nat × Nat) × Nat) := ok ((1, 2), 3)
+def nestedExistentialProg : RustM ((Nat × Nat) × Nat) := ok ((1, 2), 3)
 
 @[step]
 theorem nestedExistentialProg_spec :
@@ -511,12 +511,12 @@ end
 /- Abbreviations can be inspected using reducible transparency. -/
 abbrev NestedOutput := (Nat × Nat) × Nat
 
-example (f : Result NestedOutput) (h : f ⦃ ((a, b), c) => a = 1 ∧ b = 2 ∧ c = 3 ⦄) :
+example (f : RustM NestedOutput) (h : f ⦃ ((a, b), c) => a = 1 ∧ b = 2 ∧ c = 3 ⦄) :
     (do let ((a, b), c) ← f; ok (a + b + c)) ⦃ r => r = 6 ⦄ := by
   step with h as ⟨a, b, c, ha, hb, hc⟩
   simp [ha, hb, hc]
 
-def genericPair {α : Type u} (x : α) : Result (α × Nat) := ok (x, 1)
+def genericPair {α : Type u} (x : α) : RustM (α × Nat) := ok (x, 1)
 
 @[step]
 theorem genericPair_spec {α : Type u} (x : α) :
@@ -549,7 +549,7 @@ example :
   simp [ha, hb, hc]
 
 /- Outputs of type unit disappear even when the postcondition uses them explicitly. -/
-def unitProg : Result Unit := ok ()
+def unitProg : RustM Unit := ok ()
 
 @[step]
 theorem unitProg_spec : unitProg ⦃ (u : Unit) => u = () ⦄ := by
@@ -565,7 +565,7 @@ run_cmd Lean.Elab.Command.liftTermElabM do
   unless names == #[none] do
     throwError "Expected an anonymous name slot, got {names}"
 
-example (f : Result UnitOutput) (h : f ⦃ (u : UnitOutput) => u = () ⦄) :
+example (f : RustM UnitOutput) (h : f ⦃ (u : UnitOutput) => u = () ⦄) :
     (do let _ ← f; genericPair 5) ⦃ y k => y = 5 ∧ k = 1 ⦄ := by
   step with h as ⟨⟩
   step*
@@ -573,15 +573,15 @@ example (f : Result UnitOutput) (h : f ⦃ (u : UnitOutput) => u = () ⦄) :
 example : (do let _ ← unitProg; genericPair 5) ⦃ y k => y = 5 ∧ k = 1 ⦄ := by
   step*
 
-example (g : Unit → Result Nat) (hg : ∀ u, g u ⦃ (n : Nat) => n = 0 ⦄) :
+example (g : Unit → RustM Nat) (hg : ∀ u, g u ⦃ (n : Nat) => n = 0 ⦄) :
     (do let u ← unitProg; g u) ⦃ (n : Nat) => n = 0 ⦄ := by
   step with unitProg_spec
   step with hg as ⟨n, hn⟩
   exact hn
 
 /- Outputs of type unit get eliminated, even when they are used in the post-condition. -/
-example (f : Result (Bool × Unit)) (h : f ⦃ b u => b = true ∧ u = () ⦄)
-    (g : Bool → Unit → Result Nat)
+example (f : RustM (Bool × Unit)) (h : f ⦃ b u => b = true ∧ u = () ⦄)
+    (g : Bool → Unit → RustM Nat)
     (hg : ∀ b u, g b u ⦃ n => n = 0 ⦄) :
     (do let (b, u) ← f; g b u) ⦃ n => n = 0 ⦄ := by
   step with h as ⟨b, hb⟩
@@ -590,7 +590,7 @@ example (f : Result (Bool × Unit)) (h : f ⦃ b u => b = true ∧ u = () ⦄)
   step with hg as ⟨n, hn⟩
   exact hn
 
-example (f : Result ((Unit × Nat) × (Bool × Unit)))
+example (f : RustM ((Unit × Nat) × (Bool × Unit)))
     (h : f ⦃ ((u, n), (b, v)) => u = () ∧ n = 1 ∧ b = true ∧ v = () ⦄) :
     (do let ((_, n), (b, _)) ← f; ok (n, b)) ⦃ n b => n = 1 ∧ b = true ⦄ := by
   step with h as ⟨n, b, hn, hb⟩
@@ -599,7 +599,7 @@ example (f : Result ((Unit × Nat) × (Bool × Unit)))
   simp [hn, hb]
 
 /- Inferred names skip outputs of type unit; they must not become postcondition names. -/
-example (f : Result ((Unit × Nat) × (Bool × Unit)))
+example (f : RustM ((Unit × Nat) × (Bool × Unit)))
     (h : f ⦃ ((u, n), (b, v)) => u = () ∧ n = 1 ∧ b = true ∧ v = () ⦄) :
     (do let ((u, n), (b, v)) ← f; ok (u, n, b, v))
       ⦃ u n b v => u = () ∧ n = 1 ∧ b = true ∧ v = () ⦄ := by
@@ -611,14 +611,14 @@ example (f : Result ((Unit × Nat) × (Bool × Unit)))
   simp [n_post, b_post]
 
 /- Quantifiers belonging to the final goal must remain for the caller to introduce. -/
-example (f : Result Nat) (h : f ⦃ n => n = 0 ⦄) :
+example (f : RustM Nat) (h : f ⦃ n => n = 0 ⦄) :
     (do let n ← f; ok n) ⦃ n => ∀ k : Nat, n + k = k ⦄ := by
   step with h as ⟨n, hn⟩
   intro k
   simp [hn]
 
 /- Instantiating a Boolean input with `true` must not leave `True ∧ P` inside an iff. -/
-example (f : Bool → Result Bool) (P : Prop)
+example (f : Bool → RustM Bool) (P : Prop)
     (h : ∀ valid, f valid ⦃ b => b = true ↔ valid = true ∧ P ⦄) :
     f true ⦃ b => b = true ↔ P ⦄ := by
   step with h as ⟨b, hb⟩
@@ -626,7 +626,7 @@ example (f : Bool → Result Bool) (P : Prop)
   exact hb
 
 /- We normalize equality-defined existentials below matches, without reordering tuple outputs. -/
-example (f : Result (Nat × Bool)) (compute : Nat → Nat) (P R : Nat → Prop)
+example (f : RustM (Nat × Bool)) (compute : Nat → Nat) (P R : Nat → Prop)
     (hR : ∀ k, R k)
     (h : f ⦃ n b => match b with
       | true => ∃ s, s = compute n ∧ P s
@@ -642,7 +642,7 @@ example (f : Result (Nat × Bool)) (compute : Nat → Nat) (P R : Nat → Prop)
   exact ⟨hp, hR k⟩
 
 /- Even a trivial postcondition must preserve the output and leave final quantifiers alone. -/
-example (f : Result Nat) (R : Nat → Prop) (hR : ∀ k, R k)
+example (f : RustM Nat) (R : Nat → Prop) (hR : ∀ k, R k)
     (h : f ⦃ _ => True ∧ True ⦄) :
     (do let n ← f; ok n) ⦃ _ => ∀ k : Nat, R k ⦄ := by
   step with h as ⟨n⟩
@@ -650,7 +650,7 @@ example (f : Result Nat) (R : Nat → Prop) (hR : ∀ k, R k)
   intro k
   exact hR k
 
-example (f : Bool → Result Bool) (P : Prop)
+example (f : Bool → RustM Bool) (P : Prop)
     (h : ∀ valid, f valid ⦃ b => b = true ↔ valid = true ∧ P ⦄div) :
     (do let b ← f true; ok b) ⦃ b => b = true ↔ P ⦄div := by
   step with h as ⟨b, hb⟩
@@ -683,14 +683,14 @@ run_cmd Lean.Elab.Command.liftTermElabM do
     unless target == expected do
       throwError "Unexpected normalized output target:\n{target}\nExpected:\n{expected}"
 
-def dup (n : Nat) : Result (Nat × Nat) := ok (n, n)
+def dup (n : Nat) : RustM (Nat × Nat) := ok (n, n)
 
-def id' (n : Nat) : Result Nat := ok n
+def id' (n : Nat) : RustM Nat := ok n
 
 @[local step]
 theorem id'_spec (n : Nat) : id' n ⦃ r => r = n ⦄ := by simp [id']
 
-def bundled (compute : Nat → Nat × Nat) (n : Nat) : Result (Nat × Nat) :=
+def bundled (compute : Nat → Nat × Nat) (n : Nat) : RustM (Nat × Nat) :=
   ok (compute n)
 
 @[local step]
@@ -708,7 +708,7 @@ example (compute : Nat → Nat × Nat) (n : Nat) :
   exact Prod.ext ha hb
 
 /- Facts which become trivial after instantiation are kept. -/
-def conditional (bound : U32) : Result Bool := ok (bound.val = bound.val)
+def conditional (bound : U32) : RustM Bool := ok (bound.val = bound.val)
 
 @[local step]
 theorem conditional_spec (bound : U32) :
@@ -738,7 +738,7 @@ example (n : Nat) :
   guard_hyp hw : w = (k == 0)
   exact hb
 
-example (f : Result (Nat × Nat × Nat))
+example (f : RustM (Nat × Nat × Nat))
     (h : f ⦃ p =>
       ∃ witness : Bool × Nat, p.1 = witness.1.toNat ∧ p.2.1 = witness.2 ∧ p.2.1 = p.2.2 ⦄) :
     (do let (a, b, c) ← f; ok (a, b, c)) ⦃ _ b c => b = c ⦄ := by
@@ -748,14 +748,14 @@ example (f : Result (Nat × Nat × Nat))
   guard_hyp hb : b = witness.2
   exact hbc
 
-example (f : Result Unit) (h : f ⦃ _ => ∃ witness : Nat, witness > 0 ⦄) :
+example (f : RustM Unit) (h : f ⦃ _ => ∃ witness : Nat, witness > 0 ⦄) :
     f ⦃ _ => ∃ witness : Nat, witness > 0 ⦄ := by
   let* ⟨witness, hw⟩ ← h
   guard_hyp witness : Nat
   guard_hyp hw : witness > 0
   exact ⟨witness, hw⟩
 
-example (f : Result (Nat × Nat))
+example (f : RustM (Nat × Nat))
     (h : f ⦃ p => ∃ witness : Bool, p.1 = witness.toNat ∧ p.1 = p.2 ⦄div) :
     (do let (a, b) ← f; ok (a, b)) ⦃ a b => a = b ⦄div := by
   let* ⟨a, b, witness, hw, hab⟩ ← h
@@ -763,7 +763,7 @@ example (f : Result (Nat × Nat))
   guard_hyp hw : a = witness.toNat
   simpa using hab
 
-example (f : Result (List Nat)) (n : Nat)
+example (f : RustM (List Nat)) (n : Nat)
     (h : f ⦃ result => ∃ hlen : result.length = n, n = result.length ∧ hlen = hlen ⦄) :
     f ⦃ result => result.length = n ⦄ := by
   step with h as ⟨result, hlen, hlen'⟩

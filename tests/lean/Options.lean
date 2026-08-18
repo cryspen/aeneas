@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -22,17 +22,17 @@ namespace options
 
 /-- [options::test_unwrap_or]:
     Source: 'tests/src/options.rs', lines 5:0-7:1 -/
-def test_unwrap_or {T : Type _} (x : Option T) (default : T) : Result T := do
+def test_unwrap_or {T : Type _} (x : Option T) (default : T) : RustM T := do
   ok (core.option.Option.unwrap_or x default)
 
 /-- [options::test_expect]:
     Source: 'tests/src/options.rs', lines 9:0-11:1 -/
-def test_expect {T : Type _} (x : Option T) (msg : Str) : Result T := do
+def test_expect {T : Type _} (x : Option T) (msg : Str) : RustM T := do
   core.option.Option.expect x msg
 
 /-- [options::test_is_some]:
     Source: 'tests/src/options.rs', lines 13:0-15:1 -/
-def test_is_some {T : Type _} (x : Option T) : Result Bool := do
+def test_is_some {T : Type _} (x : Option T) : RustM Bool := do
   ok (core.option.Option.is_some x)
 
 /-- [options::test_map_some::{closure}]
@@ -43,7 +43,7 @@ def test_map_some.closure := Unit
 /-- [options::test_map_some::{impl core::ops::function::FnOnce<(u32,), u32> for options::test_map_some::{closure}}::call_once]:
     Source: 'tests/src/options.rs', lines 23:27-23:36 -/
 def test_map_some.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32.call_once
-  (c : test_map_some.closure) (tupled_args : Std.U32) : Result Std.U32 := do
+  (c : test_map_some.closure) (tupled_args : Std.U32) : RustM Std.U32 := do
   tupled_args + 1#u32
 
 /-- Trait implementation: [options::test_map_some::{impl core::ops::function::FnOnce<(u32,), u32> for options::test_map_some::{closure}}]
@@ -58,7 +58,7 @@ def test_map_some.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32 :
 /-- [options::test_map_some]:
     Source: 'tests/src/options.rs', lines 22:0-24:1
     Visibility: public -/
-def test_map_some : Result Unit := do
+def test_map_some : RustM Unit := do
   let o ←
     core.option.Option.map
       test_map_some.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32 (some 1#u32)
@@ -77,7 +77,7 @@ def test_map_none.closure := Unit
 /-- [options::test_map_none::{impl core::ops::function::FnOnce<(u32,), u32> for options::test_map_none::{closure}}::call_once]:
     Source: 'tests/src/options.rs', lines 30:18-30:41 -/
 def test_map_none.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32.call_once
-  (c : test_map_none.closure) (tupled_args : Std.U32) : Result Std.U32 := do
+  (c : test_map_none.closure) (tupled_args : Std.U32) : RustM Std.U32 := do
   fail panic
 
 /-- Trait implementation: [options::test_map_none::{impl core::ops::function::FnOnce<(u32,), u32> for options::test_map_none::{closure}}]
@@ -92,7 +92,7 @@ def test_map_none.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32 :
 /-- [options::test_map_none]:
     Source: 'tests/src/options.rs', lines 28:0-31:1
     Visibility: public -/
-def test_map_none : Result Unit := do
+def test_map_none : RustM Unit := do
   let o ←
     core.option.Option.map
       test_map_none.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32 none ()
@@ -110,7 +110,7 @@ def test_map_capture.closure := Std.U32
 /-- [options::test_map_capture::{impl core::ops::function::FnOnce<(u32,), u32> for options::test_map_capture::{closure}<'_0>}::call_once]:
     Source: 'tests/src/options.rs', lines 37:27-37:36 -/
 def test_map_capture.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32.call_once
-  (c : test_map_capture.closure) (tupled_args : Std.U32) : Result Std.U32 := do
+  (c : test_map_capture.closure) (tupled_args : Std.U32) : RustM Std.U32 := do
   tupled_args + c
 
 /-- Trait implementation: [options::test_map_capture::{impl core::ops::function::FnOnce<(u32,), u32> for options::test_map_capture::{closure}<'_0>}]
@@ -125,7 +125,7 @@ def test_map_capture.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32 :
 /-- [options::test_map_capture]:
     Source: 'tests/src/options.rs', lines 35:0-38:1
     Visibility: public -/
-def test_map_capture : Result Unit := do
+def test_map_capture : RustM Unit := do
   let o ←
     core.option.Option.map
       test_map_capture.closure.Insts.CoreOpsFunctionFnOnceTupleU32U32 (some
@@ -146,7 +146,7 @@ def test_is_some_and_true.closure := Unit
 def
   test_is_some_and_true.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.call_once
   (c : test_is_some_and_true.closure) (tupled_args : Std.U32) :
-  Result Bool
+  RustM Bool
   := do
   ok (tupled_args > 1#u32)
 
@@ -162,7 +162,7 @@ def test_is_some_and_true.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool :
 /-- [options::test_is_some_and_true]:
     Source: 'tests/src/options.rs', lines 45:0-47:1
     Visibility: public -/
-def test_is_some_and_true : Result Unit := do
+def test_is_some_and_true : RustM Unit := do
   let b ←
     core.option.Option.is_some_and
       test_is_some_and_true.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
@@ -182,7 +182,7 @@ def test_is_some_and_false.closure := Unit
 def
   test_is_some_and_false.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.call_once
   (c : test_is_some_and_false.closure) (tupled_args : Std.U32) :
-  Result Bool
+  RustM Bool
   := do
   ok (tupled_args > 1#u32)
 
@@ -198,7 +198,7 @@ def test_is_some_and_false.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool :
 /-- [options::test_is_some_and_false]:
     Source: 'tests/src/options.rs', lines 50:0-52:1
     Visibility: public -/
-def test_is_some_and_false : Result Unit := do
+def test_is_some_and_false : RustM Unit := do
   let b ←
     core.option.Option.is_some_and
       test_is_some_and_false.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
@@ -218,7 +218,7 @@ def test_is_some_and_none.closure := Unit
 def
   test_is_some_and_none.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.call_once
   (c : test_is_some_and_none.closure) (tupled_args : Std.U32) :
-  Result Bool
+  RustM Bool
   := do
   fail panic
 
@@ -234,7 +234,7 @@ def test_is_some_and_none.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool :
 /-- [options::test_is_some_and_none]:
     Source: 'tests/src/options.rs', lines 56:0-59:1
     Visibility: public -/
-def test_is_some_and_none : Result Unit := do
+def test_is_some_and_none : RustM Unit := do
   let b ←
     core.option.Option.is_some_and
       test_is_some_and_none.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
@@ -252,7 +252,7 @@ def test_bool_then_true.closure := Unit
 /-- [options::test_bool_then_true::{impl core::ops::function::FnOnce<(), u32> for options::test_bool_then_true::{closure}}::call_once]:
     Source: 'tests/src/options.rs', lines 67:22-67:29 -/
 def test_bool_then_true.closure.Insts.CoreOpsFunctionFnOnceTupleU32.call_once
-  (c : test_bool_then_true.closure) (_ : Unit) : Result Std.U32 := do
+  (c : test_bool_then_true.closure) (_ : Unit) : RustM Std.U32 := do
   ok 1#u32
 
 /-- Trait implementation: [options::test_bool_then_true::{impl core::ops::function::FnOnce<(), u32> for options::test_bool_then_true::{closure}}]
@@ -267,7 +267,7 @@ def test_bool_then_true.closure.Insts.CoreOpsFunctionFnOnceTupleU32 :
 /-- [options::test_bool_then_true]:
     Source: 'tests/src/options.rs', lines 66:0-68:1
     Visibility: public -/
-def test_bool_then_true : Result Unit := do
+def test_bool_then_true : RustM Unit := do
   let o ←
     core.bool.Bool.then
       test_bool_then_true.closure.Insts.CoreOpsFunctionFnOnceTupleU32 true ()
@@ -285,7 +285,7 @@ def test_bool_then_false.closure := Unit
 /-- [options::test_bool_then_false::{impl core::ops::function::FnOnce<(), u32> for options::test_bool_then_false::{closure}}::call_once]:
     Source: 'tests/src/options.rs', lines 73:23-73:45 -/
 def test_bool_then_false.closure.Insts.CoreOpsFunctionFnOnceTupleU32.call_once
-  (c : test_bool_then_false.closure) (_ : Unit) : Result Std.U32 := do
+  (c : test_bool_then_false.closure) (_ : Unit) : RustM Std.U32 := do
   fail panic
 
 /-- Trait implementation: [options::test_bool_then_false::{impl core::ops::function::FnOnce<(), u32> for options::test_bool_then_false::{closure}}]
@@ -300,7 +300,7 @@ def test_bool_then_false.closure.Insts.CoreOpsFunctionFnOnceTupleU32 :
 /-- [options::test_bool_then_false]:
     Source: 'tests/src/options.rs', lines 72:0-74:1
     Visibility: public -/
-def test_bool_then_false : Result Unit := do
+def test_bool_then_false : RustM Unit := do
   let o ←
     core.bool.Bool.then
       test_bool_then_false.closure.Insts.CoreOpsFunctionFnOnceTupleU32 false ()
@@ -313,7 +313,7 @@ def test_bool_then_false : Result Unit := do
 /-- [options::ok_if_even]:
     Source: 'tests/src/options.rs', lines 80:0-86:1 -/
 def ok_if_even
-  (x : Std.U32) : Result (core.result.Result Std.U32 Std.U32) := do
+  (x : Std.U32) : RustM (core.result.Result Std.U32 Std.U32) := do
   let i ← x % 2#u32
   if i = 0#u32
   then ok (core.result.Result.Ok x)
@@ -322,7 +322,7 @@ def ok_if_even
 /-- [options::test_result_unwrap_or_ok]:
     Source: 'tests/src/options.rs', lines 89:0-91:1
     Visibility: public -/
-def test_result_unwrap_or_ok : Result Unit := do
+def test_result_unwrap_or_ok : RustM Unit := do
   let r ← ok_if_even 2#u32
   let i ← lift (core.result.Result.unwrap_or r 0#u32)
   massert (i = 2#u32)
@@ -333,7 +333,7 @@ def test_result_unwrap_or_ok : Result Unit := do
 /-- [options::test_result_unwrap_or_err]:
     Source: 'tests/src/options.rs', lines 94:0-96:1
     Visibility: public -/
-def test_result_unwrap_or_err : Result Unit := do
+def test_result_unwrap_or_err : RustM Unit := do
   let r ← ok_if_even 3#u32
   let i ← lift (core.result.Result.unwrap_or r 0#u32)
   massert (i = 0#u32)

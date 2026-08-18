@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -26,7 +26,7 @@ namespace drop
 def fill_loop.body
   {T : Type _} (corecloneCloneInst : core.clone.Clone T) (value : T)
   (iter : core.ops.range.Range Std.Usize) (s : Slice T) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice T)) (Slice
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice T)) (Slice
     T))
   := do
   let (o, iter1) ←
@@ -46,7 +46,7 @@ def fill_loop.body
 def fill_loop
   {T : Type _} (corecloneCloneInst : core.clone.Clone T)
   (iter : core.ops.range.Range Std.Usize) (s : Slice T) (value : T) :
-  Result (Slice T)
+  RustM (Slice T)
   := do
   loop
     (fun (iter1, s1) => fill_loop.body corecloneCloneInst value iter1 s1)
@@ -57,7 +57,7 @@ def fill_loop
 def fill
   {T : Type _} (corecloneCloneInst : core.clone.Clone T) (s : Slice T)
   (value : T) :
-  Result (Slice T)
+  RustM (Slice T)
   := do
   let i := Slice.len s
   fill_loop corecloneCloneInst { start := 0#usize, «end» := i } s value

@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -34,7 +34,7 @@ axiom core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.next
   (traitsiteratorIteratorInst : core.iter.traits.iterator.Iterator I
   Clause0_Item) (opsfunctionFnMutFTupleClause0_ItemBInst :
   core.ops.function.FnMut F Clause0_Item B) :
-  core.iter.adapters.map.Map I F → Result ((Option B) ×
+  core.iter.adapters.map.Map I F → RustM ((Option B) ×
     (core.iter.adapters.map.Map I F))
 
 /-- [core::iter::traits::iterator::Iterator::map]:
@@ -47,7 +47,7 @@ axiom core.iter.traits.iterator.Iterator.map.default
   (IteratorInst : core.iter.traits.iterator.Iterator Self Clause0_Item)
   (opsfunctionFnMutFTupleClause0_ItemBInst : core.ops.function.FnMut F
   Clause0_Item B) :
-  Self → F → Result (core.iter.adapters.map.Map Self F)
+  Self → F → RustM (core.iter.adapters.map.Map Self F)
 
 /-- [issue_1207_closure_signature_regions::Holder]
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 8:0-8:24
@@ -63,13 +63,13 @@ def make.closure := Std.U8
 /-- [issue_1207_closure_signature_regions::make]:
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 11:0-13:1
     Visibility: public -/
-def make (x : Std.U8) : Result make.closure := do
+def make (x : Std.U8) : RustM make.closure := do
   ok x
 
 /-- [issue_1207_closure_signature_regions::make::{impl core::ops::function::Fn<(), u8> for issue_1207_closure_signature_regions::make::{closure}<'_0>}::call]:
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 12:4-12:14 -/
 def make.closure.Insts.CoreOpsFunctionFnTupleU8.call
-  (c : make.closure) (_ : Unit) : Result Std.U8 := do
+  (c : make.closure) (_ : Unit) : RustM Std.U8 := do
   ok c
 
 /-- [issue_1207_closure_signature_regions::iter_of::{closure}]
@@ -81,14 +81,14 @@ def iter_of.closure := Std.U8
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 17:15-17:26 -/
 def iter_of.closure.Insts.CoreOpsFunctionFnMutTupleI32U8.call_mut
   (c : iter_of.closure) (tupled_args : Std.I32) :
-  Result (Std.U8 × iter_of.closure)
+  RustM (Std.U8 × iter_of.closure)
   := do
   ok (c, c)
 
 /-- [issue_1207_closure_signature_regions::iter_of::{impl core::ops::function::FnOnce<(i32,), u8> for issue_1207_closure_signature_regions::iter_of::{closure}<'_0>}::call_once]:
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 17:15-17:26 -/
 def iter_of.closure.Insts.CoreOpsFunctionFnOnceTupleI32U8.call_once
-  (c : iter_of.closure) (i : Std.I32) : Result Std.U8 := do
+  (c : iter_of.closure) (i : Std.I32) : RustM Std.U8 := do
   let (i1, _) ←
     iter_of.closure.Insts.CoreOpsFunctionFnMutTupleI32U8.call_mut c i
   ok i1
@@ -115,7 +115,7 @@ def iter_of.closure.Insts.CoreOpsFunctionFnMutTupleI32U8 :
     Visibility: public -/
 def iter_of
   (x : Std.U8) :
-  Result (core.iter.adapters.map.Map (core.ops.range.Range Std.I32)
+  RustM (core.iter.adapters.map.Map (core.ops.range.Range Std.I32)
     iter_of.closure)
   := do
   core.iter.traits.iterator.Iterator.map.default
@@ -126,7 +126,7 @@ def iter_of
 /-- [issue_1207_closure_signature_regions::consume]:
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 21:0-27:1
     Visibility: public -/
-def consume (x : Std.U8) : Result Std.U8 := do
+def consume (x : Std.U8) : RustM Std.U8 := do
   let it ← iter_of x
   let (o, _) ←
     core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.next
@@ -144,13 +144,13 @@ def nested.closure := Std.U8
 /-- [issue_1207_closure_signature_regions::nested]:
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 30:0-32:1
     Visibility: public -/
-def nested (x : Std.U8) : Result (Holder nested.closure) := do
+def nested (x : Std.U8) : RustM (Holder nested.closure) := do
   ok x
 
 /-- [issue_1207_closure_signature_regions::nested::{impl core::ops::function::Fn<(), u8> for issue_1207_closure_signature_regions::nested::{closure}<'_0>}::call]:
     Source: 'tests/src/issue-1207-closure-signature-regions.rs', lines 31:11-31:21 -/
 def nested.closure.Insts.CoreOpsFunctionFnTupleU8.call
-  (c : nested.closure) (_ : Unit) : Result Std.U8 := do
+  (c : nested.closure) (_ : Unit) : RustM Std.U8 := do
   ok c
 
 end issue_1207_closure_signature_regions

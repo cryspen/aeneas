@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -27,12 +27,12 @@ structure Trait1 (Self : Type _) where
 /-- Trait declaration: [blanket_impl::Trait2]
     Source: 'tests/src/blanket_impl.rs', lines 4:0-6:1 -/
 structure Trait2 (Self : Type _) where
-  foo : Result Unit
+  foo : RustM Unit
 
 /-- [blanket_impl::Trait2::foo]:
     Source: 'tests/src/blanket_impl.rs', lines 5:4-5:15 -/
 @[trait_default]
-def Trait2.foo.default (Self : Type _) : Result Unit := do
+def Trait2.foo.default (Self : Type _) : RustM Unit := do
   ok ()
 
 /-- Trait implementation: [blanket_impl::{impl blanket_impl::Trait2 for T}]

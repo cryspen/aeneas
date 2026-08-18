@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -24,13 +24,13 @@ namespace generic_unit_output
     Source: 'tests/src/generic_unit_output.rs', lines 12:0-15:1 -/
 def set_and_return
   {T : Type _} (r : Std.U32) (x : Std.U32) (t : T) :
-  Result (T × Std.U32)
+  RustM (T × Std.U32)
   := do
   ok (t, x)
 
 /-- [generic_unit_output::call_with_unit]:
     Source: 'tests/src/generic_unit_output.rs', lines 17:0-21:1 -/
-def call_with_unit (n : Std.U32) : Result Std.U32 := do
+def call_with_unit (n : Std.U32) : RustM Std.U32 := do
   let (_, n1) ← set_and_return n 1#u32 ()
   let (_, n2) ← set_and_return n1 2#u32 ()
   ok n2

@@ -5,32 +5,32 @@ public section
 
 namespace Aeneas.Std
 
-open Result ScalarElab
+open RustM ScalarElab
 
 /-! ## `{u8,u16,...}::is_power_of_two`
 
 Rust defines `is_power_of_two` on the unsigned integers only. -/
 
-@[expose] def UScalar.is_power_of_two (x : UScalar ty) : Result Bool :=
+@[expose] def UScalar.is_power_of_two (x : UScalar ty) : RustM Bool :=
   ok x.val.isPowerOfTwo
 
 @[expose, rust_fun "core::num::{u8}::is_power_of_two"]
-def core.num.U8.is_power_of_two (x : U8) : Result Bool := UScalar.is_power_of_two x
+def core.num.U8.is_power_of_two (x : U8) : RustM Bool := UScalar.is_power_of_two x
 
 @[expose, rust_fun "core::num::{u16}::is_power_of_two"]
-def core.num.U16.is_power_of_two (x : U16) : Result Bool := UScalar.is_power_of_two x
+def core.num.U16.is_power_of_two (x : U16) : RustM Bool := UScalar.is_power_of_two x
 
 @[expose, rust_fun "core::num::{u32}::is_power_of_two"]
-def core.num.U32.is_power_of_two (x : U32) : Result Bool := UScalar.is_power_of_two x
+def core.num.U32.is_power_of_two (x : U32) : RustM Bool := UScalar.is_power_of_two x
 
 @[expose, rust_fun "core::num::{u64}::is_power_of_two"]
-def core.num.U64.is_power_of_two (x : U64) : Result Bool := UScalar.is_power_of_two x
+def core.num.U64.is_power_of_two (x : U64) : RustM Bool := UScalar.is_power_of_two x
 
 @[expose, rust_fun "core::num::{u128}::is_power_of_two"]
-def core.num.U128.is_power_of_two (x : U128) : Result Bool := UScalar.is_power_of_two x
+def core.num.U128.is_power_of_two (x : U128) : RustM Bool := UScalar.is_power_of_two x
 
 @[expose, rust_fun "core::num::{usize}::is_power_of_two"]
-def core.num.Usize.is_power_of_two (x : Usize) : Result Bool := UScalar.is_power_of_two x
+def core.num.Usize.is_power_of_two (x : Usize) : RustM Bool := UScalar.is_power_of_two x
 
 theorem UScalar.is_power_of_two.spec (x : UScalar ty) :
     UScalar.is_power_of_two x ⦃ (b : Bool) => b = x.val.isPowerOfTwo ⦄ := by

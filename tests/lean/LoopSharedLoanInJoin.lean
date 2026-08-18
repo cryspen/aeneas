@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -35,7 +35,7 @@ structure State where
 @[rust_loop_body]
 def transform_loop.body
   (iter : core.ops.range.Range Std.Usize) (data : Array Std.U64 4#usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U64
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U64
     4#usize)) (Array Std.U64 4#usize))
   := do
   let (o, iter1) ←
@@ -53,7 +53,7 @@ def transform_loop.body
 @[rust_loop]
 def transform_loop
   (iter : core.ops.range.Range Std.Usize) (data : Array Std.U64 4#usize) :
-  Result (Array Std.U64 4#usize)
+  RustM (Array Std.U64 4#usize)
   := do
   loop
     (fun (iter1, data1) => transform_loop.body iter1 data1)
@@ -63,7 +63,7 @@ def transform_loop
     Source: 'tests/src/loop_shared_loan_in_join.rs', lines 24:0-28:1 -/
 @[reducible]
 def transform
-  (data : Array Std.U64 4#usize) : Result (Array Std.U64 4#usize) := do
+  (data : Array Std.U64 4#usize) : RustM (Array Std.U64 4#usize) := do
   transform_loop { start := 0#usize, «end» := 4#usize } data
 
 /-- [loop_shared_loan_in_join::{loop_shared_loan_in_join::State}::extract]: loop body 0:
@@ -74,7 +74,7 @@ def State.extract_loop.body
   (i : Std.U32) (iter : core.ops.range.Range Std.Usize)
   (a : Array Std.U64 4#usize) (i1 : Std.U32) (result : Slice Std.U64)
   (lane_index : Std.Usize) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U64
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Array Std.U64
     4#usize) × Std.U32 × (Slice Std.U64) × Std.Usize) ((Array Std.U64
     4#usize) × Std.U32 × (Slice Std.U64)))
   := do
@@ -103,7 +103,7 @@ def State.extract_loop
   (iter : core.ops.range.Range Std.Usize) (a : Array Std.U64 4#usize)
   (i : Std.U32) (i1 : Std.U32) (result : Slice Std.U64)
   (lane_index : Std.Usize) :
-  Result ((Array Std.U64 4#usize) × Std.U32 × (Slice Std.U64))
+  RustM ((Array Std.U64 4#usize) × Std.U32 × (Slice Std.U64))
   := do
   loop
     (fun (iter1, a1, i2, result1, lane_index1) => State.extract_loop.body i1
@@ -115,7 +115,7 @@ def State.extract_loop
     Visibility: public -/
 def State.extract
   (self : State) (result : Slice Std.U64) (count : Std.Usize) :
-  Result (State × (Slice Std.U64))
+  RustM (State × (Slice Std.U64))
   := do
   let lane_index ← lift (UScalar.cast .Usize self.index)
   let (a, i, result1) ←

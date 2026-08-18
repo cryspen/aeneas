@@ -17,7 +17,7 @@ namespace Aeneas.Command.Decompose.TestsRec
 -- Test 1: partial_fixpoint — extract from inside the else branch
 -- ============================================================================
 
-def recPF1 (n : Nat) : Result Nat := do
+def recPF1 (n : Nat) : RustM Nat := do
   if n == 0 then .ok 0
   else
     let a ← recPF1 (n - 1)
@@ -33,19 +33,19 @@ partial_fixpoint
 /--
 info: recPF1_eq : ∀ (n : ℕ),
   recPF1 n =
-    if (n == 0) = true then Result.ok 0
+    if (n == 0) = true then RustM.ok 0
     else do
       let a ← recPF1 (n - 1)
       let c ← recPF1_add a
-      Result.ok (a + c)
+      RustM.ok (a + c)
 -/
 #guard_msgs in
 #check @recPF1_eq
 /--
-info: def Aeneas.Command.Decompose.TestsRec.recPF1_add : ℕ → Result ℕ :=
+info: def Aeneas.Command.Decompose.TestsRec.recPF1_add : ℕ → RustM ℕ :=
 fun a => do
-  let b ← Result.ok (a + 1)
-  Result.ok (b + 2)
+  let b ← RustM.ok (a + 1)
+  RustM.ok (b + 2)
 -/
 #guard_msgs in
 #print recPF1_add
@@ -59,7 +59,7 @@ info: 'Aeneas.Command.Decompose.TestsRec.recPF1_eq' depends on axioms: [propext,
 -- Test 2: partial_fixpoint — extract from inside the then branch
 -- ============================================================================
 
-def recPF2 (n : Nat) : Result Nat := do
+def recPF2 (n : Nat) : RustM Nat := do
   if n == 0 then
     let x ← .ok 42
     let y ← .ok (x + 1)
@@ -78,16 +78,16 @@ info: recPF2_eq : ∀ (n : ℕ),
     if (n == 0) = true then recPF2_base
     else do
       let a ← recPF2 (n - 1)
-      Result.ok (a + 1)
+      RustM.ok (a + 1)
 -/
 #guard_msgs in
 #check @recPF2_eq
 /--
-info: def Aeneas.Command.Decompose.TestsRec.recPF2_base : Result ℕ :=
+info: def Aeneas.Command.Decompose.TestsRec.recPF2_base : RustM ℕ :=
 do
-  let x ← Result.ok 42
-  let y ← Result.ok (x + 1)
-  Result.ok y
+  let x ← RustM.ok 42
+  let y ← RustM.ok (x + 1)
+  RustM.ok y
 -/
 #guard_msgs in
 #print recPF2_base
@@ -96,7 +96,7 @@ do
 -- Test 3: structural recursion on List — extract from the cons branch
 -- ============================================================================
 
-def recStruct : List Nat → Result Nat
+def recStruct : List Nat → RustM Nat
   | [] => .ok 0
   | x :: xs => do
     let rest ← recStruct xs
@@ -110,17 +110,17 @@ def recStruct : List Nat → Result Nat
 info: recStruct_eq : ∀ (x : List ℕ),
   recStruct x =
     match x with
-    | [] => Result.ok 0
+    | [] => RustM.ok 0
     | x :: xs => do
       let rest ← recStruct xs
       let inc ← recStruct_inc rest
-      Result.ok (x + inc)
+      RustM.ok (x + inc)
 -/
 #guard_msgs in
 #check @recStruct_eq
 /--
-info: def Aeneas.Command.Decompose.TestsRec.recStruct_inc : ℕ → Result ℕ :=
-fun rest => Result.ok (rest + 1)
+info: def Aeneas.Command.Decompose.TestsRec.recStruct_inc : ℕ → RustM ℕ :=
+fun rest => RustM.ok (rest + 1)
 -/
 #guard_msgs in
 #print recStruct_inc
@@ -129,7 +129,7 @@ fun rest => Result.ok (rest + 1)
 -- Test 4: partial_fixpoint — full extraction of the else branch
 -- ============================================================================
 
-def recPF3 (n : Nat) : Result Nat := do
+def recPF3 (n : Nat) : RustM Nat := do
   if n == 0 then .ok 0
   else
     let a ← recPF3 (n - 1)
@@ -141,16 +141,16 @@ partial_fixpoint
   branch 1 full => recPF3_else
 
 /--
-info: recPF3_eq : ∀ (n : ℕ), recPF3 n = if (n == 0) = true then Result.ok 0 else recPF3_else n
+info: recPF3_eq : ∀ (n : ℕ), recPF3 n = if (n == 0) = true then RustM.ok 0 else recPF3_else n
 -/
 #guard_msgs in
 #check @recPF3_eq
 /--
-info: def Aeneas.Command.Decompose.TestsRec.recPF3_else : ℕ → Result ℕ :=
+info: def Aeneas.Command.Decompose.TestsRec.recPF3_else : ℕ → RustM ℕ :=
 fun n => do
   let a ← recPF3 (n - 1)
-  let b ← Result.ok (a + 1)
-  Result.ok b
+  let b ← RustM.ok (a + 1)
+  RustM.ok b
 -/
 #guard_msgs in
 #print recPF3_else
@@ -169,10 +169,10 @@ fun n => do
 -- when compilation fails. This mirrors SymCrust's `sign_internal_loop`, whose
 -- body reaches an axiomatised SHAKE/Keccak primitive.
 
-axiom recAxOp (n : Nat) : Result Nat
+axiom recAxOp (n : Nat) : RustM Nat
 
 noncomputable section
-def recAxLoop (n : Nat) : Result Nat := do
+def recAxLoop (n : Nat) : RustM Nat := do
   if n == 0 then .ok 0
   else
     let a ← recAxOp n
@@ -188,7 +188,7 @@ end
 /--
 info: recAxLoop_eq : ∀ (n : ℕ),
   recAxLoop n =
-    if (n == 0) = true then Result.ok 0
+    if (n == 0) = true then RustM.ok 0
     else do
       let a ← recAxOp n
       recAxLoop_rec n a
@@ -196,42 +196,42 @@ info: recAxLoop_eq : ∀ (n : ℕ),
 #guard_msgs in
 #check @recAxLoop_eq
 /--
-info: def Aeneas.Command.Decompose.TestsRec.recAxLoop_rec : ℕ → ℕ → Result ℕ :=
+info: def Aeneas.Command.Decompose.TestsRec.recAxLoop_rec : ℕ → ℕ → RustM ℕ :=
 fun n a => do
   let b ← recAxLoop (n - 1)
-  Result.ok (a + b)
+  RustM.ok (a + b)
 -/
 #guard_msgs in
 #print recAxLoop_rec
 
 /- The loop body crosses the universe boundary of a monadic write-back
    callback; the recursive call must stay outside the extracted prefix. -/
-def crossUniverseLoop (n : Nat) (borrow : Result (Nat × (Nat → Result Nat))) :
-    Result Nat := do
-  if n == 0 then Result.ok 0
+def crossUniverseLoop (n : Nat) (borrow : RustM (Nat × (Nat → RustM Nat))) :
+    RustM Nat := do
+  if n == 0 then RustM.ok 0
   else
     let (seed, back) ← borrow
-    let offset ← Result.ok (seed + 1)
+    let offset ← RustM.ok (seed + 1)
     let restored ← back offset
-    crossUniverseLoop (n - 1) (Result.ok (restored, back))
+    crossUniverseLoop (n - 1) (RustM.ok (restored, back))
 partial_fixpoint
 
 #decompose crossUniverseLoop crossUniverseLoop.fold
   branch 1 (letRange 0 3) => crossUniverseLoop_body
 
-example (borrow : Result (Nat × (Nat → Result Nat))) :
+example (borrow : RustM (Nat × (Nat → RustM Nat))) :
     crossUniverseLoop_body borrow =
       (do
         let (seed, back) ← borrow
-        let offset ← Result.ok (seed + 1)
+        let offset ← RustM.ok (seed + 1)
         let restored ← back offset
         pure (back, restored)) := rfl
 
-example (n : Nat) (borrow : Result (Nat × (Nat → Result Nat))) :
+example (n : Nat) (borrow : RustM (Nat × (Nat → RustM Nat))) :
     crossUniverseLoop n borrow =
-      (if n == 0 then Result.ok 0 else do
+      (if n == 0 then RustM.ok 0 else do
         let (back, restored) ← crossUniverseLoop_body borrow
-        crossUniverseLoop (n - 1) (Result.ok (restored, back))) :=
+        crossUniverseLoop (n - 1) (RustM.ok (restored, back))) :=
   crossUniverseLoop.fold n borrow
 
 /--

@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -23,11 +23,11 @@ namespace dyn
 /-- Trait declaration: [dyn::Trait]
     Source: 'tests/src/dyn.rs', lines 3:0-5:1 -/
 structure Trait (Self : Type _) where
-  get : Self → Result Std.U32
+  get : Self → RustM Std.U32
 
 /-- [dyn::{impl dyn::Trait for u32}::get]:
     Source: 'tests/src/dyn.rs', lines 8:4-10:5 -/
-def U32.Insts.DynTrait.get (self : Std.U32) : Result Std.U32 := do
+def U32.Insts.DynTrait.get (self : Std.U32) : RustM Std.U32 := do
   ok self
 
 /-- Trait implementation: [dyn::{impl dyn::Trait for u32}]
@@ -39,7 +39,7 @@ def U32.Insts.DynTrait : Trait Std.U32 := {
 
 /-- [dyn::{impl dyn::Trait for bool}::get]:
     Source: 'tests/src/dyn.rs', lines 14:4-16:5 -/
-def Bool.Insts.DynTrait.get (self : Bool) : Result Std.U32 := do
+def Bool.Insts.DynTrait.get (self : Bool) : RustM Std.U32 := do
   ok (UScalar.cast_fromBool .U32 self)
 
 /-- Trait implementation: [dyn::{impl dyn::Trait for bool}]
@@ -51,12 +51,12 @@ def Bool.Insts.DynTrait : Trait Bool := {
 
 /-- [dyn::bool_to_trait]:
     Source: 'tests/src/dyn.rs', lines 19:0-21:1 -/
-def bool_to_trait (b : Bool) : Result Bool := do
+def bool_to_trait (b : Bool) : RustM Bool := do
   ok b
 
 /-- [dyn::mk_trait]:
     Source: 'tests/src/dyn.rs', lines 23:0-29:1 -/
-def mk_trait (b : Bool) : Result (Dyn (fun _dyn => Trait _dyn)) := do
+def mk_trait (b : Bool) : RustM (Dyn (fun _dyn => Trait _dyn)) := do
   if b
   then ok (Dyn.mk _ Bool.Insts.DynTrait b)
   else ok (Dyn.mk _ U32.Insts.DynTrait 0#u32)
@@ -64,14 +64,14 @@ def mk_trait (b : Bool) : Result (Dyn (fun _dyn => Trait _dyn)) := do
 /-- Trait declaration: [dyn::Into]
     Source: 'tests/src/dyn.rs', lines 31:0-33:1 -/
 structure Into (Self : Type _) (T : Type _) where
-  into : Self → Result T
+  into : Self → RustM T
 
 /-- [dyn::mk_into]:
     Source: 'tests/src/dyn.rs', lines 36:0-46:1 -/
 def mk_into
   (U : Type _) {V : Type _} {T : Type _} {W : Type _} (IntoInst : Into T V)
   (IntoInst1 : Into W V) (b : Bool) (x : T) (y : W) :
-  Result (Dyn (fun _dyn => Into _dyn V))
+  RustM (Dyn (fun _dyn => Into _dyn V))
   := do
   if b
   then ok (Dyn.mk _ IntoInst x)
@@ -89,7 +89,7 @@ def dyn_closure.closure (T0 : Type _) := Unit
 /-- [dyn::dyn_closure]:
     Source: 'tests/src/dyn.rs', lines 50:0-52:1 -/
 def dyn_closure
-  {T0 : Type _} (TrivialInst : Trivial T0) (t : T0) : Result Unit := do
+  {T0 : Type _} (TrivialInst : Trivial T0) (t : T0) : RustM Unit := do
   ok ()
 
 /-- [dyn::dyn_closure::{impl core::ops::function::Fn<(u32,), u32> for dyn::dyn_closure::{closure}<T0>}::call]:
@@ -97,7 +97,7 @@ def dyn_closure
 def dyn_closure.closure.Insts.CoreOpsFunctionFnTupleU32U32.call
   {T0 : Type _} (TrivialInst : Trivial T0) (c : dyn_closure.closure T0)
   (tupled_args : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   ok tupled_args
 

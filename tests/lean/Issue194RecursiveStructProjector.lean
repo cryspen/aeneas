@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -51,12 +51,12 @@ theorem AVLNode.right._simpLemma_ {T : Type _} (value : T) (left : Option
 
 /-- [issue_194_recursive_struct_projector::get_val]:
     Source: 'tests/src/issue-194-recursive-struct-projector.rs', lines 10:0-12:1 -/
-def get_val {T : Type _} (x : AVLNode T) : Result T := do
+def get_val {T : Type _} (x : AVLNode T) : RustM T := do
   ok x.value
 
 /-- [issue_194_recursive_struct_projector::get_left]:
     Source: 'tests/src/issue-194-recursive-struct-projector.rs', lines 14:0-16:1 -/
-def get_left {T : Type _} (x : AVLNode T) : Result (Option (AVLNode T)) := do
+def get_left {T : Type _} (x : AVLNode T) : RustM (Option (AVLNode T)) := do
   ok x.left
 
 end issue_194_recursive_struct_projector

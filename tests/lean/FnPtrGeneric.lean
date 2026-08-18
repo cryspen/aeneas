@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -32,20 +32,20 @@ axiom core.mem.maybe_uninit.MaybeUninit (T : Type _) : Type
 
 /-- [fn_ptr_generic::incr]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
-def incr (x : Std.U8) : Result Std.U8 := do
+def incr (x : Std.U8) : RustM Std.U8 := do
   x + 1#u8
 
 /-- [fn_ptr_generic::{impl core::ops::function::Fn<(u8,), u8> for fn_ptr_generic::incr}::call]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
 def P.Insts.CoreOpsFunctionFnTupleU8U8.call
-  (state : Std.U8 → Result Std.U8) (args : Std.U8) : Result Std.U8 := do
+  (state : Std.U8 → RustM Std.U8) (args : Std.U8) : RustM Std.U8 := do
   incr args
 
 /-- [fn_ptr_generic::{impl core::ops::function::FnMut<(u8,), u8> for fn_ptr_generic::incr}::call_mut]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
 def P.Insts.CoreOpsFunctionFnMutTupleU8U8.call_mut
-  (state : Std.U8 → Result Std.U8) (args : Std.U8) :
-  Result (Std.U8 × (Std.U8 → Result Std.U8))
+  (state : Std.U8 → RustM Std.U8) (args : Std.U8) :
+  RustM (Std.U8 × (Std.U8 → RustM Std.U8))
   := do
   let i ← incr args
   ok (i, state)
@@ -53,14 +53,14 @@ def P.Insts.CoreOpsFunctionFnMutTupleU8U8.call_mut
 /-- [fn_ptr_generic::{impl core::ops::function::FnOnce<(u8,), u8> for fn_ptr_generic::incr}::call_once]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
 def P.Insts.CoreOpsFunctionFnOnceTupleU8U8.call_once
-  (state : Std.U8 → Result Std.U8) (args : Std.U8) : Result Std.U8 := do
+  (state : Std.U8 → RustM Std.U8) (args : Std.U8) : RustM Std.U8 := do
   incr args
 
 /-- Trait implementation: [fn_ptr_generic::{impl core::ops::function::FnOnce<(u8,), u8> for fn_ptr_generic::incr}]
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnOnceTupleU8U8 : core.ops.function.FnOnce (Std.U8
-  → Result Std.U8) Std.U8 Std.U8 := {
+  → RustM Std.U8) Std.U8 Std.U8 := {
   call_once := P.Insts.CoreOpsFunctionFnOnceTupleU8U8.call_once
 }
 
@@ -68,7 +68,7 @@ def P.Insts.CoreOpsFunctionFnOnceTupleU8U8 : core.ops.function.FnOnce (Std.U8
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnMutTupleU8U8 : core.ops.function.FnMut (Std.U8 →
-  Result Std.U8) Std.U8 Std.U8 := {
+  RustM Std.U8) Std.U8 Std.U8 := {
   FnOnceInst := P.Insts.CoreOpsFunctionFnOnceTupleU8U8
   call_mut := P.Insts.CoreOpsFunctionFnMutTupleU8U8.call_mut
 }
@@ -77,7 +77,7 @@ def P.Insts.CoreOpsFunctionFnMutTupleU8U8 : core.ops.function.FnMut (Std.U8 →
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnTupleU8U8 : core.ops.function.Fn (Std.U8 →
-  Result Std.U8) Std.U8 Std.U8 := {
+  RustM Std.U8) Std.U8 Std.U8 := {
   FnMutInst := P.Insts.CoreOpsFunctionFnMutTupleU8U8
   call := P.Insts.CoreOpsFunctionFnTupleU8U8.call
 }
@@ -87,13 +87,13 @@ def P.Insts.CoreOpsFunctionFnTupleU8U8 : core.ops.function.Fn (Std.U8 →
 def apply
   {F : Type _} (coreopsfunctionFnFTupleU8U8Inst : core.ops.function.Fn F Std.U8
   Std.U8) (f : F) (x : Std.U8) :
-  Result Std.U8
+  RustM Std.U8
   := do
   coreopsfunctionFnFTupleU8U8Inst.call f x
 
 /-- [fn_ptr_generic::id]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 15:0-17:1 -/
-def id {T : Type _} (x : T) : Result T := do
+def id {T : Type _} (x : T) : RustM T := do
   ok x
 
 /-- [fn_ptr_generic::Holder]
@@ -104,14 +104,14 @@ structure Holder (T : Type _) where
 
 /-- [fn_ptr_generic::get_x]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 23:0-25:1 -/
-def get_x {T : Type _} (h : Holder T) : Result T := do
+def get_x {T : Type _} (h : Holder T) : RustM T := do
   ok h.x
 
 /-- Trait declaration: [fn_ptr_generic::HasOut]
     Source: 'tests/src/fn_ptr_generic.rs', lines 27:0-30:1
     Visibility: public -/
 structure HasOut (Self : Type _) (Self_Out : Type _) where
-  get : Self → Result Self_Out
+  get : Self → RustM Self_Out
 
 /-- [fn_ptr_generic::Wrap]
     Source: 'tests/src/fn_ptr_generic.rs', lines 32:0-32:22
@@ -123,7 +123,7 @@ def Wrap (F : Type _) := F
     Source: 'tests/src/fn_ptr_generic.rs', lines 36:4-38:5
     Visibility: public -/
 def Wrap.Insts.Fn_ptr_genericHasOut.get
-  {F : Type _} (self : Wrap F) : Result F := do
+  {F : Type _} (self : Wrap F) : RustM F := do
   ok self
 
 /-- Trait implementation: [fn_ptr_generic::{impl fn_ptr_generic::HasOut<F> for fn_ptr_generic::Wrap<F>}]
@@ -136,13 +136,13 @@ def Wrap.Insts.Fn_ptr_genericHasOut (F : Type _) : HasOut (Wrap F) F := {
 /-- [fn_ptr_generic::use_id]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 41:0-43:1
     Visibility: public -/
-def use_id (x : Std.U8) : Result Std.U8 := do
+def use_id (x : Std.U8) : RustM Std.U8 := do
   let f ← id (incr)
   apply P.Insts.CoreOpsFunctionFnTupleU8U8 f x
 
 /-- [fn_ptr_generic::unwrap_or]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 45:0-50:1 -/
-def unwrap_or {T : Type _} (o : Option T) (d : T) : Result T := do
+def unwrap_or {T : Type _} (o : Option T) (d : T) : RustM T := do
   match o with
   | none => ok d
   | some x => ok x
@@ -150,41 +150,41 @@ def unwrap_or {T : Type _} (o : Option T) (d : T) : Result T := do
 /-- [fn_ptr_generic::use_some]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 52:0-54:1
     Visibility: public -/
-def use_some (x : Std.U8) : Result Std.U8 := do
+def use_some (x : Std.U8) : RustM Std.U8 := do
   let f ← unwrap_or (some (incr)) (incr)
   apply P.Insts.CoreOpsFunctionFnTupleU8U8 f x
 
 /-- [fn_ptr_generic::use_holder]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 56:0-58:1
     Visibility: public -/
-def use_holder (x : Std.U8) : Result Std.U8 := do
+def use_holder (x : Std.U8) : RustM Std.U8 := do
   let f ← get_x { x := (incr) }
   apply P.Insts.CoreOpsFunctionFnTupleU8U8 f x
 
 /-- [fn_ptr_generic::use_assoc]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 60:0-63:1
     Visibility: public -/
-def use_assoc (x : Std.U8) : Result Std.U8 := do
+def use_assoc (x : Std.U8) : RustM Std.U8 := do
   let f ← Wrap.Insts.Fn_ptr_genericHasOut.get (incr)
   apply P.Insts.CoreOpsFunctionFnTupleU8U8 f x
 
 /-- [fn_ptr_generic::use_option_map]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 65:0-67:1
     Visibility: public -/
-def use_option_map (o : Option Std.U8) : Result (Option Std.U8) := do
+def use_option_map (o : Option Std.U8) : RustM (Option Std.U8) := do
   core.option.Option.map P.Insts.CoreOpsFunctionFnOnceTupleU8U8 o (incr)
 
 /-- [fn_ptr_generic::use_vec]:
     Source: 'tests/src/fn_ptr_generic.rs', lines 69:0-72:1
     Visibility: public -/
-def use_vec (x : Std.U8) : Result Std.U8 := do
+def use_vec (x : Std.U8) : RustM Std.U8 := do
   let y ←
     lift (Std.Array.to_slice (Array.make 1#usize [ incr ] : Array (Std.U8 →
-      Result Std.U8) 1#usize))
+      RustM Std.U8) 1#usize))
   let ret := alloc.slice.Slice.into_vec y
   let f ←
     alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice (Std.U8 →
-      Result Std.U8)) ret 0#usize
+      RustM Std.U8)) ret 0#usize
   apply P.Insts.CoreOpsFunctionFnTupleU8U8 f x
 
 end fn_ptr_generic

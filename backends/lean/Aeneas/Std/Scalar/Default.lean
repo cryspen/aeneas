@@ -7,7 +7,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result ScalarElab
+open RustM ScalarElab
 
 /- [core::default::{core::default::Default for u32}::default]:
    Source: '/rustc/library/core/src/default.rs', lines 156:12-156:30

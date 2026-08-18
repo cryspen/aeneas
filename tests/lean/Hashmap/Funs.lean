@@ -4,7 +4,7 @@ module
 public import Aeneas
 public import Hashmap.Types
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -24,14 +24,14 @@ namespace hashmap
 /-- [hashmap::hash_key]:
     Source: 'tests/src/hashmap.rs', lines 32:0-37:1
     Visibility: public -/
-def hash_key (k : Std.Usize) : Result Std.Usize := do
+def hash_key (k : Std.Usize) : RustM Std.Usize := do
   ok k
 
 /-- [hashmap::{impl core::clone::Clone for hashmap::Fraction}::clone]:
     Source: 'tests/src/hashmap.rs', lines 39:9-39:14
     Visibility: public -/
 def Fraction.Insts.CoreCloneClone.clone
-  (self : Fraction) : Result Fraction := do
+  (self : Fraction) : RustM Fraction := do
   ok self
 
 /-- Trait implementation: [hashmap::{impl core::clone::Clone for hashmap::Fraction}]
@@ -53,7 +53,7 @@ def Fraction.Insts.CoreMarkerCopy : core.marker.Copy Fraction := {
 @[rust_loop]
 def HashMap.allocate_slots_loop
   {T : Type _} (slots : alloc.vec.Vec (AList T)) (n : Std.Usize) :
-  Result (alloc.vec.Vec (AList T))
+  RustM (alloc.vec.Vec (AList T))
   := do
   if n > 0#usize
   then
@@ -68,7 +68,7 @@ partial_fixpoint
 @[reducible]
 def HashMap.allocate_slots
   {T : Type _} (slots : alloc.vec.Vec (AList T)) (n : Std.Usize) :
-  Result (alloc.vec.Vec (AList T))
+  RustM (alloc.vec.Vec (AList T))
   := do
   HashMap.allocate_slots_loop slots n
 
@@ -76,7 +76,7 @@ def HashMap.allocate_slots
     Source: 'tests/src/hashmap.rs', lines 72:4-83:5 -/
 def HashMap.new_with_capacity
   (T : Type _) (capacity : Std.Usize) (max_load_factor : Fraction) :
-  Result (HashMap T)
+  RustM (HashMap T)
   := do
   let slots ← HashMap.allocate_slots (alloc.vec.Vec.new (AList T)) capacity
   let i ← capacity * max_load_factor.dividend
@@ -93,7 +93,7 @@ def HashMap.new_with_capacity
 /-- [hashmap::{hashmap::HashMap<T>}::new]:
     Source: 'tests/src/hashmap.rs', lines 85:4-94:5
     Visibility: public -/
-def HashMap.new (T : Type _) : Result (HashMap T) := do
+def HashMap.new (T : Type _) : RustM (HashMap T) := do
   HashMap.new_with_capacity T 32#usize
     { dividend := 4#usize, divisor := 5#usize }
 
@@ -103,7 +103,7 @@ def HashMap.new (T : Type _) : Result (HashMap T) := do
 @[rust_loop]
 def HashMap.clear_loop
   {T : Type _} (slots : alloc.vec.Vec (AList T)) (i : Std.Usize) :
-  Result (alloc.vec.Vec (AList T))
+  RustM (alloc.vec.Vec (AList T))
   := do
   let i1 := alloc.vec.Vec.len slots
   if i < i1
@@ -120,14 +120,14 @@ partial_fixpoint
 /-- [hashmap::{hashmap::HashMap<T>}::clear]:
     Source: 'tests/src/hashmap.rs', lines 96:4-104:5
     Visibility: public -/
-def HashMap.clear {T : Type _} (self : HashMap T) : Result (HashMap T) := do
+def HashMap.clear {T : Type _} (self : HashMap T) : RustM (HashMap T) := do
   let slots ← HashMap.clear_loop self.slots 0#usize
   ok { self with num_entries := 0#usize, slots }
 
 /-- [hashmap::{hashmap::HashMap<T>}::len]:
     Source: 'tests/src/hashmap.rs', lines 106:4-108:5
     Visibility: public -/
-def HashMap.len {T : Type _} (self : HashMap T) : Result Std.Usize := do
+def HashMap.len {T : Type _} (self : HashMap T) : RustM Std.Usize := do
   ok self.num_entries
 
 /-- [hashmap::{hashmap::HashMap<T>}::insert_in_list]: loop 0:
@@ -135,7 +135,7 @@ def HashMap.len {T : Type _} (self : HashMap T) : Result Std.Usize := do
 @[rust_loop]
 def HashMap.insert_in_list_loop
   {T : Type _} (key : Std.Usize) (value : T) (ls : AList T) :
-  Result (Bool × (AList T))
+  RustM (Bool × (AList T))
   := do
   match ls with
   | AList.Cons ckey cvalue tl =>
@@ -153,7 +153,7 @@ partial_fixpoint
 @[reducible]
 def HashMap.insert_in_list
   {T : Type _} (key : Std.Usize) (value : T) (ls : AList T) :
-  Result (Bool × (AList T))
+  RustM (Bool × (AList T))
   := do
   HashMap.insert_in_list_loop key value ls
 
@@ -161,7 +161,7 @@ def HashMap.insert_in_list
     Source: 'tests/src/hashmap.rs', lines 133:4-141:5 -/
 def HashMap.insert_no_resize
   {T : Type _} (self : HashMap T) (key : Std.Usize) (value : T) :
-  Result (HashMap T)
+  RustM (HashMap T)
   := do
   let hash ← hash_key key
   let i := alloc.vec.Vec.len self.slots
@@ -182,7 +182,7 @@ def HashMap.insert_no_resize
     Source: 'tests/src/hashmap.rs', lines 195:12-202:17 -/
 @[rust_loop]
 def HashMap.move_elements_from_list_loop
-  {T : Type _} (ntable : HashMap T) (ls : AList T) : Result (HashMap T) := do
+  {T : Type _} (ntable : HashMap T) (ls : AList T) : RustM (HashMap T) := do
   match ls with
   | AList.Cons k v tl =>
     let ntable1 ← HashMap.insert_no_resize ntable k v
@@ -194,7 +194,7 @@ partial_fixpoint
     Source: 'tests/src/hashmap.rs', lines 192:4-205:5 -/
 @[reducible]
 def HashMap.move_elements_from_list
-  {T : Type _} (ntable : HashMap T) (ls : AList T) : Result (HashMap T) := do
+  {T : Type _} (ntable : HashMap T) (ls : AList T) : RustM (HashMap T) := do
   HashMap.move_elements_from_list_loop ntable ls
 
 /-- [hashmap::{hashmap::HashMap<T>}::move_elements]: loop 0:
@@ -203,7 +203,7 @@ def HashMap.move_elements_from_list
 def HashMap.move_elements_loop
   {T : Type _} (ntable : HashMap T) (slots : alloc.vec.Vec (AList T))
   (i : Std.Usize) :
-  Result ((HashMap T) × (alloc.vec.Vec (AList T)))
+  RustM ((HashMap T) × (alloc.vec.Vec (AList T)))
   := do
   let i1 := alloc.vec.Vec.len slots
   if i < i1
@@ -224,14 +224,14 @@ partial_fixpoint
 @[reducible]
 def HashMap.move_elements
   {T : Type _} (ntable : HashMap T) (slots : alloc.vec.Vec (AList T)) :
-  Result ((HashMap T) × (alloc.vec.Vec (AList T)))
+  RustM ((HashMap T) × (alloc.vec.Vec (AList T)))
   := do
   HashMap.move_elements_loop ntable slots 0#usize
 
 /-- [hashmap::{hashmap::HashMap<T>}::try_resize]:
     Source: 'tests/src/hashmap.rs', lines 156:4-175:5 -/
 def HashMap.try_resize
-  {T : Type _} (self : HashMap T) : Result (HashMap T) := do
+  {T : Type _} (self : HashMap T) : RustM (HashMap T) := do
   let capacity := alloc.vec.Vec.len self.slots
   let n1 ← core.num.Usize.MAX / 2#usize
   let i ← n1 / self.max_load_factor.dividend
@@ -248,7 +248,7 @@ def HashMap.try_resize
     Visibility: public -/
 def HashMap.insert
   {T : Type _} (self : HashMap T) (key : Std.Usize) (value : T) :
-  Result (HashMap T)
+  RustM (HashMap T)
   := do
   let self1 ← HashMap.insert_no_resize self key value
   let i ← HashMap.len self1
@@ -263,7 +263,7 @@ def HashMap.insert
     Visibility: public -/
 @[rust_loop]
 def HashMap.contains_key_in_list_loop
-  {T : Type _} (key : Std.Usize) (ls : AList T) : Result Bool := do
+  {T : Type _} (key : Std.Usize) (ls : AList T) : RustM Bool := do
   match ls with
   | AList.Cons ckey _ tl =>
     if ckey = key
@@ -277,14 +277,14 @@ partial_fixpoint
     Visibility: public -/
 @[reducible]
 def HashMap.contains_key_in_list
-  {T : Type _} (key : Std.Usize) (ls : AList T) : Result Bool := do
+  {T : Type _} (key : Std.Usize) (ls : AList T) : RustM Bool := do
   HashMap.contains_key_in_list_loop key ls
 
 /-- [hashmap::{hashmap::HashMap<T>}::contains_key]:
     Source: 'tests/src/hashmap.rs', lines 208:4-212:5
     Visibility: public -/
 def HashMap.contains_key
-  {T : Type _} (self : HashMap T) (key : Std.Usize) : Result Bool := do
+  {T : Type _} (self : HashMap T) (key : Std.Usize) : RustM Bool := do
   let hash ← hash_key key
   let i := alloc.vec.Vec.len self.slots
   let hash_mod ← hash % i
@@ -297,7 +297,7 @@ def HashMap.contains_key
     Source: 'tests/src/hashmap.rs', lines 234:8-242:5 -/
 @[rust_loop]
 def HashMap.get_in_list_loop
-  {T : Type _} (key : Std.Usize) (ls : AList T) : Result (Option T) := do
+  {T : Type _} (key : Std.Usize) (ls : AList T) : RustM (Option T) := do
   match ls with
   | AList.Cons ckey cvalue tl =>
     if ckey = key
@@ -310,14 +310,14 @@ partial_fixpoint
     Source: 'tests/src/hashmap.rs', lines 233:4-242:5 -/
 @[reducible]
 def HashMap.get_in_list
-  {T : Type _} (key : Std.Usize) (ls : AList T) : Result (Option T) := do
+  {T : Type _} (key : Std.Usize) (ls : AList T) : RustM (Option T) := do
   HashMap.get_in_list_loop key ls
 
 /-- [hashmap::{hashmap::HashMap<T>}::get]:
     Source: 'tests/src/hashmap.rs', lines 244:4-248:5
     Visibility: public -/
 def HashMap.get
-  {T : Type _} (self : HashMap T) (key : Std.Usize) : Result (Option T) := do
+  {T : Type _} (self : HashMap T) (key : Std.Usize) : RustM (Option T) := do
   let hash ← hash_key key
   let i := alloc.vec.Vec.len self.slots
   let hash_mod ← hash % i
@@ -332,7 +332,7 @@ def HashMap.get
 @[rust_loop]
 def HashMap.get_mut_in_list_loop
   {T : Type _} (ls : AList T) (key : Std.Usize) :
-  Result ((Option T) × (Option T → AList T))
+  RustM ((Option T) × (Option T → AList T))
   := do
   match ls with
   | AList.Cons ckey cvalue tl =>
@@ -358,7 +358,7 @@ partial_fixpoint
 @[reducible]
 def HashMap.get_mut_in_list
   {T : Type _} (ls : AList T) (key : Std.Usize) :
-  Result ((Option T) × (Option T → AList T))
+  RustM ((Option T) × (Option T → AList T))
   := do
   HashMap.get_mut_in_list_loop ls key
 
@@ -367,7 +367,7 @@ def HashMap.get_mut_in_list
     Visibility: public -/
 def HashMap.get_mut
   {T : Type _} (self : HashMap T) (key : Std.Usize) :
-  Result ((Option T) × (Option T → HashMap T))
+  RustM ((Option T) × (Option T → HashMap T))
   := do
   let hash ← hash_key key
   let i := alloc.vec.Vec.len self.slots
@@ -388,7 +388,7 @@ def HashMap.get_mut
 @[rust_loop]
 def HashMap.remove_from_list_loop
   {T : Type _} (key : Std.Usize) (ls : AList T) :
-  Result ((Option T) × (AList T))
+  RustM ((Option T) × (AList T))
   := do
   match ls with
   | AList.Cons ckey t tl =>
@@ -410,7 +410,7 @@ partial_fixpoint
 @[reducible]
 def HashMap.remove_from_list
   {T : Type _} (key : Std.Usize) (ls : AList T) :
-  Result ((Option T) × (AList T))
+  RustM ((Option T) × (AList T))
   := do
   HashMap.remove_from_list_loop key ls
 
@@ -419,7 +419,7 @@ def HashMap.remove_from_list
     Visibility: public -/
 def HashMap.remove
   {T : Type _} (self : HashMap T) (key : Std.Usize) :
-  Result ((Option T) × (HashMap T))
+  RustM ((Option T) × (HashMap T))
   := do
   let hash ← hash_key key
   let i := alloc.vec.Vec.len self.slots

@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -25,7 +25,7 @@ namespace tutorial
     Visibility: public -/
 def choose
   {T : Type _} (b : Bool) (x : T) (y : T) :
-  Result (T × (T → (T × T)))
+  RustM (T × (T → (T × T)))
   := do
   if b
   then let back := fun x1 => (x1, y)
@@ -36,27 +36,27 @@ def choose
 /-- [tutorial::mul2_add1]:
     Source: 'src/lib.rs', lines 9:0-11:1
     Visibility: public -/
-def mul2_add1 (x : Std.U32) : Result Std.U32 := do
+def mul2_add1 (x : Std.U32) : RustM Std.U32 := do
   let i ← x + x
   i + 1#u32
 
 /-- [tutorial::mul2_add1_add]:
     Source: 'src/lib.rs', lines 13:0-15:1
     Visibility: public -/
-def mul2_add1_add (x : Std.U32) (y : Std.U32) : Result Std.U32 := do
+def mul2_add1_add (x : Std.U32) (y : Std.U32) : RustM Std.U32 := do
   let i ← mul2_add1 x
   i + y
 
 /-- [tutorial::incr]:
     Source: 'src/lib.rs', lines 17:0-19:1
     Visibility: public -/
-def incr (x : Std.U32) : Result Std.U32 := do
+def incr (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
 /-- [tutorial::use_incr]:
     Source: 'src/lib.rs', lines 21:0-26:1
     Visibility: public -/
-def use_incr : Result Unit := do
+def use_incr : RustM Unit := do
   let x ← incr 0#u32
   let x1 ← incr x
   let _ ← incr x1
@@ -73,7 +73,7 @@ inductive CList (T : Type _) where
 /-- [tutorial::list_nth]:
     Source: 'src/lib.rs', lines 35:0-48:1
     Visibility: public -/
-def list_nth {T : Type _} (l : CList T) (i : Std.U32) : Result T := do
+def list_nth {T : Type _} (l : CList T) (i : Std.U32) : RustM T := do
   match l with
   | CList.CCons x tl =>
     if i = 0#u32
@@ -88,7 +88,7 @@ partial_fixpoint
     Visibility: public -/
 def list_nth_mut
   {T : Type _} (l : CList T) (i : Std.U32) :
-  Result (T × (T → CList T))
+  RustM (T × (T → CList T))
   := do
   match l with
   | CList.CCons x tl =>
@@ -108,7 +108,7 @@ partial_fixpoint
     Source: 'src/lib.rs', lines 66:4-74:1
     Visibility: public -/
 @[rust_loop]
-def list_nth1_loop {T : Type _} (l : CList T) (i : Std.U32) : Result T := do
+def list_nth1_loop {T : Type _} (l : CList T) (i : Std.U32) : RustM T := do
   match l with
   | CList.CCons x tl =>
     if i = 0#u32
@@ -122,13 +122,13 @@ partial_fixpoint
     Source: 'src/lib.rs', lines 65:0-74:1
     Visibility: public -/
 @[reducible]
-def list_nth1 {T : Type _} (l : CList T) (i : Std.U32) : Result T := do
+def list_nth1 {T : Type _} (l : CList T) (i : Std.U32) : RustM T := do
   list_nth1_loop l i
 
 /-- [tutorial::i32_id]:
     Source: 'src/lib.rs', lines 76:0-83:1
     Visibility: public -/
-def i32_id (i : Std.I32) : Result Std.I32 := do
+def i32_id (i : Std.I32) : RustM Std.I32 := do
   if i = 0#i32
   then ok 0#i32
   else let i1 ← i - 1#i32
@@ -141,7 +141,7 @@ mutual
 /-- [tutorial::even]:
     Source: 'src/lib.rs', lines 85:0-92:1
     Visibility: public -/
-def even (i : Std.U32) : Result Bool := do
+def even (i : Std.U32) : RustM Bool := do
   if i = 0#u32
   then ok true
   else let i1 ← i - 1#u32
@@ -151,7 +151,7 @@ partial_fixpoint
 /-- [tutorial::odd]:
     Source: 'src/lib.rs', lines 94:0-101:1
     Visibility: public -/
-def odd (i : Std.U32) : Result Bool := do
+def odd (i : Std.U32) : RustM Bool := do
   if i = 0#u32
   then ok false
   else let i1 ← i - 1#u32
@@ -164,13 +164,13 @@ end
     Source: 'src/lib.rs', lines 105:0-107:1
     Visibility: public -/
 structure Counter (Self : Type _) where
-  incr : Self → Result (Std.Usize × Self)
+  incr : Self → RustM (Std.Usize × Self)
 
 /-- [tutorial::{impl tutorial::Counter for usize}::incr]:
     Source: 'src/lib.rs', lines 110:4-114:5
     Visibility: public -/
 def Usize.Insts.TutorialCounter.incr
-  (self : Std.Usize) : Result (Std.Usize × Std.Usize) := do
+  (self : Std.Usize) : RustM (Std.Usize × Std.Usize) := do
   let self1 ← self + 1#usize
   ok (self, self1)
 
@@ -186,7 +186,7 @@ def Usize.Insts.TutorialCounter : Counter Std.Usize := {
     Visibility: public -/
 def use_counter
   {T : Type _} (CounterInst : Counter T) (cnt : T) :
-  Result (Std.Usize × T)
+  RustM (Std.Usize × T)
   := do
   CounterInst.incr cnt
 
@@ -196,7 +196,7 @@ def use_counter
 @[rust_loop]
 def list_nth_mut1_loop
   {T : Type _} (l : CList T) (i : Std.U32) :
-  Result (T × (T → CList T))
+  RustM (T × (T → CList T))
   := do
   match l with
   | CList.CCons x tl =>
@@ -217,7 +217,7 @@ partial_fixpoint
 @[reducible]
 def list_nth_mut1
   {T : Type _} (l : CList T) (i : Std.U32) :
-  Result (T × (T → CList T))
+  RustM (T × (T → CList T))
   := do
   list_nth_mut1_loop l i
 
@@ -226,7 +226,7 @@ def list_nth_mut1
     Visibility: public -/
 @[rust_loop]
 def list_tail_loop
-  {T : Type _} (l : CList T) : Result (CList T → CList T) := do
+  {T : Type _} (l : CList T) : RustM (CList T → CList T) := do
   match l with
   | CList.CCons t tl =>
     let back ← list_tail_loop tl
@@ -240,7 +240,7 @@ partial_fixpoint
     Visibility: public -/
 def list_tail
   {T : Type _} (l : CList T) :
-  Result ((CList T) × (CList T → CList T))
+  RustM ((CList T) × (CList T → CList T))
   := do
   let back ← list_tail_loop l
   ok (CList.CNil, back)
@@ -249,7 +249,7 @@ def list_tail
     Source: 'src/lib.rs', lines 141:0-144:1
     Visibility: public -/
 def append_in_place
-  {T : Type _} (l0 : CList T) (l1 : CList T) : Result (CList T) := do
+  {T : Type _} (l0 : CList T) (l1 : CList T) : RustM (CList T) := do
   let (_, list_tail_back) ← list_tail l0
   ok (list_tail_back l1)
 
@@ -258,7 +258,7 @@ def append_in_place
     Visibility: public -/
 @[rust_loop]
 def reverse_loop
-  {T : Type _} (l : CList T) (out : CList T) : Result (CList T) := do
+  {T : Type _} (l : CList T) (out : CList T) : RustM (CList T) := do
   match l with
   | CList.CCons hd tl => reverse_loop tl (CList.CCons hd out)
   | CList.CNil => ok out
@@ -268,7 +268,7 @@ partial_fixpoint
     Source: 'src/lib.rs', lines 146:0-154:1
     Visibility: public -/
 @[reducible]
-def reverse {T : Type _} (l : CList T) : Result (CList T) := do
+def reverse {T : Type _} (l : CList T) : RustM (CList T) := do
   reverse_loop l CList.CNil
 
 /-- [tutorial::zero]: loop 0:
@@ -277,7 +277,7 @@ def reverse {T : Type _} (l : CList T) : Result (CList T) := do
 @[rust_loop]
 def zero_loop
   (x : alloc.vec.Vec Std.U32) (i : Std.Usize) :
-  Result (alloc.vec.Vec Std.U32)
+  RustM (alloc.vec.Vec Std.U32)
   := do
   let i1 := alloc.vec.Vec.len x
   if i < i1
@@ -295,7 +295,7 @@ partial_fixpoint
     Source: 'src/lib.rs', lines 162:0-168:1
     Visibility: public -/
 @[reducible]
-def zero (x : alloc.vec.Vec Std.U32) : Result (alloc.vec.Vec Std.U32) := do
+def zero (x : alloc.vec.Vec Std.U32) : RustM (alloc.vec.Vec Std.U32) := do
   zero_loop x 0#usize
 
 /-- [tutorial::add_no_overflow]: loop 0:
@@ -304,7 +304,7 @@ def zero (x : alloc.vec.Vec Std.U32) : Result (alloc.vec.Vec Std.U32) := do
 @[rust_loop]
 def add_no_overflow_loop
   (x : alloc.vec.Vec Std.U32) (y : alloc.vec.Vec Std.U32) (i : Std.Usize) :
-  Result (alloc.vec.Vec Std.U32)
+  RustM (alloc.vec.Vec Std.U32)
   := do
   let i1 := alloc.vec.Vec.len x
   if i < i1
@@ -327,7 +327,7 @@ partial_fixpoint
 @[reducible]
 def add_no_overflow
   (x : alloc.vec.Vec Std.U32) (y : alloc.vec.Vec Std.U32) :
-  Result (alloc.vec.Vec Std.U32)
+  RustM (alloc.vec.Vec Std.U32)
   := do
   add_no_overflow_loop x y 0#usize
 
@@ -338,7 +338,7 @@ def add_no_overflow
 def add_with_carry_loop
   (x : alloc.vec.Vec Std.U32) (y : alloc.vec.Vec Std.U32) (c0 : Std.U8)
   (i : Std.Usize) :
-  Result (Std.U8 × (alloc.vec.Vec Std.U32))
+  RustM (Std.U8 × (alloc.vec.Vec Std.U32))
   := do
   let i1 := alloc.vec.Vec.len x
   if i < i1
@@ -368,13 +368,13 @@ partial_fixpoint
 @[reducible]
 def add_with_carry
   (x : alloc.vec.Vec Std.U32) (y : alloc.vec.Vec Std.U32) :
-  Result (Std.U8 × (alloc.vec.Vec Std.U32))
+  RustM (Std.U8 × (alloc.vec.Vec Std.U32))
   := do
   add_with_carry_loop x y 0#u8 0#usize
 
 /-- [tutorial::max]:
     Source: 'src/lib.rs', lines 201:0-203:1 -/
-def max (x : Std.Usize) (y : Std.Usize) : Result Std.Usize := do
+def max (x : Std.Usize) (y : Std.Usize) : RustM Std.Usize := do
   if x > y
   then ok x
   else ok y
@@ -382,7 +382,7 @@ def max (x : Std.Usize) (y : Std.Usize) : Result Std.Usize := do
 /-- [tutorial::get_or_zero]:
     Source: 'src/lib.rs', lines 205:0-207:1 -/
 def get_or_zero
-  (y : alloc.vec.Vec Std.U32) (i : Std.Usize) : Result Std.U32 := do
+  (y : alloc.vec.Vec Std.U32) (i : Std.Usize) : RustM Std.U32 := do
   let i1 := alloc.vec.Vec.len y
   if i < i1
   then alloc.vec.Vec.index (core.slice.index.SliceIndexUsizeSlice Std.U32) y i
@@ -395,7 +395,7 @@ def get_or_zero
 def add_loop
   (x : alloc.vec.Vec Std.U32) (y : alloc.vec.Vec Std.U32) (max1 : Std.Usize)
   (c0 : Std.U8) (i : Std.Usize) :
-  Result ((alloc.vec.Vec Std.U32) × Std.U8)
+  RustM ((alloc.vec.Vec Std.U32) × Std.U8)
   := do
   if i < max1
   then
@@ -422,7 +422,7 @@ partial_fixpoint
     Visibility: public -/
 def add
   (x : alloc.vec.Vec Std.U32) (y : alloc.vec.Vec Std.U32) :
-  Result (alloc.vec.Vec Std.U32)
+  RustM (alloc.vec.Vec Std.U32)
   := do
   let i := alloc.vec.Vec.len x
   let i1 := alloc.vec.Vec.len y
@@ -437,14 +437,14 @@ def add
 /-- Trait declaration: [tutorial::Hash]
     Source: 'src/lib.rs', lines 250:0-252:1 -/
 structure Hash (Self : Type _) where
-  hash : Std.U32 → Result Std.U32
+  hash : Std.U32 → RustM Std.U32
 
 /-- [tutorial::pseudo_random]: loop 0:
     Source: 'src/lib.rs', lines 258:2-260:3
     Visibility: public -/
 @[rust_loop]
 def pseudo_random_loop
-  {T : Type _} (HashInst : Hash T) (state : Std.U32) : Result Std.U32 := do
+  {T : Type _} (HashInst : Hash T) (state : Std.U32) : RustM Std.U32 := do
   if state < 100#u32
   then let state1 ← HashInst.hash state
        pseudo_random_loop HashInst state1
@@ -455,7 +455,7 @@ partial_fixpoint
     Source: 'src/lib.rs', lines 255:0-262:1
     Visibility: public -/
 @[reducible]
-def pseudo_random {T : Type _} (HashInst : Hash T) : Result Std.U32 := do
+def pseudo_random {T : Type _} (HashInst : Hash T) : RustM Std.U32 := do
   pseudo_random_loop HashInst 0#u32
 
 end tutorial

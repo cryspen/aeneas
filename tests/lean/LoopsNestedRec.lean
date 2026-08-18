@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -24,7 +24,7 @@ namespace loops_nested_rec
     Source: 'tests/src/loops-nested-rec.rs', lines 8:8-10:9
     Visibility: public -/
 @[rust_loop]
-def iter_loop0_loop0 (n : Std.U32) (j : Std.U32) : Result Unit := do
+def iter_loop0_loop0 (n : Std.U32) (j : Std.U32) : RustM Unit := do
   if j < n
   then let j1 ← j + 1#u32
        iter_loop0_loop0 n j1
@@ -35,7 +35,7 @@ partial_fixpoint
     Source: 'tests/src/loops-nested-rec.rs', lines 6:4-12:5
     Visibility: public -/
 @[rust_loop]
-def iter_loop0 (m : Std.U32) (n : Std.U32) (i : Std.U32) : Result Unit := do
+def iter_loop0 (m : Std.U32) (n : Std.U32) (i : Std.U32) : RustM Unit := do
   if i < m
   then iter_loop0_loop0 n 0#u32
        let i1 ← i + 1#u32
@@ -47,7 +47,7 @@ partial_fixpoint
     Source: 'tests/src/loops-nested-rec.rs', lines 4:0-13:1
     Visibility: public -/
 @[reducible]
-def iter (m : Std.U32) (n : Std.U32) : Result Unit := do
+def iter (m : Std.U32) (n : Std.U32) : RustM Unit := do
   iter_loop0 m n 0#u32
 
 /-- [loops_nested_rec::sum]: loop 1:
@@ -55,7 +55,7 @@ def iter (m : Std.U32) (n : Std.U32) : Result Unit := do
     Visibility: public -/
 @[rust_loop]
 def sum_loop0_loop0
-  (n : Std.U32) (s : Std.U32) (j : Std.U32) : Result Std.U32 := do
+  (n : Std.U32) (s : Std.U32) (j : Std.U32) : RustM Std.U32 := do
   if j < n
   then let s1 ← s + 1#u32
        let j1 ← j + 1#u32
@@ -69,7 +69,7 @@ partial_fixpoint
 @[rust_loop]
 def sum_loop0
   (m : Std.U32) (n : Std.U32) (s : Std.U32) (i : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   if i < m
   then
@@ -83,7 +83,7 @@ partial_fixpoint
     Source: 'tests/src/loops-nested-rec.rs', lines 15:0-27:1
     Visibility: public -/
 @[reducible]
-def sum (m : Std.U32) (n : Std.U32) : Result Std.U32 := do
+def sum (m : Std.U32) (n : Std.U32) : RustM Std.U32 := do
   sum_loop0 m n 0#u32 0#u32
 
 /-- [loops_nested_rec::update_array]: loop 1:
@@ -91,7 +91,7 @@ def sum (m : Std.U32) (n : Std.U32) : Result Std.U32 := do
 @[rust_loop]
 def update_array_loop0_loop0
   (out : Array Std.U8 4#usize) (j : Std.Usize) :
-  Result (Array Std.U8 4#usize)
+  RustM (Array Std.U8 4#usize)
   := do
   if j < 4#usize
   then
@@ -105,7 +105,7 @@ partial_fixpoint
     Source: 'tests/src/loops-nested-rec.rs', lines 35:4-43:5 -/
 @[rust_loop]
 def update_array_loop0
-  (out : Array Std.U8 4#usize) (i : Std.Usize) : Result Unit := do
+  (out : Array Std.U8 4#usize) (i : Std.Usize) : RustM Unit := do
   if i < 4#usize
   then
     let a ← Array.update out i 0#u8
@@ -117,7 +117,7 @@ partial_fixpoint
 
 /-- [loops_nested_rec::update_array]:
     Source: 'tests/src/loops-nested-rec.rs', lines 31:0-44:1 -/
-def update_array : Result Unit := do
+def update_array : RustM Unit := do
   let out := Array.repeat 4#usize 0#u8
   update_array_loop0 out 0#usize
 
@@ -135,13 +135,13 @@ def FACTORS : Array Std.U16 32#usize :=
 
 /-- [loops_nested_rec::mod_add]:
     Source: 'tests/src/loops-nested-rec.rs', lines 51:0-53:1 -/
-def mod_add (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+def mod_add (a : Std.U32) (b : Std.U32) : RustM Std.U32 := do
   let i ← a + b
   i % 3329#u32
 
 /-- [loops_nested_rec::mod_sub]:
     Source: 'tests/src/loops-nested-rec.rs', lines 55:0-57:1 -/
-def mod_sub (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+def mod_sub (a : Std.U32) (b : Std.U32) : RustM Std.U32 := do
   let i ← a + 3329#u32
   let i1 ← b % 3329#u32
   let i2 ← i - i1
@@ -153,7 +153,7 @@ def mod_sub (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
 def ntt_layer_loop0_loop0
   (a : Array Std.U16 256#usize) (len : Std.Usize) (start : Std.Usize)
   (factor : Std.U32) (j : Std.Usize) :
-  Result (Array Std.U16 256#usize)
+  RustM (Array Std.U16 256#usize)
   := do
   if j < len
   then
@@ -182,7 +182,7 @@ partial_fixpoint
 def ntt_layer_loop0
   (a : Array Std.U16 256#usize) (k : Std.Usize) (len : Std.Usize)
   (start : Std.Usize) :
-  Result (Array Std.U16 256#usize)
+  RustM (Array Std.U16 256#usize)
   := do
   if start < 256#usize
   then
@@ -201,7 +201,7 @@ partial_fixpoint
 @[reducible]
 def ntt_layer
   (a : Array Std.U16 256#usize) (k : Std.Usize) (len : Std.Usize) :
-  Result (Array Std.U16 256#usize)
+  RustM (Array Std.U16 256#usize)
   := do
   ntt_layer_loop0 a k len 0#usize
 
@@ -215,7 +215,7 @@ structure Key where
     Source: 'tests/src/loops-nested-rec.rs', lines 90:4-92:5 -/
 def Key.atranspose_mut
   (self : Key) :
-  Result ((Array Std.U16 32#usize) × (Array Std.U16 32#usize → Key))
+  RustM ((Array Std.U16 32#usize) × (Array Std.U16 32#usize → Key))
   := do
   let back := fun a => { self with atranspose := a }
   ok (self.atranspose, back)
@@ -223,14 +223,14 @@ def Key.atranspose_mut
 /-- [loops_nested_rec::shake_init]:
     Source: 'tests/src/loops-nested-rec.rs', lines 97:0-97:40 -/
 def shake_init
-  (_state : Array Std.U8 8#usize) : Result (Array Std.U8 8#usize) := do
+  (_state : Array Std.U8 8#usize) : RustM (Array Std.U8 8#usize) := do
   ok _state
 
 /-- [loops_nested_rec::shake_append]:
     Source: 'tests/src/loops-nested-rec.rs', lines 98:0-98:56 -/
 def shake_append
   (_state : Array Std.U8 8#usize) (_data : Slice Std.U8) :
-  Result (Array Std.U8 8#usize)
+  RustM (Array Std.U8 8#usize)
   := do
   ok _state
 
@@ -238,7 +238,7 @@ def shake_append
     Source: 'tests/src/loops-nested-rec.rs', lines 99:0-99:62 -/
 def shake_state_copy
   (_src : Array Std.U8 8#usize) (_dst : Array Std.U8 8#usize) :
-  Result (Array Std.U8 8#usize)
+  RustM (Array Std.U8 8#usize)
   := do
   ok _dst
 
@@ -246,7 +246,7 @@ def shake_state_copy
     Source: 'tests/src/loops-nested-rec.rs', lines 100:0-100:56 -/
 def sample_ntt
   (_state : Array Std.U8 8#usize) (_dst : Std.U16) :
-  Result ((Array Std.U8 8#usize) × Std.U16)
+  RustM ((Array Std.U8 8#usize) × Std.U16)
   := do
   ok (_state, _dst)
 
@@ -255,7 +255,7 @@ def sample_ntt
 @[rust_loop]
 def generate_matrix_inner_loop
   (key : Key) (state : Array Std.U8 8#usize) (j : Std.Usize) :
-  Result (Key × (Array Std.U8 8#usize))
+  RustM (Key × (Array Std.U8 8#usize))
   := do
   if j < 4#usize
   then
@@ -274,7 +274,7 @@ partial_fixpoint
 @[reducible]
 def generate_matrix_inner
   (key : Key) (state : Array Std.U8 8#usize) :
-  Result (Key × (Array Std.U8 8#usize))
+  RustM (Key × (Array Std.U8 8#usize))
   := do
   generate_matrix_inner_loop key state 0#usize
 
@@ -285,7 +285,7 @@ def generate_matrix_loop0_loop0
   (key : Key) (state_base : Array Std.U8 8#usize)
   (state_work : Array Std.U8 8#usize) (coordinates : Array Std.U8 2#usize)
   (i : Std.U8) (j : Std.U8) :
-  Result (Key × (Array Std.U8 8#usize) × (Array Std.U8 2#usize))
+  RustM (Key × (Array Std.U8 8#usize) × (Array Std.U8 2#usize))
   := do
   if j < 4#u8
   then
@@ -313,7 +313,7 @@ def generate_matrix_loop0
   (key : Key) (state_base : Array Std.U8 8#usize)
   (state_work : Array Std.U8 8#usize) (coordinates : Array Std.U8 2#usize)
   (i : Std.U8) :
-  Result (Key × (Array Std.U8 8#usize))
+  RustM (Key × (Array Std.U8 8#usize))
   := do
   if i < 4#u8
   then
@@ -330,7 +330,7 @@ partial_fixpoint
 def generate_matrix
   (key : Key) (state_base : Array Std.U8 8#usize)
   (state_work : Array Std.U8 8#usize) :
-  Result (Key × (Array Std.U8 8#usize) × (Array Std.U8 8#usize))
+  RustM (Key × (Array Std.U8 8#usize) × (Array Std.U8 8#usize))
   := do
   let coordinates := Array.repeat 2#usize 0#u8
   let state_base1 ← shake_init state_base
@@ -346,7 +346,7 @@ def generate_matrix
 def mul_add_as_plus_e_loop0_loop0
   (iter1 : core.ops.range.Range Std.Usize) (a_row_temp : alloc.vec.Vec Std.U8)
   (j : Std.Usize) :
-  Result (alloc.vec.Vec Std.U8)
+  RustM (alloc.vec.Vec Std.U8)
   := do
   let (o, iter2) ←
     core.iter.range.IteratorRange.next core.iter.range.StepUsize iter1
@@ -366,7 +366,7 @@ partial_fixpoint
 def mul_add_as_plus_e_loop0
   (iter1 : core.iter.adapters.step_by.StepBy (core.ops.range.Range Std.Usize))
   (a_row_temp : alloc.vec.Vec Std.U8) :
-  Result Unit
+  RustM Unit
   := do
   let (o, iter2) ←
     core.iter.adapters.step_by.IteratorStepBy.next
@@ -385,7 +385,7 @@ partial_fixpoint
 def mul_add_as_plus_e
   (N : Std.Usize) (out : Slice Std.U16) (s : Slice Std.U16)
   (seed_a : Array Std.U8 16#usize) :
-  Result (Slice Std.U16)
+  RustM (Slice Std.U16)
   := do
   let i ← 4#usize * N
   let i1 ← i * 2#usize

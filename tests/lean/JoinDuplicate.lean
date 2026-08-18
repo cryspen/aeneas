@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -22,7 +22,7 @@ namespace join_duplicate
 
 /-- [join_duplicate::join_nested_shared]:
     Source: 'tests/src/join-duplicate.rs', lines 3:0-10:1 -/
-def join_nested_shared (b : Bool) : Result Unit := do
+def join_nested_shared (b : Bool) : RustM Unit := do
   massert ((¬ b) || (1#i32 > 0#i32))
   if b
   then ok ()
@@ -32,7 +32,7 @@ def join_nested_shared (b : Bool) : Result Unit := do
     Source: 'tests/src/join-duplicate.rs', lines 26:4-28:5 -/
 @[rust_loop_body]
 def join_nested_shared_in_loop_loop0.body
-  (n : Std.U32) (i : Std.U32) : Result (ControlFlow Std.U32 Unit) := do
+  (n : Std.U32) (i : Std.U32) : RustM (ControlFlow Std.U32 Unit) := do
   if i < n
   then let i1 ← i + 1#u32
        ok (cont i1)
@@ -42,7 +42,7 @@ def join_nested_shared_in_loop_loop0.body
     Source: 'tests/src/join-duplicate.rs', lines 26:4-28:5 -/
 @[rust_loop]
 def join_nested_shared_in_loop_loop0
-  (n : Std.U32) (i : Std.U32) : Result Unit := do
+  (n : Std.U32) (i : Std.U32) : RustM Unit := do
   loop
     (fun i1 => join_nested_shared_in_loop_loop0.body n i1)
     i
@@ -51,7 +51,7 @@ def join_nested_shared_in_loop_loop0
     Source: 'tests/src/join-duplicate.rs', lines 26:4-28:5 -/
 @[rust_loop_body]
 def join_nested_shared_in_loop_loop1.body
-  (n : Std.U32) (i : Std.U32) : Result (ControlFlow Std.U32 Unit) := do
+  (n : Std.U32) (i : Std.U32) : RustM (ControlFlow Std.U32 Unit) := do
   if i < n
   then let i1 ← i + 1#u32
        ok (cont i1)
@@ -61,14 +61,14 @@ def join_nested_shared_in_loop_loop1.body
     Source: 'tests/src/join-duplicate.rs', lines 26:4-28:5 -/
 @[rust_loop]
 def join_nested_shared_in_loop_loop1
-  (n : Std.U32) (i : Std.U32) : Result Unit := do
+  (n : Std.U32) (i : Std.U32) : RustM Unit := do
   loop
     (fun i1 => join_nested_shared_in_loop_loop1.body n i1)
     i
 
 /-- [join_duplicate::join_nested_shared_in_loop]:
     Source: 'tests/src/join-duplicate.rs', lines 19:0-30:1 -/
-def join_nested_shared_in_loop (b : Bool) (n : Std.U32) : Result Std.I32 := do
+def join_nested_shared_in_loop (b : Bool) (n : Std.U32) : RustM Std.I32 := do
   if b
   then join_nested_shared_in_loop_loop0 n 0#u32
        ok 1#i32
@@ -85,7 +85,7 @@ def NestedStaticRef := Std.U8
     Source: 'tests/src/join-duplicate.rs', lines 41:0-44:1
     Visibility: public -/
 def join_nested_shared_input
-  (_m : NestedStaticRef) (a : Bool) : Result Unit := do
+  (_m : NestedStaticRef) (a : Bool) : RustM Unit := do
   if a
   then if a
        then ok ()
@@ -98,7 +98,7 @@ def join_nested_shared_input
     Source: 'tests/src/join-duplicate.rs', lines 46:0-49:1
     Visibility: public -/
 def join_nested_shared_input_generic
-  (_m : Std.U8) (a : Bool) : Result Unit := do
+  (_m : Std.U8) (a : Bool) : RustM Unit := do
   if a
   then if a
        then ok ()

@@ -9,7 +9,7 @@ public import Aeneas.Std.Scalar
 public section
 
 namespace Aeneas.Std
-open Result
+open RustM
 
 /-- Returns the compilation target (e.g., `"x86_64-unknown-linux-gnu"`) as a
     Lean `String`.
@@ -18,7 +18,7 @@ open Result
     its output. -/
 noncomputable opaque target : String
 
-noncomputable def get_target : Result String := ok target
+noncomputable def get_target : RustM String := ok target
 
 @[step]
 theorem get_target.spec : get_target ⦃ fun _ => True ⦄ := by simp [get_target]

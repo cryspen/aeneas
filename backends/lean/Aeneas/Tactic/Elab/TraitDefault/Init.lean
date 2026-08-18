@@ -216,7 +216,7 @@ meta def substituteProjections (e : Expr) (selfFvarId : FVarId) (structName : Na
       -- Case 2: application-style projection (e.g., `@Trait.N selfFvar extraArgs…`).
       -- The self-reference is the projection's *structure* argument, which sits at
       -- index `numParams` of the projection function — it need not be the last
-      -- argument (e.g. a method field `eq : Self → Rhs → Result Bool` is projected
+      -- argument (e.g. a method field `eq : Self → Rhs → RustM Bool` is projected
       -- as `@Trait.eq params self extra…`). We locate it via the projection info and
       -- re-apply the resolved field value to any trailing arguments.
       let fn := e.getAppFn

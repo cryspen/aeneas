@@ -68,7 +68,7 @@ attribute [step_simps]
   bind_assoc Std.bind_tc_ok Std.bind_tc_vis Std.bind_tc_div
   Std.bind_assoc Std.bind_ok Std.bind_vis Std.bind_div
   /- Those are quite useful to simplify the goal further by eliminating existential quantifiers for instance. -/
-  and_assoc Std.Result.ok.injEq Prod.mk.injEq
+  and_assoc Std.RustM.ok.injEq Prod.mk.injEq
   exists_eq_left exists_eq_left' exists_eq_right exists_eq_right' exists_eq exists_eq' true_and and_true
   Std.WP.spec_ok
   -- This one gets only applied to full applications of `uncurry'`, which are typically revealed after applying `spec_ok`
@@ -225,7 +225,7 @@ structure Args where
   /- Syntax of the tactic provided by the user to solve the remaining proof obligations -/
   byTacSyntax : Option Syntax
 
-/-- Recognize both the monad-class bind and `Result`'s heterogeneous bind. -/
+/-- Recognize both the monad-class bind and `RustM`'s heterogeneous bind. -/
 meta def getBindArgs? (program : Expr) : Option (Expr × Expr) :=
   match_expr program.consumeMData with
   | Bind.bind _ _ _ _ m next => some (m, next)
@@ -1283,7 +1283,7 @@ theorem thm_name (arg1 : ty1) ... (argn : tyn)
     (h_pre1 : precondition_1) ... (h_prem : precondition_m) :
   f arg1 ... argn = ⦃ res1 ... resk => postcondition_1 ∧ ... ∧ postcondition_k ⦄
 ```
-where `f` is a monadic function with type `Result ...`.
+where `f` is a monadic function with type `RustM ...`.
 
 **Ghost Variables:**
 It is possible to write step theorems which use ghost variables, i.e., variables
@@ -1394,7 +1394,7 @@ meta def evalLetStep : Tactic := fun stx => do
     Meta.Tactic.TryThis.addSuggestion tk stxArgs' (origSpan? := ← getRef)
 
 namespace Test
-  open Aeneas.Std Result
+  open Aeneas.Std RustM
 
   -- Show the traces:
   -- set_option trace.Step true
@@ -1432,7 +1432,7 @@ x y : UScalar ty
     let* ⟨ z, h1 ⟩ ← *
 
   -- Checking that we properly handle tuple decomposition in post-conditions
-  def addToPair (x : Nat) := Result.ok (x + 1, x + 2)
+  def addToPair (x : Nat) := RustM.ok (x + 1, x + 2)
   theorem  addToPair_spec (x : Nat) : addToPair x ⦃ y z => y = x + 1 ∧ z = x + 2⦄ :=
     by simp [addToPair]
 
@@ -1605,12 +1605,12 @@ info: example
      pspec theorem actually solves it, and where the function is not a constant.
      We also test the case where the function under scrutinee is not a constant. -/
   example {x : U32}
-    (f : U32 → Std.Result Unit) (h : ∀ x, f x ⦃ _ => True ⦄) :
+    (f : U32 → Std.RustM Unit) (h : ∀ x, f x ⦃ _ => True ⦄) :
     f x ⦃ _ => True ⦄ := by
     step
 
   example {x : U32}
-    (f : U32 → Std.Result Unit) (h : ∀ x, f x ⦃ _ => True ⦄) :
+    (f : U32 → Std.RustM Unit) (h : ∀ x, f x ⦃ _ => True ⦄) :
     f x ⦃ _ => True ⦄ := by
     step? says step with h
 
@@ -1635,18 +1635,18 @@ info: example
 error: unsolved goals
 case a
 x y : U32
-f : U32 → U32 → Result U32
+f : U32 → U32 → RustM U32
 hf : ∀ (x y : U32), ↑x < 10 → ↑y < 10 → f x y ⦃ x✝ => True ⦄
 ⊢ ↑x < 10
 
 case a
 x y : U32
-f : U32 → U32 → Result U32
+f : U32 → U32 → RustM U32
 hf : ∀ (x y : U32), ↑x < 10 → ↑y < 10 → f x y ⦃ x✝ => True ⦄
 ⊢ ↑y < 10
   -/
   #guard_msgs in
-  example {x y} (f : U32 → U32 → Result U32) (hf : ∀ x y, x.val < 10 → y.val < 10 → f x y ⦃ _ => True⦄) :
+  example {x y} (f : U32 → U32 → RustM U32) (hf : ∀ x y, x.val < 10 → y.val < 10 → f x y ⦃ _ => True⦄) :
     f x y ⦃ _ => True ⦄ := by
     step
 
@@ -1661,11 +1661,11 @@ hf : ∀ (x y : U32), ↑x < 10 → ↑y < 10 → f x y ⦃ x✝ => True ⦄
   end
 
   mutual
-    def Tree.size (t : Tree) : Std.Result Int :=
+    def Tree.size (t : Tree) : Std.RustM Int :=
       match t with
       | .mk trees => trees.size
 
-    def Trees.size (t : Trees) : Std.Result Int :=
+    def Trees.size (t : Trees) : Std.RustM Int :=
       match t with
       | .nil => ok 0
       | .cons t t' => do
@@ -1695,7 +1695,7 @@ hf : ∀ (x y : U32), ↑x < 10 → ↑y < 10 → f x y ⦃ x✝ => True ⦄
   end
 
   -- Testing step on theorems containing local let-bindings
-  def add (x y : U32) : Std.Result U32 := x + y
+  def add (x y : U32) : Std.RustM U32 := x + y
 
   section
     /- Testing step on theorems containing local let-bindings as well as
@@ -1707,7 +1707,7 @@ hf : ∀ (x y : U32), ↑x < 10 → ↑y < 10 → f x y ⦃ x✝ => True ⦄
       step with U32.add_spec.step_spec
       scalar_tac
 
-    def add1 (x y : U32) : Std.Result U32 := do
+    def add1 (x y : U32) : Std.RustM U32 := do
       let z ← x + y
       z + z
 
@@ -1745,10 +1745,10 @@ x y : U32
 end Test
 
 namespace Test
-  open Aeneas.Std Result
+  open Aeneas.Std RustM
 
   variable {α} (P : ℕ → List α → Prop)
-  variable (f : List α → Std.Result Bool)
+  variable (f : List α → Std.RustM Bool)
   variable (f_spec : ∀ l i, P i l → f l ⦃ _ => True ⦄)
 
   example {i} (l : List α) (h : P i l) :
@@ -1757,14 +1757,14 @@ namespace Test
 
   /- Step using a term -/
   example {x: U32}
-    (f : U32 → Std.Result Unit)
+    (f : U32 → Std.RustM Unit)
     (h : ∀ x, f x ⦃ _ => True ⦄):
       f x ⦃ () => True ⦄ := by
       step? with (show ∀ x, f x ⦃ _ => True ⦄ by exact h) says step with(show ∀ x, f x ⦃ _ => True ⦄ by exact h)
 end Test
 
 namespace Test
-  open Aeneas.Std Result
+  open Aeneas.Std RustM
 
   /- Step using a term -/
   example (x y : U32) (h : 2 * x.val + 2 * y.val ≤ U32.max) :
@@ -1824,7 +1824,7 @@ info: example
 error: unsolved goals
 case a
 x : U32
-f : U32 → Result U32
+f : U32 → RustM U32
 h : ∀ (x : U32), f x ⦃ y => ∃ z > 0, ↑y = ↑x + z ⦄
 y : U32
 z : ℕ
@@ -1833,12 +1833,12 @@ _✝ : ↑y = ↑x + z
 ⊢ ↑y > ↑x
   -/
   #guard_msgs in
-  example (x : U32) (f : U32 → Result U32) (h : ∀ x, f x ⦃ y => ∃ z, z > 0 ∧ y.val = x.val + z ⦄) :
+  example (x : U32) (f : U32 → RustM U32) (h : ∀ x, f x ⦃ y => ∃ z, z > 0 ∧ y.val = x.val + z ⦄) :
     f x ⦃ y => y.val > x.val ⦄ := by
     step as ⟨ y, z ⟩
 
   /- Inhabited -/
-  def get (x : Option α) : Result α :=
+  def get (x : Option α) : RustM α :=
     match x with
     | none => fail .panic
     | some x => ok x
@@ -1874,7 +1874,7 @@ z_post : ↑z = ↑x + ↑y
   /--
 error: unsolved goals
 case a
-zero : Slice U32 → Result (Slice U32)
+zero : Slice U32 → RustM (Slice U32)
 zero_spec :
   ∀ (s : Slice U32), zero s ⦃ s' => ∃ (h : s'.length = s.length), ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32 ⦄
 s s' : Slice U32
@@ -1886,7 +1886,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
     x✝ => True ⦄
   -/
   #guard_msgs in
-  example (zero : Slice U32 → Result (Slice U32))
+  example (zero : Slice U32 → RustM (Slice U32))
     (zero_spec : ∀ s, zero s ⦃ s' =>
       ∃ (h : s'.length = s.length),
       (∀ i, (_ : i < s.length) → s'[i]'(by grind) = 0#u32) ⦄)
@@ -1908,7 +1908,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
   namespace Ntt
     def wfArray (_ : Array U16 256#usize) : Prop := True
 
-    def nttLayer (a : Array U16 256#usize) (_k : Usize) (_len : Usize) : Std.Result (Array U16 256#usize) := ok a
+    def nttLayer (a : Array U16 256#usize) (_k : Usize) (_len : Usize) : Std.RustM (Array U16 256#usize) := ok a
 
     def toPoly (a : Array U16 256#usize) : List U16 := a.val
 
@@ -1927,7 +1927,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
         wfArray peSrc' ⦄ := by
       simp [wfArray, nttLayer, toPoly, Spec.nttLayer]
 
-    def ntt (x : Array U16 256#usize) : Std.Result (Array U16 256#usize) := do
+    def ntt (x : Array U16 256#usize) : Std.RustM (Array U16 256#usize) := do
       let x ← nttLayer x 1#usize 128#usize
       let x ← nttLayer x 2#usize 64#usize
       let x ← nttLayer x 4#usize 32#usize
@@ -1987,7 +1987,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
 
   namespace DspecTests
   -- This section has tests for dspec.
-  def simple_diverge (x : Std.I32) : Result Std.I32 := do
+  def simple_diverge (x : Std.I32) : RustM Std.I32 := do
     if x = 0#i32
     then ok 10#i32
     else
@@ -2012,7 +2012,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
           step
           simp [*]
 
-  def simple_diverge_2 (x y : Std.I32) : Result Std.I32 := do
+  def simple_diverge_2 (x y : Std.I32) : RustM Std.I32 := do
     if x = 0#i32
     then ok 10#i32
     else
@@ -2020,7 +2020,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
       simple_diverge_2 i1 i1
   partial_fixpoint
 
-  def simple_converge (x : Std.I32) : Result Std.I32 := do
+  def simple_converge (x : Std.I32) : RustM Std.I32 := do
     if x = 0#i32
     then ok 10#i32
     else ok 10#i32
@@ -2068,7 +2068,7 @@ h1 : ∀ (i : ℕ) (x : i < s.length), s'[i] = 0#u32
     simp [*]
 
   -- test lifting an assumption
-  example (f : I32 → Result I32)
+  example (f : I32 → RustM I32)
     (h : ∀ x, (f x) ⦃fun y => y.val = 10⦄)
     :
     ( do let x ← f 1#i32

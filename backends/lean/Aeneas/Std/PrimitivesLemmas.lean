@@ -6,7 +6,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result WP
+open RustM WP
 
 @[step]
 theorem massert_spec (b : Prop) [Decidable b] :

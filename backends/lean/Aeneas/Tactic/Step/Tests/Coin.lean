@@ -9,7 +9,7 @@ the `step` tactic (see `#register_spec_info` below).
 -/
 
 open Aeneas
-open Std Result WP Data Coinductive Effect Lean.Order
+open Std RustM WP Data Coinductive Effect Lean.Order
 
 namespace Aeneas.Tactic.Step.Tests.Coin
 
@@ -79,13 +79,13 @@ theorem coinSpec_bind {α β} {k : α -> ITreeC β} {Pₖ : Post β} {m : ITreeC
   · --simp only
     exists m, k
 
-instance : MonadLift Result ITreeC where
+instance : MonadLift RustM ITreeC where
   monadLift r :=
   match r.match with
   | .ok a => .ret a
   | _ => .div -- TODO
 
-theorem spec_coinSpec {α} {x : Result α} {p: Post α} : spec x p → coinSpec p x := by
+theorem spec_coinSpec {α} {x : RustM α} {p: Post α} : spec x p → coinSpec p x := by
   intros s
   cases x
   · apply coinSpec.ret

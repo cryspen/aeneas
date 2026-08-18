@@ -14,7 +14,7 @@ Panicking library operations are specified with `partialSpec`, so that:
 
 namespace Aeneas.Std.PartialSpecLibraryTests
 
-open Aeneas Aeneas.Std Result Std.Do WP
+open Aeneas Aeneas.Std RustM Std.Do WP
 
 set_option mvcgen.warning false
 set_option linter.deprecated.syntax false

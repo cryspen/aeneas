@@ -5,7 +5,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error ScalarElab
+open RustM Error ScalarElab
 
 /-!
 # Saturating Operations

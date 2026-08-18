@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -29,7 +29,7 @@ namespace issue_765_hrtb_conditional_negate
     Visibility: public -/
 @[rust_trait "core::ops::arith::Neg"]
 structure core.ops.arith.Neg (Self : Type _) (Self_Output : Type _) where
-  neg : Self → Result Self_Output
+  neg : Self → RustM Self_Output
 
 /-- [issue_765_hrtb_conditional_negate::Choice]
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 13:0-13:22
@@ -40,7 +40,7 @@ def Choice := Std.U8
 /-- [issue_765_hrtb_conditional_negate::{impl core::clone::Clone for issue_765_hrtb_conditional_negate::Choice}::clone]:
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 12:9-12:14
     Visibility: public -/
-def Choice.Insts.CoreCloneClone.clone (self : Choice) : Result Choice := do
+def Choice.Insts.CoreCloneClone.clone (self : Choice) : RustM Choice := do
   ok self
 
 /-- Trait implementation: [issue_765_hrtb_conditional_negate::{impl core::clone::Clone for issue_765_hrtb_conditional_negate::Choice}]
@@ -62,8 +62,8 @@ def Choice.Insts.CoreMarkerCopy : core.marker.Copy Choice := {
     Visibility: public -/
 structure ConditionallySelectable (Self : Type _) where
   coremarkerCopyInst : core.marker.Copy Self
-  conditional_select : Self → Self → Choice → Result Self
-  conditional_assign : Self → Self → Choice → Result Self
+  conditional_select : Self → Self → Choice → RustM Self
+  conditional_assign : Self → Self → Choice → RustM Self
 
 /-- [issue_765_hrtb_conditional_negate::ConditionallySelectable::conditional_assign]:
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 18:4-20:5
@@ -72,7 +72,7 @@ structure ConditionallySelectable (Self : Type _) where
 def ConditionallySelectable.conditional_assign.default
   {Self : Type _} (ConditionallySelectableInst : ConditionallySelectable Self)
   (self : Self) (other : Self) (choice : Choice) :
-  Result Self
+  RustM Self
   := do
   ConditionallySelectableInst.conditional_select self other choice
 
@@ -85,7 +85,7 @@ def F := Unit
 /-- [issue_765_hrtb_conditional_negate::{impl core::clone::Clone for issue_765_hrtb_conditional_negate::F}::clone]:
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 23:9-23:14
     Visibility: public -/
-def F.Insts.CoreCloneClone.clone (self : F) : Result F := do
+def F.Insts.CoreCloneClone.clone (self : F) : RustM F := do
   ok self
 
 /-- Trait implementation: [issue_765_hrtb_conditional_negate::{impl core::clone::Clone for issue_765_hrtb_conditional_negate::F}]
@@ -107,7 +107,7 @@ def F.Insts.CoreMarkerCopy : core.marker.Copy F := {
     Visibility: public -/
 def
   F.Insts.Issue_765_hrtb_conditional_negateConditionallySelectable.conditional_select
-  (a : F) (_b : F) (_choice : Choice) : Result F := do
+  (a : F) (_b : F) (_choice : Choice) : RustM F := do
   ok a
 
 /-- Trait implementation: [issue_765_hrtb_conditional_negate::{impl issue_765_hrtb_conditional_negate::ConditionallySelectable for issue_765_hrtb_conditional_negate::F}]
@@ -125,7 +125,7 @@ impl_def F.Insts.Issue_765_hrtb_conditional_negateConditionallySelectable :
 /-- [issue_765_hrtb_conditional_negate::{impl core::ops::arith::Neg<issue_765_hrtb_conditional_negate::F> for &'a issue_765_hrtb_conditional_negate::F}::neg]:
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 35:4-37:5
     Visibility: public -/
-def SharedAF.Insts.CoreOpsArithNegF.neg (self : F) : Result F := do
+def SharedAF.Insts.CoreOpsArithNegF.neg (self : F) : RustM F := do
   ok ()
 
 /-- Trait implementation: [issue_765_hrtb_conditional_negate::{impl core::ops::arith::Neg<issue_765_hrtb_conditional_negate::F> for &'a issue_765_hrtb_conditional_negate::F}]
@@ -141,13 +141,13 @@ def SharedAF.Insts.CoreOpsArithNegF : core.ops.arith.Neg F F := {
 axiom ext.ConditionallyNegatable.Blanket.conditional_negate
   {T : Type _} (ConditionallySelectableInst : ConditionallySelectable T)
   (coreopsarithNegShared0TTInst : core.ops.arith.Neg T T) :
-  T → Choice → Result T
+  T → Choice → RustM T
 
 /-- Trait declaration: [issue_765_hrtb_conditional_negate::local::ConditionallyNegatable]
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 66:4-68:5
     Visibility: public -/
 structure local.ConditionallyNegatable (Self : Type _) where
-  conditional_negate : Self → Choice → Result Self
+  conditional_negate : Self → Choice → RustM Self
 
 /-- [issue_765_hrtb_conditional_negate::local::{impl issue_765_hrtb_conditional_negate::local::ConditionallyNegatable for T}::conditional_negate]:
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 75:8-78:9
@@ -156,7 +156,7 @@ def local.ConditionallyNegatable.Blanket.conditional_negate
   {T : Type _} (ConditionallySelectableInst : ConditionallySelectable T)
   (coreopsarithNegShared0TTInst : core.ops.arith.Neg T T) (self : T)
   (choice : Choice) :
-  Result T
+  RustM T
   := do
   let self_neg ← coreopsarithNegShared0TTInst.neg self
   ConditionallySelectableInst.conditional_assign self self_neg choice
@@ -175,7 +175,7 @@ def local.ConditionallyNegatable.Blanket {T : Type _}
 /-- [issue_765_hrtb_conditional_negate::call_opaque_blanket_impl]:
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 82:0-87:1
     Visibility: public -/
-def call_opaque_blanket_impl (choice : Choice) : Result F := do
+def call_opaque_blanket_impl (choice : Choice) : RustM F := do
   ext.ConditionallyNegatable.Blanket.conditional_negate
     F.Insts.Issue_765_hrtb_conditional_negateConditionallySelectable
     SharedAF.Insts.CoreOpsArithNegF () choice
@@ -183,7 +183,7 @@ def call_opaque_blanket_impl (choice : Choice) : Result F := do
 /-- [issue_765_hrtb_conditional_negate::call_transparent_blanket_impl]:
     Source: 'tests/src/issue-765-hrtb-conditional-negate.rs', lines 89:0-94:1
     Visibility: public -/
-def call_transparent_blanket_impl (choice : Choice) : Result F := do
+def call_transparent_blanket_impl (choice : Choice) : RustM F := do
   local.ConditionallyNegatable.Blanket.conditional_negate
     F.Insts.Issue_765_hrtb_conditional_negateConditionallySelectable
     SharedAF.Insts.CoreOpsArithNegF () choice

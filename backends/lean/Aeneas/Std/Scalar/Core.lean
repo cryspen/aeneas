@@ -25,7 +25,7 @@ Because they tend to behave quite differently, we have two classes of machine in
 signed integers, and another for unsigned integers. Inside of each class, we factor out definitions.
 -/
 
-open Result Error
+open RustM Error
 
 /-- Kinds of unsigned integers -/
 inductive UScalarTy where
@@ -604,16 +604,16 @@ theorem IScalar.check_bounds_eq_inBounds (ty : IScalarTy) (x : Int) :
     some (UScalar.ofNatCore x (UScalar.check_bounds_imp_inBounds h))
   else none
 
-@[expose] def UScalar.tryMk (ty : UScalarTy) (x : Nat) : Result (UScalar ty) :=
-  Result.ofOption (tryMkOpt ty x) integerOverflow
+@[expose] def UScalar.tryMk (ty : UScalarTy) (x : Nat) : RustM (UScalar ty) :=
+  RustM.ofOption (tryMkOpt ty x) integerOverflow
 
 @[expose] def IScalar.tryMkOpt (ty : IScalarTy) (x : Int) : Option (IScalar ty) :=
   if h:IScalar.check_bounds ty x then
     some (IScalar.ofIntCore x (IScalar.check_bounds_imp_inBounds h))
   else none
 
-@[expose] def IScalar.tryMk (ty : IScalarTy) (x : Int) : Result (IScalar ty) :=
-  Result.ofOption (tryMkOpt ty x) integerOverflow
+@[expose] def IScalar.tryMk (ty : IScalarTy) (x : Int) : RustM (IScalar ty) :=
+  RustM.ofOption (tryMkOpt ty x) integerOverflow
 
 theorem UScalar.tryMkOpt_eq (ty : UScalarTy) (x : Nat) :
   match tryMkOpt ty x with

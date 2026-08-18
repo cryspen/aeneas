@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -23,13 +23,13 @@ namespace constants_lean
 /-- Trait declaration: [constants_lean::Params]
     Source: 'tests/src/constants-lean.rs', lines 3:0-6:1 -/
 structure Params (Self : Type _) where
-  N : Result Std.Usize
-  M : Result Std.Usize
+  N : RustM Std.Usize
+  M : RustM Std.Usize
 
 /-- [constants_lean::use_params]:
     Source: 'tests/src/constants-lean.rs', lines 8:0-10:1 -/
 def use_params
-  {P : Type _} (ParamsInst : Params P) (n : Std.Usize) : Result Bool := do
+  {P : Type _} (ParamsInst : Params P) (n : Std.Usize) : RustM Bool := do
   let i ← ParamsInst.N
   let i1 ← ParamsInst.M
   let i2 ← i * i1
@@ -45,7 +45,7 @@ def use_params
 
 /-- [constants_lean::NM]
     Source: 'tests/src/constants-lean.rs', lines 14:0-14:24 -/
-@[global_simps, irreducible] def NM : Result Std.Usize := N * M
+@[global_simps, irreducible] def NM : RustM Std.Usize := N * M
 
 /-- [constants_lean::Wrapper]
     Source: 'tests/src/constants-lean.rs', lines 16:0-16:65 -/
@@ -55,18 +55,18 @@ def Wrapper (N1 : Std.Usize) (M1 : Std.Usize) :=
 /-- [constants_lean::{constants_lean::Wrapper<N, M>}::NM]
     Source: 'tests/src/constants-lean.rs', lines 19:4-19:28 -/
 @[global_simps, irreducible]
-def Wrapper.NM (N1 : Std.Usize) (M1 : Std.Usize) : Result Std.Usize := N1 * M1
+def Wrapper.NM (N1 : Std.Usize) (M1 : Std.Usize) : RustM Std.Usize := N1 * M1
 
 /-- Trait declaration: [constants_lean::Trait]
     Source: 'tests/src/constants-lean.rs', lines 22:0-24:1 -/
 structure Trait (Self : Type _) where
-  NM : Result Std.Usize
+  NM : RustM Std.Usize
 
 /-- [constants_lean::{impl constants_lean::Trait for constants_lean::Wrapper<N, M>}::NM]
     Source: 'tests/src/constants-lean.rs', lines 27:4-27:28 -/
 @[global_simps, irreducible]
 def Wrapper.Insts.Constants_leanTrait.NM (N1 : Std.Usize) (M1 : Std.Usize)
-  : Result Std.Usize :=
+  : RustM Std.Usize :=
   N1 * M1
 
 /-- Trait implementation: [constants_lean::{impl constants_lean::Trait for constants_lean::Wrapper<N, M>}]
@@ -80,15 +80,15 @@ def Wrapper.Insts.Constants_leanTrait (N1 : Std.Usize) (M1 : Std.Usize) : Trait
 /-- Trait declaration: [constants_lean::Trait1]
     Source: 'tests/src/constants-lean.rs', lines 30:0-34:1 -/
 structure Trait1 (Self : Type _) where
-  N : Result Std.Usize
-  M : Result Std.Usize
-  NM : Result Std.Usize
+  N : RustM Std.Usize
+  M : RustM Std.Usize
+  NM : RustM Std.Usize
 
 /-- [constants_lean::Trait1::NM]
     Source: 'tests/src/constants-lean.rs', lines 33:4-33:40 -/
 @[global_simps, irreducible, trait_default]
 def Trait1.NM.default {Self : Type _} (Trait1Inst : Trait1 Self)
-  : Result Std.Usize := do
+  : RustM Std.Usize := do
   let i ← Trait1Inst.N
   let i1 ← Trait1Inst.M
   i * i1
@@ -115,16 +115,16 @@ impl_def Bool.Insts.Constants_leanTrait1 : Trait1 Bool := {
 /-- Trait declaration: [constants_lean::Params1]
     Source: 'tests/src/constants-lean.rs', lines 41:0-47:1 -/
 structure Params1 (Self : Type _) where
-  N : Result Std.Usize
-  LOGQ : Result Std.Usize
-  PACKED_LEN : Result Std.Usize
-  CT1_LEN : Result Std.Usize
+  N : RustM Std.Usize
+  LOGQ : RustM Std.Usize
+  PACKED_LEN : RustM Std.Usize
+  CT1_LEN : RustM Std.Usize
 
 /-- [constants_lean::Params1::PACKED_LEN]
     Source: 'tests/src/constants-lean.rs', lines 45:4-45:57 -/
 @[global_simps, irreducible, trait_default]
 def Params1.PACKED_LEN.default {Self : Type _} (Params1Inst : Params1 Self)
-  : Result Std.Usize := do
+  : RustM Std.Usize := do
   let i ← Params1Inst.N
   let i1 ← Params1Inst.LOGQ
   let i2 ← i * i1
@@ -134,7 +134,7 @@ def Params1.PACKED_LEN.default {Self : Type _} (Params1Inst : Params1 Self)
     Source: 'tests/src/constants-lean.rs', lines 46:4-46:44 -/
 @[global_simps, irreducible, trait_default]
 def Params1.CT1_LEN.default {Self : Type _} (Params1Inst : Params1 Self)
-  : Result Std.Usize :=
+  : RustM Std.Usize :=
   Params1Inst.PACKED_LEN
 
 /-- [constants_lean::FEATURE_A]
@@ -174,13 +174,13 @@ def StaticRef := Std.U8
 /-- [constants_lean::get_static_ref]:
     Source: 'tests/src/constants-lean.rs', lines 65:0-67:1
     Visibility: public -/
-def get_static_ref : Result StaticRef := do
+def get_static_ref : RustM StaticRef := do
   ok STATIC_REF
 
 /-- [constants_lean::read_static_ref]:
     Source: 'tests/src/constants-lean.rs', lines 69:0-71:1
     Visibility: public -/
-def read_static_ref : Result Std.U8 := do
+def read_static_ref : RustM Std.U8 := do
   let i := STATIC_REF
   ok i
 
@@ -199,20 +199,20 @@ def STATIC_STR : StaticStr := { «name» := (toStr "hello"), value := 3#u32 }
 /-- [constants_lean::get_static_str_name]:
     Source: 'tests/src/constants-lean.rs', lines 83:0-85:1
     Visibility: public -/
-def get_static_str_name : Result Str := do
+def get_static_str_name : RustM Str := do
   ok STATIC_STR.name
 
 /-- Trait declaration: [constants_lean::HasStaticRef]
     Source: 'tests/src/constants-lean.rs', lines 88:0-90:1
     Visibility: public -/
 structure HasStaticRef (Self : Type _) where
-  C : Result StaticRef
+  C : RustM StaticRef
 
 /-- [constants_lean::read_trait_static_ref]:
     Source: 'tests/src/constants-lean.rs', lines 92:0-94:1
     Visibility: public -/
 def read_trait_static_ref
-  {T : Type _} (HasStaticRefInst : HasStaticRef T) : Result Std.U8 := do
+  {T : Type _} (HasStaticRefInst : HasStaticRef T) : RustM Std.U8 := do
   HasStaticRefInst.C
 
 end constants_lean

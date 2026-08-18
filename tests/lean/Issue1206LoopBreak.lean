@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -27,7 +27,7 @@ namespace issue_1206_loop_break
 def first_nonzero_loop.body
   (xs : Slice Std.U8) (idx : Std.Usize) (iter : core.ops.range.Range Std.Usize)
   :
-  Result (ControlFlow (core.ops.range.Range Std.Usize) Std.Usize)
+  RustM (ControlFlow (core.ops.range.Range Std.Usize) Std.Usize)
   := do
   let (o, iter1) ←
     core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
@@ -46,7 +46,7 @@ def first_nonzero_loop.body
 def first_nonzero_loop
   (iter : core.ops.range.Range Std.Usize) (xs : Slice Std.U8) (idx : Std.Usize)
   :
-  Result Std.Usize
+  RustM Std.Usize
   := do
   loop
     (fun iter1 => first_nonzero_loop.body xs idx iter1)
@@ -55,7 +55,7 @@ def first_nonzero_loop
 /-- [issue_1206_loop_break::first_nonzero]:
     Source: 'tests/src/issue-1206-loop-break.rs', lines 4:0-13:1
     Visibility: public -/
-def first_nonzero (xs : Slice Std.U8) : Result Std.Usize := do
+def first_nonzero (xs : Slice Std.U8) : RustM Std.Usize := do
   let idx := Slice.len xs
   let i := Slice.len xs
   first_nonzero_loop { start := 0#usize, «end» := i } xs idx

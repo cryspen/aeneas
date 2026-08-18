@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -33,7 +33,7 @@ inductive List (T : Type _) where
     Visibility: public -/
 def get_list_at_x
   (ls : List Std.U32) (x : Std.U32) :
-  Result ((List Std.U32) × (List Std.U32 → List Std.U32))
+  RustM ((List Std.U32) × (List Std.U32 → List Std.U32))
   := do
   match ls with
   | List.Cons hd tl =>

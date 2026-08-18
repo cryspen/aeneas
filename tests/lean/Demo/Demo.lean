@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -25,7 +25,7 @@ namespace demo
     Visibility: public -/
 def choose
   {T : Type _} (b : Bool) (x : T) (y : T) :
-  Result (T × (T → (T × T)))
+  RustM (T × (T → (T × T)))
   := do
   if b
   then let back := fun x1 => (x1, y)
@@ -36,27 +36,27 @@ def choose
 /-- [demo::mul2_add1]:
     Source: 'tests/src/demo.rs', lines 16:0-18:1
     Visibility: public -/
-def mul2_add1 (x : Std.U32) : Result Std.U32 := do
+def mul2_add1 (x : Std.U32) : RustM Std.U32 := do
   let i ← x + x
   i + 1#u32
 
 /-- [demo::use_mul2_add1]:
     Source: 'tests/src/demo.rs', lines 20:0-22:1
     Visibility: public -/
-def use_mul2_add1 (x : Std.U32) (y : Std.U32) : Result Std.U32 := do
+def use_mul2_add1 (x : Std.U32) (y : Std.U32) : RustM Std.U32 := do
   let i ← mul2_add1 x
   i + y
 
 /-- [demo::incr]:
     Source: 'tests/src/demo.rs', lines 24:0-26:1
     Visibility: public -/
-def incr (x : Std.U32) : Result Std.U32 := do
+def incr (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
 /-- [demo::use_incr]:
     Source: 'tests/src/demo.rs', lines 28:0-33:1
     Visibility: public -/
-def use_incr : Result Unit := do
+def use_incr : RustM Unit := do
   let x ← incr 0#u32
   let x1 ← incr x
   let _ ← incr x1
@@ -73,7 +73,7 @@ inductive CList (T : Type _) where
 /-- [demo::list_nth]:
     Source: 'tests/src/demo.rs', lines 42:0-55:1
     Visibility: public -/
-def list_nth {T : Type _} (l : CList T) (i : Std.U32) : Result T := do
+def list_nth {T : Type _} (l : CList T) (i : Std.U32) : RustM T := do
   match l with
   | CList.CCons x tl =>
     if i = 0#u32
@@ -87,7 +87,7 @@ partial_fixpoint
     Source: 'tests/src/demo.rs', lines 58:4-66:1
     Visibility: public -/
 @[rust_loop]
-def list_nth1_loop {T : Type _} (l : CList T) (i : Std.U32) : Result T := do
+def list_nth1_loop {T : Type _} (l : CList T) (i : Std.U32) : RustM T := do
   match l with
   | CList.CCons x tl =>
     if i = 0#u32
@@ -101,7 +101,7 @@ partial_fixpoint
     Source: 'tests/src/demo.rs', lines 57:0-66:1
     Visibility: public -/
 @[reducible]
-def list_nth1 {T : Type _} (l : CList T) (i : Std.U32) : Result T := do
+def list_nth1 {T : Type _} (l : CList T) (i : Std.U32) : RustM T := do
   list_nth1_loop l i
 
 /-- [demo::list_nth_mut]:
@@ -109,7 +109,7 @@ def list_nth1 {T : Type _} (l : CList T) (i : Std.U32) : Result T := do
     Visibility: public -/
 def list_nth_mut
   {T : Type _} (l : CList T) (i : Std.U32) :
-  Result (T × (T → CList T))
+  RustM (T × (T → CList T))
   := do
   match l with
   | CList.CCons x tl =>
@@ -128,7 +128,7 @@ partial_fixpoint
 /-- [demo::i32_id]:
     Source: 'tests/src/demo.rs', lines 83:0-89:1
     Visibility: public -/
-def i32_id (i : Std.I32) : Result Std.I32 := do
+def i32_id (i : Std.I32) : RustM Std.I32 := do
   if i = 0#i32
   then ok 0#i32
   else let i1 ← i - 1#i32
@@ -141,7 +141,7 @@ partial_fixpoint
     Visibility: public -/
 def list_tail
   {T : Type _} (l : CList T) :
-  Result ((CList T) × (CList T → CList T))
+  RustM ((CList T) × (CList T → CList T))
   := do
   match l with
   | CList.CCons t tl =>
@@ -156,13 +156,13 @@ partial_fixpoint
     Source: 'tests/src/demo.rs', lines 100:0-102:1
     Visibility: public -/
 structure Counter (Self : Type _) where
-  incr : Self → Result (Std.Usize × Self)
+  incr : Self → RustM (Std.Usize × Self)
 
 /-- [demo::{impl demo::Counter for usize}::incr]:
     Source: 'tests/src/demo.rs', lines 105:4-109:5
     Visibility: public -/
 def Usize.Insts.DemoCounter.incr
-  (self : Std.Usize) : Result (Std.Usize × Std.Usize) := do
+  (self : Std.Usize) : RustM (Std.Usize × Std.Usize) := do
   let self1 ← self + 1#usize
   ok (self, self1)
 
@@ -178,13 +178,13 @@ def Usize.Insts.DemoCounter : Counter Std.Usize := {
     Visibility: public -/
 def use_counter
   {T : Type _} (CounterInst : Counter T) (cnt : T) :
-  Result (Std.Usize × T)
+  RustM (Std.Usize × T)
   := do
   CounterInst.incr cnt
 
 /-- [demo::mod_add]:
     Source: 'tests/src/demo.rs', lines 117:0-125:1 -/
-def mod_add (a : Std.U32) (b : Std.U32) : Result Std.U32 := do
+def mod_add (a : Std.U32) (b : Std.U32) : RustM Std.U32 := do
   massert (a < 3329#u32)
   massert (b < 3329#u32)
   let sum ← a + b

@@ -14,7 +14,7 @@ public section
 
 namespace Aeneas.Std.WP
 
-open Aeneas.Std Result
+open Aeneas.Std RustM
 open Aeneas.Data.Coinductive
 open Lean.Order
 
@@ -27,7 +27,7 @@ open Lean.Order
 
 section ResultImplementation
 
-unseal Result
+unseal RustM
 
 @[expose] section
 
@@ -53,13 +53,13 @@ instance : EffectWP.ExcludedMiracle effectWP where
     rintro ⟨⟩ _ h
     exact h
 
-def spec (m : Result α) (p : Post α) : Prop :=
+def spec (m : RustM α) (p : Post α) : Prop :=
   DWP effectWP m (fun value _ => p value) ()
 
-def dspec (m : Result α) (p : Post α) : Prop :=
+def dspec (m : RustM α) (p : Post α) : Prop :=
   DWLP effectWP m (fun value _ => p value) ()
 
-theorem spec_dspec (α) (x : Result α) (p: Post α) : spec x p → dspec x p :=
+theorem spec_dspec (α) (x : RustM α) (p: Post α) : spec x p → dspec x p :=
   DWP.toPartial
 
 theorem dspec_admissible {α} (p : Post α) :
@@ -72,7 +72,7 @@ end
 side-goal it generates for a partial specification about a recursive function. -/
 @[dspec_admissible]
 theorem dspec_func_admissible {α : Sort v} {β} (arg : α) (p : Post β) :
-    admissible (fun f : α → Result β => dspec (f arg) p) :=
+    admissible (fun f : α → RustM β => dspec (f arg) p) :=
   admissible_apply (fun _ m => dspec m p) arg (dspec_admissible p)
 
 /-- Variant of `uncurry` used to decompose tuples in post-conditions.
@@ -100,7 +100,7 @@ theorem spec_ok (x : α) : spec (ok x) p ↔ p x := DWP.ret_iff
 theorem spec_vis (e k) : spec (.vis e k) p ↔ False := ⟨fun h => DWP.vis_view h, False.elim⟩
 
 @[simp, grind =, agrind =]
-theorem spec_fail (e : Error) : spec (fail e) p ↔ False := by simp [Result.fail_eq_vis]
+theorem spec_fail (e : Error) : spec (fail e) p ↔ False := by simp [RustM.fail_eq_vis]
 
 @[simp, grind =, agrind =]
 theorem spec_div : spec div p ↔ False := ⟨DWP.div_false, False.elim⟩
@@ -123,32 +123,32 @@ theorem spec_div_pair (f : α → β → Prop) :
     spec div (uncurry f) ↔ False := by simp
 
 /-- Mono rule used by `step`. -/
-theorem spec_mono {α} {P₁ : Post α} {m : Result α} {P₀ : Post α} (h : spec m P₀):
+theorem spec_mono {α} {P₁ : Post α} {m : RustM α} {P₀ : Post α} (h : spec m P₀):
   (∀ x, P₀ x → P₁ x) → spec m P₁ :=
   fun HMonPost => DWP.mono h fun value _ => HMonPost value
 
 /-- Bind rule used by `step`. It is stated on `Std.bind` rather than on `>>=`, which is
 what a translated program binds with. -/
-theorem spec_bind {α β} {k : α -> Result β} {Pₖ : Post β} {m : Result α} {Pₘ : Post α} :
+theorem spec_bind {α β} {k : α -> RustM β} {Pₖ : Post β} {m : RustM α} {Pₘ : Post α} :
   spec m Pₘ →
   (∀ x, Pₘ x → spec (k x) Pₖ) →
   spec (Std.bind m k) Pₖ :=
   fun Hm Hk => DWP.bind (k := k) Hm fun value _ => Hk value
 
-theorem spec_and {m : Result α} {p q : Post α} (h₁ : spec m p) (h₂ : spec m q) :
+theorem spec_and {m : RustM α} {p q : Post α} (h₁ : spec m p) (h₂ : spec m q) :
     spec m (fun value => p value ∧ q value) :=
   DWP.and_iff.mpr ⟨h₁, h₂⟩
 
-theorem spec_exists {m : Result α} {p : Post α} (h : spec m p) : ∃ value, p value :=
+theorem spec_exists {m : RustM α} {p : Post α} (h : spec m p) : ∃ value, p value :=
   let ⟨value, _, hp⟩ := DWP.exists h
   ⟨value, hp⟩
 
 -- `dspec` theorems
-theorem dspec_mono {α} {P₁ : Post α} {m : Result α} {P₀ : Post α} (h : dspec m P₀):
+theorem dspec_mono {α} {P₁ : Post α} {m : RustM α} {P₀ : Post α} (h : dspec m P₀):
   (∀ x, P₀ x → P₁ x) → dspec m P₁ :=
   fun HMonPost => DWLP.mono h fun value _ => HMonPost value
 
-theorem dspec_bind {α β} {k : α -> Result β} {Pₖ : Post β} {m : Result α} {Pₘ : Post α} :
+theorem dspec_bind {α β} {k : α -> RustM β} {Pₖ : Post β} {m : RustM α} {Pₘ : Post α} :
   dspec m Pₘ →
   (∀ x, Pₘ x → dspec (k x) Pₖ) →
   dspec (Std.bind m k) Pₖ :=
@@ -161,12 +161,12 @@ theorem dspec_ok (x : α) : dspec (ok x) p ↔ p x := DWLP.ret_iff
 theorem dspec_vis (e k) : dspec (.vis e k) p ↔ False := ⟨fun h => DWLP.vis_view h, False.elim⟩
 
 @[simp, grind =, agrind =]
-theorem dspec_div : dspec (div : Result α) p ↔ True := iff_true_intro DWLP.div
+theorem dspec_div : dspec (div : RustM α) p ↔ True := iff_true_intro DWLP.div
 
 @[simp, grind =, agrind =]
-theorem dspec_fail (e : Error) : dspec (fail e) p ↔ False := by simp [Result.fail_eq_vis]
+theorem dspec_fail (e : Error) : dspec (fail e) p ↔ False := by simp [RustM.fail_eq_vis]
 
-theorem dspec_and {m : Result α} {p q : Post α} (h₁ : dspec m p) (h₂ : dspec m q) :
+theorem dspec_and {m : RustM α} {p q : Post α} (h₁ : dspec m p) (h₂ : dspec m q) :
     dspec m (fun value => p value ∧ q value) :=
   DWLP.and_iff.mpr ⟨h₁, h₂⟩
 
@@ -180,7 +180,7 @@ TODO: use https://github.com/leanprover/lean4/pull/11355
 -/
 namespace Aeneas
 
-open Aeneas.Std WP Result
+open Aeneas.Std WP RustM
 
 /-!
 # Hoare triple notation and elaboration
@@ -558,7 +558,7 @@ end Aeneas
 namespace Aeneas.Std.WP
 
 section
-  variable (U32 : Type _) [HAdd U32 U32 (Result U32)]
+  variable (U32 : Type _) [HAdd U32 U32 (RustM U32)]
   variable (x y : U32)
 
   #elab x + y ⦃ _ => True ⦄
@@ -566,12 +566,12 @@ section
   #elab True ∧ x + y ⦃ _ => True ⦄
 
   -- Checking what happpens if we put post-conditions inside post-conditions
-  example (f : Nat → Result (Nat × (Nat → Result Nat)))
+  example (f : Nat → RustM (Nat × (Nat → RustM Nat)))
           (_ : ∀ x, f x ⦃ (y, g) => y > 0 ∧ ∀ x, g x ⦃ z => z > y ⦄ ⦄ ∧ True)
    : True := by simp only
 end
 
-def add1 (x : Nat) := Result.ok (x + 1)
+def add1 (x : Nat) := RustM.ok (x + 1)
 theorem  add1_spec (x : Nat) : add1 x ⦃ y => y = x + 1⦄ :=
   by simp [add1]
 
@@ -589,7 +589,7 @@ example (x : Nat) :
     --
     grind
 
-def add2 (x : Nat) := Result.ok (x + 1, x + 2)
+def add2 (x : Nat) := RustM.ok (x + 1, x + 2)
 
 theorem  add2_spec (x : Nat) : add2 x ⦃ (y, z) => y = x + 1 ∧ z = x + 2⦄ :=
   by simp [add2]
@@ -653,7 +653,7 @@ example :
   simp only [forall_const]
 
 /- Example with a post-condition manipulating an ∃ -/
-example (zero : List Nat → Result (List Nat))
+example (zero : List Nat → RustM (List Nat))
     (zero_spec : ∀ s, zero s ⦃ s' =>
       ∃ (h : s'.length = s.length),
       (∀ i, (_ : i < s.length) → s'[i]'(by grind) = 0) ⦄)
@@ -676,15 +676,15 @@ namespace Aeneas.Std.WP
 # mvcgen
 -/
 
-open Aeneas.Std Result
+open Aeneas.Std RustM
 open Std.Do
 
 -- mvcgen does not support all types of effects, and currently this implementation only works with fail and div.
 -- This option is set here so that this same code works for any extension to RustEffect.Input
 set_option match.ignoreUnusedAlts true
--- There are three types of exceptions in the type: the Error from Result.fail,
--- a dummy exception thrown when any other effect is used, and Result.div.
-instance Result.instWP : WP Result.{u} (.except (ULift Error) (.except PUnit (.except PUnit .pure))) where
+-- There are three types of exceptions in the type: the Error from RustM.fail,
+-- a dummy exception thrown when any other effect is used, and RustM.div.
+instance RustM.instWP : WP RustM.{u} (.except (ULift Error) (.except PUnit (.except PUnit .pure))) where
   wp x := {
     trans Q := match x.match with
       | .ok a => Q.1 a
@@ -699,7 +699,7 @@ instance Result.instWP : WP Result.{u} (.except (ULift Error) (.except PUnit (.e
   }
 set_option match.ignoreUnusedAlts false
 
-instance Result.instWPMonad : WPMonad Result (.except (ULift Error) (.except PUnit (.except PUnit .pure))) where
+instance RustM.instWPMonad : WPMonad RustM (.except (ULift Error) (.except PUnit (.except PUnit .pure))) where
   wp_pure a := by apply PredTrans.ext; intro Q; simp [PredTrans.apply, wp, WP.wp]; rfl
   wp_bind x f := by
     apply PredTrans.ext
@@ -713,7 +713,7 @@ instance Result.instWPMonad : WPMonad Result (.except (ULift Error) (.except PUn
     · cbv
 
 
-theorem Result.of_wp {α : Type u} {x : Result α} (P : Result α → Prop) :
+theorem RustM.of_wp {α : Type u} {x : RustM α} (P : RustM α → Prop) :
     (⊢ₛ wp⟦x⟧ (fun a => ⌜P (.ok a)⌝,
                   fun e => ⌜P (.fail e.down)⌝,
                   fun _ => ⌜False⌝, -- unreachable: `RustEffect` currently only has the `fail` effect.
@@ -729,12 +729,12 @@ theorem Result.of_wp {α : Type u} {x : Result α} (P : Result α → Prop) :
 
 
 /-- Lift an Aeneas step spec to an mvcgen-compatible `Triple`. -/
-theorem spec_to_mvcgen {α : Type u} {x : Result α} {Q : α → Prop}
+theorem spec_to_mvcgen {α : Type u} {x : RustM α} {Q : α → Prop}
     (h : spec x Q) :
     ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ Q r ⌝ ⦄ := by
   cases x <;> simp_all [Triple, WP.wp, PredTrans.apply]
 
-theorem dspec_to_mvcgen {α : Type u} {x : Result α} {Q : α → Prop}
+theorem dspec_to_mvcgen {α : Type u} {x : RustM α} {Q : α → Prop}
     (h : dspec x Q) :
     ⦃ ⌜ ¬ x = .div ⌝ ⦄ x ⦃ ⇓ r => ⌜ Q r ⌝ ⦄ := by
   simp [Triple, WP.wp, PredTrans.apply, SPred.pure]
@@ -759,7 +759,7 @@ theorem loop.spec {α : Type u} {β : Type v} {γ : Type w}
   [wf : WellFoundedRelation γ]
   (inv : α → Prop)
   (post : β → Prop)
-  (body : α → Result (ControlFlow α β)) (x : α)
+  (body : α → RustM (ControlFlow α β)) (x : α)
   (hBody :
     ∀ x, inv x → body x ⦃ r =>
       match r with
@@ -785,7 +785,7 @@ theorem loop.spec_decr_nat {α : Type u} {β : Type v}
   (measure : α → Nat)
   (inv : α → Prop)
   (post : β → Prop)
-  (body : α → Result (ControlFlow α β)) (x : α)
+  (body : α → RustM (ControlFlow α β)) (x : α)
   (hBody :
     ∀ x, inv x → body x ⦃ r =>
       match r with
@@ -809,61 +809,61 @@ end Aeneas.Std.WP
 /-!
 # `mvcgen` specs
 
-Accessors for the postconditions of `Result` programs, `@[spec]` lemmas for `mvcgen`, and lemmas
-relating triples to `Result.ok`.
+Accessors for the postconditions of `RustM` programs, `@[spec]` lemmas for `mvcgen`, and lemmas
+relating triples to `RustM.ok`.
 -/
 
 namespace Aeneas.Std
 
-open Std.Do WP Result
+open Std.Do WP RustM
 open Aeneas.Data.Coinductive
 
-/-- The post-shape of `Result` in `mvcgen`: a failure (`Error`), any other effect, divergence. -/
-abbrev Result.postShape : PostShape :=
+/-- The post-shape of `RustM` in `mvcgen`: a failure (`Error`), any other effect, divergence. -/
+abbrev RustM.postShape : PostShape :=
   .except (ULift Error) (.except PUnit (.except PUnit .pure))
 
-abbrev PostCond.okAssertion {α : Type u} (Q : PostCond α Result.postShape) (r : α) :
-    Assertion Result.postShape :=
+abbrev PostCond.okAssertion {α : Type u} (Q : PostCond α RustM.postShape) (r : α) :
+    Assertion RustM.postShape :=
   Q.1 r
 
-abbrev PostCond.ok {α : Type u} (Q : PostCond α Result.postShape) (r : α) : Prop :=
+abbrev PostCond.ok {α : Type u} (Q : PostCond α RustM.postShape) (r : α) : Prop :=
   (Q.1 r).down
 
-abbrev PostCond.failAssertion {α : Type u} (Q : PostCond α Result.postShape) (e : ULift Error) :
-    Assertion Result.postShape :=
+abbrev PostCond.failAssertion {α : Type u} (Q : PostCond α RustM.postShape) (e : ULift Error) :
+    Assertion RustM.postShape :=
   Q.2.1 e
 
-abbrev PostCond.fail {α : Type u} (Q : PostCond α Result.postShape) (e : Error) : Prop :=
+abbrev PostCond.fail {α : Type u} (Q : PostCond α RustM.postShape) (e : Error) : Prop :=
   (Q.2.1 (.up e)).down
 
-/-- The postcondition for effects other than failure (`Result` has none at the moment). -/
-abbrev PostCond.otherAssertion {α : Type u} (Q : PostCond α Result.postShape) :
-    PUnit → Assertion Result.postShape :=
+/-- The postcondition for effects other than failure (`RustM` has none at the moment). -/
+abbrev PostCond.otherAssertion {α : Type u} (Q : PostCond α RustM.postShape) :
+    PUnit → Assertion RustM.postShape :=
   Q.2.2.1
 
-abbrev PostCond.divAssertion {α : Type u} (Q : PostCond α Result.postShape) :
-    PUnit → Assertion Result.postShape :=
+abbrev PostCond.divAssertion {α : Type u} (Q : PostCond α RustM.postShape) :
+    PUnit → Assertion RustM.postShape :=
   Q.2.2.2.1
 
-abbrev PostCond.div {α : Type u} (Q : PostCond α Result.postShape) : Prop :=
+abbrev PostCond.div {α : Type u} (Q : PostCond α RustM.postShape) : Prop :=
   (Q.2.2.2.1 .unit).down
 
 @[spec]
-theorem Result.ok_spec {α : Type u} {a : α} {Q : PostCond α Result.postShape}
+theorem RustM.ok_spec {α : Type u} {a : α} {Q : PostCond α RustM.postShape}
     (hQ : PostCond.ok Q a) :
-    ⦃ ⌜ True ⌝ ⦄ Result.ok a ⦃ Q ⦄ := by
+    ⦃ ⌜ True ⌝ ⦄ RustM.ok a ⦃ Q ⦄ := by
   simpa [Triple, WP.wp, PredTrans.apply]
 
 @[spec]
-theorem Result.fail_spec {α : Type u} {e : Error} {Q : PostCond α Result.postShape}
+theorem RustM.fail_spec {α : Type u} {e : Error} {Q : PostCond α RustM.postShape}
     (hQ : PostCond.fail Q e) :
-    ⦃ ⌜ True ⌝ ⦄ (Result.fail e : Result α) ⦃ Q ⦄ := by
+    ⦃ ⌜ True ⌝ ⦄ (RustM.fail e : RustM α) ⦃ Q ⦄ := by
   simpa [Triple, WP.wp, PredTrans.apply]
 
 attribute [spec] uncurry
 
 /-- A triple with postcondition `r = v` is equivalent to the program being `.ok v`. -/
-theorem triple_post_eq_iff_eq {α : Type u} {x : Result α} {v : α} :
+theorem triple_post_eq_iff_eq {α : Type u} {x : RustM α} {v : α} :
     ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ r = v ⌝ ⦄ ↔ x = .ok v := by
   cases x with
   | ret a => simp [Triple, WP.wp, PredTrans.apply]
@@ -871,14 +871,14 @@ theorem triple_post_eq_iff_eq {α : Type u} {x : Result α} {v : α} :
   | div => simp [Triple, WP.wp, PredTrans.apply]
 
 /-- If the program equals `.ok v`, then a triple is equivalent to its postcondition on `.ok v`. -/
-theorem triple_iff_post_of_eq_ok {α : Type u} {x : Result α} {v : α} {P : α → Prop}
+theorem triple_iff_post_of_eq_ok {α : Type u} {x : RustM α} {v : α} {P : α → Prop}
     (hx : x = .ok v) : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄ ↔ P v := by
   subst hx
   simp [Triple, WP.wp, PredTrans.apply]
 
 /-- A triple is equivalent to the existence of a value `a` such that the program is `.ok a`
 and the postcondition holds on `a`. -/
-theorem triple_iff_exists_ok {α : Type u} {x : Result α} {P : α → Prop} :
+theorem triple_iff_exists_ok {α : Type u} {x : RustM α} {P : α → Prop} :
     ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄ ↔ ∃ a, x = .ok a ∧ P a := by
   cases x with
   | ret a => simp [Triple, WP.wp, PredTrans.apply]
@@ -886,14 +886,14 @@ theorem triple_iff_exists_ok {α : Type u} {x : Result α} {P : α → Prop} :
   | div => simp [Triple, WP.wp, PredTrans.apply]
 
 /-- Enrich triple's postcondition to contain a triple stating which program produced the value. -/
-theorem triple_with_self {α : Type u} {x : Result α} {P : α → Prop}
+theorem triple_with_self {α : Type u} {x : RustM α} {P : α → Prop}
     (h : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄) :
     ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ∧ ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r' => ⌜ r' = r ⌝ ⦄ ⌝ ⦄ := by
   obtain ⟨a, hx, hPa⟩ := triple_iff_exists_ok.1 h
   exact (triple_iff_post_of_eq_ok hx).2 ⟨hPa, triple_post_eq_iff_eq.2 hx⟩
 
 /- Modus-ponens-like reasoning on a `noThrow` and a `mayThrow` triple -/
-theorem triple_in_hypothesis {α : Type u} {f : Result α} {Q : α → Assertion Result.postShape}
+theorem triple_in_hypothesis {α : Type u} {f : RustM α} {Q : α → Assertion RustM.postShape}
     (p : Prop)
     (h : ⦃ ⌜ True ⌝ ⦄ f ⦃ ⇓ r => Q r ⦄)
     (hp : ⦃ ⌜ True ⌝ ⦄ f ⦃ ⇓? r => Q r → ⌜ p ⌝ ⦄) :
@@ -908,24 +908,24 @@ theorem triple_in_hypothesis {α : Type u} {f : Result α} {Q : α → Assertion
 -/
 
 section
-unseal Result
+unseal RustM
 
-/-- When divergence is allowed, `mvcgen`'s WP of a `Result` program is admissible: the head of
+/-- When divergence is allowed, `mvcgen`'s WP of a `RustM` program is admissible: the head of
 a chain's supremum (a result or a failure) already occurs in the chain. -/
-theorem wp_admissible_of_div {β : Type u} (P : PostCond β Result.postShape)
+theorem wp_admissible_of_div {β : Type u} (P : PostCond β RustM.postShape)
     (hdiv : PostCond.div P) :
-    Lean.Order.admissible (fun r : Result β => (wp⟦r⟧ P).down) := by
+    Lean.Order.admissible (fun r : RustM β => (wp⟦r⟧ P).down) := by
   intro c hc hAll
   generalize hEq : Lean.Order.CCPO.csup hc = t
   cases t with
   | ret v =>
     have h := hAll _ (ITree.csup_ret_mem hc hEq)
-    rw [show (ITree.ret v : Result β) = Result.ok v from rfl] at h
+    rw [show (ITree.ret v : RustM β) = RustM.ok v from rfl] at h
     simpa [WP.wp, PredTrans.apply] using h
   | vis i k =>
     obtain ⟨k₀, hMem⟩ := ITree.csup_vis_mem hc hEq
     have h := hAll _ hMem
-    rw [show (ITree.vis i k₀ : Result β) = Result.vis i k₀ from rfl] at h
+    rw [show (ITree.vis i k₀ : RustM β) = RustM.vis i k₀ from rfl] at h
     cases i
     exact h
   | div => simpa [WP.wp, PredTrans.apply] using hdiv
@@ -939,8 +939,8 @@ measure does not need to decrease if the postcondition allows divergence. -/
 @[spec]
 theorem loop_spec
   {α β : Type u} {γ : Sort w}
-  {P : PostCond β Result.postShape}
-  {body : α → Result (ControlFlow α β)} {init : α}
+  {P : PostCond β RustM.postShape}
+  {body : α → RustM (ControlFlow α β)} {init : α}
   (inv : α → Prop)
   (rel : γ → γ → Prop)
   (termination : α → γ)
@@ -958,12 +958,12 @@ theorem loop_spec
     exact h init h_inv_init
   -- One iteration: the property holds for the unfolding of the loop if it holds for the
   -- continuations allowed by `h_body`.
-  have step : ∀ (g : α → Result β) x, inv x →
+  have step : ∀ (g : α → RustM β) x, inv x →
       (∀ r, inv r → (rel (termination r) (termination x) ∨ PostCond.div P) →
         (wp⟦g r⟧ P).down) →
       (wp⟦Std.bind (body x) (fun r => match r with
         | ControlFlow.cont x => g x
-        | ControlFlow.done x => Result.ok x)⟧ P).down := by
+        | ControlFlow.done x => RustM.ok x)⟧ P).down := by
     intro g x hinv hg
     have hb := h_body x hinv trivial
     revert hb
@@ -972,7 +972,7 @@ theorem loop_spec
     | ret cf =>
       cases cf with
       | cont r =>
-        simp only [WP.wp, PredTrans.apply, Result.match.ok, bind_ok]
+        simp only [WP.wp, PredTrans.apply, RustM.match.ok, bind_ok]
         exact fun ⟨hi, hr⟩ => hg r hi hr
       | done r => simp [WP.wp, PredTrans.apply]
     | vis i k => cases i; simp [WP.wp, PredTrans.apply]
@@ -980,13 +980,13 @@ theorem loop_spec
   by_cases hdiv : PostCond.div P
   case pos => -- Divergence permitted: fixpoint induction.
     have hadm : Lean.Order.admissible
-        (fun g : α → Result β => ∀ x, inv x → (wp⟦g x⟧ P).down) := by
+        (fun g : α → RustM β => ∀ x, inv x → (wp⟦g x⟧ P).down) := by
       apply Lean.Order.admissible_pi
       intro x
       apply Lean.Order.admissible_pi
       intro _
-      exact Lean.Order.admissible_apply (β := fun _ => Result β)
-        (fun _ (r : Result β) => (wp⟦r⟧ P).down) x (wp_admissible_of_div P hdiv)
+      exact Lean.Order.admissible_apply (β := fun _ => RustM β)
+        (fun _ (r : RustM β) => (wp⟦r⟧ P).down) x (wp_admissible_of_div P hdiv)
     exact loop.fixpoint_induct body _ hadm
       (fun g ih x hinv => step g x hinv (fun r hr _ => ih r hr))
   case neg => -- Divergence forbidden: well-founded induction on the termination measure.
@@ -1010,7 +1010,7 @@ end Aeneas.Std
 
 namespace Aeneas.Std.WP
 
-open Aeneas.Std Result
+open Aeneas.Std RustM
 open Std.Do
 
 /-- Partial-correctness variant of `spec`.
@@ -1019,7 +1019,7 @@ open Std.Do
 reduces to `fail e` then `p_fail e` holds; if it diverges then `p_div` holds". Unlike `spec`, it
 does not assume the program terminates without exception. -/
 @[expose]
-def partialSpec {α} (x : Result α)
+def partialSpec {α} (x : RustM α)
     (p_ok : α → Prop) (p_fail : Error → Prop) (p_div : Prop) : Prop :=
   match x.match with
   | .ok a => p_ok a
@@ -1044,7 +1044,7 @@ theorem partialSpec_div (p_ok : α → Prop) p_fail p_div :
 /-- Derive a total-correctness `spec` from `partialSpec` by ruling out the failure and divergence
 cases. Used by `@[step]` to generate a step-tactic lemma from a `partialSpec` theorem. -/
 theorem spec_of_partialSpec
-    {α} {x : Result α} {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
+    {α} {x : RustM α} {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
     (h : partialSpec x p_ok p_fail p_div)
     (h_fail : ∀ e, ¬ p_fail e) (h_div : ¬ p_div) :
     spec x p_ok := by
@@ -1054,10 +1054,10 @@ theorem spec_of_partialSpec
   | div => simp [partialSpec] at h; exact absurd h h_div
 
 /-- Lift an Aeneas partial-correctness spec to an mvcgen-compatible `Triple`. -/
-theorem partialSpec_to_mvcgen {α : Type u} {x : Result α}
+theorem partialSpec_to_mvcgen {α : Type u} {x : RustM α}
     {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
     (h : partialSpec x p_ok p_fail p_div)
-    {Q : PostCond α Result.postShape}
+    {Q : PostCond α RustM.postShape}
     (h_ok   : ∀ r, p_ok r → PostCond.ok Q r)
     (h_fail : ∀ e, p_fail e → PostCond.fail Q e)
     (h_div  : p_div → PostCond.div Q) :

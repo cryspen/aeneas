@@ -9,28 +9,28 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error Arith ScalarElab WP
+open RustM Error Arith ScalarElab WP
 
 /-!
 # Multiplication: Definitions
 -/
 
-@[expose] def UScalar.mul {ty : UScalarTy} (x y : UScalar ty) : Result (UScalar ty) :=
+@[expose] def UScalar.mul {ty : UScalarTy} (x y : UScalar ty) : RustM (UScalar ty) :=
   UScalar.tryMk ty (x.val * y.val)
 
-@[expose] def IScalar.mul {ty : IScalarTy} (x y : IScalar ty) : Result (IScalar ty) :=
+@[expose] def IScalar.mul {ty : IScalarTy} (x y : IScalar ty) : RustM (IScalar ty) :=
   IScalar.tryMk ty (x.val * y.val)
 
 @[expose] def UScalar.try_mul {ty : UScalarTy} (x y : UScalar ty) : Option (UScalar ty) :=
-  Option.ofResult (mul x y)
+  Option.ofRustM (mul x y)
 
 @[expose] def IScalar.try_mul {ty : IScalarTy} (x y : IScalar ty) : Option (IScalar ty) :=
-  Option.ofResult (mul x y)
+  Option.ofRustM (mul x y)
 
-instance {ty} : HMul (UScalar ty) (UScalar ty) (Result (UScalar ty)) where
+instance {ty} : HMul (UScalar ty) (UScalar ty) (RustM (UScalar ty)) where
   hMul x y := UScalar.mul x y
 
-instance {ty} : HMul (IScalar ty) (IScalar ty) (Result (IScalar ty)) where
+instance {ty} : HMul (IScalar ty) (IScalar ty) (RustM (IScalar ty)) where
   hMul x y := IScalar.mul x y
 
 /-!
@@ -44,13 +44,13 @@ Theorems with a specification which use integers and bit-vectors
 /-- `tryMk` only fails with `integerOverflow`. -/
 theorem UScalar.tryMk_fail {ty} {v : Nat} {e k}
     (h : (UScalar.tryMk ty v).match = .vis (.fail e) k) : e = .integerOverflow := by
-  simp only [UScalar.tryMk, Result.ofOption] at h
+  simp only [UScalar.tryMk, RustM.ofOption] at h
   split at h <;> simp_all
 
 /-- `tryMk` only fails with `integerOverflow`. -/
 theorem IScalar.tryMk_fail {ty} {v : Int} {e k}
     (h : (IScalar.tryMk ty v).match = .vis (.fail e) k) : e = .integerOverflow := by
-  simp only [IScalar.tryMk, Result.ofOption] at h
+  simp only [IScalar.tryMk, RustM.ofOption] at h
   split at h <;> simp_all
 
 theorem UScalar.mul_equiv {ty} (x y : UScalar ty) :

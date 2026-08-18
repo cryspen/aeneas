@@ -28,6 +28,6 @@ it as builtin so that it doesn't generate any axiom for it (this is a way of ign
 @[expose, rust_fun "core::intrinsics::discriminant_value"]
 def core.intrinsics.discriminant_value
   {T : Type _} (DiscrInst : DiscriminantKind T) (_ : T) :
-  Result (DiscrInst.Discriminant) := .fail .undef -- TODO: we need
+  RustM (DiscrInst.Discriminant) := .fail .undef -- TODO: we need
 
 end Aeneas.Std

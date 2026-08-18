@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -31,7 +31,7 @@ structure PortableVector where
 def to_bytes_loop.body
   (x : PortableVector) (iter : core.ops.range.Range Std.Usize)
   (bytes : Slice Std.U8) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice Std.U8))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice Std.U8))
     (Slice Std.U8))
   := do
   let (o, iter1) ←
@@ -50,7 +50,7 @@ def to_bytes_loop.body
 def to_bytes_loop
   (iter : core.ops.range.Range Std.Usize) (x : PortableVector)
   (bytes : Slice Std.U8) :
-  Result (Slice Std.U8)
+  RustM (Slice Std.U8)
   := do
   loop
     (fun (iter1, bytes1) => to_bytes_loop.body x iter1 bytes1)
@@ -60,7 +60,7 @@ def to_bytes_loop
     Source: 'tests/src/issue-807-missing-symbolic-value.rs', lines 7:0-11:1 -/
 @[reducible]
 def to_bytes
-  (x : PortableVector) (bytes : Slice Std.U8) : Result (Slice Std.U8) := do
+  (x : PortableVector) (bytes : Slice Std.U8) : RustM (Slice Std.U8) := do
   to_bytes_loop { start := 0#usize, «end» := 16#usize } x bytes
 
 end issue_807_missing_symbolic_value

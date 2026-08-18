@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -27,20 +27,20 @@ def Struct := Std.U32
 
 /-- [issue_767_adt_constructor::Struct]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 5:0-5:19 -/
-def Struct.constructor (i : Std.U32) : Result Struct := do
+def Struct.constructor (i : Std.U32) : RustM Struct := do
   ok i
 
 /-- [issue_767_adt_constructor::{impl core::ops::function::FnOnce<(u32,), issue_767_adt_constructor::Struct> for issue_767_adt_constructor::Struct}::call_once]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 5:0-5:19 -/
 def P.Insts.CoreOpsFunctionFnOnceTupleU32Struct.call_once
-  (state : Std.U32 → Result Struct) (args : Std.U32) : Result Struct := do
+  (state : Std.U32 → RustM Struct) (args : Std.U32) : RustM Struct := do
   Struct.constructor args
 
 /-- Trait implementation: [issue_767_adt_constructor::{impl core::ops::function::FnOnce<(u32,), issue_767_adt_constructor::Struct> for issue_767_adt_constructor::Struct}]
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 5:0-5:19 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnOnceTupleU32Struct : core.ops.function.FnOnce
-  (Std.U32 → Result Struct) Std.U32 Struct := {
+  (Std.U32 → RustM Struct) Std.U32 Struct := {
   call_once := P.Insts.CoreOpsFunctionFnOnceTupleU32Struct.call_once
 }
 
@@ -53,40 +53,40 @@ inductive Enum where
 
 /-- [issue_767_adt_constructor::Enum::Tuple]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 9:4-9:14 -/
-def Enum.Tuple.constructor (i : Std.U32) : Result Enum := do
+def Enum.Tuple.constructor (i : Std.U32) : RustM Enum := do
   ok (Enum.Tuple i)
 
 /-- [issue_767_adt_constructor::Enum::{impl core::ops::function::FnOnce<(u32,), issue_767_adt_constructor::Enum> for issue_767_adt_constructor::Enum::Tuple}::call_once]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 9:4-9:14 -/
 def P.Insts.CoreOpsFunctionFnOnceTupleU32Enum.call_once
-  (state : Std.U32 → Result Enum) (args : Std.U32) : Result Enum := do
+  (state : Std.U32 → RustM Enum) (args : Std.U32) : RustM Enum := do
   Enum.Tuple.constructor args
 
 /-- Trait implementation: [issue_767_adt_constructor::Enum::{impl core::ops::function::FnOnce<(u32,), issue_767_adt_constructor::Enum> for issue_767_adt_constructor::Enum::Tuple}]
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 9:4-9:14 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnOnceTupleU32Enum : core.ops.function.FnOnce
-  (Std.U32 → Result Enum) Std.U32 Enum := {
+  (Std.U32 → RustM Enum) Std.U32 Enum := {
   call_once := P.Insts.CoreOpsFunctionFnOnceTupleU32Enum.call_once
 }
 
 /-- [issue_767_adt_constructor::make_tuple_struct_with_constructor]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 12:0-14:1 -/
 def make_tuple_struct_with_constructor
-  (T : Type _) (x : Option Std.U32) : Result (Option Struct) := do
+  (T : Type _) (x : Option Std.U32) : RustM (Option Struct) := do
   core.option.Option.map P.Insts.CoreOpsFunctionFnOnceTupleU32Struct x
     (Struct.constructor)
 
 /-- [issue_767_adt_constructor::make_enum_with_constructor]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 16:0-18:1 -/
 def make_enum_with_constructor
-  (x : Option Std.U32) : Result (Option Enum) := do
+  (x : Option Std.U32) : RustM (Option Enum) := do
   core.option.Option.map P.Insts.CoreOpsFunctionFnOnceTupleU32Enum x
     (Enum.Tuple.constructor)
 
 /-- [issue_767_adt_constructor::test_tuple_struct_constructor]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 21:0-23:1 -/
-def test_tuple_struct_constructor : Result Unit := do
+def test_tuple_struct_constructor : RustM Unit := do
   ok ()
 
 /- Unit test for [issue_767_adt_constructor::test_tuple_struct_constructor] -/
@@ -94,7 +94,7 @@ def test_tuple_struct_constructor : Result Unit := do
 
 /-- [issue_767_adt_constructor::test_enum_constructor]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 26:0-28:1 -/
-def test_enum_constructor : Result Unit := do
+def test_enum_constructor : RustM Unit := do
   ok ()
 
 /- Unit test for [issue_767_adt_constructor::test_enum_constructor] -/

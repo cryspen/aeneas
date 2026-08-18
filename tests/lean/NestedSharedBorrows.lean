@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -31,7 +31,7 @@ namespace nested_shared_borrows
   "core::option::{core::ops::try_trait::Try<core::option::Option<@T>>}::branch"]
 axiom core.option.Option.Insts.CoreOpsTry_traitTry.branch
   {T : Type _} :
-  Option T → Result (core.ops.control_flow.ControlFlow (Option Never) T)
+  Option T → RustM (core.ops.control_flow.ControlFlow (Option Never) T)
 
 /-- [core::option::{impl core::ops::try_trait::FromResidual<core::option::Option<!>> for core::option::Option<T>}::from_residual]:
     Source: '/rustc/library/core/src/option.rs', lines 2889:4-2889:49
@@ -41,17 +41,17 @@ axiom core.option.Option.Insts.CoreOpsTry_traitTry.branch
   "core::option::{core::ops::try_trait::FromResidual<core::option::Option<@T>, core::option::Option<!>>}::from_residual"]
 axiom
   core.option.Option.Insts.CoreOpsTry_traitFromResidualOptionNever.from_residual
-  (T : Type _) : Option Never → Result (Option T)
+  (T : Type _) : Option Never → RustM (Option T)
 
 /-- [nested_shared_borrows::do_option]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 15:0-17:1 -/
-def do_option : Result (Option Unit) := do
+def do_option : RustM (Option Unit) := do
   ok (some ())
 
 /-- [nested_shared_borrows::double_ref_option]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 20:0-23:1
     Visibility: public -/
-def double_ref_option (_arg : Std.U8) : Result (Option Unit) := do
+def double_ref_option (_arg : Std.U8) : RustM (Option Unit) := do
   let o ← do_option
   let cf ← core.option.Option.Insts.CoreOpsTry_traitTry.branch o
   match cf with
@@ -62,14 +62,14 @@ def double_ref_option (_arg : Std.U8) : Result (Option Unit) := do
 
 /-- [nested_shared_borrows::do_result]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 25:0-27:1 -/
-def do_result : Result (core.result.Result Unit Unit) := do
+def do_result : RustM (core.result.Result Unit Unit) := do
   ok (core.result.Result.Ok ())
 
 /-- [nested_shared_borrows::double_ref_result]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 30:0-33:1
     Visibility: public -/
 def double_ref_result
-  (_arg : Std.U8) : Result (core.result.Result Unit Unit) := do
+  (_arg : Std.U8) : RustM (core.result.Result Unit Unit) := do
   let r ← do_result
   let cf ← core.result.Result.Insts.CoreOpsTry.branch r
   match cf with
@@ -87,14 +87,14 @@ structure S where
 
 /-- [nested_shared_borrows::f]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 43:0-45:1 -/
-def f (x : Std.U8) : Result (core.result.Result Std.U8 Unit) := do
+def f (x : Std.U8) : RustM (core.result.Result Std.U8 Unit) := do
   ok (core.result.Result.Ok x)
 
 /-- [nested_shared_borrows::{nested_shared_borrows::S<'a>}::method_try]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 50:4-53:5
     Visibility: public -/
 def S.method_try
-  (self : S) (x : Std.U8) : Result (core.result.Result Std.U8 Unit) := do
+  (self : S) (x : Std.U8) : RustM (core.result.Result Std.U8 Unit) := do
   let r ← f x
   let cf ← core.result.Result.Insts.CoreOpsTry.branch r
   match cf with
@@ -107,7 +107,7 @@ def S.method_try
 /-- [nested_shared_borrows::shared_reborrow_same_tuple]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 57:0-66:1
     Visibility: public -/
-def shared_reborrow_same_tuple : Result Unit := do
+def shared_reborrow_same_tuple : RustM Unit := do
   massert (2#i32 = 2#i32)
   massert (1#i32 = 1#i32)
   massert (1#i32 = 1#i32)
@@ -118,7 +118,7 @@ def shared_reborrow_same_tuple : Result Unit := do
 /-- [nested_shared_borrows::shared_reborrow_same_box]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 69:0-77:1
     Visibility: public -/
-def shared_reborrow_same_box : Result Unit := do
+def shared_reborrow_same_box : RustM Unit := do
   massert (2#i32 = 2#i32)
   massert (1#i32 = 1#i32)
 
@@ -128,7 +128,7 @@ def shared_reborrow_same_box : Result Unit := do
 /-- [nested_shared_borrows::shared_reborrow_inside_mut_borrow]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 80:0-91:1
     Visibility: public -/
-def shared_reborrow_inside_mut_borrow : Result Unit := do
+def shared_reborrow_inside_mut_borrow : RustM Unit := do
   massert (2#i32 = 2#i32)
   massert (1#i32 = 1#i32)
 
@@ -139,14 +139,14 @@ def shared_reborrow_inside_mut_borrow : Result Unit := do
     Source: 'tests/src/nested-shared-borrows.rs', lines 93:0-95:1
     Visibility: public -/
 def shared_reborrow_from_input
-  (x : ((Std.U32 × Std.U32) × (Std.U32 × Std.U32))) : Result Std.U32 := do
+  (x : ((Std.U32 × Std.U32) × (Std.U32 × Std.U32))) : RustM Std.U32 := do
   let (_, (_, i)) := x
   ok i
 
 /-- [nested_shared_borrows::shared_reborrow_from_input_test]:
     Source: 'tests/src/nested-shared-borrows.rs', lines 98:0-104:1
     Visibility: public -/
-def shared_reborrow_from_input_test : Result Unit := do
+def shared_reborrow_from_input_test : RustM Unit := do
   let r ← shared_reborrow_from_input ((1#u32, 2#u32), (1#u32, 2#u32))
   massert (r = 2#u32)
 

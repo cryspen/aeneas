@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -25,14 +25,14 @@ namespace vec
 def use_extend_from_slice
   {T : Type _} (corecloneCloneInst : core.clone.Clone T) (v : alloc.vec.Vec T)
   (s : Slice T) :
-  Result (alloc.vec.Vec T)
+  RustM (alloc.vec.Vec T)
   := do
   alloc.vec.Vec.extend_from_slice corecloneCloneInst v s
 
 /-- [vec::use_alloc_with_capacity]:
     Source: 'tests/src/vec.rs', lines 9:0-11:1 -/
 def use_alloc_with_capacity
-  (T : Type _) (n : Std.Usize) : Result (alloc.vec.Vec T) := do
+  (T : Type _) (n : Std.Usize) : RustM (alloc.vec.Vec T) := do
   ok (alloc.vec.Vec.with_capacity T n)
 
 /-- [vec::from_elem]:
@@ -40,7 +40,7 @@ def use_alloc_with_capacity
 def from_elem
   {T : Type _} (corecloneCloneInst : core.clone.Clone T) (x : T)
   (n : Std.Usize) :
-  Result (alloc.vec.Vec T)
+  RustM (alloc.vec.Vec T)
   := do
   alloc.vec.from_elem corecloneCloneInst x n
 

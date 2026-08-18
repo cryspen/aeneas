@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -30,7 +30,7 @@ structure Key where
     Source: 'tests/src/loops-sequences.rs', lines 9:4-11:5 -/
 def Key.t_mut
   (self : Key) :
-  Result ((Array Std.U16 32#usize) × (Array Std.U16 32#usize → Key))
+  RustM ((Array Std.U16 32#usize) × (Array Std.U16 32#usize → Key))
   := do
   let back := fun a => { self with t := a }
   ok (self.t, back)
@@ -38,14 +38,14 @@ def Key.t_mut
 /-- [loops_sequences::shake_init]:
     Source: 'tests/src/loops-sequences.rs', lines 16:0-16:40 -/
 def shake_init
-  (_state : Array Std.U8 8#usize) : Result (Array Std.U8 8#usize) := do
+  (_state : Array Std.U8 8#usize) : RustM (Array Std.U8 8#usize) := do
   ok _state
 
 /-- [loops_sequences::shake_append]:
     Source: 'tests/src/loops-sequences.rs', lines 17:0-17:56 -/
 def shake_append
   (_state : Array Std.U8 8#usize) (_data : Slice Std.U8) :
-  Result (Array Std.U8 8#usize)
+  RustM (Array Std.U8 8#usize)
   := do
   ok _state
 
@@ -53,7 +53,7 @@ def shake_append
     Source: 'tests/src/loops-sequences.rs', lines 18:0-18:62 -/
 def shake_state_copy
   (_src : Array Std.U8 8#usize) (_dst : Array Std.U8 8#usize) :
-  Result (Array Std.U8 8#usize)
+  RustM (Array Std.U8 8#usize)
   := do
   ok _dst
 
@@ -61,7 +61,7 @@ def shake_state_copy
     Source: 'tests/src/loops-sequences.rs', lines 19:0-19:54 -/
 def shake_extract
   (_src : Array Std.U8 8#usize) (_dst : Slice Std.U8) :
-  Result (Slice Std.U8)
+  RustM (Slice Std.U8)
   := do
   ok _dst
 
@@ -69,7 +69,7 @@ def shake_extract
     Source: 'tests/src/loops-sequences.rs', lines 21:0-21:51 -/
 def sample_cbd
   (_src : Slice Std.U8) (_dst : Array Std.U16 32#usize) :
-  Result (Array Std.U16 32#usize)
+  RustM (Array Std.U16 32#usize)
   := do
   ok _dst
 
@@ -80,7 +80,7 @@ def key_expand_loop0.body
   (state_base : Array Std.U8 8#usize) (key : Key)
   (state_work : Array Std.U8 8#usize) (sample_buffer : Array Std.U8 1#usize)
   (i : Std.I32) :
-  Result (ControlFlow (Key × (Array Std.U8 8#usize) × (Array Std.U8 1#usize)
+  RustM (ControlFlow (Key × (Array Std.U8 8#usize) × (Array Std.U8 1#usize)
     × Std.I32) (Key × (Array Std.U8 8#usize) × (Array Std.U8 1#usize)))
   := do
   if i < 32#i32
@@ -108,7 +108,7 @@ def key_expand_loop0
   (key : Key) (state_base : Array Std.U8 8#usize)
   (state_work : Array Std.U8 8#usize) (sample_buffer : Array Std.U8 1#usize)
   (i : Std.I32) :
-  Result (Key × (Array Std.U8 8#usize) × (Array Std.U8 1#usize))
+  RustM (Key × (Array Std.U8 8#usize) × (Array Std.U8 1#usize))
   := do
   loop
     (fun (key1, state_work1, sample_buffer1, i1) => key_expand_loop0.body
@@ -122,7 +122,7 @@ def key_expand_loop1.body
   (state_base : Array Std.U8 8#usize) (key : Key)
   (state_work : Array Std.U8 8#usize) (sample_buffer : Array Std.U8 1#usize)
   (i : Std.I32) :
-  Result (ControlFlow (Key × (Array Std.U8 8#usize) × (Array Std.U8 1#usize)
+  RustM (ControlFlow (Key × (Array Std.U8 8#usize) × (Array Std.U8 1#usize)
     × Std.I32) (Key × (Array Std.U8 8#usize)))
   := do
   if i < 32#i32
@@ -150,7 +150,7 @@ def key_expand_loop1
   (key : Key) (state_base : Array Std.U8 8#usize)
   (state_work : Array Std.U8 8#usize) (sample_buffer : Array Std.U8 1#usize)
   (i : Std.I32) :
-  Result (Key × (Array Std.U8 8#usize))
+  RustM (Key × (Array Std.U8 8#usize))
   := do
   loop
     (fun (key1, state_work1, sample_buffer1, i1) => key_expand_loop1.body
@@ -162,7 +162,7 @@ def key_expand_loop1
 def key_expand
   (key : Key) (state_base : Array Std.U8 8#usize)
   (state_work : Array Std.U8 8#usize) :
-  Result (Key × (Array Std.U8 8#usize) × (Array Std.U8 8#usize))
+  RustM (Key × (Array Std.U8 8#usize) × (Array Std.U8 8#usize))
   := do
   let state_base1 ← shake_init state_base
   let s ← lift (Array.to_slice key.seed)

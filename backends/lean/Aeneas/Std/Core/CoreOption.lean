@@ -7,23 +7,23 @@ public section
 
 namespace Aeneas.Std
 
-open Result
+open RustM
 
 /-- Returns the contained `some` value. The message is ignored: on `none`, this
     fails with `Error.panic`, which is the same behavior as `unwrap`. -/
 @[expose, rust_fun "core::option::{core::option::Option<@T>}::expect"]
-def core.option.Option.expect {T : Type _} (x : Option T) (_msg: Str) : Result T :=
-  Result.ofOption x Error.panic
+def core.option.Option.expect {T : Type _} (x : Option T) (_msg: Str) : RustM T :=
+  RustM.ofOption x Error.panic
 
 attribute [agrind =] Option.isSome_none Option.isSome_some
 
 theorem core.option.Option.expect.spec {T : Type _} (x : Option T) (msg: Str) (h : x.isSome) :
   expect x msg ⦃ v => x = some v ⦄ := by
-  simp only [expect, Result.ofOption]; grind
+  simp only [expect, RustM.ofOption]; grind
 
 @[expose, rust_fun "core::option::{core::option::Option<@T>}::ok_or"]
 def core.option.Option.ok_or {T E : Type _} (x : Option T) (e : E) :
-  Result (core.result.Result T E) :=
+  RustM (core.result.Result T E) :=
   match x with
   | some value => ok (.Ok value)
   | none => ok (.Err e)
@@ -42,7 +42,7 @@ theorem core.option.Option.ok_or_none {T E : Type _} (error : E) :
 def core.option.Option.map
   {T U F : Type _} (fnOnce : core.ops.function.FnOnce F T U)
   (x : Option T) (f : F) :
-  Result (Option U) :=
+  RustM (Option U) :=
   match x with
   | some value => do
       let mapped ← fnOnce.call_once f value
@@ -85,7 +85,7 @@ theorem core.option.Option.map.spec {T U F : Type _}
 def core.option.Option.is_some_and
   {T F : Type _} (fnOnce : core.ops.function.FnOnce F T Bool)
   (x : Option T) (f : F) :
-  Result Bool :=
+  RustM Bool :=
   match x with
   | none => ok false
   | some value => fnOnce.call_once f value
@@ -123,7 +123,7 @@ theorem core.option.Option.is_some_and.spec {T F : Type _}
 def core.bool.Bool.then
   {T F : Type _} (fnOnce : core.ops.function.FnOnce F Unit T)
   (b : Bool) (f : F) :
-  Result (Option T) :=
+  RustM (Option T) :=
   if b then do
     let value ← fnOnce.call_once f ()
     ok (some value)

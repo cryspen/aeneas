@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -31,7 +31,7 @@ namespace vec_iter
   "alloc::vec::{core::iter::traits::collect::IntoIterator<&'a alloc::vec::Vec<@T>, &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter"]
 axiom SharedAVec.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
   {T : Type _} (A : Type _) :
-  alloc.vec.Vec T → Result (core.slice.iter.Iter T)
+  alloc.vec.Vec T → RustM (core.slice.iter.Iter T)
 
 /-- [vec_iter::sum_by_value]: loop body 0:
     Source: 'tests/src/vec-iter.rs', lines 6:4-8:5
@@ -39,7 +39,7 @@ axiom SharedAVec.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
 @[rust_loop_body]
 def sum_by_value_loop.body
   (iter : alloc.vec.into_iter.IntoIter Std.U32) (acc : Std.U32) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter Std.U32) × Std.U32)
+  RustM (ControlFlow ((alloc.vec.into_iter.IntoIter Std.U32) × Std.U32)
     Std.U32)
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
@@ -55,7 +55,7 @@ def sum_by_value_loop.body
 @[rust_loop]
 def sum_by_value_loop
   (iter : alloc.vec.into_iter.IntoIter Std.U32) (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, acc1) => sum_by_value_loop.body iter1 acc1)
@@ -64,7 +64,7 @@ def sum_by_value_loop
 /-- [vec_iter::sum_by_value]:
     Source: 'tests/src/vec-iter.rs', lines 4:0-10:1
     Visibility: public -/
-def sum_by_value (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_by_value (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let iter ← alloc.vec.IntoIteratorVec.into_iter v
   sum_by_value_loop iter 0#u32
 
@@ -74,7 +74,7 @@ def sum_by_value (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 @[rust_loop_body]
 def sum_by_ref_loop.body
   (iter : core.slice.iter.Iter Std.U32) (acc : Std.U32) :
-  Result (ControlFlow ((core.slice.iter.Iter Std.U32) × Std.U32) Std.U32)
+  RustM (ControlFlow ((core.slice.iter.Iter Std.U32) × Std.U32) Std.U32)
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
@@ -88,7 +88,7 @@ def sum_by_ref_loop.body
     Visibility: public -/
 @[rust_loop]
 def sum_by_ref_loop
-  (iter : core.slice.iter.Iter Std.U32) (acc : Std.U32) : Result Std.U32 := do
+  (iter : core.slice.iter.Iter Std.U32) (acc : Std.U32) : RustM Std.U32 := do
   loop
     (fun (iter1, acc1) => sum_by_ref_loop.body iter1 acc1)
     (iter, acc)
@@ -96,7 +96,7 @@ def sum_by_ref_loop
 /-- [vec_iter::sum_by_ref]:
     Source: 'tests/src/vec-iter.rs', lines 13:0-19:1
     Visibility: public -/
-def sum_by_ref (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_by_ref (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let iter ←
     SharedAVec.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
       alloc.alloc.Global v
@@ -109,7 +109,7 @@ def sum_by_ref (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 def sum_step_by_loop.body
   (iter : core.iter.adapters.step_by.StepBy (core.slice.iter.Iter Std.U32))
   (acc : Std.U32) :
-  Result (ControlFlow ((core.iter.adapters.step_by.StepBy (core.slice.iter.Iter
+  RustM (ControlFlow ((core.iter.adapters.step_by.StepBy (core.slice.iter.Iter
     Std.U32)) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
@@ -128,7 +128,7 @@ def sum_step_by_loop.body
 def sum_step_by_loop
   (iter : core.iter.adapters.step_by.StepBy (core.slice.iter.Iter Std.U32))
   (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, acc1) => sum_step_by_loop.body iter1 acc1)
@@ -137,7 +137,7 @@ def sum_step_by_loop
 /-- [vec_iter::sum_step_by]:
     Source: 'tests/src/vec-iter.rs', lines 22:0-28:1
     Visibility: public -/
-def sum_step_by (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_step_by (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let s := alloc.vec.Vec.deref v
   let i ← core.slice.Slice.iter s
   let iter ←
@@ -152,7 +152,7 @@ def sum_step_by (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 def sum_enumerate_loop.body
   (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
   Std.U32)) (acc : Std.U32) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
+  RustM (ControlFlow ((core.iter.adapters.enumerate.Enumerate
     (core.slice.iter.Iter Std.U32)) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
@@ -174,7 +174,7 @@ def sum_enumerate_loop.body
 def sum_enumerate_loop
   (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
   Std.U32)) (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, acc1) => sum_enumerate_loop.body iter1 acc1)
@@ -183,7 +183,7 @@ def sum_enumerate_loop
 /-- [vec_iter::sum_enumerate]:
     Source: 'tests/src/vec-iter.rs', lines 31:0-37:1
     Visibility: public -/
-def sum_enumerate (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_enumerate (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let s := alloc.vec.Vec.deref v
   let i ← core.slice.Slice.iter s
   let iter ←
@@ -198,7 +198,7 @@ def sum_enumerate (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 def sum_take_loop.body
   (iter : core.iter.adapters.take.Take (core.slice.iter.Iter Std.U32))
   (acc : Std.U32) :
-  Result (ControlFlow ((core.iter.adapters.take.Take (core.slice.iter.Iter
+  RustM (ControlFlow ((core.iter.adapters.take.Take (core.slice.iter.Iter
     Std.U32)) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
@@ -217,7 +217,7 @@ def sum_take_loop.body
 def sum_take_loop
   (iter : core.iter.adapters.take.Take (core.slice.iter.Iter Std.U32))
   (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, acc1) => sum_take_loop.body iter1 acc1)
@@ -226,7 +226,7 @@ def sum_take_loop
 /-- [vec_iter::sum_take]:
     Source: 'tests/src/vec-iter.rs', lines 40:0-46:1
     Visibility: public -/
-def sum_take (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_take (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let s := alloc.vec.Vec.deref v
   let i ← core.slice.Slice.iter s
   let iter ←
@@ -241,7 +241,7 @@ def sum_take (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 def sum_into_step_by_loop.body
   (iter : core.iter.adapters.step_by.StepBy (alloc.vec.into_iter.IntoIter
   Std.U32)) (acc : Std.U32) :
-  Result (ControlFlow ((core.iter.adapters.step_by.StepBy
+  RustM (ControlFlow ((core.iter.adapters.step_by.StepBy
     (alloc.vec.into_iter.IntoIter Std.U32)) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
@@ -260,7 +260,7 @@ def sum_into_step_by_loop.body
 def sum_into_step_by_loop
   (iter : core.iter.adapters.step_by.StepBy (alloc.vec.into_iter.IntoIter
   Std.U32)) (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, acc1) => sum_into_step_by_loop.body iter1 acc1)
@@ -269,7 +269,7 @@ def sum_into_step_by_loop
 /-- [vec_iter::sum_into_step_by]:
     Source: 'tests/src/vec-iter.rs', lines 49:0-55:1
     Visibility: public -/
-def sum_into_step_by (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_into_step_by (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let ii ← alloc.vec.IntoIteratorVec.into_iter v
   let iter ←
     core.iter.traits.iterator.Iterator.step_by.trait_default
@@ -283,7 +283,7 @@ def sum_into_step_by (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 def sum_into_enumerate_loop.body
   (iter : core.iter.adapters.enumerate.Enumerate (alloc.vec.into_iter.IntoIter
   Std.U32)) (acc : Std.U32) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
+  RustM (ControlFlow ((core.iter.adapters.enumerate.Enumerate
     (alloc.vec.into_iter.IntoIter Std.U32)) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
@@ -305,7 +305,7 @@ def sum_into_enumerate_loop.body
 def sum_into_enumerate_loop
   (iter : core.iter.adapters.enumerate.Enumerate (alloc.vec.into_iter.IntoIter
   Std.U32)) (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, acc1) => sum_into_enumerate_loop.body iter1 acc1)
@@ -314,7 +314,7 @@ def sum_into_enumerate_loop
 /-- [vec_iter::sum_into_enumerate]:
     Source: 'tests/src/vec-iter.rs', lines 58:0-64:1
     Visibility: public -/
-def sum_into_enumerate (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_into_enumerate (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let ii ← alloc.vec.IntoIteratorVec.into_iter v
   let iter ←
     core.iter.traits.iterator.Iterator.enumerate.trait_default
@@ -328,7 +328,7 @@ def sum_into_enumerate (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 def sum_into_take_loop.body
   (iter : core.iter.adapters.take.Take (alloc.vec.into_iter.IntoIter Std.U32))
   (acc : Std.U32) :
-  Result (ControlFlow ((core.iter.adapters.take.Take
+  RustM (ControlFlow ((core.iter.adapters.take.Take
     (alloc.vec.into_iter.IntoIter Std.U32)) × Std.U32) Std.U32)
   := do
   let (o, iter1) ←
@@ -347,7 +347,7 @@ def sum_into_take_loop.body
 def sum_into_take_loop
   (iter : core.iter.adapters.take.Take (alloc.vec.into_iter.IntoIter Std.U32))
   (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (iter1, acc1) => sum_into_take_loop.body iter1 acc1)
@@ -356,7 +356,7 @@ def sum_into_take_loop
 /-- [vec_iter::sum_into_take]:
     Source: 'tests/src/vec-iter.rs', lines 67:0-73:1
     Visibility: public -/
-def sum_into_take (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
+def sum_into_take (v : alloc.vec.Vec Std.U32) : RustM Std.U32 := do
   let ii ← alloc.vec.IntoIteratorVec.into_iter v
   let iter ←
     core.iter.traits.iterator.Iterator.take.trait_default
@@ -369,7 +369,7 @@ def sum_into_take (v : alloc.vec.Vec Std.U32) : Result Std.U32 := do
 @[rust_loop_body]
 def for_over_vec_of_slices_loop.body
   (iter : alloc.vec.into_iter.IntoIter (Slice Bool)) :
-  Result (ControlFlow (alloc.vec.into_iter.IntoIter (Slice Bool)) Unit)
+  RustM (ControlFlow (alloc.vec.into_iter.IntoIter (Slice Bool)) Unit)
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
@@ -381,7 +381,7 @@ def for_over_vec_of_slices_loop.body
     Visibility: public -/
 @[rust_loop]
 def for_over_vec_of_slices_loop
-  (iter : alloc.vec.into_iter.IntoIter (Slice Bool)) : Result Unit := do
+  (iter : alloc.vec.into_iter.IntoIter (Slice Bool)) : RustM Unit := do
   loop
     (fun iter1 => for_over_vec_of_slices_loop.body iter1)
     iter
@@ -390,7 +390,7 @@ def for_over_vec_of_slices_loop
     Source: 'tests/src/vec-iter.rs', lines 77:0-79:1
     Visibility: public -/
 def for_over_vec_of_slices
-  (chunks : alloc.vec.Vec (Slice Bool)) : Result Unit := do
+  (chunks : alloc.vec.Vec (Slice Bool)) : RustM Unit := do
   let iter ← alloc.vec.IntoIteratorVec.into_iter chunks
   for_over_vec_of_slices_loop iter
 

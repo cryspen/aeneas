@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -24,7 +24,7 @@ namespace slices
     Source: 'tests/src/slices.rs', lines 3:0-5:1
     Visibility: public -/
 def slice_subslice_from_shared
-  (x : Slice Std.U32) : Result (Slice Std.U32) := do
+  (x : Slice Std.U32) : RustM (Slice Std.U32) := do
   core.slice.index.Slice.index (core.slice.index.SliceIndexRangeFromUsizeSlice
     Std.U32) x { start := 0#usize }
 
@@ -33,7 +33,7 @@ def slice_subslice_from_shared
     Visibility: public -/
 def slice_subslice_from_mut
   (x : Slice Std.U32) :
-  Result ((Slice Std.U32) × (Slice Std.U32 → Slice Std.U32))
+  RustM ((Slice Std.U32) × (Slice Std.U32 → Slice Std.U32))
   := do
   core.slice.index.Slice.index_mut
     (core.slice.index.SliceIndexRangeFromUsizeSlice Std.U32) x
@@ -44,7 +44,7 @@ def slice_subslice_from_mut
     Visibility: public -/
 def split_at
   {T : Type _} (x : Slice T) (n : Std.Usize) :
-  Result ((Slice T) × (Slice T))
+  RustM ((Slice T) × (Slice T))
   := do
   core.slice.Slice.split_at x n
 
@@ -53,7 +53,7 @@ def split_at
     Visibility: public -/
 def split_at_mut
   {T : Type _} (x : Slice T) (n : Std.Usize) :
-  Result (((Slice T) × (Slice T)) × (((Slice T) × (Slice T)) → Slice T))
+  RustM (((Slice T) × (Slice T)) × (((Slice T) × (Slice T)) → Slice T))
   := do
   core.slice.Slice.split_at_mut x n
 
@@ -63,7 +63,7 @@ def split_at_mut
 def split_at_mut_and_deref
   {T : Type _} (coremarkerCopyInst : core.marker.Copy T) (x : Slice T)
   (n : Std.Usize) :
-  Result ((T × T) × (Slice T))
+  RustM ((T × T) × (Slice T))
   := do
   let ((left, right), split_at_mut_back) ← core.slice.Slice.split_at_mut x n
   let t ← Slice.index_usize left 0#usize
@@ -76,14 +76,14 @@ def split_at_mut_and_deref
     Visibility: public -/
 def swap
   {T : Type _} (x : Slice T) (n : Std.Usize) (m : Std.Usize) :
-  Result (Slice T)
+  RustM (Slice T)
   := do
   core.slice.Slice.swap x n m
 
 /-- [slices::from_vec]:
     Source: 'tests/src/slices.rs', lines 28:0-30:1
     Visibility: public -/
-def from_vec {T : Type _} (x : alloc.vec.Vec T) : Result (Slice T) := do
+def from_vec {T : Type _} (x : alloc.vec.Vec T) : RustM (Slice T) := do
   alloc.vec.FromBoxSliceVec.from x
 
 end slices

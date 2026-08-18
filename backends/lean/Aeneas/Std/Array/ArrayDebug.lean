@@ -6,12 +6,12 @@ public section
 
 namespace Aeneas.Std
 
-open Result
+open RustM
 
 @[expose, simp, rust_fun "core::array::{core::fmt::Debug<[@T; @N]>}::fmt"]
 def core.array.DebugArray.fmt
   {T : Type _} {N : Usize} (_ : core.fmt.Debug T) (_ : Array T N) (fmt : core.fmt.Formatter) :
-  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter) :=
+  RustM ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter) :=
   -- TODO: this model is simplistic
   ok (.Ok (), fmt)
 

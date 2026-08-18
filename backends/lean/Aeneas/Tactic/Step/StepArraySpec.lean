@@ -37,7 +37,7 @@ namespace Aeneas
 
 namespace Std
 
-open Result WP
+open RustM WP
 
 meta def Array.allIdx (f : Usize → α → Bool) (ls : List α) (i : Nat := 0) : Bool :=
   match ls with

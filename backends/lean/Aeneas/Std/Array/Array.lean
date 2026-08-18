@@ -10,7 +10,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error WP
+open RustM Error WP
 open Aeneas.Data.ListN
 
 local macro_rules
@@ -110,7 +110,7 @@ example : Array Int (Usize.ofNat 2) :=
   let y := 1
   Array.make (Usize.ofNat 2) [x, y]
 
-example : Result (Array Int (Usize.ofNat 2)) := do
+example : RustM (Array Int (Usize.ofNat 2)) := do
   let x ← ok 0
   let y ← ok 1
   ok (Array.make (Usize.ofNat 2) [x, y])
@@ -156,7 +156,7 @@ theorem Array.getElem!_Usize_eq {α : Type u} [Inhabited α] {n : Usize} (v : Ar
 abbrev Array.slice {α : Type u} {n : Usize} [Inhabited α] (v : Array α n) (i j : Nat) : List α :=
   v.val.slice i j
 
-@[expose] def Array.index_usize {α : Type u} {n : Usize} (v: Array α n) (i: Usize) : Result α :=
+@[expose] def Array.index_usize {α : Type u} {n : Usize} (v: Array α n) (i: Usize) : RustM α :=
   match v[i]? with
   | none => fail .arrayOutOfBounds
   | some x => ok x
@@ -265,7 +265,7 @@ theorem Array.getElem_Nat_set_eq
 theorem Array.set_length {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (x: α) :
   (v.set i x).length = v.length := by simp
 
-@[expose] def Array.update {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (x: α) : Result (Array α n) :=
+@[expose] def Array.update {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (x: α) : RustM (Array α n) :=
   match v[i]? with
   | none => fail .arrayOutOfBounds
   | some _ =>
@@ -282,7 +282,7 @@ theorem Array.update_spec {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (
   cases hopt : v[i]? <;> simp_all
 
 @[expose] def Array.index_mut_usize {α : Type u} {n : Usize} (v: Array α n) (i: Usize) :
-  Result (α × (α -> Array α n)) := do
+  RustM (α × (α -> Array α n)) := do
   let x ← index_usize v i
   ok (x, set v i)
 
@@ -335,17 +335,17 @@ theorem Array.getElem_set_neq {α} {n : Usize} (v : Array α n) (i j : Usize) (x
   simp_lists [List.getElem_set_ne]
 
 /-- Small helper (this function doesn't model a specific Rust function) -/
-@[expose] def Array.clone {α : Type u} {n : Usize} (clone : α → Result α) (s : Array α n) : Result (Array α n) := do
+@[expose] def Array.clone {α : Type u} {n : Usize} (clone : α → RustM α) (s : Array α n) : RustM (Array α n) := do
   let s' ← List.clone clone s.val
   ok (.from s' (by have:= s'.property; scalar_tac))
 
-theorem Array.clone_length {α : Type u} {n : Usize} (clone : α → Result α) (s s' : Array α n) (h : Array.clone clone s = ok s') :
+theorem Array.clone_length {α : Type u} {n : Usize} (clone : α → RustM α) (s s' : Array α n) (h : Array.clone clone s = ok s') :
   s'.length = s.length := by
   simp [Array.clone] at h
   cases h2 : List.clone clone ↑s <;> simp_all
 
 @[step]
-theorem Array.clone_spec {α : Type u} {n : Usize} {clone : α → Result α} {s : Array α n} (h : ∀ x ∈ s.val, clone x = ok x) :
+theorem Array.clone_spec {α : Type u} {n : Usize} {clone : α → RustM α} {s : Array α n} (h : ∀ x ∈ s.val, clone x = ok x) :
   Array.clone clone s ⦃ s' => s' = s ⦄ := by
   simp only [Array.clone]
   apply spec_bind (List.clone_spec h)
@@ -354,7 +354,7 @@ theorem Array.clone_spec {α : Type u} {n : Usize} {clone : α → Result α} {s
 
 @[expose, rust_fun "core::array::{core::clone::Clone<[@T; @N]>}::clone"]
 def core.array.CloneArray.clone
-  {T : Type _} {N : Usize} (cloneInst : core.clone.Clone T) (a : Array T N) : Result (Array T N) :=
+  {T : Type _} {N : Usize} (cloneInst : core.clone.Clone T) (a : Array T N) : RustM (Array T N) :=
   Array.clone cloneInst.clone a
 
 @[step]
@@ -368,7 +368,7 @@ theorem core.array.CloneArray.clone_spec {T : Type _} {N : Usize} (cloneInst : c
 
 @[expose, rust_fun "core::array::{core::clone::Clone<[@T; @N]>}::clone_from"]
 def core.array.CloneArray.clone_from {T : Type _} {N : Usize} (cloneInst : core.clone.Clone T)
-  (_self source : Array T N) : Result (Array T N) :=
+  (_self source : Array T N) : RustM (Array T N) :=
   Array.clone cloneInst.clone source
 
 @[step]
@@ -453,7 +453,7 @@ theorem Array.setSlice!_getElem_suffix {α} {n}
   exact h1
 /- Remark: see the comment for `core.default.DefaultArray` -/
 @[expose, rust_fun "core::array::{core::default::Default<[@T; @N]>}::default"]
-def core.default.DefaultArray.default {T : Type _} (N : Usize) (defaultInst : core.default.Default T) : Result (Array T N) := do
+def core.default.DefaultArray.default {T : Type _} (N : Usize) (defaultInst : core.default.Default T) : RustM (Array T N) := do
   let x ← defaultInst.default
   .ok (Array.repeat N x)
 
@@ -469,7 +469,7 @@ def core.default.DefaultArray {T : Type _} (N : Usize)
 }
 
 @[expose, rust_fun "core::array::{core::default::Default<[@T; 0]>}::default"]
-def core.default.DefaultArrayEmpty.default (T : Type _) : Result (Array T (Usize.ofNat 0)) :=
+def core.default.DefaultArrayEmpty.default (T : Type _) : RustM (Array T (Usize.ofNat 0)) :=
   ok (.from []  (by scalar_tac))
 
 /- See the comments for `core.default.DefaultArray` -/

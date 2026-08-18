@@ -5,7 +5,7 @@ public import Aeneas
 public import Lean
 public import Aeneas.Std.Alloc
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false

@@ -2,7 +2,7 @@ module
 import Aeneas.Std.Core.CoreOption
 import Aeneas.Tactic.Step
 
-open Aeneas Aeneas.Std Result
+open Aeneas Aeneas.Std RustM
 
 namespace higher_order_option
 
@@ -13,12 +13,12 @@ namespace higher_order_option
 @[reducible] def incr.closure := Unit
 
 @[step_simps]
-def incr.closure.call_once (_ : incr.closure) (v : U32) : Result U32 := v + 1#u32
+def incr.closure.call_once (_ : incr.closure) (v : U32) : RustM U32 := v + 1#u32
 
 @[reducible] def incr.closure.FnOnceInst :
   core.ops.function.FnOnce incr.closure U32 U32 := { call_once := incr.closure.call_once }
 
-def incr (x : Option U32) : Result (Option U32) :=
+def incr (x : Option U32) : RustM (Option U32) :=
   core.option.Option.map incr.closure.FnOnceInst x ()
 
 example (x : Option U32) (h : ∀ v, x = some v → v.val + 1 ≤ U32.max) :
@@ -30,14 +30,14 @@ example (x : Option U32) (h : ∀ v, x = some v → v.val + 1 ≤ U32.max) :
 @[reducible] def big.closure := Unit
 
 @[step_simps]
-def big.closure.call_once (_ : big.closure) (v : U32) : Result Bool := do
+def big.closure.call_once (_ : big.closure) (v : U32) : RustM Bool := do
   let w ← v + 1#u32
   ok (w > 3#u32)
 
 @[reducible] def big.closure.FnOnceInst :
   core.ops.function.FnOnce big.closure U32 Bool := { call_once := big.closure.call_once }
 
-def big (x : Option U32) : Result Bool :=
+def big (x : Option U32) : RustM Bool :=
   core.option.Option.is_some_and big.closure.FnOnceInst x ()
 
 example (x : Option U32) (h : ∀ v, x = some v → v.val + 1 ≤ U32.max) :
@@ -54,12 +54,12 @@ example (x : Option U32) (h : ∀ v, x = some v → v.val + 1 ≤ U32.max) :
 @[reducible] def gt3.closure := Unit
 
 @[step_simps]
-def gt3.closure.call_once (_ : gt3.closure) (v : U32) : Result Bool := ok (v > 3#u32)
+def gt3.closure.call_once (_ : gt3.closure) (v : U32) : RustM Bool := ok (v > 3#u32)
 
 @[reducible] def gt3.closure.FnOnceInst :
   core.ops.function.FnOnce gt3.closure U32 Bool := { call_once := gt3.closure.call_once }
 
-def gt3 (x : Option U32) : Result Bool :=
+def gt3 (x : Option U32) : RustM Bool :=
   core.option.Option.is_some_and gt3.closure.FnOnceInst x ()
 
 example (x : Option U32) :
@@ -76,12 +76,12 @@ example (x : Option U32) :
 @[reducible] def succ.closure := U32
 
 @[step_simps]
-def succ.closure.call_once (c : succ.closure) (_ : Unit) : Result U32 := c + 1#u32
+def succ.closure.call_once (c : succ.closure) (_ : Unit) : RustM U32 := c + 1#u32
 
 @[reducible] def succ.closure.FnOnceInst :
   core.ops.function.FnOnce succ.closure Unit U32 := { call_once := succ.closure.call_once }
 
-def succ (b : Bool) (c : U32) : Result (Option U32) :=
+def succ (b : Bool) (c : U32) : RustM (Option U32) :=
   core.bool.Bool.then succ.closure.FnOnceInst b c
 
 example (b : Bool) (c : U32) (h : c.val + 1 ≤ U32.max) :

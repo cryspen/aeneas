@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -74,25 +74,25 @@ inductive Sum (T1 : Type _) (T2 : Type _) where
 /-- [no_nested_borrows::cast_u32_to_i32]:
     Source: 'tests/src/no_nested_borrows.rs', lines 49:0-51:1
     Visibility: public -/
-def cast_u32_to_i32 (x : Std.U32) : Result Std.I32 := do
+def cast_u32_to_i32 (x : Std.U32) : RustM Std.I32 := do
   ok (UScalar.hcast .I32 x)
 
 /-- [no_nested_borrows::cast_bool_to_i32]:
     Source: 'tests/src/no_nested_borrows.rs', lines 53:0-55:1
     Visibility: public -/
-def cast_bool_to_i32 (x : Bool) : Result Std.I32 := do
+def cast_bool_to_i32 (x : Bool) : RustM Std.I32 := do
   ok (IScalar.cast_fromBool .I32 x)
 
 /-- [no_nested_borrows::cast_bool_to_bool]:
     Source: 'tests/src/no_nested_borrows.rs', lines 58:0-60:1
     Visibility: public -/
-def cast_bool_to_bool (x : Bool) : Result Bool := do
+def cast_bool_to_bool (x : Bool) : RustM Bool := do
   ok x
 
 /-- [no_nested_borrows::test2]:
     Source: 'tests/src/no_nested_borrows.rs', lines 64:0-74:1
     Visibility: public -/
-def test2 : Result Unit := do
+def test2 : RustM Unit := do
   let _ ← 23#u32 + 44#u32
   ok ()
 
@@ -102,7 +102,7 @@ def test2 : Result Unit := do
 /-- [no_nested_borrows::get_max]:
     Source: 'tests/src/no_nested_borrows.rs', lines 76:0-82:1
     Visibility: public -/
-def get_max (x : Std.U32) (y : Std.U32) : Result Std.U32 := do
+def get_max (x : Std.U32) (y : Std.U32) : RustM Std.U32 := do
   if x >= y
   then ok x
   else ok y
@@ -110,7 +110,7 @@ def get_max (x : Std.U32) (y : Std.U32) : Result Std.U32 := do
 /-- [no_nested_borrows::test3]:
     Source: 'tests/src/no_nested_borrows.rs', lines 85:0-90:1
     Visibility: public -/
-def test3 : Result Unit := do
+def test3 : RustM Unit := do
   let x ← get_max 4#u32 3#u32
   let y ← get_max 10#u32 11#u32
   let z ← x + y
@@ -122,7 +122,7 @@ def test3 : Result Unit := do
 /-- [no_nested_borrows::test_neg1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 93:0-97:1
     Visibility: public -/
-def test_neg1 : Result Unit := do
+def test_neg1 : RustM Unit := do
   let y ← -. 3#i32
   massert (y = (-3)#i32)
 
@@ -132,7 +132,7 @@ def test_neg1 : Result Unit := do
 /-- [no_nested_borrows::refs_test1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 101:0-110:1
     Visibility: public -/
-def refs_test1 : Result Unit := do
+def refs_test1 : RustM Unit := do
   massert (1#i32 = 1#i32)
 
 /- Unit test for [no_nested_borrows::refs_test1] -/
@@ -141,7 +141,7 @@ def refs_test1 : Result Unit := do
 /-- [no_nested_borrows::refs_test2]:
     Source: 'tests/src/no_nested_borrows.rs', lines 113:0-125:1
     Visibility: public -/
-def refs_test2 : Result Unit := do
+def refs_test2 : RustM Unit := do
   massert (2#i32 = 2#i32)
   massert (0#i32 = 0#i32)
   massert (2#i32 = 2#i32)
@@ -153,7 +153,7 @@ def refs_test2 : Result Unit := do
 /-- [no_nested_borrows::test_list1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 130:0-132:1
     Visibility: public -/
-def test_list1 : Result Unit := do
+def test_list1 : RustM Unit := do
   ok ()
 
 /- Unit test for [no_nested_borrows::test_list1] -/
@@ -162,31 +162,31 @@ def test_list1 : Result Unit := do
 /-- [no_nested_borrows::copy_int]:
     Source: 'tests/src/no_nested_borrows.rs', lines 134:0-136:1
     Visibility: public -/
-def copy_int (x : Std.I32) : Result Std.I32 := do
+def copy_int (x : Std.I32) : RustM Std.I32 := do
   ok x
 
 /-- [no_nested_borrows::test_unreachable]:
     Source: 'tests/src/no_nested_borrows.rs', lines 140:0-144:1
     Visibility: public -/
-def test_unreachable (b : Bool) : Result Unit := do
+def test_unreachable (b : Bool) : RustM Unit := do
   massert (¬ b)
 
 /-- [no_nested_borrows::test_panic]:
     Source: 'tests/src/no_nested_borrows.rs', lines 147:0-151:1
     Visibility: public -/
-def test_panic (b : Bool) : Result Unit := do
+def test_panic (b : Bool) : RustM Unit := do
   massert (¬ b)
 
 /-- [no_nested_borrows::test_panic_msg]:
     Source: 'tests/src/no_nested_borrows.rs', lines 155:0-159:1
     Visibility: public -/
-def test_panic_msg (b : Bool) : Result Unit := do
+def test_panic_msg (b : Bool) : RustM Unit := do
   massert (¬ b)
 
 /-- [no_nested_borrows::test_copy_int]:
     Source: 'tests/src/no_nested_borrows.rs', lines 163:0-168:1
     Visibility: public -/
-def test_copy_int : Result Unit := do
+def test_copy_int : RustM Unit := do
   let y ← copy_int 0#i32
   massert (0#i32 = y)
 
@@ -196,7 +196,7 @@ def test_copy_int : Result Unit := do
 /-- [no_nested_borrows::is_cons]:
     Source: 'tests/src/no_nested_borrows.rs', lines 170:0-175:1
     Visibility: public -/
-def is_cons {T : Type _} (l : List T) : Result Bool := do
+def is_cons {T : Type _} (l : List T) : RustM Bool := do
   match l with
   | List.Cons _ _ => ok true
   | List.Nil => ok false
@@ -204,7 +204,7 @@ def is_cons {T : Type _} (l : List T) : Result Bool := do
 /-- [no_nested_borrows::test_is_cons]:
     Source: 'tests/src/no_nested_borrows.rs', lines 178:0-182:1
     Visibility: public -/
-def test_is_cons : Result Unit := do
+def test_is_cons : RustM Unit := do
   let b ← is_cons (List.Cons 0#i32 List.Nil)
   massert b
 
@@ -214,7 +214,7 @@ def test_is_cons : Result Unit := do
 /-- [no_nested_borrows::split_list]:
     Source: 'tests/src/no_nested_borrows.rs', lines 184:0-189:1
     Visibility: public -/
-def split_list {T : Type _} (l : List T) : Result (T × (List T)) := do
+def split_list {T : Type _} (l : List T) : RustM (T × (List T)) := do
   match l with
   | List.Cons hd tl => ok (hd, tl)
   | List.Nil => fail panic
@@ -222,7 +222,7 @@ def split_list {T : Type _} (l : List T) : Result (T × (List T)) := do
 /-- [no_nested_borrows::test_split_list]:
     Source: 'tests/src/no_nested_borrows.rs', lines 193:0-198:1
     Visibility: public -/
-def test_split_list : Result Unit := do
+def test_split_list : RustM Unit := do
   let (hd, _) ← split_list (List.Cons 0#i32 List.Nil)
   massert (hd = 0#i32)
 
@@ -234,7 +234,7 @@ def test_split_list : Result Unit := do
     Visibility: public -/
 def choose
   {T : Type _} (b : Bool) (x : T) (y : T) :
-  Result (T × (T → (T × T)))
+  RustM (T × (T → (T × T)))
   := do
   if b
   then let back := fun x1 => (x1, y)
@@ -245,7 +245,7 @@ def choose
 /-- [no_nested_borrows::choose_test]:
     Source: 'tests/src/no_nested_borrows.rs', lines 209:0-218:1
     Visibility: public -/
-def choose_test : Result Unit := do
+def choose_test : RustM Unit := do
   let (z, choose_back) ← choose true 0#i32 0#i32
   let z1 ← z + 1#i32
   massert (z1 = 1#i32)
@@ -259,13 +259,13 @@ def choose_test : Result Unit := do
 /-- [no_nested_borrows::test_char]:
     Source: 'tests/src/no_nested_borrows.rs', lines 221:0-223:1
     Visibility: public -/
-def test_char : Result Char := do
+def test_char : RustM Char := do
   ok 'a'
 
 /-- [no_nested_borrows::panic_mut_borrow]:
     Source: 'tests/src/no_nested_borrows.rs', lines 226:0-228:1
     Visibility: public -/
-def panic_mut_borrow (i : Std.U32) : Result Std.U32 := do
+def panic_mut_borrow (i : Std.U32) : RustM Std.U32 := do
   fail panic
 
 mutual
@@ -291,7 +291,7 @@ end
 /-- [no_nested_borrows::list_length]:
     Source: 'tests/src/no_nested_borrows.rs', lines 272:0-277:1
     Visibility: public -/
-def list_length {T : Type _} (l : List T) : Result Std.U32 := do
+def list_length {T : Type _} (l : List T) : RustM Std.U32 := do
   match l with
   | List.Cons _ l1 => let i ← list_length l1
                       1#u32 + i
@@ -301,7 +301,7 @@ partial_fixpoint
 /-- [no_nested_borrows::list_nth_shared]:
     Source: 'tests/src/no_nested_borrows.rs', lines 280:0-293:1
     Visibility: public -/
-def list_nth_shared {T : Type _} (l : List T) (i : Std.U32) : Result T := do
+def list_nth_shared {T : Type _} (l : List T) (i : Std.U32) : RustM T := do
   match l with
   | List.Cons x tl =>
     if i = 0#u32
@@ -315,7 +315,7 @@ partial_fixpoint
     Source: 'tests/src/no_nested_borrows.rs', lines 296:0-309:1
     Visibility: public -/
 def list_nth_mut
-  {T : Type _} (l : List T) (i : Std.U32) : Result (T × (T → List T)) := do
+  {T : Type _} (l : List T) (i : Std.U32) : RustM (T × (T → List T)) := do
   match l with
   | List.Cons x tl =>
     if i = 0#u32
@@ -334,7 +334,7 @@ partial_fixpoint
     Source: 'tests/src/no_nested_borrows.rs', lines 312:0-322:1
     Visibility: public -/
 def list_rev_aux
-  {T : Type _} (li : List T) (lo : List T) : Result (List T) := do
+  {T : Type _} (li : List T) (lo : List T) : RustM (List T) := do
   match li with
   | List.Cons hd tl => list_rev_aux tl (List.Cons hd lo)
   | List.Nil => ok lo
@@ -343,14 +343,14 @@ partial_fixpoint
 /-- [no_nested_borrows::list_rev]:
     Source: 'tests/src/no_nested_borrows.rs', lines 326:0-329:1
     Visibility: public -/
-def list_rev {T : Type _} (l : List T) : Result (List T) := do
+def list_rev {T : Type _} (l : List T) : RustM (List T) := do
   let (li, _) := core.mem.replace l List.Nil
   list_rev_aux li List.Nil
 
 /-- [no_nested_borrows::test_list_functions]:
     Source: 'tests/src/no_nested_borrows.rs', lines 332:0-346:1
     Visibility: public -/
-def test_list_functions : Result Unit := do
+def test_list_functions : RustM Unit := do
   let i ←
     list_length (List.Cons 0#i32 (List.Cons 1#i32 (List.Cons 2#i32 List.Nil)))
   massert (i = 3#u32)
@@ -385,7 +385,7 @@ def test_list_functions : Result Unit := do
     Visibility: public -/
 def id_mut_pair1
   {T1 : Type _} {T2 : Type _} (x : T1) (y : T2) :
-  Result ((T1 × T2) × ((T1 × T2) → (T1 × T2)))
+  RustM ((T1 × T2) × ((T1 × T2) → (T1 × T2)))
   := do
   ok ((x, y), fun p => p)
 
@@ -394,7 +394,7 @@ def id_mut_pair1
     Visibility: public -/
 def id_mut_pair2
   {T1 : Type _} {T2 : Type _} (p : (T1 × T2)) :
-  Result ((T1 × T2) × ((T1 × T2) → (T1 × T2)))
+  RustM ((T1 × T2) × ((T1 × T2) → (T1 × T2)))
   := do
   ok (p, fun p1 => p1)
 
@@ -403,7 +403,7 @@ def id_mut_pair2
     Visibility: public -/
 def id_mut_pair3
   {T1 : Type _} {T2 : Type _} (x : T1) (y : T2) :
-  Result ((T1 × T2) × (T1 → T1) × (T2 → T2))
+  RustM ((T1 × T2) × (T1 → T1) × (T2 → T2))
   := do
   ok ((x, y), fun x1 => x1, fun y1 => y1)
 
@@ -412,7 +412,7 @@ def id_mut_pair3
     Visibility: public -/
 def id_mut_pair4
   {T1 : Type _} {T2 : Type _} (p : (T1 × T2)) :
-  Result ((T1 × T2) × (T1 → T1) × (T2 → T2))
+  RustM ((T1 × T2) × (T1 → T1) × (T2 → T2))
   := do
   ok (p, fun p1 => p1, fun p1 => p1)
 
@@ -425,19 +425,19 @@ structure StructWithTuple (T1 : Type _) (T2 : Type _) where
 /-- [no_nested_borrows::new_tuple1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 371:0-373:1
     Visibility: public -/
-def new_tuple1 : Result (StructWithTuple Std.U32 Std.U32) := do
+def new_tuple1 : RustM (StructWithTuple Std.U32 Std.U32) := do
   ok { p := (1#u32, 2#u32) }
 
 /-- [no_nested_borrows::new_tuple2]:
     Source: 'tests/src/no_nested_borrows.rs', lines 375:0-377:1
     Visibility: public -/
-def new_tuple2 : Result (StructWithTuple Std.I16 Std.I16) := do
+def new_tuple2 : RustM (StructWithTuple Std.I16 Std.I16) := do
   ok { p := (1#i16, 2#i16) }
 
 /-- [no_nested_borrows::new_tuple3]:
     Source: 'tests/src/no_nested_borrows.rs', lines 379:0-381:1
     Visibility: public -/
-def new_tuple3 : Result (StructWithTuple Std.U64 Std.I64) := do
+def new_tuple3 : RustM (StructWithTuple Std.U64 Std.I64) := do
   ok { p := (1#u64, 2#i64) }
 
 /-- [no_nested_borrows::StructWithPair]
@@ -449,13 +449,13 @@ structure StructWithPair (T1 : Type _) (T2 : Type _) where
 /-- [no_nested_borrows::new_pair1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 388:0-394:1
     Visibility: public -/
-def new_pair1 : Result (StructWithPair Std.U32 Std.U32) := do
+def new_pair1 : RustM (StructWithPair Std.U32 Std.U32) := do
   ok { p := { x := 1#u32, y := 2#u32 } }
 
 /-- [no_nested_borrows::test_constants]:
     Source: 'tests/src/no_nested_borrows.rs', lines 397:0-402:1
     Visibility: public -/
-def test_constants : Result Unit := do
+def test_constants : RustM Unit := do
   let swt ← new_tuple1
   let (i, _) := swt.p
   massert (i = 1#u32)
@@ -474,7 +474,7 @@ def test_constants : Result Unit := do
 /-- [no_nested_borrows::test_weird_borrows1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 407:0-415:1
     Visibility: public -/
-def test_weird_borrows1 : Result Unit := do
+def test_weird_borrows1 : RustM Unit := do
   ok ()
 
 /- Unit test for [no_nested_borrows::test_weird_borrows1] -/
@@ -483,7 +483,7 @@ def test_weird_borrows1 : Result Unit := do
 /-- [no_nested_borrows::test_mem_replace]:
     Source: 'tests/src/no_nested_borrows.rs', lines 417:0-421:1
     Visibility: public -/
-def test_mem_replace (px : Std.U32) : Result Std.U32 := do
+def test_mem_replace (px : Std.U32) : RustM Std.U32 := do
   let (y, _) := core.mem.replace px 1#u32
   massert (y = 0#u32)
   ok 2#u32
@@ -491,7 +491,7 @@ def test_mem_replace (px : Std.U32) : Result Std.U32 := do
 /-- [no_nested_borrows::test_shared_borrow_bool1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 424:0-433:1
     Visibility: public -/
-def test_shared_borrow_bool1 (b : Bool) : Result Std.U32 := do
+def test_shared_borrow_bool1 (b : Bool) : RustM Std.U32 := do
   if b
   then ok 0#u32
   else ok 1#u32
@@ -499,13 +499,13 @@ def test_shared_borrow_bool1 (b : Bool) : Result Std.U32 := do
 /-- [no_nested_borrows::test_shared_borrow_bool2]:
     Source: 'tests/src/no_nested_borrows.rs', lines 437:0-447:1
     Visibility: public -/
-def test_shared_borrow_bool2 : Result Std.U32 := do
+def test_shared_borrow_bool2 : RustM Std.U32 := do
   ok 0#u32
 
 /-- [no_nested_borrows::test_shared_borrow_enum1]:
     Source: 'tests/src/no_nested_borrows.rs', lines 452:0-460:1
     Visibility: public -/
-def test_shared_borrow_enum1 (l : List Std.U32) : Result Std.U32 := do
+def test_shared_borrow_enum1 (l : List Std.U32) : RustM Std.U32 := do
   match l with
   | List.Cons _ _ => ok 1#u32
   | List.Nil => ok 0#u32
@@ -513,25 +513,25 @@ def test_shared_borrow_enum1 (l : List Std.U32) : Result Std.U32 := do
 /-- [no_nested_borrows::test_shared_borrow_enum2]:
     Source: 'tests/src/no_nested_borrows.rs', lines 464:0-473:1
     Visibility: public -/
-def test_shared_borrow_enum2 : Result Std.U32 := do
+def test_shared_borrow_enum2 : RustM Std.U32 := do
   ok 0#u32
 
 /-- [no_nested_borrows::incr]:
     Source: 'tests/src/no_nested_borrows.rs', lines 475:0-477:1
     Visibility: public -/
-def incr (x : Std.U32) : Result Std.U32 := do
+def incr (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
 /-- [no_nested_borrows::call_incr]:
     Source: 'tests/src/no_nested_borrows.rs', lines 479:0-482:1
     Visibility: public -/
-def call_incr (x : Std.U32) : Result Std.U32 := do
+def call_incr (x : Std.U32) : RustM Std.U32 := do
   incr x
 
 /-- [no_nested_borrows::read_then_incr]:
     Source: 'tests/src/no_nested_borrows.rs', lines 484:0-488:1
     Visibility: public -/
-def read_then_incr (x : Std.U32) : Result (Std.U32 × Std.U32) := do
+def read_then_incr (x : Std.U32) : RustM (Std.U32 × Std.U32) := do
   let x1 ← x + 1#u32
   ok (x, x1)
 
@@ -543,21 +543,21 @@ def Tuple (T1 : Type _) (T2 : Type _) := T1 × T2
 /-- [no_nested_borrows::read_tuple]:
     Source: 'tests/src/no_nested_borrows.rs', lines 492:0-494:1
     Visibility: public -/
-def read_tuple (x : (Std.U32 × Std.U32)) : Result Std.U32 := do
+def read_tuple (x : (Std.U32 × Std.U32)) : RustM Std.U32 := do
   let (i, _) := x
   ok i
 
 /-- [no_nested_borrows::update_tuple]:
     Source: 'tests/src/no_nested_borrows.rs', lines 496:0-498:1
     Visibility: public -/
-def update_tuple (x : (Std.U32 × Std.U32)) : Result (Std.U32 × Std.U32) := do
+def update_tuple (x : (Std.U32 × Std.U32)) : RustM (Std.U32 × Std.U32) := do
   let (_, i) := x
   ok (1#u32, i)
 
 /-- [no_nested_borrows::read_tuple_struct]:
     Source: 'tests/src/no_nested_borrows.rs', lines 500:0-502:1
     Visibility: public -/
-def read_tuple_struct (x : Tuple Std.U32 Std.U32) : Result Std.U32 := do
+def read_tuple_struct (x : Tuple Std.U32 Std.U32) : RustM Std.U32 := do
   let (i, _) := x
   ok i
 
@@ -565,7 +565,7 @@ def read_tuple_struct (x : Tuple Std.U32 Std.U32) : Result Std.U32 := do
     Source: 'tests/src/no_nested_borrows.rs', lines 504:0-506:1
     Visibility: public -/
 def update_tuple_struct
-  (x : Tuple Std.U32 Std.U32) : Result (Tuple Std.U32 Std.U32) := do
+  (x : Tuple Std.U32 Std.U32) : RustM (Tuple Std.U32 Std.U32) := do
   let (_, i) := x
   ok (1#u32, i)
 
@@ -573,7 +573,7 @@ def update_tuple_struct
     Source: 'tests/src/no_nested_borrows.rs', lines 508:0-510:1
     Visibility: public -/
 def create_tuple_struct
-  (x : Std.U32) (y : Std.U64) : Result (Tuple Std.U32 Std.U64) := do
+  (x : Std.U32) (y : Std.U64) : RustM (Tuple Std.U32 Std.U64) := do
   ok (x, y)
 
 /-- [no_nested_borrows::IdType]
@@ -585,38 +585,38 @@ def IdType (T : Type _) := T
 /-- [no_nested_borrows::use_id_type]:
     Source: 'tests/src/no_nested_borrows.rs', lines 515:0-517:1
     Visibility: public -/
-def use_id_type {T : Type _} (x : IdType T) : Result T := do
+def use_id_type {T : Type _} (x : IdType T) : RustM T := do
   ok x
 
 /-- [no_nested_borrows::create_id_type]:
     Source: 'tests/src/no_nested_borrows.rs', lines 519:0-521:1
     Visibility: public -/
-def create_id_type {T : Type _} (x : T) : Result (IdType T) := do
+def create_id_type {T : Type _} (x : T) : RustM (IdType T) := do
   ok x
 
 /-- [no_nested_borrows::not_bool]:
     Source: 'tests/src/no_nested_borrows.rs', lines 523:0-525:1
     Visibility: public -/
-def not_bool (x : Bool) : Result Bool := do
+def not_bool (x : Bool) : RustM Bool := do
   ok (¬ x)
 
 /-- [no_nested_borrows::not_u32]:
     Source: 'tests/src/no_nested_borrows.rs', lines 527:0-529:1
     Visibility: public -/
-def not_u32 (x : Std.U32) : Result Std.U32 := do
+def not_u32 (x : Std.U32) : RustM Std.U32 := do
   ok (~~~ x)
 
 /-- [no_nested_borrows::not_i32]:
     Source: 'tests/src/no_nested_borrows.rs', lines 531:0-533:1
     Visibility: public -/
-def not_i32 (x : Std.I32) : Result Std.I32 := do
+def not_i32 (x : Std.I32) : RustM Std.I32 := do
   ok (~~~ x)
 
 /-- [no_nested_borrows::borrow_mut_tuple]:
     Source: 'tests/src/no_nested_borrows.rs', lines 535:0-537:1 -/
 def borrow_mut_tuple
   {T : Type _} {U : Type _} (x : (T × U)) :
-  Result ((T × U) × ((T × U) → (T × U)))
+  RustM ((T × U) × ((T × U) → (T × U)))
   := do
   ok (x, fun x1 => x1)
 
@@ -629,7 +629,7 @@ def ExpandSimpliy.Wrapper (T : Type _) := T × T
     Source: 'tests/src/no_nested_borrows.rs', lines 543:4-549:5
     Visibility: public -/
 def ExpandSimpliy.check_expand_simplify_symb1
-  (x : ExpandSimpliy.Wrapper Bool) : Result (ExpandSimpliy.Wrapper Bool) := do
+  (x : ExpandSimpliy.Wrapper Bool) : RustM (ExpandSimpliy.Wrapper Bool) := do
   let (b, _) := x
   if b
   then ok x
@@ -646,7 +646,7 @@ structure ExpandSimpliy.Wrapper2 where
     Source: 'tests/src/no_nested_borrows.rs', lines 556:4-562:5
     Visibility: public -/
 def ExpandSimpliy.check_expand_simplify_symb2
-  (x : ExpandSimpliy.Wrapper2) : Result ExpandSimpliy.Wrapper2 := do
+  (x : ExpandSimpliy.Wrapper2) : RustM ExpandSimpliy.Wrapper2 := do
   if x.b
   then ok x
   else ok x

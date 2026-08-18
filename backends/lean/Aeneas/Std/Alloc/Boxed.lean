@@ -8,7 +8,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result
+open RustM
 
 @[expose, rust_fun "alloc::boxed::{core::ops::deref::Deref<Box<@T>, @T>}::deref" -canFail (keepParams := [true, false])]
 def alloc.boxed.Box.deref {T : Type _} (x : T) : T := x
@@ -42,7 +42,7 @@ def core.convert.AsMutBox (T : Type _) : core.convert.AsMut T T := {
 
 @[expose, rust_fun "alloc::boxed::{core::clone::Clone<Box<@T>>}::clone"
     (keepParams := [true, false]) (keepTraitClauses := [true, false])]
-def alloc.boxed.CloneBox.clone {T : Type _} (cloneInst : core.clone.Clone T) : T → Result T :=
+def alloc.boxed.CloneBox.clone {T : Type _} (cloneInst : core.clone.Clone T) : T → RustM T :=
   cloneInst.clone
 
 @[expose, reducible, rust_trait_impl "core::clone::Clone<Box<@T>>"
@@ -53,7 +53,7 @@ def core.clone.CloneBox {T : Type _} (cloneInst : core.clone.Clone T) : core.clo
 
 @[expose, rust_fun "alloc::boxed::{core::cmp::PartialEq<Box<@T>, Box<@T>>}::eq" (keepParams := [true, false])]
 def alloc.boxed.PartialEqBox.eq
-  {T : Type _} (PartialEqInst : core.cmp.PartialEq T T) (x y : T) : Result Bool :=
+  {T : Type _} (PartialEqInst : core.cmp.PartialEq T T) (x y : T) : RustM Bool :=
   PartialEqInst.eq x y
 
 @[expose, reducible, rust_trait_impl "core::cmp::PartialEq<Box<@T>, Box<@T>>" (keepParams := [true, false])]

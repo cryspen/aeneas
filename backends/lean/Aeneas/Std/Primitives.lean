@@ -62,78 +62,78 @@ def RustEffect : Effect := {
   O := RustEffect.Output
 }
 
--- We need Result to be irreducible outside this file (to not break metaprograms which normalize
+-- We need RustM to be irreducible outside this file (to not break metaprograms which normalize
 -- types), but reducible within. The `unseal` command only affects the local scope.
 @[irreducible]
-def Result (α : Type u) : Type u := ITree RustEffect α
-unseal Result
-attribute [local implicit_reducible] Result
+def RustM (α : Type u) : Type u := ITree RustEffect α
+unseal RustM
+attribute [local implicit_reducible] RustM
 
-def Result.ok {α} (a : α) : Result α := .ret a
+def RustM.ok {α} (a : α) : RustM α := .ret a
 
-def Result.vis {α} (eff : RustEffect.Input) (k : RustEffect.Output eff → Result α) : Result α := ITree.vis eff k
+def RustM.vis {α} (eff : RustEffect.Input) (k : RustEffect.Output eff → RustM α) : RustM α := ITree.vis eff k
 
-/- `Result.fail` is deliberately kept opaque: we do *not* mark it with `simp`/`grind` so that it
-   never gets unfolded to a `Result.vis`. All the reasoning about `fail` should go through the
+/- `RustM.fail` is deliberately kept opaque: we do *not* mark it with `simp`/`grind` so that it
+   never gets unfolded to a `RustM.vis`. All the reasoning about `fail` should go through the
    dedicated lemmas below (`bind_fail`, `spec_fail`, ...). -/
-def Result.fail {α} (e : Error) : Result α := Result.vis (.fail e) PEmpty.elim
+def RustM.fail {α} (e : Error) : RustM α := RustM.vis (.fail e) PEmpty.elim
 
-theorem Result.fail_eq_vis {α} (e : Error) :
-  (Result.fail e : Result α) = Result.vis (.fail e) PEmpty.elim := rfl
+theorem RustM.fail_eq_vis {α} (e : Error) :
+  (RustM.fail e : RustM α) = RustM.vis (.fail e) PEmpty.elim := rfl
 
-def Result.div {α} : Result α := ITree.div
+def RustM.div {α} : RustM α := ITree.div
 
-def bind {α : Type u} {β : Type v} (x: Result α) (f: α → Result β) : Result β :=
+def bind {α : Type u} {β : Type v} (x: RustM α) (f: α → RustM β) : RustM β :=
   ITree.bind x f
 
-instance : Monad Result where
+instance : Monad RustM where
   pure := .ok
   bind := bind
 
 @[elab_as_elim, cases_eliminator]
-def Result.cases {R}
-    {motive : Result R → Sort v}
-    (t : Result R)
-    (ret : ∀ r, motive (Result.ok r))
-    (vis : ∀ i k, motive (Result.vis i k))
-    (div :  motive (Result.div))
+def RustM.cases {R}
+    {motive : RustM R → Sort v}
+    (t : RustM R)
+    (ret : ∀ r, motive (RustM.ok r))
+    (vis : ∀ i k, motive (RustM.vis i k))
+    (div :  motive (RustM.div))
     : motive t := ITree.cases ret div vis t
 
 inductive MatchResult (α : Type u) : Type u where
 | ok : (a : α) → MatchResult α
 | div : MatchResult α
-| vis : (eff : RustEffect.Input) → (RustEffect.Output eff → Result α) → MatchResult α
+| vis : (eff : RustEffect.Input) → (RustEffect.Output eff → RustM α) → MatchResult α
 
 /-!
 Can simulate a match on the Result type by matching on the output of this function.
 -/
-def Result.match.{u} {α : Type u} (r : Result α) : MatchResult α :=
+def RustM.match.{u} {α : Type u} (r : RustM α) : MatchResult α :=
   r.cases .ok .vis .div
 
 @[simp, grind =]
-theorem Result.match.ok {α : Type u} {a : α} : (Result.ok a).match = .ok a := by
-  simp [Result.match, Result.ok, Result.cases]
+theorem RustM.match.ok {α : Type u} {a : α} : (RustM.ok a).match = .ok a := by
+  simp [RustM.match, RustM.ok, RustM.cases]
 @[simp, grind =]
-theorem Result.match.vis {α : Type u} {e k} : (@Result.vis α e k).match = .vis e k := by
-  simp [Result.match, Result.vis, Result.cases]
+theorem RustM.match.vis {α : Type u} {e k} : (@RustM.vis α e k).match = .vis e k := by
+  simp [RustM.match, RustM.vis, RustM.cases]
 @[simp, grind =]
-theorem Result.match.div {α : Type u} : Result.div.match = @MatchResult.div α := by
-  simp [Result.match, Result.div, Result.cases]
+theorem RustM.match.div {α : Type u} : RustM.div.match = @MatchResult.div α := by
+  simp [RustM.match, RustM.div, RustM.cases]
 @[simp, grind =]
-theorem Result.match.fail {α : Type u} {e} :
-  (Result.fail e : Result α).match = .vis (.fail e) PEmpty.elim := by
-  simp [Result.fail_eq_vis]
+theorem RustM.match.fail {α : Type u} {e} :
+  (RustM.fail e : RustM α).match = .vis (.fail e) PEmpty.elim := by
+  simp [RustM.fail_eq_vis]
 
-/-- The `Repr` instance for `Result`, so that `#eval` on `Result`-producing expressions prints `Aeneas.Std.Result.ok`/`fail`/`div`. -/
-instance Result.reprInst {α : Type u} [Repr α] : Repr (Result α) where
+/-- The `Repr` instance for `RustM`, so that `#eval` on `RustM`-producing expressions prints `Aeneas.Std.RustM.ok`/`fail`/`div`. -/
+instance RustM.reprInst {α : Type u} [Repr α] : Repr (RustM α) where
   reprPrec r _ :=
-    match Result.match r with
-    | .ok a => "Aeneas.Std.Result.ok " ++ repr a
-    | .div => "Aeneas.Std.Result.div"
-    | .vis (.fail e) _ => "Aeneas.Std.Result.fail " ++ repr e
+    match RustM.match r with
+    | .ok a => "Aeneas.Std.RustM.ok " ++ repr a
+    | .div => "Aeneas.Std.RustM.div"
+    | .vis (.fail e) _ => "Aeneas.Std.RustM.fail " ++ repr e
 
 /-!
-`Result` not being an inductive type it has no built-in constructor facts that grind
+`RustM` not being an inductive type it has no built-in constructor facts that grind
 can leverage. As we do not want to abuse e-matching, because it risks saturating
 the context, we mark lemmas like `ok_not_vis` only as `simp`. This is not a problem
 as only few proofs rely on this fact, and they should all be limited to the Aeneas
@@ -141,140 +141,140 @@ library (put aside rare cases, client code should not need these facts).
 
 Injectivity is different: `@[grind inj]` is a specialized mechanism (it registers a left inverse
 rather than an E-matching pattern), and it is stated purely in terms of the constructors, so it
-does not reveal how `Result` is represented.
+does not reveal how `RustM` is represented.
 -/
 
 @[grind inj]
-theorem Result.ok_injective {α} : Function.Injective (@Result.ok α) := by
-  intro a b h; simpa using congrArg Result.match h
+theorem RustM.ok_injective {α} : Function.Injective (@RustM.ok α) := by
+  intro a b h; simpa using congrArg RustM.match h
 
-/-- `Result.fail` is opaque, so its injectivity has to be stated separately. -/
+/-- `RustM.fail` is opaque, so its injectivity has to be stated separately. -/
 @[grind inj]
-theorem Result.fail_injective {α} : Function.Injective (@Result.fail α) := by
-  intro a b h; simpa using congrArg Result.match h
+theorem RustM.fail_injective {α} : Function.Injective (@RustM.fail α) := by
+  intro a b h; simpa using congrArg RustM.match h
 
-/-! The disequality lemmas for the constructors of `Result`. They all follow from the fact that
-`Result.match` maps the constructors to *distinct* constructors of the inductive `MatchResult`. -/
-
-@[simp]
-theorem ok_not_vis {α} {a : α} {eff k} : ¬ Result.ok a = .vis eff k := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem vis_not_ok {α} {a : α} {eff k} : ¬ .vis eff k = Result.ok a := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem ok_not_div {α} {a : α} : ¬ Result.ok a = .div := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem div_not_ok {α} {a : α} : ¬ Result.div = .ok a := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem vis_not_div {α} {eff k} : ¬ @Result.vis α eff k = .div := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem div_not_vis {α} {eff k} : ¬ .div = @Result.vis α eff k := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem ok_not_fail {α} {a : α} {e} : ¬ Result.ok a = .fail e := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem fail_not_ok {α} {a : α} {e} : ¬ Result.fail e = .ok a := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem fail_not_div {α} {e} : ¬ (Result.fail e : Result α) = .div := by
-  intro h; simpa using congrArg Result.match h
-@[simp]
-theorem div_not_fail {α} {e} : ¬ (Result.div : Result α) = .fail e := by
-  intro h; simpa using congrArg Result.match h
+/-! The disequality lemmas for the constructors of `RustM`. They all follow from the fact that
+`RustM.match` maps the constructors to *distinct* constructors of the inductive `MatchResult`. -/
 
 @[simp]
-theorem Result.ok.injEq {α} {a b : α} : (Result.ok a = .ok b) = (a = b) := by
+theorem ok_not_vis {α} {a : α} {eff k} : ¬ RustM.ok a = .vis eff k := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem vis_not_ok {α} {a : α} {eff k} : ¬ .vis eff k = RustM.ok a := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem ok_not_div {α} {a : α} : ¬ RustM.ok a = .div := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem div_not_ok {α} {a : α} : ¬ RustM.div = .ok a := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem vis_not_div {α} {eff k} : ¬ @RustM.vis α eff k = .div := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem div_not_vis {α} {eff k} : ¬ .div = @RustM.vis α eff k := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem ok_not_fail {α} {a : α} {e} : ¬ RustM.ok a = .fail e := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem fail_not_ok {α} {a : α} {e} : ¬ RustM.fail e = .ok a := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem fail_not_div {α} {e} : ¬ (RustM.fail e : RustM α) = .div := by
+  intro h; simpa using congrArg RustM.match h
+@[simp]
+theorem div_not_fail {α} {e} : ¬ (RustM.div : RustM α) = .fail e := by
+  intro h; simpa using congrArg RustM.match h
+
+@[simp]
+theorem RustM.ok.injEq {α} {a b : α} : (RustM.ok a = .ok b) = (a = b) := by
   simp only [eq_iff_iff]
-  exact ⟨fun h => Result.ok_injective h, fun h => by simp [h]⟩
+  exact ⟨fun h => RustM.ok_injective h, fun h => by simp [h]⟩
 
 @[simp]
-theorem Result.fail.injEq {α} {a b : Error} : ((Result.fail a : Result α) = .fail b) = (a = b) := by
+theorem RustM.fail.injEq {α} {a b : Error} : ((RustM.fail a : RustM α) = .fail b) = (a = b) := by
   simp only [eq_iff_iff]
-  exact ⟨fun h => Result.fail_injective h, fun h => by simp [h]⟩
+  exact ⟨fun h => RustM.fail_injective h, fun h => by simp [h]⟩
 
 -- TODO: when necessary, we may need a stronger version of this which outputs ≍ for the continuations
-theorem Result.vis.injEq {α} {a b} {k1 k2} : (@Result.vis α a k1 = .vis b k2) → (a = b) := by
+theorem RustM.vis.injEq {α} {a b} {k1 k2} : (@RustM.vis α a k1 = .vis b k2) → (a = b) := by
   intro h
-  have h := congrArg Result.match h
-  simp only [Result.match.vis, MatchResult.vis.injEq] at h
+  have h := congrArg RustM.match h
+  simp only [RustM.match.vis, MatchResult.vis.injEq] at h
   exact h.left
 
 @[simp]
-theorem Result.match.isOk {α : Type u} {a : α} {r : Result α} : (r.match = .ok a) ↔ r = .ok a := by
+theorem RustM.match.isOk {α : Type u} {a : α} {r : RustM α} : (r.match = .ok a) ↔ r = .ok a := by
   cases r <;> grind
 @[simp]
-theorem Result.match.isVis {α : Type u} {e k} {r : Result α} : (r.match = .vis e k) ↔ r = .vis e k := by
+theorem RustM.match.isVis {α : Type u} {e k} {r : RustM α} : (r.match = .vis e k) ↔ r = .vis e k := by
   cases r <;> grind
 @[simp]
-theorem Result.match.isDiv {α : Type u} {r : Result α} : (r.match = .div) ↔ r = .div := by
+theorem RustM.match.isDiv {α : Type u} {r : RustM α} : (r.match = .div) ↔ r = .div := by
   cases r <;> grind
 
 /-- `r.reducesTo expected` is `true` iff `r` evaluates to `ok expected`. -/
-def Result.reducesTo {R : Type _} [BEq R] (r : Result R) (expected : R) : Bool :=
+def RustM.reducesTo {R : Type _} [BEq R] (r : RustM R) (expected : R) : Bool :=
   match r.match with
   | .ok x => x == expected
   | _ => false
 
-open Result
+open RustM
 
-instance Result_Inhabited (α : Type u) : Inhabited (Result α) :=
+instance RustM_Inhabited (α : Type u) : Inhabited (RustM α) :=
   Inhabited.mk (fail panic)
 
-instance Result_Nonempty (α : Type u) : Nonempty (Result α) :=
+instance RustM_Nonempty (α : Type u) : Nonempty (RustM α) :=
   Nonempty.intro div
 
 /-!
 # Helpers
 -/
 
-def massert (b : Prop) [Decidable b] : Result Unit :=
+def massert (b : Prop) [Decidable b] : RustM Unit :=
   if b then ok () else fail assertionFailure
 
 @[simp]
-def Result.ofOption {a : Type u} (x : Option a) (e : Error) : Result a :=
+def RustM.ofOption {a : Type u} (x : Option a) (e : Error) : RustM a :=
   match x with
   | some x => ok x
   | none => fail e
 
-@[simp] abbrev liftFun1 {α β} (f : α → β) : α → Result β := fun x => ok (f x)
-@[simp] abbrev liftFun2 {α β γ : Type _} (f : α → β → γ) : α → β → Result γ := fun x y => ok (f x y)
-@[simp] abbrev liftFun3 {α β γ δ} (f : α → β → γ → δ) : α → β → γ → Result δ := fun x y z => ok (f x y z)
-@[simp] abbrev liftFun4 {α β γ δ ε} (f : α → β → γ → δ → ε) : α → β → γ → δ → Result ε := fun x y z a => ok (f x y z a)
+@[simp] abbrev liftFun1 {α β} (f : α → β) : α → RustM β := fun x => ok (f x)
+@[simp] abbrev liftFun2 {α β γ : Type _} (f : α → β → γ) : α → β → RustM γ := fun x y => ok (f x y)
+@[simp] abbrev liftFun3 {α β γ δ} (f : α → β → γ → δ) : α → β → γ → RustM δ := fun x y z => ok (f x y z)
+@[simp] abbrev liftFun4 {α β γ δ ε} (f : α → β → γ → δ → ε) : α → β → γ → δ → RustM ε := fun x y z a => ok (f x y z a)
 
 /-!
 # Do-DSL Support
 -/
 
-@[simp] theorem bind_ok (x : α) (f : α → Result β) : bind (.ok x) f = f x :=
+@[simp] theorem bind_ok (x : α) (f : α → RustM β) : bind (.ok x) f = f x :=
   by simp [bind, ok]
-@[simp] theorem bind_vis (e k) (f : α → Result β) : bind (.vis e k) f = .vis e (fun x => bind (k x) f) :=
+@[simp] theorem bind_vis (e k) (f : α → RustM β) : bind (.vis e k) f = .vis e (fun x => bind (k x) f) :=
   by simp [bind, vis]
      rfl
-@[simp] theorem bind_fail (e : Error) (f : α → Result β) : bind (.fail e) f = .fail e := by
-  simp only [Result.fail_eq_vis, bind_vis]
+@[simp] theorem bind_fail (e : Error) (f : α → RustM β) : bind (.fail e) f = .fail e := by
+  simp only [RustM.fail_eq_vis, bind_vis]
   apply congrArg
   funext x
   exact x.elim
 
-@[simp] theorem bind_div (f : α → Result β) : bind .div f = .div := by simp [bind, div]
+@[simp] theorem bind_div (f : α → RustM β) : bind .div f = .div := by simp [bind, div]
 
 /-- Left identity. -/
-protected theorem pure_bind {α : Type u} {β : Type v} (x : α) (f : α → Result β) :
+protected theorem pure_bind {α : Type u} {β : Type v} (x : α) (f : α → RustM β) :
     bind (.ok x) f = f x := bind_ok x f
 
 /-- Right identity. -/
-@[simp] protected theorem bind_pure {α : Type u} (x : Result α) : bind x .ok = x := by
+@[simp] protected theorem bind_pure {α : Type u} (x : RustM α) : bind x .ok = x := by
   change ITree.bind x ITree.ret = x
   exact _root_.bind_pure (m := ITree RustEffect) x
 
 /-- Associativity. -/
 @[simp] protected theorem bind_assoc {α : Type u} {β : Type v} {γ : Type w}
-    (x : Result α) (f : α → Result β) (g : β → Result γ) :
+    (x : RustM α) (f : α → RustM β) (g : β → RustM γ) :
     bind (bind x f) g = bind x (fun x => bind (f x) g) := by
   change ITree.bind (ITree.bind x f) g = ITree.bind x (fun x => ITree.bind (f x) g)
   ext n
@@ -286,43 +286,43 @@ protected theorem pure_bind {α : Type u} {β : Type v} (x : α) (f : α → Res
     · simp
     · simp [*]
 
-instance : LawfulMonad Result := LawfulMonad.mk' Result
+instance : LawfulMonad RustM := LawfulMonad.mk' RustM
   (id_map := Std.bind_pure)
   (pure_bind := Std.pure_bind)
   (bind_assoc := Std.bind_assoc)
 
 /-- Normalize the typeclass bind (`>>=`) to `Std.bind`. -/
-theorem bind_tc_eq {α β : Type u} (x : Result α) (f : α → Result β) :
+theorem bind_tc_eq {α β : Type u} (x : RustM α) (f : α → RustM β) :
     Bind.bind x f = bind x f := rfl
 
-/-- Normalize the typeclass `pure` to `Result.ok`. -/
-theorem pure_tc_eq {α : Type u} (x : α) : (pure x : Result α) = .ok x := rfl
+/-- Normalize the typeclass `pure` to `RustM.ok`. -/
+theorem pure_tc_eq {α : Type u} (x : α) : (pure x : RustM α) = .ok x := rfl
 
-@[simp] theorem bind_tc_ok (x : α) (f : α → Result β) :
+@[simp] theorem bind_tc_ok (x : α) (f : α → RustM β) :
   (do let y ← .ok x; f y) = f x := by simp [bind, Bind.bind, ok]
 
-@[simp] theorem bind_tc_vis (e k) (f : α → Result β) :
-  (do let y ← Result.vis e k; f y) = .vis e (fun x => do let y ← k x; f y) := by
+@[simp] theorem bind_tc_vis (e k) (f : α → RustM β) :
+  (do let y ← RustM.vis e k; f y) = .vis e (fun x => do let y ← k x; f y) := by
   simp [bind, Bind.bind, vis]
   rfl
 
-@[simp] theorem bind_tc_fail (e : Error) (f : α → Result β) :
-  (do let y ← Result.fail e; f y) = .fail e := by
+@[simp] theorem bind_tc_fail (e : Error) (f : α → RustM β) :
+  (do let y ← RustM.fail e; f y) = .fail e := by
   simp [Bind.bind]
 
-@[simp] theorem bind_tc_div (f : α → Result β) :
+@[simp] theorem bind_tc_div (f : α → RustM β) :
   (do let y ← div; f y) = div := by simp [bind, Bind.bind, div]
 
 /-- `Std.bind_assoc` for the typeclass bind (whose computations live in the same universe). -/
 @[simp] theorem bind_assoc_eq {a b c : Type u}
-  (e : Result a) (g :  a → Result b) (h : b → Result c) :
+  (e : RustM a) (g :  a → RustM b) (h : b → RustM c) :
   (Bind.bind (Bind.bind e g) h) =
   (Bind.bind e (λ x => Bind.bind (g x) h)) := Std.bind_assoc e g h
 
 end
 
-unseal Result
-open Result
+unseal RustM
+open RustM
 
 /-!
 # Partial Fixpoint
@@ -332,13 +332,13 @@ section Order
 
 open Lean.Order
 
-instance : PartialOrder (Result α) := instPartialOrderCoIndOfInhabitedPUnit (ITreeF RustEffect α)
-noncomputable instance : CCPO (Result α) := instCCPOCoIndOfInhabitedPUnit (ITreeF RustEffect α)
-noncomputable instance : MonoBind Result := instMonoBindITree
+instance : PartialOrder (RustM α) := instPartialOrderCoIndOfInhabitedPUnit (ITreeF RustEffect α)
+noncomputable instance : CCPO (RustM α) := instCCPOCoIndOfInhabitedPUnit (ITreeF RustEffect α)
+noncomputable instance : MonoBind RustM := instMonoBindITree
 
 @[partial_fixpoint_monotone]
 theorem bind_mono {R : Type a} {α} {S : Type b} [PartialOrder α]
-  (f : α → Result R) (g : α → R → Result S) :
+  (f : α → RustM R) (g : α → R → RustM S) :
   monotone f →
   monotone g →
   monotone (λ x => bind (f x) (g x)) := by
@@ -434,9 +434,9 @@ attribute [simp, grind =] Function.uncurry_apply_pair
 
     The downside is that using `lift` forces users to write `step` theorems for pure expressions
     which appear inside a `lift`. As only a specific set of functions from the standard library are
-    purified (i.e., don't live in `Result`), this should not be a big issue in practice.
+    purified (i.e., don't live in `RustM`), this should not be a big issue in practice.
   -/
-@[expose] def lift {α : Type u} (x : α) : Result α := Result.ok x
+@[expose] def lift {α : Type u} (x : α) : RustM α := RustM.ok x
 
 /-!
 # Loops
@@ -449,7 +449,7 @@ inductive ControlFlow (α : Type u) (β : Type v) where
   | done (v : β) -- break
 deriving Repr, BEq
 
-def loop {α : Type u} {β : Type v} (body : α → Result (ControlFlow α β)) (x : α) : Result β := do
+def loop {α : Type u} {β : Type v} (body : α → RustM (ControlFlow α β)) (x : α) : RustM β := do
   bind (body x) fun r =>
   match r with
   | ControlFlow.cont x => loop body x
@@ -474,7 +474,7 @@ instance SubtypeLawfulBEq [BEq α] (p : α → Prop) [LawfulBEq α] : LawfulBEq 
 
 /- A helper function that converts failure (and any effects) to none and success to some
    TODO: move up to Core module? -/
-@[expose] def Option.ofResult {a : Type u} (x : Result a) :
+@[expose] def Option.ofRustM {a : Type u} (x : RustM a) :
   Option a :=
   match x.match with
   | .ok x => .some x

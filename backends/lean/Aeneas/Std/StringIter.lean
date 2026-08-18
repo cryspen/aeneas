@@ -12,14 +12,14 @@ structure core.str.iter.Chars where
 
 -- TODO:
 @[rust_fun "core::str::iter::{core::iter::traits::iterator::Iterator<core::str::iter::Chars<'a>, char>}::next"]
-opaque core.str.iter.IteratorChars.next (_iter : core.str.iter.Chars) : Result ((Option Char) × core.str.iter.Chars)
+opaque core.str.iter.IteratorChars.next (_iter : core.str.iter.Chars) : RustM ((Option Char) × core.str.iter.Chars)
 
 -- TODO:
 @[rust_fun "core::str::iter::{core::iter::traits::iterator::Iterator<core::str::iter::Chars<'a>, char>}::collect"]
 opaque core.str.iter.IteratorChars.collect
   {B : Type _} (itertraitscollectFromIteratorBCharInst :
   core.iter.traits.collect.FromIterator B Char) :
-  core.str.iter.Chars → Result B
+  core.str.iter.Chars → RustM B
 
 @[expose, reducible, rust_trait_impl
   "core::iter::traits::iterator::Iterator<core::str::iter::Chars<'a>, char>"]
@@ -29,7 +29,7 @@ def core.iter.traits.iterator.IteratorChars :
 }
 
 @[expose, rust_fun "core::str::{str}::chars"]
-def core.str.Str.chars (s : Str) : Result core.str.iter.Chars :=
+def core.str.Str.chars (s : Str) : RustM core.str.iter.Chars :=
   .ok { iter := { slice := s, i := 0 } }
 
 end Aeneas.Std

@@ -7,7 +7,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result
+open RustM
 
 /-- Pure model of `Result::map_err`: leaves `Ok` untouched and maps the payload
     of `Err` through `fnOnce`. -/
@@ -15,7 +15,7 @@ open Result
 def core.result.Result.map_err
   {T E F O : Type _} (fnOnce : core.ops.function.FnOnce O E F)
   (x : core.result.Result T E) (f : O) :
-  Std.Result (core.result.Result T F) :=
+  Std.RustM (core.result.Result T F) :=
   match x with
   | .Ok value => ok (.Ok value)
   | .Err error => do

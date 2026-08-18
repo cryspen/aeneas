@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -26,20 +26,20 @@ namespace arrays_defs
 def clone_array
   {T : Type _} {N : Std.Usize} (corecloneCloneInst : core.clone.Clone T)
   (x : Array T N) :
-  Result (Array T N)
+  RustM (Array T N)
   := do
   core.array.CloneArray.clone corecloneCloneInst x
 
 /-- [arrays_defs::index_slice_0]:
     Source: 'tests/src/arrays_defs.rs', lines 7:0-9:1
     Visibility: public -/
-def index_slice_0 {T : Type _} (s : Slice T) : Result T := do
+def index_slice_0 {T : Type _} (s : Slice T) : RustM T := do
   Slice.index_usize s 0#usize
 
 /-- [arrays_defs::index_empty_array]:
     Source: 'tests/src/arrays_defs.rs', lines 11:0-13:1
     Visibility: public -/
-def index_empty_array : Result Unit := do
+def index_empty_array : RustM Unit := do
   let s ← lift (Array.to_slice (Std.Array.empty Std.U32))
   let _ ← index_slice_0 s
   ok ()

@@ -8,29 +8,29 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error Arith ScalarElab WP
+open RustM Error Arith ScalarElab WP
 
 /-!
 # Subtraction: Definitions
 -/
 
-@[expose] def UScalar.sub {ty : UScalarTy} (x y : UScalar ty) : Result (UScalar ty) :=
+@[expose] def UScalar.sub {ty : UScalarTy} (x y : UScalar ty) : RustM (UScalar ty) :=
   if x.val < y.val then fail .integerOverflow
   else ok ⟨ BitVec.ofNat _ (x.val - y.val) ⟩
 
-@[expose] def IScalar.sub {ty : IScalarTy} (x y : IScalar ty) : Result (IScalar ty) :=
+@[expose] def IScalar.sub {ty : IScalarTy} (x y : IScalar ty) : RustM (IScalar ty) :=
   IScalar.tryMk ty (x.val - y.val)
 
 @[expose] def UScalar.try_sub {ty : UScalarTy} (x y : UScalar ty) : Option (UScalar ty) :=
-  Option.ofResult (sub x y)
+  Option.ofRustM (sub x y)
 
 @[expose] def IScalar.try_sub {ty : IScalarTy} (x y : IScalar ty) : Option (IScalar ty) :=
-  Option.ofResult (sub x y)
+  Option.ofRustM (sub x y)
 
-instance {ty} : HSub (UScalar ty) (UScalar ty) (Result (UScalar ty)) where
+instance {ty} : HSub (UScalar ty) (UScalar ty) (RustM (UScalar ty)) where
   hSub x y := UScalar.sub x y
 
-instance {ty} : HSub (IScalar ty) (IScalar ty) (Result (IScalar ty)) where
+instance {ty} : HSub (IScalar ty) (IScalar ty) (RustM (IScalar ty)) where
   hSub x y := IScalar.sub x y
 
 
@@ -91,7 +91,7 @@ theorem IScalar.sub_equiv {ty} (x y : IScalar ty) :
   | .vis (.fail e) _ => e = .integerOverflow ∧ ¬ (IScalar.inBounds ty (x.val - y.val))
   | _ => ⊥ := by
   have : x - y = sub x y := by rfl
-  simp [this, sub, tryMk, Result.ofOption]
+  simp [this, sub, tryMk, RustM.ofOption]
   have h := tryMkOpt_eq ty (↑x - ↑y)
   simp [inBounds] at h
   cases hopt : tryMkOpt ty (↑x - ↑y) <;> simp_all

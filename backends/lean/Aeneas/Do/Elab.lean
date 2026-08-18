@@ -41,24 +41,24 @@ meta instance [Monad m] [MonadQuotation m] : MonadQuotation (ContT r m) where
 namespace Aeneas
 namespace Do
 
-/-- Info cached from the `do` block's expected type `Result α`. -/
+/-- Info cached from the `do` block's expected type `RustM α`. -/
 structure Context where
   /-- The element type `α`. -/
   expectedAlpha : Expr
 
 abbrev ElabM := ReaderT Context $ ContT Expr TermElabM
 
-/-- Split `Result α`. -/
+/-- Split `RustM α`. -/
 meta def mkContext (expectedType : Expr) : TermElabM Context := do
   let expectedType ← whnf expectedType
   match_expr expectedType with
-  | Aeneas.Std.Result α => return { expectedAlpha := α }
-  | _ => throwError "expected a type of the shape `Result α`, got {indentExpr expectedType}"
+  | Aeneas.Std.RustM α => return { expectedAlpha := α }
+  | _ => throwError "expected a type of the shape `RustM α`, got {indentExpr expectedType}"
 
-/-- Build `Result α`. `Std.bind` supports binds between different universes, so we do not force
+/-- Build `RustM α`. `Std.bind` supports binds between different universes, so we do not force
     `α` to live in the universe of the `do` block's expected type. -/
 meta def ElabM.mkMonadicType (α : Expr) : ElabM Expr := do
-  return mkApp (mkConst ``Aeneas.Std.Result [← getDecLevel α]) α
+  return mkApp (mkConst ``Aeneas.Std.RustM [← getDecLevel α]) α
 
 /-- Build `Std.bind e k`. We always use the universe polymorphic `Std.bind` (and never `Bind.bind`).
     We do not provide the result type: it is inferred from `k`. -/
@@ -562,7 +562,7 @@ meta register_option Aeneas.customDoElab : Bool := {
   }
 
 /-- `do`-notation elaborator. Dispatches to the new `ElabM`-based elaborator for
-    `Aeneas.Std.Result _` blocks when `Aeneas.newDoElab` is set; otherwise falls
+    `Aeneas.Std.RustM _` blocks when `Aeneas.newDoElab` is set; otherwise falls
     back to Lean's default. -/
 @[term_elab «do»]
 meta def elabDo : TermElab := fun stx expectedType? => do
@@ -570,7 +570,7 @@ meta def elabDo : TermElab := fun stx expectedType? => do
     let some expectedType := expectedType? | pure false
     let expectedType ← instantiateMVars =<< whnf expectedType
     match_expr expectedType with
-    | Aeneas.Std.Result _ => pure (Aeneas.customDoElab.get (← getOptions))
+    | Aeneas.Std.RustM _ => pure (Aeneas.customDoElab.get (← getOptions))
     | _ => pure false
   if useNewElab then
     let `(do $doSeq) := stx | throwUnsupportedSyntax

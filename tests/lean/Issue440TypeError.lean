@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -29,7 +29,7 @@ inductive PeanoNum where
 
 /-- [issue_440_type_error::f]:
     Source: 'tests/src/issue-440-type-error.rs', lines 8:0-15:1 -/
-def f (x : PeanoNum) (value : Std.Isize) : Result PeanoNum := do
+def f (x : PeanoNum) (value : Std.Isize) : RustM PeanoNum := do
   match x with
   | PeanoNum.Zero =>
     let (_, x1) := core.mem.replace PeanoNum.Zero (PeanoNum.Succ PeanoNum.Zero)

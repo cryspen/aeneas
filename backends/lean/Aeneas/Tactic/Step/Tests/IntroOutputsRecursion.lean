@@ -4,11 +4,11 @@ public meta import Lean
 public meta import Aeneas.Tactic.Step
 import Aeneas.Tactic.Solver.ScalarTac
 
-open Aeneas Aeneas.Std Result
+open Aeneas Aeneas.Std RustM
 
 namespace Aeneas.Tactic.Step.Tests.IntroOutputsRecursion
 
-def quadruple (n : Nat) : Result (Nat × Nat × Nat × Nat) :=
+def quadruple (n : Nat) : RustM (Nat × Nat × Nat × Nat) :=
   ok (n, n, n, n)
 
 @[local step]
@@ -16,7 +16,7 @@ theorem quadruple_spec (n : Nat) :
     quadruple n ⦃ a b c d => a = n ∧ b = n ∧ c = n ∧ d = n ⦄ := by
   simp [quadruple, Aeneas.Std.WP.uncurry']
 
-def countdown (n : Nat) : Result Nat := do
+def countdown (n : Nat) : RustM Nat := do
   if n = 0 then
     ok 0
   else
@@ -53,7 +53,7 @@ structure Cursor where
   start : Nat
   stop : Nat
 
-def advance (iter : Cursor) : Result (Bool × Cursor) :=
+def advance (iter : Cursor) : RustM (Bool × Cursor) :=
   ok (true, { iter with start := iter.start + 1 })
 
 @[local step]
@@ -61,7 +61,7 @@ theorem advance_spec (iter : Cursor) :
     advance iter ⦃ b next => b = true ∧ next.start = iter.start + 1 ∧ next.stop = iter.stop ⦄ := by
   simp [advance, Aeneas.Std.WP.uncurry']
 
-def countRange (iter : Cursor) : Result Nat := do
+def countRange (iter : Cursor) : RustM Nat := do
   if iter.start < iter.stop then
     let (_, next) ← advance iter
     countRange next

@@ -6,7 +6,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error Arith
+open RustM Error Arith
 
 /-- Important theorem to reason with `Int.bmod` in the proofs about `IScalar` -/
 theorem bmod_pow_numBits_eq_of_lt (ty : IScalarTy) (x : Int)

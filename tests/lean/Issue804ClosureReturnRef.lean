@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -31,7 +31,7 @@ namespace issue_804_closure_return_ref
 axiom core.array.from_fn
   {T : Type _} {F : Type _} (N : Std.Usize) (opsfunctionFnMutFTupleUsizeTInst :
   core.ops.function.FnMut F Std.Usize T) :
-  F → Result (Array T N)
+  F → RustM (Array T N)
 
 /-- [issue_804_closure_return_ref::each_ref::{closure}]
     Source: 'tests/src/issue-804-closure-return-ref.rs', lines 6:24-6:33 -/
@@ -42,7 +42,7 @@ def each_ref.closure := Array Std.U8 10#usize
     Source: 'tests/src/issue-804-closure-return-ref.rs', lines 6:24-6:33 -/
 def each_ref.closure.Insts.CoreOpsFunctionFnMutTupleUsizeShared0U8.call_mut
   (c : each_ref.closure) (tupled_args : Std.Usize) :
-  Result (Std.U8 × each_ref.closure)
+  RustM (Std.U8 × each_ref.closure)
   := do
   let i ← Array.index_usize c tupled_args
   ok (i, c)
@@ -50,7 +50,7 @@ def each_ref.closure.Insts.CoreOpsFunctionFnMutTupleUsizeShared0U8.call_mut
 /-- [issue_804_closure_return_ref::each_ref::{impl core::ops::function::FnOnce<(usize,), &'_0 u8> for issue_804_closure_return_ref::each_ref::{closure}<'_0, '_1>}::call_once]:
     Source: 'tests/src/issue-804-closure-return-ref.rs', lines 6:24-6:33 -/
 def each_ref.closure.Insts.CoreOpsFunctionFnOnceTupleUsizeShared0U8.call_once
-  (c : each_ref.closure) (i : Std.Usize) : Result Std.U8 := do
+  (c : each_ref.closure) (i : Std.Usize) : RustM Std.U8 := do
   let (i1, _) ←
     each_ref.closure.Insts.CoreOpsFunctionFnMutTupleUsizeShared0U8.call_mut c i
   ok i1
@@ -77,7 +77,7 @@ def each_ref.closure.Insts.CoreOpsFunctionFnMutTupleUsizeShared0U8 :
 /-- [issue_804_closure_return_ref::each_ref]:
     Source: 'tests/src/issue-804-closure-return-ref.rs', lines 5:0-7:1
     Visibility: public -/
-def each_ref (s : Array Std.U8 10#usize) : Result (Array Std.U8 10#usize) := do
+def each_ref (s : Array Std.U8 10#usize) : RustM (Array Std.U8 10#usize) := do
   core.array.from_fn 10#usize
     each_ref.closure.Insts.CoreOpsFunctionFnMutTupleUsizeShared0U8 s
 

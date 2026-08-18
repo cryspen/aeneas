@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -33,7 +33,7 @@ axiom core.iter.traits.iterator.Iterator.map.default
   (IteratorInst : core.iter.traits.iterator.Iterator Self Clause0_Item)
   (opsfunctionFnMutFTupleClause0_ItemBInst : core.ops.function.FnMut F
   Clause0_Item B) :
-  Self → F → Result (core.iter.adapters.map.Map Self F)
+  Self → F → RustM (core.iter.adapters.map.Map Self F)
 
 /-- [closures::call_fn_no_state::{closure}]
     Source: 'tests/src/closures.rs', lines 4:15-4:40 -/
@@ -43,12 +43,12 @@ def call_fn_no_state.closure := Unit
 /-- [closures::call_fn_no_state::{impl core::ops::function::Fn<(u32,), u32> for closures::call_fn_no_state::{closure}}::call]:
     Source: 'tests/src/closures.rs', lines 4:15-4:40 -/
 def call_fn_no_state.closure.Insts.CoreOpsFunctionFnTupleU32U32.call
-  (c : call_fn_no_state.closure) (tupled_args : Std.U32) : Result Std.U32 := do
+  (c : call_fn_no_state.closure) (tupled_args : Std.U32) : RustM Std.U32 := do
   tupled_args + 1#u32
 
 /-- [closures::call_fn_no_state]:
     Source: 'tests/src/closures.rs', lines 3:0-6:1 -/
-def call_fn_no_state (i : Std.U32) : Result Std.U32 := do
+def call_fn_no_state (i : Std.U32) : RustM Std.U32 := do
   call_fn_no_state.closure.Insts.CoreOpsFunctionFnTupleU32U32.call () i
 
 /-- [closures::call_fn_shared::{closure}]
@@ -59,12 +59,12 @@ def call_fn_shared.closure := Slice Std.U8
 /-- [closures::call_fn_shared::{impl core::ops::function::Fn<(usize,), u8> for closures::call_fn_shared::{closure}<'_0>}::call]:
     Source: 'tests/src/closures.rs', lines 9:15-9:40 -/
 def call_fn_shared.closure.Insts.CoreOpsFunctionFnTupleUsizeU8.call
-  (c : call_fn_shared.closure) (tupled_args : Std.Usize) : Result Std.U8 := do
+  (c : call_fn_shared.closure) (tupled_args : Std.Usize) : RustM Std.U8 := do
   Slice.index_usize c tupled_args
 
 /-- [closures::call_fn_shared]:
     Source: 'tests/src/closures.rs', lines 8:0-11:1 -/
-def call_fn_shared (a : Slice Std.U8) (i : Std.Usize) : Result Std.U8 := do
+def call_fn_shared (a : Slice Std.U8) (i : Std.Usize) : RustM Std.U8 := do
   call_fn_shared.closure.Insts.CoreOpsFunctionFnTupleUsizeU8.call a i
 
 /-- [closures::call_closure]:
@@ -72,7 +72,7 @@ def call_fn_shared (a : Slice Std.U8) (i : Std.Usize) : Result Std.U8 := do
 def call_closure
   {F : Type _} (coreopsfunctionFnFTupleU32Inst : core.ops.function.Fn F Unit
   Std.U32) (f : F) :
-  Result Std.U32
+  RustM Std.U32
   := do
   coreopsfunctionFnFTupleU32Inst.call f ()
 
@@ -84,14 +84,14 @@ def call_closure1.closure := Unit
 /-- [closures::call_closure1::{impl core::ops::function::Fn<(), u32> for closures::call_closure1::{closure}}::call]:
     Source: 'tests/src/closures.rs', lines 35:17-35:21 -/
 def call_closure1.closure.Insts.CoreOpsFunctionFnTupleU32.call
-  (c : call_closure1.closure) (_ : Unit) : Result Std.U32 := do
+  (c : call_closure1.closure) (_ : Unit) : RustM Std.U32 := do
   ok 0#u32
 
 /-- [closures::call_closure1::{impl core::ops::function::FnMut<(), u32> for closures::call_closure1::{closure}}::call_mut]:
     Source: 'tests/src/closures.rs', lines 35:17-35:21 -/
 def call_closure1.closure.Insts.CoreOpsFunctionFnMutTupleU32.call_mut
   (state : call_closure1.closure) (_ : Unit) :
-  Result (Std.U32 × call_closure1.closure)
+  RustM (Std.U32 × call_closure1.closure)
   := do
   let i ← call_closure1.closure.Insts.CoreOpsFunctionFnTupleU32.call state ()
   ok (i, state)
@@ -99,7 +99,7 @@ def call_closure1.closure.Insts.CoreOpsFunctionFnMutTupleU32.call_mut
 /-- [closures::call_closure1::{impl core::ops::function::FnOnce<(), u32> for closures::call_closure1::{closure}}::call_once]:
     Source: 'tests/src/closures.rs', lines 35:17-35:21 -/
 def call_closure1.closure.Insts.CoreOpsFunctionFnOnceTupleU32.call_once
-  (c : call_closure1.closure) (_ : Unit) : Result Std.U32 := do
+  (c : call_closure1.closure) (_ : Unit) : RustM Std.U32 := do
   let (i, _) ←
     call_closure1.closure.Insts.CoreOpsFunctionFnMutTupleU32.call_mut c ()
   ok i
@@ -133,7 +133,7 @@ def call_closure1.closure.Insts.CoreOpsFunctionFnTupleU32 :
 
 /-- [closures::call_closure1]:
     Source: 'tests/src/closures.rs', lines 34:0-36:1 -/
-def call_closure1 : Result Std.U32 := do
+def call_closure1 : RustM Std.U32 := do
   call_closure call_closure1.closure.Insts.CoreOpsFunctionFnTupleU32 ()
 
 /-- [closures::call_closure2::{closure#1}]
@@ -144,14 +144,14 @@ def call_closure2.closure_1 := Unit
 /-- [closures::call_closure2::{impl core::ops::function::Fn<(), u32> for closures::call_closure2::{closure#1}}::call]:
     Source: 'tests/src/closures.rs', lines 40:17-40:21 -/
 def call_closure2.closure_1.Insts.CoreOpsFunctionFnTupleU32.call
-  (c : call_closure2.closure_1) (_ : Unit) : Result Std.U32 := do
+  (c : call_closure2.closure_1) (_ : Unit) : RustM Std.U32 := do
   ok 0#u32
 
 /-- [closures::call_closure2::{impl core::ops::function::FnMut<(), u32> for closures::call_closure2::{closure#1}}::call_mut]:
     Source: 'tests/src/closures.rs', lines 40:17-40:21 -/
 def call_closure2.closure_1.Insts.CoreOpsFunctionFnMutTupleU32.call_mut
   (state : call_closure2.closure_1) (_ : Unit) :
-  Result (Std.U32 × call_closure2.closure_1)
+  RustM (Std.U32 × call_closure2.closure_1)
   := do
   let i ←
     call_closure2.closure_1.Insts.CoreOpsFunctionFnTupleU32.call state ()
@@ -160,7 +160,7 @@ def call_closure2.closure_1.Insts.CoreOpsFunctionFnMutTupleU32.call_mut
 /-- [closures::call_closure2::{impl core::ops::function::FnOnce<(), u32> for closures::call_closure2::{closure#1}}::call_once]:
     Source: 'tests/src/closures.rs', lines 40:17-40:21 -/
 def call_closure2.closure_1.Insts.CoreOpsFunctionFnOnceTupleU32.call_once
-  (c : call_closure2.closure_1) (_ : Unit) : Result Std.U32 := do
+  (c : call_closure2.closure_1) (_ : Unit) : RustM Std.U32 := do
   let (i, _) ←
     call_closure2.closure_1.Insts.CoreOpsFunctionFnMutTupleU32.call_mut c ()
   ok i
@@ -201,14 +201,14 @@ def call_closure2.closure := Unit
 /-- [closures::call_closure2::{impl core::ops::function::Fn<(), u32> for closures::call_closure2::{closure}}::call]:
     Source: 'tests/src/closures.rs', lines 39:17-39:21 -/
 def call_closure2.closure.Insts.CoreOpsFunctionFnTupleU32.call
-  (c : call_closure2.closure) (_ : Unit) : Result Std.U32 := do
+  (c : call_closure2.closure) (_ : Unit) : RustM Std.U32 := do
   ok 0#u32
 
 /-- [closures::call_closure2::{impl core::ops::function::FnMut<(), u32> for closures::call_closure2::{closure}}::call_mut]:
     Source: 'tests/src/closures.rs', lines 39:17-39:21 -/
 def call_closure2.closure.Insts.CoreOpsFunctionFnMutTupleU32.call_mut
   (state : call_closure2.closure) (_ : Unit) :
-  Result (Std.U32 × call_closure2.closure)
+  RustM (Std.U32 × call_closure2.closure)
   := do
   let i ← call_closure2.closure.Insts.CoreOpsFunctionFnTupleU32.call state ()
   ok (i, state)
@@ -216,7 +216,7 @@ def call_closure2.closure.Insts.CoreOpsFunctionFnMutTupleU32.call_mut
 /-- [closures::call_closure2::{impl core::ops::function::FnOnce<(), u32> for closures::call_closure2::{closure}}::call_once]:
     Source: 'tests/src/closures.rs', lines 39:17-39:21 -/
 def call_closure2.closure.Insts.CoreOpsFunctionFnOnceTupleU32.call_once
-  (c : call_closure2.closure) (_ : Unit) : Result Std.U32 := do
+  (c : call_closure2.closure) (_ : Unit) : RustM Std.U32 := do
   let (i, _) ←
     call_closure2.closure.Insts.CoreOpsFunctionFnMutTupleU32.call_mut c ()
   ok i
@@ -250,21 +250,21 @@ def call_closure2.closure.Insts.CoreOpsFunctionFnTupleU32 :
 
 /-- [closures::call_closure2]:
     Source: 'tests/src/closures.rs', lines 38:0-41:1 -/
-def call_closure2 : Result Std.U32 := do
+def call_closure2 : RustM Std.U32 := do
   let _ ←
     call_closure call_closure2.closure.Insts.CoreOpsFunctionFnTupleU32 ()
   call_closure call_closure2.closure_1.Insts.CoreOpsFunctionFnTupleU32 ()
 
 /-- [closures::u8_id]:
     Source: 'tests/src/closures.rs', lines 43:0-45:1 -/
-def u8_id (x : Std.U8) : Result Std.U8 := do
+def u8_id (x : Std.U8) : RustM Std.U8 := do
   ok x
 
 /-- [closures::{impl core::ops::function::FnMut<(u8,), u8> for closures::u8_id}::call_mut]:
     Source: 'tests/src/closures.rs', lines 43:0-45:1 -/
 def P.Insts.CoreOpsFunctionFnMutTupleU8U8.call_mut
-  (state : Std.U8 → Result Std.U8) (args : Std.U8) :
-  Result (Std.U8 × (Std.U8 → Result Std.U8))
+  (state : Std.U8 → RustM Std.U8) (args : Std.U8) :
+  RustM (Std.U8 × (Std.U8 → RustM Std.U8))
   := do
   let i ← u8_id args
   ok (i, state)
@@ -272,14 +272,14 @@ def P.Insts.CoreOpsFunctionFnMutTupleU8U8.call_mut
 /-- [closures::{impl core::ops::function::FnOnce<(u8,), u8> for closures::u8_id}::call_once]:
     Source: 'tests/src/closures.rs', lines 43:0-45:1 -/
 def P.Insts.CoreOpsFunctionFnOnceTupleU8U8.call_once
-  (state : Std.U8 → Result Std.U8) (args : Std.U8) : Result Std.U8 := do
+  (state : Std.U8 → RustM Std.U8) (args : Std.U8) : RustM Std.U8 := do
   u8_id args
 
 /-- Trait implementation: [closures::{impl core::ops::function::FnOnce<(u8,), u8> for closures::u8_id}]
     Source: 'tests/src/closures.rs', lines 43:0-45:1 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnOnceTupleU8U8 : core.ops.function.FnOnce (Std.U8
-  → Result Std.U8) Std.U8 Std.U8 := {
+  → RustM Std.U8) Std.U8 Std.U8 := {
   call_once := P.Insts.CoreOpsFunctionFnOnceTupleU8U8.call_once
 }
 
@@ -287,14 +287,14 @@ def P.Insts.CoreOpsFunctionFnOnceTupleU8U8 : core.ops.function.FnOnce (Std.U8
     Source: 'tests/src/closures.rs', lines 43:0-45:1 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnMutTupleU8U8 : core.ops.function.FnMut (Std.U8 →
-  Result Std.U8) Std.U8 Std.U8 := {
+  RustM Std.U8) Std.U8 Std.U8 := {
   FnOnceInst := P.Insts.CoreOpsFunctionFnOnceTupleU8U8
   call_mut := P.Insts.CoreOpsFunctionFnMutTupleU8U8.call_mut
 }
 
 /-- [closures::map_fn_pointer]:
     Source: 'tests/src/closures.rs', lines 47:0-49:1 -/
-def map_fn_pointer (x : alloc.vec.Vec Std.U8) : Result Unit := do
+def map_fn_pointer (x : alloc.vec.Vec Std.U8) : RustM Unit := do
   let ii ← alloc.vec.IntoIteratorVec.into_iter x
   let _ ←
     core.iter.traits.iterator.Iterator.map.default

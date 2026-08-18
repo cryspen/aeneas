@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -33,7 +33,7 @@ inductive List (T : Type _) where
     Visibility: public -/
 @[rust_loop]
 def nth_shared_loop
-  {T : Type _} (ls : List T) (i : Std.U32) : Result (Option T) := do
+  {T : Type _} (ls : List T) (i : Std.U32) : RustM (Option T) := do
   match ls with
   | List.Cons x tl =>
     if i = 0#u32
@@ -48,7 +48,7 @@ partial_fixpoint
     Visibility: public -/
 @[reducible]
 def nth_shared
-  {T : Type _} (ls : List T) (i : Std.U32) : Result (Option T) := do
+  {T : Type _} (ls : List T) (i : Std.U32) : RustM (Option T) := do
   nth_shared_loop ls i
 
 /-- [loops_adts::nth_mut]: loop 0:
@@ -57,7 +57,7 @@ def nth_shared
 @[rust_loop]
 def nth_mut_loop
   {T : Type _} (ls : List T) (i : Std.U32) :
-  Result ((Option T) × (Option T → List T))
+  RustM ((Option T) × (Option T → List T))
   := do
   match ls with
   | List.Cons x tl =>
@@ -83,7 +83,7 @@ partial_fixpoint
 @[reducible]
 def nth_mut
   {T : Type _} (ls : List T) (i : Std.U32) :
-  Result ((Option T) × (Option T → List T))
+  RustM ((Option T) × (Option T → List T))
   := do
   nth_mut_loop ls i
 
@@ -92,7 +92,7 @@ def nth_mut
     Visibility: public -/
 def update_array_mut_borrow
   (a : Array Std.U32 32#usize) :
-  Result ((Array Std.U32 32#usize) × (Array Std.U32 32#usize → Array Std.U32
+  RustM ((Array Std.U32 32#usize) × (Array Std.U32 32#usize → Array Std.U32
     32#usize))
   := do
   ok (a, fun a1 => a1)
@@ -104,7 +104,7 @@ def update_array_mut_borrow
 def array_mut_borrow_loop1_loop.body
   (b : Bool) (back : Array Std.U32 32#usize → Array Std.U32 32#usize)
   (a : Array Std.U32 32#usize) :
-  Result (ControlFlow ((Array Std.U32 32#usize → Array Std.U32 32#usize) ×
+  RustM (ControlFlow ((Array Std.U32 32#usize → Array Std.U32 32#usize) ×
     (Array Std.U32 32#usize)) (Array Std.U32 32#usize))
   := do
   if b
@@ -121,7 +121,7 @@ def array_mut_borrow_loop1_loop.body
 def array_mut_borrow_loop1_loop
   (back : Array Std.U32 32#usize → Array Std.U32 32#usize) (b : Bool)
   (a : Array Std.U32 32#usize) :
-  Result (Array Std.U32 32#usize)
+  RustM (Array Std.U32 32#usize)
   := do
   loop
     (fun (back1, a1) => array_mut_borrow_loop1_loop.body b back1 a1)
@@ -133,7 +133,7 @@ def array_mut_borrow_loop1_loop
 @[reducible]
 def array_mut_borrow_loop1
   (b : Bool) (a : Array Std.U32 32#usize) :
-  Result (Array Std.U32 32#usize)
+  RustM (Array Std.U32 32#usize)
   := do
   array_mut_borrow_loop1_loop (fun a1 => a1) b a
 
@@ -144,7 +144,7 @@ def array_mut_borrow_loop1
 def array_mut_borrow_loop2_loop.body
   (b : Bool) (back : Array Std.U32 32#usize → Array Std.U32 32#usize)
   (a : Array Std.U32 32#usize) :
-  Result (ControlFlow ((Array Std.U32 32#usize → Array Std.U32 32#usize) ×
+  RustM (ControlFlow ((Array Std.U32 32#usize → Array Std.U32 32#usize) ×
     (Array Std.U32 32#usize)) ((Array Std.U32 32#usize) × (Array Std.U32
     32#usize → Array Std.U32 32#usize)))
   := do
@@ -162,7 +162,7 @@ def array_mut_borrow_loop2_loop.body
 def array_mut_borrow_loop2_loop
   (back : Array Std.U32 32#usize → Array Std.U32 32#usize) (b : Bool)
   (a : Array Std.U32 32#usize) :
-  Result ((Array Std.U32 32#usize) × (Array Std.U32 32#usize → Array Std.U32
+  RustM ((Array Std.U32 32#usize) × (Array Std.U32 32#usize → Array Std.U32
     32#usize))
   := do
   loop
@@ -175,7 +175,7 @@ def array_mut_borrow_loop2_loop
 @[reducible]
 def array_mut_borrow_loop2
   (b : Bool) (a : Array Std.U32 32#usize) :
-  Result ((Array Std.U32 32#usize) × (Array Std.U32 32#usize → Array Std.U32
+  RustM ((Array Std.U32 32#usize) × (Array Std.U32 32#usize → Array Std.U32
     32#usize))
   := do
   array_mut_borrow_loop2_loop (fun a1 => a1) b a
@@ -184,7 +184,7 @@ def array_mut_borrow_loop2
     Source: 'tests/src/loops-adts.rs', lines 49:0-51:1
     Visibility: public -/
 def copy_shared_array
-  (a : Array Std.U32 32#usize) : Result (Array Std.U32 32#usize) := do
+  (a : Array Std.U32 32#usize) : RustM (Array Std.U32 32#usize) := do
   ok a
 
 /-- [loops_adts::array_shared_borrow_loop1]: loop body 0:
@@ -193,7 +193,7 @@ def copy_shared_array
 @[rust_loop_body]
 def array_shared_borrow_loop1_loop.body
   (b : Bool) (a : Array Std.U32 32#usize) :
-  Result (ControlFlow (Array Std.U32 32#usize) Unit)
+  RustM (ControlFlow (Array Std.U32 32#usize) Unit)
   := do
   if b
   then let a1 ← copy_shared_array a
@@ -205,7 +205,7 @@ def array_shared_borrow_loop1_loop.body
     Visibility: public -/
 @[rust_loop]
 def array_shared_borrow_loop1_loop
-  (b : Bool) (a : Array Std.U32 32#usize) : Result Unit := do
+  (b : Bool) (a : Array Std.U32 32#usize) : RustM Unit := do
   loop
     (fun a1 => array_shared_borrow_loop1_loop.body b a1)
     a
@@ -215,7 +215,7 @@ def array_shared_borrow_loop1_loop
     Visibility: public -/
 @[reducible]
 def array_shared_borrow_loop1
-  (b : Bool) (a : Array Std.U32 32#usize) : Result Unit := do
+  (b : Bool) (a : Array Std.U32 32#usize) : RustM Unit := do
   array_shared_borrow_loop1_loop b a
 
 /-- [loops_adts::array_shared_borrow_loop2]: loop body 0:
@@ -224,7 +224,7 @@ def array_shared_borrow_loop1
 @[rust_loop_body]
 def array_shared_borrow_loop2_loop.body
   (b : Bool) (a : Array Std.U32 32#usize) :
-  Result (ControlFlow (Array Std.U32 32#usize) (Array Std.U32 32#usize))
+  RustM (ControlFlow (Array Std.U32 32#usize) (Array Std.U32 32#usize))
   := do
   if b
   then let a1 ← copy_shared_array a
@@ -237,7 +237,7 @@ def array_shared_borrow_loop2_loop.body
 @[rust_loop]
 def array_shared_borrow_loop2_loop
   (b : Bool) (a : Array Std.U32 32#usize) :
-  Result (Array Std.U32 32#usize)
+  RustM (Array Std.U32 32#usize)
   := do
   loop
     (fun a1 => array_shared_borrow_loop2_loop.body b a1)
@@ -249,7 +249,7 @@ def array_shared_borrow_loop2_loop
 @[reducible]
 def array_shared_borrow_loop2
   (b : Bool) (a : Array Std.U32 32#usize) :
-  Result (Array Std.U32 32#usize)
+  RustM (Array Std.U32 32#usize)
   := do
   array_shared_borrow_loop2_loop b a
 

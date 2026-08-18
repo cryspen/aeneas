@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -32,7 +32,7 @@ structure S where
     Visibility: public -/
 def f
   (_r : Std.U8) (_a : Slice Std.U8) (_b : Slice Std.U8) :
-  Result ((Bool × Std.Usize) × Std.U8 × (Slice Std.U8))
+  RustM ((Bool × Std.Usize) × Std.U8 × (Slice Std.U8))
   := do
   ok ((true, 0#usize), _r, _b)
 
@@ -42,7 +42,7 @@ def f
 @[rust_loop_body]
 def the_loop_loop.body
   (s : S) (next_in : Slice Std.U8) :
-  Result (ControlFlow (S × (Slice Std.U8)) (Std.U8 × (Array Std.U8 4#usize)
+  RustM (ControlFlow (S × (Slice Std.U8)) (Std.U8 × (Array Std.U8 4#usize)
     × (Slice Std.U8) × Bool))
   := do
   let (s1, to_slice_mut_back) ← lift (Array.to_slice_mut s.y)
@@ -68,7 +68,7 @@ def the_loop_loop.body
 @[rust_loop]
 def the_loop_loop
   (s : S) (next_in : Slice Std.U8) :
-  Result (Std.U8 × (Array Std.U8 4#usize) × (Slice Std.U8) × Bool)
+  RustM (Std.U8 × (Array Std.U8 4#usize) × (Slice Std.U8) × Bool)
   := do
   loop
     (fun (s1, next_in1) => the_loop_loop.body s1 next_in1)
@@ -78,7 +78,7 @@ def the_loop_loop
     Source: 'tests/src/issue-789-loop-ctx-match.rs', lines 13:0-23:1
     Visibility: public -/
 def the_loop
-  (s : S) (next_in : Slice Std.U8) : Result (Bool × S × (Slice Std.U8)) := do
+  (s : S) (next_in : Slice Std.U8) : RustM (Bool × S × (Slice Std.U8)) := do
   let (i, a, next_in1, done1) ← the_loop_loop s next_in
   ok (done1, { x := i, y := a }, next_in1)
 

@@ -5,7 +5,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error Arith ScalarElab
+open RustM Error Arith ScalarElab
 
 /-!
 # Checked Subtraction: Definitions
@@ -13,13 +13,13 @@ open Result Error Arith ScalarElab
 
 /- [core::num::{T}::checked_sub] -/
 def core.num.checked_sub_UScalar {ty} (x y : UScalar ty) : Option (UScalar ty) :=
-  Option.ofResult (x - y)
+  Option.ofRustM (x - y)
 
 uscalar def «%S».checked_sub (x y : «%S») : Option «%S» := core.num.checked_sub_UScalar x y
 
 /- [core::num::{T}::checked_sub] -/
 def core.num.checked_sub_IScalar {ty} (x y : IScalar ty) : Option (IScalar ty) :=
-  Option.ofResult (x - y)
+  Option.ofRustM (x - y)
 
 iscalar def «%S».checked_sub (x y : «%S») : Option «%S» := core.num.checked_sub_IScalar x y
 
@@ -37,7 +37,7 @@ theorem core.num.checked_sub_UScalar_bv_spec {ty} (x y : UScalar ty) :
   have h := UScalar.sub_equiv x y
   have hsub : x - y = UScalar.sub x y := by rfl
   rw [hsub] at h
-  split at h <;> simp_all [Option.ofResult, checked_sub_UScalar]
+  split at h <;> simp_all [Option.ofRustM, checked_sub_UScalar]
 
 uscalar @[step_pure «%S».checked_sub x y]
 theorem «%S».checked_sub_bv_spec (x y : «%S») :
@@ -58,7 +58,7 @@ theorem core.num.checked_sub_IScalar_bv_spec {ty} (x y : IScalar ty) :
   have h := IScalar.sub_equiv x y
   have hsub : x - y = IScalar.sub x y := by rfl
   rw [hsub] at h
-  split at h <;> simp_all [Option.ofResult, checked_sub_IScalar, IScalar.min, IScalar.max] <;>
+  split at h <;> simp_all [Option.ofRustM, checked_sub_IScalar, IScalar.min, IScalar.max] <;>
   (have : 0 < 2^ty.numBits := by simp) <;>
   omega
 

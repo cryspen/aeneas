@@ -8,28 +8,28 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error Arith ScalarElab WP
+open RustM Error Arith ScalarElab WP
 
 /-!
 # Remainder: Definitions
 -/
-@[expose] def UScalar.rem {ty : UScalarTy} (x y : UScalar ty) : Result (UScalar ty) :=
+@[expose] def UScalar.rem {ty : UScalarTy} (x y : UScalar ty) : RustM (UScalar ty) :=
   if y.val != 0 then ok ⟨ BitVec.umod x.bv y.bv ⟩ else fail divisionByZero
 
-@[expose] def IScalar.rem {ty : IScalarTy} (x y : IScalar ty) : Result (IScalar ty) :=
+@[expose] def IScalar.rem {ty : IScalarTy} (x y : IScalar ty) : RustM (IScalar ty) :=
   if y.val != 0 then ok ⟨ BitVec.srem x.bv y.bv ⟩
   else fail divisionByZero
 
 def UScalar.try_rem {ty : UScalarTy} (x y : UScalar ty) : Option (UScalar ty) :=
-  Option.ofResult (rem x y)
+  Option.ofRustM (rem x y)
 
 def IScalar.try_rem {ty : IScalarTy} (x y : IScalar ty) : Option (IScalar ty) :=
-  Option.ofResult (rem x y)
+  Option.ofRustM (rem x y)
 
-instance {ty} : HMod (UScalar ty) (UScalar ty) (Result (UScalar ty)) where
+instance {ty} : HMod (UScalar ty) (UScalar ty) (RustM (UScalar ty)) where
   hMod x y := UScalar.rem x y
 
-instance {ty} : HMod (IScalar ty) (IScalar ty) (Result (IScalar ty)) where
+instance {ty} : HMod (IScalar ty) (IScalar ty) (RustM (IScalar ty)) where
   hMod x y := IScalar.rem x y
 
 /-!
@@ -124,7 +124,7 @@ uscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
       (fun z => (↑z : Nat) = ↑x % ↑y)
       (fun | .divisionByZero => (↑y : Nat) = 0 | _ => False)
       False := by
-  have hxy : (x % y : Result _) = UScalar.rem x y := rfl
+  have hxy : (x % y : RustM _) = UScalar.rem x y := rfl
   rw [hxy]
   by_cases hy : y.val = 0
   · simp [partialSpec, UScalar.rem, hy]
@@ -138,7 +138,7 @@ iscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
       (fun z => (↑z : Int) = Int.tmod ↑x ↑y)
       (fun | .divisionByZero => (↑y : Int) = 0 | _ => False)
       False := by
-  have hxy : (x % y : Result _) = IScalar.rem x y := rfl
+  have hxy : (x % y : RustM _) = IScalar.rem x y := rfl
   rw [hxy]
   by_cases hy : y.val = 0
   · simp [partialSpec, IScalar.rem, hy]

@@ -5,6 +5,6 @@ public section
 namespace Aeneas.Std
 
 @[expose, rust_fun "std::io::stdio::_print"]
-def std.io.stdio._print (_ : core.fmt.Arguments) : Result Unit := .ok ()
+def std.io.stdio._print (_ : core.fmt.Arguments) : RustM Unit := .ok ()
 
 end Aeneas.Std

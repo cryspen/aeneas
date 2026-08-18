@@ -12,40 +12,40 @@ success, failure and divergence parts of a postcondition.
 
 namespace Aeneas.Std.MvcgenResultTests
 
-open Aeneas Aeneas.Std Result Std.Do WP
+open Aeneas Aeneas.Std RustM Std.Do WP
 
 set_option mvcgen.warning false
 set_option linter.deprecated.syntax false
 
 /- ## `ok` and `fail` -/
 
-example : ⦃ ⌜ True ⌝ ⦄ (ok 3 : Result Nat) ⦃ ⇓ r => ⌜ r = 3 ⌝ ⦄ := by
+example : ⦃ ⌜ True ⌝ ⦄ (ok 3 : RustM Nat) ⦃ ⇓ r => ⌜ r = 3 ⌝ ⦄ := by
   mvcgen
 
-example : ⦃ ⌜ True ⌝ ⦄ (fail .panic : Result Nat) ⦃ ⇓? r => ⌜ r = 3 ⌝ ⦄ := by
+example : ⦃ ⌜ True ⌝ ⦄ (fail .panic : RustM Nat) ⦃ ⇓? r => ⌜ r = 3 ⌝ ⦄ := by
   mvcgen
 
-example : ¬ ⦃ ⌜ True ⌝ ⦄ (fail .panic : Result Nat) ⦃ ⇓ r => ⌜ r = 3 ⌝ ⦄ := by
+example : ¬ ⦃ ⌜ True ⌝ ⦄ (fail .panic : RustM Nat) ⦃ ⇓ r => ⌜ r = 3 ⌝ ⦄ := by
   simp [Triple, WP.wp, PredTrans.apply]
 
 /- ## `PostCond` accessors -/
 
-example (Q : PostCond Nat Result.postShape) :
+example (Q : PostCond Nat RustM.postShape) :
     PostCond.ok Q 3 ↔ (Q.1 3).down := Iff.rfl
 
-example (Q : PostCond Nat Result.postShape) (e : Error) :
+example (Q : PostCond Nat RustM.postShape) (e : Error) :
     PostCond.fail Q e ↔ (Q.2.1 (ULift.up e)).down := Iff.rfl
 
 /-- Partial correctness allows divergence, total correctness does not. -/
-example : PostCond.div (⇓? (_ : Nat) => ⌜ False ⌝ : PostCond Nat Result.postShape) := by
+example : PostCond.div (⇓? (_ : Nat) => ⌜ False ⌝ : PostCond Nat RustM.postShape) := by
   simp [PostCond.div]
 
-example : ¬ PostCond.div (⇓ (_ : Nat) => ⌜ True ⌝ : PostCond Nat Result.postShape) := by
+example : ¬ PostCond.div (⇓ (_ : Nat) => ⌜ True ⌝ : PostCond Nat RustM.postShape) := by
   simp [PostCond.div]
 
 /- ## Tuples in a `do` block go through `uncurry` -/
 
-def pair (x : Nat) : Result (Nat × Nat) := ok (x, x + 1)
+def pair (x : Nat) : RustM (Nat × Nat) := ok (x, x + 1)
 
 example (x : Nat) :
     ⦃ ⌜ True ⌝ ⦄ (do let (a, b) ← pair x; ok (a + b)) ⦃ ⇓ r => ⌜ r = 2 * x + 1 ⌝ ⦄ := by
@@ -54,7 +54,7 @@ example (x : Nat) :
 
 /- ## Loops -/
 
-def countdown (n : Nat) : Result Nat :=
+def countdown (n : Nat) : RustM Nat :=
   loop (fun i => if i = 0 then ok (.done 0) else ok (.cont (i - 1))) n
 
 /-- Total correctness: the measure must decrease. -/
@@ -87,16 +87,16 @@ example (x y : U8) (h : x.val + y.val ≤ U8.max) :
 The specs also apply to programs whose values live in a higher universe (here `Type 1`), like the
 generic code that Aeneas extracts. -/
 
-example : ⦃ ⌜ True ⌝ ⦄ (ok Nat : Result Type) ⦃ ⇓ r => ⌜ r = Nat ⌝ ⦄ := by
+example : ⦃ ⌜ True ⌝ ⦄ (ok Nat : RustM Type) ⦃ ⇓ r => ⌜ r = Nat ⌝ ⦄ := by
   mvcgen
 
-example : ⦃ ⌜ True ⌝ ⦄ (fail .panic : Result Type) ⦃ ⇓? r => ⌜ r = Nat ⌝ ⦄ := by
+example : ⦃ ⌜ True ⌝ ⦄ (fail .panic : RustM Type) ⦃ ⇓? r => ⌜ r = Nat ⌝ ⦄ := by
   mvcgen
 
-example (x : Result Type) (h : x = ok Nat) : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ r = Nat ⌝ ⦄ :=
+example (x : RustM Type) (h : x = ok Nat) : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ r = Nat ⌝ ⦄ :=
   triple_iff_exists_ok.2 ⟨Nat, h, rfl⟩
 
-def countdownULift (n : ULift.{1} Nat) : Result (ULift.{1} Nat) :=
+def countdownULift (n : ULift.{1} Nat) : RustM (ULift.{1} Nat) :=
   loop (fun i => if i.down = 0 then ok (.done ⟨0⟩) else ok (.cont ⟨i.down - 1⟩)) n
 
 example (n : ULift.{1} Nat) : ⦃ ⌜ True ⌝ ⦄ countdownULift n ⦃ ⇓ r => ⌜ r.down = 0 ⌝ ⦄ := by

@@ -6,7 +6,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result WP
+open RustM WP
 
 /-!
 # Notations for `List`
@@ -31,7 +31,7 @@ def List.mapM_with_length {m : Type u → Type v} [Monad m] {α : Type w} {β : 
 
 /- Stated as a `spec`, not as "it returns an `ok`": the recursion then composes
 with `spec_bind`, and no separate returning hypothesis is needed. -/
-theorem List.mapM_with_length_spec {post : Nat → β → Prop} {f : α → Result β} {l : List α}
+theorem List.mapM_with_length_spec {post : Nat → β → Prop} {f : α → RustM β} {l : List α}
   (h : ∀ i (hi : i < l.length), f l[i] ⦃ post i ⦄) :
   List.mapM_with_length f l ⦃ l' => ∀ i (hi : i < l'.val.length), post i l'.val[i] ⦄ := by
   induction l generalizing post with
@@ -49,11 +49,11 @@ theorem List.mapM_with_length_spec {post : Nat → β → Prop} {f : α → Resu
     | succ j => simpa using hl j (by simp at hi; grind)
 
 @[expose]
-def List.clone (clone : α → Result α) (l : List α) : Result ({ l' : List α // l'.length = l.length}) :=
+def List.clone (clone : α → RustM α) (l : List α) : RustM ({ l' : List α // l'.length = l.length}) :=
   List.mapM_with_length clone l
 
 @[step]
-theorem List.clone_spec {clone : α → Result α} {l : List α} (h : ∀ x ∈ l, clone x = ok x) :
+theorem List.clone_spec {clone : α → RustM α} {l : List α} (h : ∀ x ∈ l, clone x = ok x) :
   List.clone clone l ⦃ l' => l'.val = l ∧ l'.val.length = l.length ⦄ := by
   simp only [List.clone]
   induction l with

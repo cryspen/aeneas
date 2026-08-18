@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -29,7 +29,7 @@ def sum_loop.body
   (coreitertraitscollectIntoIteratorIU32Clause0_IntoIterInst :
   core.iter.traits.collect.IntoIterator I Std.U32 Clause0_IntoIter)
   (it : Clause0_IntoIter) (acc : Std.U32) :
-  Result (ControlFlow (Clause0_IntoIter × Std.U32) Std.U32)
+  RustM (ControlFlow (Clause0_IntoIter × Std.U32) Std.U32)
   := do
   let (o, it1) ←
     coreitertraitscollectIntoIteratorIU32Clause0_IntoIterInst.iteratorInst.next
@@ -49,7 +49,7 @@ def sum_loop
   (coreitertraitscollectIntoIteratorIU32Clause0_IntoIterInst :
   core.iter.traits.collect.IntoIterator I Std.U32 Clause0_IntoIter)
   (it : Clause0_IntoIter) (acc : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (it1, acc1) => sum_loop.body
@@ -63,7 +63,7 @@ def sum
   {I : Type _} {Clause0_IntoIter : Type _}
   (coreitertraitscollectIntoIteratorIU32Clause0_IntoIterInst :
   core.iter.traits.collect.IntoIterator I Std.U32 Clause0_IntoIter) (xs : I) :
-  Result Std.U32
+  RustM Std.U32
   := do
   let it ←
     coreitertraitscollectIntoIteratorIU32Clause0_IntoIterInst.into_iter xs
@@ -79,7 +79,7 @@ def rle_loop.body
   core.iter.traits.collect.IntoIterator T0 Std.U8 Clause0_IntoIter)
   (iter : Clause0_IntoIter) (v : alloc.vec.Vec Std.U8) (count1 : Std.U8)
   (current : Std.U8) :
-  Result (ControlFlow (Clause0_IntoIter × (alloc.vec.Vec Std.U8) × Std.U8 ×
+  RustM (ControlFlow (Clause0_IntoIter × (alloc.vec.Vec Std.U8) × Std.U8 ×
     Std.U8) ((alloc.vec.Vec Std.U8) × Std.U8 × Std.U8))
   := do
   let (o, iter1) ←
@@ -112,7 +112,7 @@ def rle_loop
   core.iter.traits.collect.IntoIterator T0 Std.U8 Clause0_IntoIter)
   (iter : Clause0_IntoIter) (v : alloc.vec.Vec Std.U8) (count1 : Std.U8)
   (current : Std.U8) :
-  Result ((alloc.vec.Vec Std.U8) × Std.U8 × Std.U8)
+  RustM ((alloc.vec.Vec Std.U8) × Std.U8 × Std.U8)
   := do
   loop
     (fun (iter1, v1, count2, current1) => rle_loop.body
@@ -128,7 +128,7 @@ def rle
   (coreitertraitscollectIntoIteratorT0U8Clause0_IntoIterInst :
   core.iter.traits.collect.IntoIterator T0 Std.U8 Clause0_IntoIter)
   (bytes : T0) :
-  Result (alloc.vec.Vec Std.U8)
+  RustM (alloc.vec.Vec Std.U8)
   := do
   let iter ←
     coreitertraitscollectIntoIteratorT0U8Clause0_IntoIterInst.into_iter bytes
@@ -153,7 +153,7 @@ def count_loop.body
   (coreitertraitscollectIntoIteratorInst :
   core.iter.traits.collect.IntoIterator I T Clause0_IntoIter)
   (it : Clause0_IntoIter) (n : Std.U32) :
-  Result (ControlFlow (Clause0_IntoIter × Std.U32) Std.U32)
+  RustM (ControlFlow (Clause0_IntoIter × Std.U32) Std.U32)
   := do
   let (o, it1) ← coreitertraitscollectIntoIteratorInst.iteratorInst.next it
   match o with
@@ -171,7 +171,7 @@ def count_loop
   (coreitertraitscollectIntoIteratorInst :
   core.iter.traits.collect.IntoIterator I T Clause0_IntoIter)
   (it : Clause0_IntoIter) (n : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (it1, n1) => count_loop.body coreitertraitscollectIntoIteratorInst it1
@@ -185,7 +185,7 @@ def count
   {T : Type _} {I : Type _} {Clause0_IntoIter : Type _}
   (coreitertraitscollectIntoIteratorInst :
   core.iter.traits.collect.IntoIterator I T Clause0_IntoIter) (xs : I) :
-  Result Std.U32
+  RustM Std.U32
   := do
   let it ← coreitertraitscollectIntoIteratorInst.into_iter xs
   count_loop coreitertraitscollectIntoIteratorInst it 0#u32
@@ -194,7 +194,7 @@ def count
     Source: 'tests/src/issue-1436-loop-generics.rs', lines 60:0-62:1
     Visibility: public -/
 structure Tr (Self : Type _) where
-  f : Self → Result Std.U32
+  f : Self → RustM Std.U32
 
 /-- Trait declaration: [issue_1436_loop_generics::Wrap]
     Source: 'tests/src/issue-1436-loop-generics.rs', lines 65:0-65:24
@@ -209,7 +209,7 @@ structure Wrap (Self : Type _) (T : Type _) where
 def loop_wrap_loop.body
   {T : Type _} {W : Type _} (WrapInst : Wrap W T) (w : W) (n : Std.U32)
   (acc : Std.U32) (i : Std.U32) :
-  Result (ControlFlow (Std.U32 × Std.U32) Std.U32)
+  RustM (ControlFlow (Std.U32 × Std.U32) Std.U32)
   := do
   if i < n
   then
@@ -226,7 +226,7 @@ def loop_wrap_loop.body
 def loop_wrap_loop
   {T : Type _} {W : Type _} (WrapInst : Wrap W T) (w : W) (n : Std.U32)
   (acc : Std.U32) (i : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (acc1, i1) => loop_wrap_loop.body WrapInst w n acc1 i1)
@@ -238,7 +238,7 @@ def loop_wrap_loop
 @[reducible]
 def loop_wrap
   {T : Type _} {W : Type _} (WrapInst : Wrap W T) (w : W) (n : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop_wrap_loop WrapInst w n 0#u32 0#u32
 
@@ -255,7 +255,7 @@ structure HasN (Self : Type _) (N : Std.Usize) where
 def loop_const_generic_loop.body
   {X : Type _} {N : Std.Usize} (HasNInst : HasN X N) (x : X) (n : Std.U32)
   (acc : Std.U32) (i : Std.U32) :
-  Result (ControlFlow (Std.U32 × Std.U32) Std.U32)
+  RustM (ControlFlow (Std.U32 × Std.U32) Std.U32)
   := do
   if i < n
   then
@@ -272,7 +272,7 @@ def loop_const_generic_loop.body
 def loop_const_generic_loop
   {X : Type _} {N : Std.Usize} (HasNInst : HasN X N) (x : X) (n : Std.U32)
   (acc : Std.U32) (i : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (acc1, i1) => loop_const_generic_loop.body HasNInst x n acc1 i1)
@@ -284,7 +284,7 @@ def loop_const_generic_loop
 @[reducible]
 def loop_const_generic
   {X : Type _} {N : Std.Usize} (HasNInst : HasN X N) (x : X) (n : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop_const_generic_loop HasNInst x n 0#u32 0#u32
 
@@ -301,7 +301,7 @@ structure Wrap2 (Self : Type _) (T : Type _) where
 def loop_wrap2_loop.body
   {T : Type _} {W : Type _} (Wrap2Inst : Wrap2 W T) (w : W) (n : Std.U32)
   (acc : Std.U32) (i : Std.U32) :
-  Result (ControlFlow (Std.U32 × Std.U32) Std.U32)
+  RustM (ControlFlow (Std.U32 × Std.U32) Std.U32)
   := do
   if i < n
   then
@@ -318,7 +318,7 @@ def loop_wrap2_loop.body
 def loop_wrap2_loop
   {T : Type _} {W : Type _} (Wrap2Inst : Wrap2 W T) (w : W) (n : Std.U32)
   (acc : Std.U32) (i : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop
     (fun (acc1, i1) => loop_wrap2_loop.body Wrap2Inst w n acc1 i1)
@@ -330,7 +330,7 @@ def loop_wrap2_loop
 @[reducible]
 def loop_wrap2
   {T : Type _} {W : Type _} (Wrap2Inst : Wrap2 W T) (w : W) (n : Std.U32) :
-  Result Std.U32
+  RustM Std.U32
   := do
   loop_wrap2_loop Wrap2Inst w n 0#u32 0#u32
 

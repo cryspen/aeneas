@@ -6,11 +6,11 @@ public section
 
 namespace Aeneas.Std
 
-open Result WP
+open RustM WP
 
 @[expose, rust_fun "alloc::slice::{[@T]}::to_vec"]
 def alloc.slice.Slice.to_vec
-  {T : Type _} (cloneInst : core.clone.Clone T) (s : Slice T) : Result (alloc.vec.Vec T) := do
+  {T : Type _} (cloneInst : core.clone.Clone T) (s : Slice T) : RustM (alloc.vec.Vec T) := do
   let s ← Slice.clone cloneInst.clone s
   ok {slice := s}
 

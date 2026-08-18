@@ -4,7 +4,7 @@ module
 public import Aeneas
 public import Bst.Types
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -24,7 +24,7 @@ namespace bst
 /-- [bst::{bst::TreeSet<T>}::new]:
     Source: 'src/bst.rs', lines 28:4-30:5
     Visibility: public -/
-def TreeSet.new {T : Type _} (OrdInst : Ord T) : Result (TreeSet T) := do
+def TreeSet.new {T : Type _} (OrdInst : Ord T) : RustM (TreeSet T) := do
   ok { root := none }
 
 /-- [bst::{bst::TreeSet<T>}::find]: loop 0:
@@ -33,7 +33,7 @@ def TreeSet.new {T : Type _} (OrdInst : Ord T) : Result (TreeSet T) := do
 @[rust_loop]
 def TreeSet.find_loop
   {T : Type _} (OrdInst : Ord T) (value : T) (current_tree : Option (Node T)) :
-  Result Bool
+  RustM Bool
   := do
   match current_tree with
   | none => ok false
@@ -51,7 +51,7 @@ partial_fixpoint
 @[reducible]
 def TreeSet.find
   {T : Type _} (OrdInst : Ord T) (self : TreeSet T) (value : T) :
-  Result Bool
+  RustM Bool
   := do
   TreeSet.find_loop OrdInst value self.root
 
@@ -61,7 +61,7 @@ def TreeSet.find
 @[rust_loop]
 def TreeSet.insert_loop
   {T : Type _} (OrdInst : Ord T) (value : T) (current_tree : Option (Node T)) :
-  Result (Bool × (Option (Node T)))
+  RustM (Bool × (Option (Node T)))
   := do
   match current_tree with
   | none => ok (true, some (Node.mk value none none))
@@ -84,7 +84,7 @@ partial_fixpoint
     Visibility: public -/
 def TreeSet.insert
   {T : Type _} (OrdInst : Ord T) (self : TreeSet T) (value : T) :
-  Result (Bool × (TreeSet T))
+  RustM (Bool × (TreeSet T))
   := do
   let (b, o) ← TreeSet.insert_loop OrdInst value self.root
   ok (b, { root := o })

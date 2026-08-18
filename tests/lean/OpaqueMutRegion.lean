@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -31,7 +31,7 @@ axiom Wrapper (T : Type _) : Type
     Source: 'tests/src/opaque-mut-region.rs', lines 9:4-11:5 -/
 def Wrapper.id
   {T : Type _} (self : Wrapper T) :
-  Result ((Wrapper T) × (Wrapper T → Wrapper T))
+  RustM ((Wrapper T) × (Wrapper T → Wrapper T))
   := do
   ok (self, fun self1 => self1)
 
@@ -44,7 +44,7 @@ axiom WrapperRaw (T : Type _) : Type
     Source: 'tests/src/opaque-mut-region.rs', lines 22:4-24:5 -/
 def WrapperRaw.id
   {T : Type _} (self : WrapperRaw T) :
-  Result ((WrapperRaw T) × (WrapperRaw T → WrapperRaw T))
+  RustM ((WrapperRaw T) × (WrapperRaw T → WrapperRaw T))
   := do
   ok (self, fun self1 => self1)
 

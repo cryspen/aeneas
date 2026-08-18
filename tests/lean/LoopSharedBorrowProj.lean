@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -31,7 +31,7 @@ namespace loop_shared_borrow_proj
   "alloc::vec::{core::iter::traits::collect::IntoIterator<&'a alloc::vec::Vec<@T>, &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter"]
 axiom SharedAVec.Insts.CoreIterTraitsCollectIntoIteratorSharedATIter.into_iter
   {T : Type _} (A : Type _) :
-  alloc.vec.Vec T → Result (core.slice.iter.Iter T)
+  alloc.vec.Vec T → RustM (core.slice.iter.Iter T)
 
 /-- [loop_shared_borrow_proj::Cap]
     Source: 'tests/src/loop-shared-borrow-proj.rs', lines 7:0-9:1
@@ -47,12 +47,12 @@ axiom Guard : Type
 /-- [loop_shared_borrow_proj::wrap]:
     Source: 'tests/src/loop-shared-borrow-proj.rs', lines 21:0-23:1
     Visibility: public -/
-axiom wrap : Cap → Result Guard
+axiom wrap : Cap → RustM Guard
 
 /-- [loop_shared_borrow_proj::{loop_shared_borrow_proj::Guard<'a>}::get]:
     Source: 'tests/src/loop-shared-borrow-proj.rs', lines 28:4-30:5
     Visibility: public -/
-axiom Guard.get : Guard → Result Cap
+axiom Guard.get : Guard → RustM Cap
 
 /-- [loop_shared_borrow_proj::carve]: loop body 0:
     Source: 'tests/src/loop-shared-borrow-proj.rs', lines 35:4-41:1
@@ -60,7 +60,7 @@ axiom Guard.get : Guard → Result Cap
 @[rust_loop_body]
 def carve_loop.body
   (x : Std.U32) (iter : core.slice.iter.Iter Std.U32) :
-  Result (ControlFlow (core.slice.iter.Iter Std.U32) Bool)
+  RustM (ControlFlow (core.slice.iter.Iter Std.U32) Bool)
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
@@ -74,7 +74,7 @@ def carve_loop.body
     Visibility: public -/
 @[rust_loop]
 def carve_loop
-  (iter : core.slice.iter.Iter Std.U32) (x : Std.U32) : Result Bool := do
+  (iter : core.slice.iter.Iter Std.U32) (x : Std.U32) : RustM Bool := do
   loop
     (fun iter1 => carve_loop.body x iter1)
     iter
@@ -82,7 +82,7 @@ def carve_loop
 /-- [loop_shared_borrow_proj::carve]:
     Source: 'tests/src/loop-shared-borrow-proj.rs', lines 33:0-41:1
     Visibility: public -/
-def carve (cap_ref : Cap) (x : Std.U32) : Result Bool := do
+def carve (cap_ref : Cap) (x : Std.U32) : RustM Bool := do
   let parent ← wrap cap_ref
   let c ← Guard.get parent
   let iter ←

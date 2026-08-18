@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -25,7 +25,7 @@ namespace issue_1141_impl_fn_ref
 def f
   {T0 : Type _} (coreopsfunctionFnT0TupleSharedTupleTupleInst :
   core.ops.function.Fn T0 Unit Unit) (g : T0) :
-  Result Unit
+  RustM Unit
   := do
   ok ()
 

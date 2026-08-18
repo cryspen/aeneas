@@ -6,7 +6,7 @@ public section
 
 namespace Aeneas.Std
 
-open Result Error Arith
+open RustM Error Arith
 
 
 /-!

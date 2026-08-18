@@ -3,7 +3,7 @@
 module
 public import Aeneas
 @[expose] public section
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
@@ -32,7 +32,7 @@ inductive Ordering where
 /-- Trait declaration: [bst::Ord]
     Source: 'src/bst.rs', lines 11:0-13:1 -/
 structure Ord (Self : Type _) where
-  cmp : Self → Self → Result Ordering
+  cmp : Self → Self → RustM Ordering
 
 /-- [bst::Node]
     Source: 'src/bst.rs', lines 15:0-19:1 -/
