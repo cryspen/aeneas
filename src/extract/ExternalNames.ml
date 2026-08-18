@@ -75,6 +75,7 @@ module Json = struct
     can_fail : bool; [@default true]
     lift : bool; [@default true]
     has_default : bool; [@default false]
+    is_loop : bool; [@default false]
   }
 
   and json_global = {
@@ -242,18 +243,25 @@ module Json = struct
       body_info;
     }
 
-  let external_fun_of_json (row : json_fun) : pattern * Pure.external_fun_info =
-    ( entry_pattern row.rust_pattern row.rust_name,
-      {
-        keep_params = row.keep_params;
-        keep_trait_clauses = row.keep_trait_clauses;
-        extract_name = row.extract_name;
-        can_fail = row.can_fail;
-        (* [stateful] is never read: see [FunsAnalysis.analyze_fun_decl]. *)
-        stateful = false;
-        lift = row.lift;
-        has_default = row.has_default;
-      } )
+  (** [None] for the rows which describe one of the declarations generated for a
+      loop: they carry the Rust name of the *enclosing* definition, so
+      registering one would map that name to the loop. *)
+  let external_fun_of_json (row : json_fun) :
+      (pattern * Pure.external_fun_info) option =
+    if row.is_loop then None
+    else
+      Some
+        ( entry_pattern row.rust_pattern row.rust_name,
+          {
+            keep_params = row.keep_params;
+            keep_trait_clauses = row.keep_trait_clauses;
+            extract_name = row.extract_name;
+            can_fail = row.can_fail;
+            (* [stateful] is never read: see [FunsAnalysis.analyze_fun_decl]. *)
+            stateful = false;
+            lift = row.lift;
+            has_default = row.has_default;
+          } )
 
   let external_global_of_json (row : json_global) : Pure.external_global_info =
     {
@@ -394,7 +402,10 @@ module Json = struct
       read_bucket file fields bucket of_json conv
     in
     let types = read "types" json_type_of_yojson external_type_of_json in
-    let functions = read "functions" json_fun_of_yojson external_fun_of_json in
+    let functions =
+      List.filter_map Fun.id
+        (read "functions" json_fun_of_yojson external_fun_of_json)
+    in
     let globals =
       read "globals" json_global_of_yojson external_global_of_json
     in
