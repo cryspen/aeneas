@@ -142,6 +142,22 @@ let name_with_crate_to_pattern_string (span : Meta.span option)
   let pat = name_to_pattern span mctx c n in
   Charon.NameMatcher.pattern_to_string { tgt = TkPattern } pat
 
+(** Saves an error for entries that also map to an external name *)
+let check_not_external (k : crate) (kind : string) ~(opaque : bool)
+    (item_meta : item_meta) (extract_name : string option) : unit =
+  if (not opaque) && item_meta.is_local then
+    Option.iter (fun model ->
+        let pattern =
+          name_with_crate_to_pattern_string (Some item_meta.span) k
+            item_meta.name
+        in
+        [%save_error] item_meta.span
+          (kind
+           ^ " is defined in this crate, but a list of external names maps it"
+           ^ " to the model '" ^ model ^ "', which would silently replace it."
+           ^ " Remove that entry, or make the definition opaque for Charon"
+           ^ " (--opaque '" ^ pattern ^ "').")) extract_name
+
 let name_with_generics_to_pattern (span : Meta.span option)
     (ctx : Charon.NameMatcher.ctx) (c : Charon.NameMatcher.to_pat_config)
     (params : generic_params) (n : Charon.Types.name) (args : generic_args) =
