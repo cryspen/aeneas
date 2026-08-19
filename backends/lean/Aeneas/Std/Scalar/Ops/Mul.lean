@@ -41,15 +41,15 @@ instance {ty} : HMul (IScalar ty) (IScalar ty) (RustM (IScalar ty)) where
 Theorems with a specification which use integers and bit-vectors
 -/
 
-/-- `tryMk` only fails with `integerOverflow`. -/
+/-- `tryMk` only fails with `panic`. -/
 theorem UScalar.tryMk_fail {ty} {v : Nat} {e k}
-    (h : (UScalar.tryMk ty v).match = .vis (.fail e) k) : e = .integerOverflow := by
+    (h : (UScalar.tryMk ty v).match = .vis (.fail e) k) : e = .panic := by
   simp only [UScalar.tryMk, RustM.ofOption] at h
   split at h <;> simp_all
 
-/-- `tryMk` only fails with `integerOverflow`. -/
+/-- `tryMk` only fails with `panic`. -/
 theorem IScalar.tryMk_fail {ty} {v : Int} {e k}
-    (h : (IScalar.tryMk ty v).match = .vis (.fail e) k) : e = .integerOverflow := by
+    (h : (IScalar.tryMk ty v).match = .vis (.fail e) k) : e = .panic := by
   simp only [IScalar.tryMk, RustM.ofOption] at h
   split at h <;> simp_all
 
@@ -165,7 +165,7 @@ theorem IScalar.mul_spec {ty} {x y : IScalar ty}
 uscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
     partialSpec (x * y)
       (fun z => (↑z : Nat) = ↑x * ↑y)
-      (fun | .integerOverflow => ↑x * ↑y > «%S».max | _ => False)
+      (fun | .panic => ↑x * ↑y > «%S».max | _ => False)
       False := by
   have h := UScalar.mul_equiv x y
   show partialSpec (UScalar.mul x y) _ _ _
@@ -180,7 +180,7 @@ uscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
 iscalar @[step] theorem «%S».mul_spec {x y : «%S»} :
     partialSpec (x * y)
       (fun z => (↑z : Int) = ↑x * ↑y)
-      (fun | .integerOverflow => ↑x * ↑y < «%S».min ∨ ↑x * ↑y > «%S».max | _ => False)
+      (fun | .panic => ↑x * ↑y < «%S».min ∨ ↑x * ↑y > «%S».max | _ => False)
       False := by
   have h := IScalar.mul_equiv x y
   show partialSpec (IScalar.mul x y) _ _ _

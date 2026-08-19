@@ -605,7 +605,7 @@ theorem IScalar.check_bounds_eq_inBounds (ty : IScalarTy) (x : Int) :
   else none
 
 @[expose] def UScalar.tryMk (ty : UScalarTy) (x : Nat) : RustM (UScalar ty) :=
-  RustM.ofOption (tryMkOpt ty x) integerOverflow
+  RustM.ofOption (tryMkOpt ty x) panic
 
 @[expose] def IScalar.tryMkOpt (ty : IScalarTy) (x : Int) : Option (IScalar ty) :=
   if h:IScalar.check_bounds ty x then
@@ -613,7 +613,7 @@ theorem IScalar.check_bounds_eq_inBounds (ty : IScalarTy) (x : Int) :
   else none
 
 @[expose] def IScalar.tryMk (ty : IScalarTy) (x : Int) : RustM (IScalar ty) :=
-  RustM.ofOption (tryMkOpt ty x) integerOverflow
+  RustM.ofOption (tryMkOpt ty x) panic
 
 theorem UScalar.tryMkOpt_eq (ty : UScalarTy) (x : Nat) :
   match tryMkOpt ty x with

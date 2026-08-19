@@ -14,11 +14,11 @@ open RustM Error Arith ScalarElab WP
 # Remainder: Definitions
 -/
 @[expose] def UScalar.rem {ty : UScalarTy} (x y : UScalar ty) : RustM (UScalar ty) :=
-  if y.val != 0 then ok ⟨ BitVec.umod x.bv y.bv ⟩ else fail divisionByZero
+  if y.val != 0 then ok ⟨ BitVec.umod x.bv y.bv ⟩ else fail panic
 
 @[expose] def IScalar.rem {ty : IScalarTy} (x y : IScalar ty) : RustM (IScalar ty) :=
   if y.val != 0 then ok ⟨ BitVec.srem x.bv y.bv ⟩
-  else fail divisionByZero
+  else fail panic
 
 def UScalar.try_rem {ty : UScalarTy} (x y : UScalar ty) : Option (UScalar ty) :=
   Option.ofRustM (rem x y)
@@ -122,7 +122,7 @@ theorem IScalar.rem_spec {ty} (x : IScalar ty) {y : IScalar ty} (hzero : y.val �
 uscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
     partialSpec (x % y)
       (fun z => (↑z : Nat) = ↑x % ↑y)
-      (fun | .divisionByZero => (↑y : Nat) = 0 | _ => False)
+      (fun | .panic => (↑y : Nat) = 0 | _ => False)
       False := by
   have hxy : (x % y : RustM _) = UScalar.rem x y := rfl
   rw [hxy]
@@ -136,7 +136,7 @@ uscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
 iscalar @[step] theorem «%S».rem_spec (x : «%S») {y : «%S»} :
     partialSpec (x % y)
       (fun z => (↑z : Int) = Int.tmod ↑x ↑y)
-      (fun | .divisionByZero => (↑y : Int) = 0 | _ => False)
+      (fun | .panic => (↑y : Int) = 0 | _ => False)
       False := by
   have hxy : (x % y : RustM _) = IScalar.rem x y := rfl
   rw [hxy]

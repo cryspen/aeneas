@@ -158,7 +158,7 @@ abbrev Array.slice {α : Type u} {n : Usize} [Inhabited α] (v : Array α n) (i 
 
 @[expose] def Array.index_usize {α : Type u} {n : Usize} (v: Array α n) (i: Usize) : RustM α :=
   match v[i]? with
-  | none => fail .arrayOutOfBounds
+  | none => fail .panic
   | some x => ok x
 
 -- For initialization
@@ -174,7 +174,7 @@ theorem Array.repeat_val (n : Usize) (x : α) : (Array.repeat n x).val = List.re
 theorem Array.index_usize_spec {α : Type u} {n : Usize} (v: Array α n) (i: Usize) :
     partialSpec (v.index_usize i)
       (fun x => ∃ _ : i.val < v.length, x = v.val[i.val])
-      (fun | .arrayOutOfBounds => i.val ≥ v.length | _ => False)
+      (fun | .panic => i.val ≥ v.length | _ => False)
       False := by
   grind [index_usize]
 
@@ -267,7 +267,7 @@ theorem Array.set_length {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (x
 
 @[expose] def Array.update {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (x: α) : RustM (Array α n) :=
   match v[i]? with
-  | none => fail .arrayOutOfBounds
+  | none => fail .panic
   | some _ =>
     ok (.from (v.val.set i.val x) (by have := v.property; simp [*]))
 
@@ -275,7 +275,7 @@ theorem Array.set_length {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (x
 theorem Array.update_spec {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (x : α) :
     partialSpec (v.update i x)
       (fun nv => nv = v.set i x)
-      (fun | .arrayOutOfBounds => i.val ≥ v.length | _ => False)
+      (fun | .panic => i.val ≥ v.length | _ => False)
       False
   := by
   simp only [partialSpec, update, set]
@@ -290,7 +290,7 @@ theorem Array.update_spec {α : Type u} {n : Usize} (v: Array α n) (i: Usize) (
 theorem Array.index_mut_usize_spec {α : Type u} {n : Usize} (v: Array α n) (i: Usize) :
     partialSpec (v.index_mut_usize i)
       (uncurry' fun x back => ∃ _ : i.val < v.length, x = v.val[i.val] ∧ back = set v i)
-      (fun | .arrayOutOfBounds => i.val ≥ v.length | _ => False)
+      (fun | .panic => i.val ≥ v.length | _ => False)
       False := by
   have h := index_usize_spec v i
   simp only [index_mut_usize, index_usize] at h ⊢

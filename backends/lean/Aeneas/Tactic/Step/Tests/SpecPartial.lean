@@ -157,7 +157,7 @@ opaque myCheck (x : U32) : RustM U32
 axiom myCheck_partialSpec (x : U32) :
   partialSpec (myCheck x)
     (fun z => z = x)
-    (fun | .panic => x.val = 0 | .undef => x.val = 1 | _ => False)
+    (fun | .panic => x.val = 0 | .undef => x.val = 1)
     False
 
 /--

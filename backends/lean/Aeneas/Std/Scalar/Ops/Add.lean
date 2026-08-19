@@ -41,7 +41,7 @@ theorem UScalar.add_equiv {ty} (x y : UScalar ty) :
   | .ok z => x.val + y.val < 2^ty.numBits ∧
     z.val = x.val + y.val ∧
     z.bv = x.bv + y.bv
-  | .vis (.fail e) _ => e = .integerOverflow ∧ ¬ (UScalar.inBounds ty (x.val + y.val))
+  | .vis (.fail e) _ => e = .panic ∧ ¬ (UScalar.inBounds ty (x.val + y.val))
   | _ => ⊥ := by
   have : x + y = add x y := by rfl
   rw [this]
@@ -60,7 +60,7 @@ theorem IScalar.add_equiv {ty} (x y : IScalar ty) :
     IScalar.inBounds ty (x.val + y.val) ∧
     z.val = x.val + y.val ∧
     z.bv = x.bv + y.bv
-  | .vis (.fail e) _ => e = .integerOverflow ∧ ¬ (IScalar.inBounds ty (x.val + y.val))
+  | .vis (.fail e) _ => e = .panic ∧ ¬ (IScalar.inBounds ty (x.val + y.val))
   | _ => ⊥ := by
   have : x + y = add x y := by rfl
   rw [this]
@@ -117,7 +117,7 @@ only integers. Those are the most common to use, so we mark them with the
 theorem UScalar.add_spec {ty} {x y : UScalar ty} :
     partialSpec (x + y)
       (fun z => (↑z : Nat) = ↑x + ↑y)
-      (fun | .integerOverflow => ↑x + ↑y > UScalar.max ty | _ => False)
+      (fun | .panic => ↑x + ↑y > UScalar.max ty | _ => False)
       False := by
   have h := @add_equiv ty x y
   simp only [partialSpec]
@@ -130,7 +130,7 @@ theorem UScalar.add_spec {ty} {x y : UScalar ty} :
 theorem IScalar.add_spec {ty} {x y : IScalar ty} :
     partialSpec (x + y)
       (fun z => (↑z : Int) = ↑x + ↑y)
-      (fun | .integerOverflow => ↑x + ↑y < IScalar.min ty ∨ ↑x + ↑y > IScalar.max ty | _ => False)
+      (fun | .panic => ↑x + ↑y < IScalar.min ty ∨ ↑x + ↑y > IScalar.max ty | _ => False)
       False := by
   have h := @add_equiv ty x y
   simp only [partialSpec]
@@ -140,14 +140,14 @@ theorem IScalar.add_spec {ty} {x y : IScalar ty} :
 uscalar @[step] theorem «%S».add_spec {x y : «%S»} :
     partialSpec (x + y)
       (fun z => (↑z : Nat) = ↑x + ↑y)
-      (fun | .integerOverflow => ↑x + ↑y > «%S».max | _ => False)
+      (fun | .panic => ↑x + ↑y > «%S».max | _ => False)
       False := by
   convert @UScalar.add_spec _ x y; scalar_tac
 
 iscalar @[step] theorem «%S».add_spec {x y : «%S»} :
     partialSpec (x + y)
       (fun z => (↑z : Int) = ↑x + ↑y)
-      (fun | .integerOverflow => ↑x + ↑y < «%S».min ∨ ↑x + ↑y > «%S».max | _ => False)
+      (fun | .panic => ↑x + ↑y < «%S».min ∨ ↑x + ↑y > «%S».max | _ => False)
       False := by
   convert @IScalar.add_spec _ x y <;> scalar_tac
 
@@ -164,7 +164,7 @@ def SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add
 theorem SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add_spec {ty} {x y : UScalar ty} :
     partialSpec (SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add x y)
       (fun z => (↑z : Nat) = ↑x + ↑y)
-      (fun | .integerOverflow => ↑x + ↑y > UScalar.max ty | _ => False)
+      (fun | .panic => ↑x + ↑y > UScalar.max ty | _ => False)
       False :=
   UScalar.add_spec
 
@@ -174,7 +174,7 @@ uscalar @[expose] def «Shared'S».Insts.«CoreOpsArithAdd'S'S».add (x y : «%S
 uscalar @[step] theorem «Shared'S».Insts.«CoreOpsArithAdd'S'S».add_spec {x y : «%S»} :
     partialSpec («Shared'S».Insts.«CoreOpsArithAdd'S'S».add x y)
       (fun z => (↑z : Nat) = ↑x + ↑y)
-      (fun | .integerOverflow => x.val + y.val > «%S».max | _ => False)
+      (fun | .panic => x.val + y.val > «%S».max | _ => False)
       False := by
   convert SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add_spec
   rfl

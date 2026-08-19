@@ -37,11 +37,6 @@ def elabImpl : CommandElab := fun (stx: Syntax) => do
 @[expose] section
 
 inductive Error where
-   | assertionFailure: Error
-   | integerOverflow: Error
-   | divisionByZero: Error
-   | arrayOutOfBounds: Error
-   | maximumSizeExceeded: Error
    | panic: Error
    | undef: Error
 deriving Repr, BEq
@@ -233,7 +228,7 @@ instance RustM_Nonempty (α : Type u) : Nonempty (RustM α) :=
 -/
 
 def massert (b : Prop) [Decidable b] : RustM Unit :=
-  if b then ok () else fail assertionFailure
+  if b then ok () else fail panic
 
 @[simp]
 def RustM.ofOption {a : Type u} (x : Option a) (e : Error) : RustM a :=
