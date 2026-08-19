@@ -19,9 +19,12 @@ type loop_info = {
 (** Lean function declaration. *)
 type function_entry = {
   def_id : int;  (** Charon [FunDeclId] reified to a plain int. *)
-  lean_name : string;  (** Fully-qualified Lean name. *)
+  lean_name : string;
+  extract_name : string;
+      (** The same string, under the reader's name for it. *)
   lean_file : string;  (** Path relative to this manifest's directory. *)
   rust_name : string;  (** Fully-qualified Rust name (from [item_meta.name]). *)
+  rust_pattern : string;  (** The pattern this entry is registered under. *)
   is_local : bool;
       (** [true] if defined in the current crate, [false] if external. *)
   source : source;  (** Rust source location (from [item_meta.span]). *)
@@ -45,8 +48,10 @@ type function_entry = {
 type type_entry = {
   def_id : int;
   lean_name : string;
+  extract_name : string;
   lean_file : string;
   rust_name : string;
+  rust_pattern : string;
   is_local : bool;
   source : source;
 }
@@ -56,8 +61,10 @@ type type_entry = {
 type global_entry = {
   def_id : int;
   lean_name : string;
+  extract_name : string;
   lean_file : string;
   rust_name : string;
+  rust_pattern : string;
   is_local : bool;
   source : source;
   can_fail : bool;
@@ -68,8 +75,10 @@ type global_entry = {
 type trait_decl_entry = {
   def_id : int;
   lean_name : string;
+  extract_name : string;
   lean_file : string;
   rust_name : string;
+  rust_pattern : string;
   is_local : bool;
   source : source;
 }
@@ -79,8 +88,10 @@ type trait_decl_entry = {
 type trait_impl_entry = {
   def_id : int;
   lean_name : string;
+  extract_name : string;
   lean_file : string;
   rust_name : string;
+  rust_pattern : string;
   is_local : bool;
   source : source;
   impl_trait_def_id : int;
@@ -163,6 +174,11 @@ let source_of_span (span : Meta.span) : source =
   in
   { file; begin_line = data.beg_loc.line; end_line = data.end_loc.line }
 
+(** The Rust name, in the pattern syntax which [-external-names] parses. *)
+let rust_pattern_of_name (ctx : ExtractBase.extraction_ctx) (span : Meta.span)
+    (name : Types.name) : string =
+  TranslateCore.name_to_pattern_string (Some span) ctx.trans_ctx name
+
 let function_entry_of_fun_decl (ctx : ExtractBase.extraction_ctx)
     (def : Pure.fun_decl) : function_entry =
   let span = def.item_meta.span in
@@ -193,8 +209,10 @@ let function_entry_of_fun_decl (ctx : ExtractBase.extraction_ctx)
   {
     def_id = Pure.FunDeclId.to_int def.def_id;
     lean_name;
+    extract_name = lean_name;
     lean_file = state.current_lean_file;
     rust_name = ExtractBase.name_to_string ctx def.item_meta.name;
+    rust_pattern = rust_pattern_of_name ctx span def.item_meta.name;
     is_local = def.item_meta.is_local;
     source = source_of_span span;
     is_opaque = Option.is_none def.body;
@@ -209,12 +227,16 @@ let function_entry_of_fun_decl (ctx : ExtractBase.extraction_ctx)
 let type_entry_of_type_decl (ctx : ExtractBase.extraction_ctx)
     (def : Pure.type_decl) : type_entry =
   let span = def.item_meta.span in
+  let lean_name =
+    full_lean_name (ExtractBase.ctx_get_local_type span def.def_id ctx)
+  in
   {
     def_id = Pure.TypeDeclId.to_int def.def_id;
-    lean_name =
-      full_lean_name (ExtractBase.ctx_get_local_type span def.def_id ctx);
+    lean_name;
+    extract_name = lean_name;
     lean_file = state.current_lean_file;
     rust_name = ExtractBase.name_to_string ctx def.item_meta.name;
+    rust_pattern = rust_pattern_of_name ctx span def.item_meta.name;
     is_local = def.item_meta.is_local;
     source = source_of_span span;
   }
@@ -222,11 +244,16 @@ let type_entry_of_type_decl (ctx : ExtractBase.extraction_ctx)
 let global_entry_of_global_decl (ctx : ExtractBase.extraction_ctx)
     (def : Pure.global_decl) : global_entry =
   let span = def.item_meta.span in
+  let lean_name =
+    full_lean_name (ExtractBase.ctx_get_global span def.def_id ctx)
+  in
   {
     def_id = Pure.GlobalDeclId.to_int def.def_id;
-    lean_name = full_lean_name (ExtractBase.ctx_get_global span def.def_id ctx);
+    lean_name;
+    extract_name = lean_name;
     lean_file = state.current_lean_file;
     rust_name = ExtractBase.name_to_string ctx def.item_meta.name;
+    rust_pattern = rust_pattern_of_name ctx span def.item_meta.name;
     is_local = def.item_meta.is_local;
     source = source_of_span span;
     can_fail = def.can_fail;
@@ -235,12 +262,16 @@ let global_entry_of_global_decl (ctx : ExtractBase.extraction_ctx)
 let trait_decl_entry_of_trait_decl (ctx : ExtractBase.extraction_ctx)
     (def : Pure.trait_decl) : trait_decl_entry =
   let span = def.item_meta.span in
+  let lean_name =
+    full_lean_name (ExtractBase.ctx_get_trait_decl span def.def_id ctx)
+  in
   {
     def_id = Pure.TraitDeclId.to_int def.def_id;
-    lean_name =
-      full_lean_name (ExtractBase.ctx_get_trait_decl span def.def_id ctx);
+    lean_name;
+    extract_name = lean_name;
     lean_file = state.current_lean_file;
     rust_name = ExtractBase.name_to_string ctx def.item_meta.name;
+    rust_pattern = rust_pattern_of_name ctx span def.item_meta.name;
     is_local = def.item_meta.is_local;
     source = source_of_span span;
   }
@@ -252,12 +283,28 @@ let trait_impl_entry_of_trait_impl (ctx : ExtractBase.extraction_ctx)
   let impl_trait_decl =
     Pure.TraitDeclId.Map.find impl_trait_id ctx.trans_trait_decls
   in
+  let lean_name =
+    full_lean_name (ExtractBase.ctx_get_trait_impl span def.def_id ctx)
+  in
+  (* The pattern is built from the LLBC declarations, as it applies the trait to
+     the arguments of the implementation. *)
+  let rust_pattern =
+    let llbc_impl =
+      Pure.TraitImplId.Map.find def.def_id ctx.crate.trait_impls
+    in
+    let llbc_decl =
+      Pure.TraitDeclId.Map.find llbc_impl.impl_trait.id ctx.crate.trait_decls
+    in
+    LlbcAstUtils.trait_impl_with_crate_to_pattern_string (Some span) ctx.crate
+      llbc_decl llbc_impl
+  in
   {
     def_id = Pure.TraitImplId.to_int def.def_id;
-    lean_name =
-      full_lean_name (ExtractBase.ctx_get_trait_impl span def.def_id ctx);
+    lean_name;
+    extract_name = lean_name;
     lean_file = state.current_lean_file;
     rust_name = ExtractBase.name_to_string ctx def.item_meta.name;
+    rust_pattern;
     is_local = def.item_meta.is_local;
     source = source_of_span span;
     impl_trait_def_id = Pure.TraitDeclId.to_int impl_trait_id;

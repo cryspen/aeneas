@@ -36,9 +36,23 @@ module Json = struct
   (** Raised while converting a single entry. *)
   exception Entry_error of string
 
+  (** Raised by a conversion which does not want to register the entry. *)
+  exception Ignore_entry
+
+  (** Raised when the name of an entry is not a pattern we can parse: unlike
+      {!Entry_error}, this only drops the entry, with a warning. *)
+  exception Pattern_error of string
+
   (* ---------------------------------------------------------------------- *)
   (* The entries, as they are written in the files                          *)
   (* ---------------------------------------------------------------------- *)
+
+  (** The value of a ["loop"] key, which is read for its presence only - the
+      decoder takes a value of any shape and keeps nothing of it. *)
+  type loop_marker = unit
+
+  let loop_marker_of_yojson (_ : Yojson.Safe.t) : (loop_marker, string) result =
+    Ok ()
 
   (** A Rust name together with the name to use in the backend. *)
   type json_field = { rust : string; extract : string }
@@ -75,7 +89,7 @@ module Json = struct
     can_fail : bool; [@default true]
     lift : bool; [@default true]
     has_default : bool; [@default false]
-    is_loop : bool; [@default false]
+    loop : loop_marker option; [@default None]
   }
 
   and json_global = {
@@ -134,11 +148,12 @@ module Json = struct
 
   (** Decode then convert the entries of a bucket, one by one, so that a failure
       can be attributed to a single entry. An absent bucket is empty. [conv]
-      signals an ill-formed entry with {!Entry_error}.
+      signals an ill-formed entry with {!Entry_error}, and drops one with
+      {!Ignore_entry}.
 
       We do not catch [Failure] here: it would also catch the internal errors
       raised from inside a conversion. {!parse_entry_pattern} turns the one we
-      do expect into an {!Entry_error}. *)
+      do expect into a {!Pattern_error}. *)
   let read_bucket (file : string) (fields : (string * Yojson.Safe.t) list)
       (bucket : string) (of_json : Yojson.Safe.t -> ('r, string) result)
       (conv : 'r -> 'a) : 'a list =
@@ -150,15 +165,22 @@ module Json = struct
           raise
             (Read_error (Printf.sprintf "%s: \"%s\" must be a list" file bucket))
     in
-    let decode (i : int) (row : Yojson.Safe.t) : 'a =
-      let error (msg : string) =
-        raise (Read_error (Printf.sprintf "%s: %s[%d]: %s" file bucket i msg))
-      in
+    let where = Printf.sprintf "%s: %s[%d]: " file bucket in
+    let decode (i : int) (row : Yojson.Safe.t) : 'a option =
+      let error (msg : string) = raise (Read_error (where i ^ msg)) in
       match of_json row with
       | Error msg -> error (decode_error_msg msg)
-      | Ok row -> ( try conv row with Entry_error msg -> error msg)
+      | Ok row -> (
+          try Some (conv row) with
+          | Entry_error msg -> error msg
+          | Ignore_entry -> None
+          | Pattern_error msg ->
+              log#swarning
+                (where i ^ msg ^ "\nThis entry is ignored: the definition it "
+               ^ "names has no pattern, so nothing can be mapped to it.\n");
+              None)
     in
-    List.mapi decode rows
+    List.filter_map Fun.id (List.mapi decode rows)
 
   (* ---------------------------------------------------------------------- *)
   (* Converting the entries                                                 *)
@@ -178,7 +200,7 @@ module Json = struct
       of the error inside the pattern: we turn it into an {!Entry_error} so that
       {!read_bucket} can locate the entry. *)
   let parse_entry_pattern (pattern : string) : pattern =
-    try parse_pattern pattern with Failure msg -> raise (Entry_error msg)
+    try parse_pattern pattern with Failure msg -> raise (Pattern_error msg)
 
   let entry_pattern (rust_pattern : string option) (rust_name : string option) :
       pattern =
@@ -243,25 +265,22 @@ module Json = struct
       body_info;
     }
 
-  (** [None] for the rows which describe one of the declarations generated for a
-      loop: they carry the Rust name of the *enclosing* definition, so
-      registering one would map that name to the loop. *)
-  let external_fun_of_json (row : json_fun) :
-      (pattern * Pure.external_fun_info) option =
-    if row.is_loop then None
-    else
-      Some
-        ( entry_pattern row.rust_pattern row.rust_name,
-          {
-            keep_params = row.keep_params;
-            keep_trait_clauses = row.keep_trait_clauses;
-            extract_name = row.extract_name;
-            can_fail = row.can_fail;
-            (* [stateful] is never read: see [FunsAnalysis.analyze_fun_decl]. *)
-            stateful = false;
-            lift = row.lift;
-            has_default = row.has_default;
-          } )
+  let external_fun_of_json (row : json_fun) : pattern * Pure.external_fun_info =
+    (* A row with a ["loop"] key describes one of the declarations generated for
+       a loop, under the Rust name of the *enclosing* definition: registering it
+       would map that name to the loop. *)
+    if row.loop <> None then raise Ignore_entry;
+    ( entry_pattern row.rust_pattern row.rust_name,
+      {
+        keep_params = row.keep_params;
+        keep_trait_clauses = row.keep_trait_clauses;
+        extract_name = row.extract_name;
+        can_fail = row.can_fail;
+        (* [stateful] is never read: see [FunsAnalysis.analyze_fun_decl]. *)
+        stateful = false;
+        lift = row.lift;
+        has_default = row.has_default;
+      } )
 
   let external_global_of_json (row : json_global) : Pure.external_global_info =
     {
@@ -402,10 +421,7 @@ module Json = struct
       read_bucket file fields bucket of_json conv
     in
     let types = read "types" json_type_of_yojson external_type_of_json in
-    let functions =
-      List.filter_map Fun.id
-        (read "functions" json_fun_of_yojson external_fun_of_json)
-    in
+    let functions = read "functions" json_fun_of_yojson external_fun_of_json in
     let globals =
       read "globals" json_global_of_yojson external_global_of_json
     in
@@ -458,10 +474,10 @@ let builtin_source =
 let load_files () : unit =
   loaded_sources := List.map Json.load !external_names_files
 
-(** Concatenate one bucket over all the sources, in increasing order of
-    precedence: the packaged entries first, then the files given through
-    [-external-names], in command-line order - so that the later entries
-    override the earlier ones when building the maps. *)
+(** Concatenate one bucket over all the sources: the packaged entries first,
+    then the files given through [-external-names], in command-line order. The
+    order is what the diagnostics read back, as no entry may shadow another -
+    see {!name_matcher_map_of_list}. *)
 let merge_sources (get : t -> 'a list) : 'a list =
   List.concat_map get (builtin_source () :: !loaded_sources)
 
@@ -469,29 +485,37 @@ let merge_sources (get : t -> 'a list) : 'a list =
 (* The maps                                                                 *)
 (* ------------------------------------------------------------------------ *)
 
-(** Build a name matcher map out of a list of entries ordered by increasing
-    precedence: an entry which shadows an earlier one replaces it. When
-    [warn_override] is given, such an override is reported as a warning, and
-    used to name the two entries in it. *)
-let name_matcher_map_of_list ?warn_override (ls : (pattern * 'a) list) :
+(** Build a name matcher map out of a list of entries. A pattern may be mapped
+    only once, across every source, so a second entry claiming one refuses the
+    run rather than shadowing the first: replacing a packaged name is done by
+    dropping that list, not by outranking it. [name] names an entry in the
+    message. *)
+let name_matcher_map_of_list ?name (ls : (pattern * 'a) list) :
     'a NameMatcherMap.t =
   let config : print_config = { tgt = TkPattern } in
   List.fold_left
     (fun m (pat, info) ->
-      [%ldebug "About to add pattern: " ^ pattern_to_string config pat];
+      let key = pattern_to_string config pat in
+      [%ldebug "About to add pattern: " ^ key];
       (* [replace] inserts and checks whether we replaced a pattern *)
       let m, old = NameMatcherMap.replace pat info m in
-      (match (old, warn_override) with
-      | Some old, Some name ->
-          log#swarning
-            ("Pattern registered twice for an external definition: "
-            ^ pattern_to_string config pat
-            ^ " (" ^ name old ^ " is overridden by " ^ name info ^ ")\n")
-      | _ -> ());
+      (match old with
+      | Some old ->
+          let named =
+            match name with
+            | Some name -> " ('" ^ name old ^ "' and '" ^ name info ^ "')"
+            | None -> ""
+          in
+          raise
+            (Read_error
+               ("two entries claim the pattern '" ^ key ^ "'" ^ named
+              ^ ". A pattern may be mapped only once. Note that definitions"
+              ^ " which differ only by their target share one pattern."))
+      | None -> ());
       m)
     NameMatcherMap.empty ls
 
-(* How the entries are named in the override warning above. *)
+(* How the entries are named in the message above. *)
 let global_extract_name (i : Pure.external_global_info) = i.extract_name
 let type_extract_name (i : Pure.external_type_info) = i.extract_name
 let fun_extract_name (i : Pure.external_fun_info) = i.extract_name
@@ -499,7 +523,7 @@ let trait_decl_extract_name (i : Pure.external_trait_decl_info) = i.extract_name
 let trait_impl_extract_name (i : Pure.external_trait_impl_info) = i.extract_name
 
 let mk_external_globals_map () : Pure.external_global_info NameMatcherMap.t =
-  name_matcher_map_of_list ~warn_override:global_extract_name
+  name_matcher_map_of_list ~name:global_extract_name
     (List.map
        (fun (info : Pure.external_global_info) -> (info.rust_name, info))
        (merge_sources (fun source -> source.globals)))
@@ -507,7 +531,7 @@ let mk_external_globals_map () : Pure.external_global_info NameMatcherMap.t =
 let external_globals_map = mk_memoized mk_external_globals_map
 
 let mk_external_types_map () =
-  name_matcher_map_of_list ~warn_override:type_extract_name
+  name_matcher_map_of_list ~name:type_extract_name
     (List.map
        (fun (info : Pure.external_type_info) -> (info.rust_name, info))
        (merge_sources (fun source -> source.types)))
@@ -548,7 +572,7 @@ let external_trait_decls : unit -> Pure.external_trait_decl_info list =
   mk_memoized (fun () -> merge_sources (fun source -> source.trait_decls))
 
 let mk_external_trait_decls_map () =
-  name_matcher_map_of_list ~warn_override:trait_decl_extract_name
+  name_matcher_map_of_list ~name:trait_decl_extract_name
     (List.map
        (fun (info : Pure.external_trait_decl_info) -> (info.rust_name, info))
        (external_trait_decls ()))
@@ -557,7 +581,7 @@ let external_trait_decls_map = mk_memoized mk_external_trait_decls_map
 
 let mk_external_trait_impls_map () =
   let m =
-    name_matcher_map_of_list ~warn_override:trait_impl_extract_name
+    name_matcher_map_of_list ~name:trait_impl_extract_name
       (merge_sources (fun source -> source.trait_impls))
   in
   [%ltrace NameMatcherMap.to_string (fun _ -> "...") m];
@@ -594,9 +618,7 @@ let external_funs : unit -> (pattern * Pure.external_fun_info) list =
 
 let mk_external_funs_map () =
   [%ldebug "Building the external funs map"];
-  let m =
-    name_matcher_map_of_list ~warn_override:fun_extract_name (external_funs ())
-  in
+  let m = name_matcher_map_of_list ~name:fun_extract_name (external_funs ()) in
   [%ltrace NameMatcherMap.to_string (fun _ -> "...") m];
   m
 
@@ -612,8 +634,8 @@ let mk_external_fun_effects () : (pattern * effect_info) list =
 
 let mk_external_fun_effects_map () =
   [%ldebug "Building the external funs effects map"];
-  (* No override warning: this map is derived from the same list as
-     {!external_funs_map}, which already reported them. *)
+  (* No [name]: this map is derived from the same list as {!external_funs_map},
+     which is built first and would have refused a duplicate already. *)
   name_matcher_map_of_list (if_backend mk_external_fun_effects [])
 
 let external_fun_effects_map = mk_memoized mk_external_fun_effects_map
