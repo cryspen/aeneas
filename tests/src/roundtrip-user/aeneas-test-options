@@ -1,0 +1,2 @@
+[!lean] skip
+[lean] aeneas-args=-external-names tests/lean/RoundtripLib/translation.json -extra-includes=RoundtripLib -split-files
