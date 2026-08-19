@@ -91,6 +91,8 @@ package «tests» {}
 @[default_target] lean_lib Print
 @[default_target] lean_lib Range
 @[default_target] lean_lib RenameAttribute
+@[default_target] lean_lib RoundtripLib
+@[default_target] lean_lib RoundtripUser
 @[default_target] lean_lib RustBorrowCheckIssues
 @[default_target] lean_lib Scalars
 @[default_target] lean_lib Slices
