@@ -400,18 +400,41 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
       let translate_method_sig (trait_decl : LlbcAst.trait_decl)
           (method_id : TraitMethodId.id)
           (bound_method : LlbcAst.trait_method Types.binder) =
-        let sg =
-          SymbolicToPureTypes.translate_flat_trait_method_sigs trans_ctx
-            trait_decl method_id bound_method
-        in
-        (FunOrMethodId.Method (trait_decl.def_id, method_id), sg)
+        try
+          let sg =
+            SymbolicToPureTypes.translate_flat_trait_method_sigs trans_ctx
+              trait_decl method_id bound_method
+          in
+          Some (FunOrMethodId.Method (trait_decl.def_id, method_id), sg)
+        with CFailure error ->
+          (* Contain the failure at item granularity: skip this method's
+             signature (mirroring the [fun_decl_sigs] branch above) rather than
+             aborting the translation of the whole crate. *)
+          let method_meta = bound_method.binder_value.item_meta in
+          let trait_name = name_to_string trans_ctx trait_decl.item_meta.name in
+          let name_pattern =
+            try
+              name_to_pattern_string (Some trait_decl.item_meta.span) trans_ctx
+                trait_decl.item_meta.name
+            with CFailure _ ->
+              "(could not compute the name pattern due to a different error)"
+          in
+          [%warn_opt_span] error.span
+            ("Could not translate the signature of method '"
+           ^ bound_method.binder_value.name ^ "' of trait '" ^ trait_name
+           ^ "' because of previous error\nTrait name pattern: '" ^ name_pattern
+           ^ "'" ^ "\nDefinition span: "
+            ^ Errors.raw_span_to_string method_meta.span
+            ^ compute_local_uses_error_message trans_ctx
+                (IdTraitDecl trait_decl.def_id));
+          None
       in
       let translate_trait_methods (trait_decl : LlbcAst.trait_decl) =
         let methods =
           TraitDeclId.Map.find trait_decl.def_id
             trans_ctx.trait_methods_to_extract
         in
-        List.map
+        List.filter_map
           (fun (method_id, bound_method) ->
             translate_method_sig trait_decl method_id bound_method)
           (TraitMethodId.Map.to_list methods)
@@ -780,8 +803,12 @@ let export_types_group (fmt : Format.formatter) (config : gen_config)
   in
 
   if List.exists (fun b -> b) builtin then
-    (* Sanity check *)
-    assert (List.for_all (fun b -> b) builtin)
+    (* Sanity check: if one definition in the group is builtin, all must be.
+       Use [%sanity_check] rather than [assert] so a violation is a contained
+       [CFailure] (skipping the group) instead of an uncaught [Assert_failure]
+       that aborts the whole crate. *)
+    [%sanity_check] (List.hd defs).item_meta.span
+      (List.for_all (fun b -> b) builtin)
   else if
     List.exists
       (fun (d : Pure.type_decl) ->
@@ -791,7 +818,8 @@ let export_types_group (fmt : Format.formatter) (config : gen_config)
   else if List.exists dont_extract defs then
     (* Check if we have to ignore declarations *)
     (* Sanity check *)
-    assert (List.for_all dont_extract defs)
+    [%sanity_check] (List.hd defs).item_meta.span
+      (List.for_all dont_extract defs)
   else (
     (* Extract the type declarations. *)
 
@@ -991,8 +1019,12 @@ let export_functions_group (fmt : Format.formatter) (config : gen_config)
   in
 
   if List.exists (fun b -> b) builtin then
-    (* Sanity check *)
-    assert (List.for_all (fun b -> b) builtin)
+    (* Sanity check: if one definition in the group is builtin, all must be.
+       Use [%sanity_check] rather than [assert] so a violation is a contained
+       [CFailure] (skipping the group) instead of an uncaught [Assert_failure]
+       that aborts the whole crate. *)
+    [%sanity_check] (List.hd pure_ls).f.item_meta.span
+      (List.for_all (fun b -> b) builtin)
   else if
     List.exists
       (fun (trans : pure_fun_translation) ->
@@ -1099,8 +1131,13 @@ let trait_impl_is_builtin (ctx : gen_ctx) (id : Pure.trait_impl_id) : bool =
       (TraitImplId.Map.find_opt id ctx.trans_trait_impls)
   in
   let trait_decl =
-    Pure.TraitDeclId.Map.find trait_impl.impl_trait.trait_decl_id
-      ctx.trans_trait_decls
+    (* Use [find_opt]: the parent trait declaration may be absent if it failed
+       to translate (e.g. because of an unsupported feature). Raising a
+       [CFailure] rather than an uncaught [Not_found] lets the enclosing
+       [export_decl_group] skip this impl instead of aborting extraction. *)
+    [%silent_unwrap_opt_span] None
+      (Pure.TraitDeclId.Map.find_opt trait_impl.impl_trait.trait_decl_id
+         ctx.trans_trait_decls)
   in
   let builtin_info =
     let open ExtractBuiltin in

@@ -179,7 +179,8 @@ let rec translate_sty (span : Meta.span option) (ty : T.ty) : ty =
       let trait_ref = translate_strait_ref span trait_ref in
       [%cassert_opt_span] span
         (generics = TypesUtils.empty_generic_args)
-        "Unimplemented";
+        "Unimplemented: generic associated types (associated types that take \
+         their own generic parameters) are not supported";
       TTraitType (trait_ref, type_name)
   | TFnDef _ | TFnPtr _ ->
       [%craise_opt_span] span "Arrow types are not supported yet"
@@ -410,14 +411,20 @@ let rec translate_fwd_ty (span : Meta.span option) (decls_ctx : C.decls_ctx)
   | TTraitType (trait_ref, type_name, generics) ->
       [%cassert_opt_span] span
         (generics = TypesUtils.empty_generic_args)
-        "Unimplemented";
+        "Unimplemented: generic associated types (associated types that take \
+         their own generic parameters) are not supported";
       let trait_ref = translate_fwd_trait_ref span decls_ctx trait_ref in
       TTraitType (trait_ref, type_name)
   | TFnDef { binder_regions; binder_value = { kind; generics } } -> (
-      [%cassert_opt_span] span (binder_regions = []) "Unimplemented";
+      [%cassert_opt_span] span (binder_regions = [])
+        "Unimplemented: function-definition types (`fn` items) with bound \
+         (higher-ranked) regions are not supported";
       let generics = translate_fwd_generic_args span decls_ctx generics in
       match kind with
-      | T.FunId (FBuiltin _) -> [%craise_opt_span] span "Unimplemented"
+      | T.FunId (FBuiltin _) ->
+          [%craise_opt_span] span
+            "Unimplemented: function-definition types (`fn` items) referring \
+             to a builtin function are not supported"
       | T.FunId (FRegular fid) ->
           let fdecl =
             [%unwrap_opt_span] span
@@ -429,16 +436,22 @@ let rec translate_fwd_ty (span : Meta.span option) (decls_ctx : C.decls_ctx)
           (* Check that the function lives in the expected effect - otherwise we
                  have to lift it *)
           [%cassert_opt_span] span sg.fwd_info.effect_info.can_fail
-            "Unimplemented";
+            "Unimplemented: function-definition types (`fn` items) for \
+             non-failing functions are not supported (they would need to be \
+             lifted into the error monad)";
           [%cassert_opt_span] span
             (RegionGroupId.Map.for_all
                (fun _ (e : fun_effect_info) -> not e.can_fail)
                sg.back_effect_info)
-            "Unimplemented";
+            "Unimplemented: function-definition types (`fn` items) whose \
+             backward functions can fail are not supported";
           (* Substitute *)
           let subst = make_subst_from_generics sg.generics generics in
           ty_substitute subst sigs.ty
-      | T.TraitMethod _ -> [%craise_opt_span] span "Unimplemented")
+      | T.TraitMethod _ ->
+          [%craise_opt_span] span
+            "Unimplemented: function-definition types (`fn` items) referring \
+             to a trait method are not supported")
   | TFnPtr _ -> [%craise_opt_span] span "Arrow types are not supported yet"
   | TDynTrait { binder } ->
       let params, _predicates =
@@ -489,7 +502,8 @@ and compute_back_ty_num_levels (span : Meta.span option)
                nested mutable borrows inside of ADTs. *)
             [%cassert_opt_span] span
               (not info.contains_nested_mut)
-              "Unimplemented";
+              "Unimplemented: nested mutable borrows inside ADTs (e.g. a \
+               struct or enum that contains a `&mut &mut _`) are not supported";
             (* Check if the region appears somewhere *)
             let outer_regions =
               if
@@ -554,7 +568,8 @@ and compute_back_ty_num_levels (span : Meta.span option)
           (TypesUtils.trait_ref_kind_is_local_clause_or_builtin trait_ref.kind);
         [%cassert_opt_span] span
           (generics = TypesUtils.empty_generic_args)
-          "Unimplemented";
+          "Unimplemented: generic associated types (associated types that take \
+           their own generic parameters) are not supported";
         save_count outer_regions
     | TFnDef _ | TFnPtr _ ->
         [%craise_opt_span] span "Arrow types are not supported yet"
@@ -591,7 +606,10 @@ and translate_back_ty_aux (span : Meta.span option) (decls_ctx : C.decls_ctx)
     (* TODO: we need to extend the type analysis to count the level
          of nesting inside of ADTs with regions. For now we forbid using
          nested mutable borrows inside of ADTs. *)
-    [%cassert_opt_span] span (not info.contains_nested_mut) "Unimplemented";
+    [%cassert_opt_span] span
+      (not info.contains_nested_mut)
+      "Unimplemented: nested mutable borrows inside ADTs (e.g. a struct or \
+       enum that contains a `&mut &mut _`) are not supported";
     (* Check if the region appears somewhere *)
     let outer_regions =
       if
@@ -689,7 +707,8 @@ and translate_back_ty_aux (span : Meta.span option) (decls_ctx : C.decls_ctx)
           (TypesUtils.trait_ref_kind_is_local_clause_or_builtin trait_ref.kind);
         [%cassert_opt_span] span
           (generics = TypesUtils.empty_generic_args)
-          "Unimplemented";
+          "Unimplemented: generic associated types (associated types that take \
+           their own generic parameters) are not supported";
         stop outer_regions ty
     | TFnDef _ | TFnPtr _ ->
         [%craise_opt_span] span "Arrow types are not supported yet"

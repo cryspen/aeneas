@@ -188,8 +188,11 @@ let env_lookup_var (span : Meta.span) (env : env) (vid : LocalId.id) :
   let rec lookup env =
     match env with
     | [] ->
-        raise
-          (Invalid_argument ("Variable not found: " ^ LocalId.to_string vid))
+        (* Raise a contained [CFailure] (via [%craise]) rather than a raw
+           [Invalid_argument], which would escape the per-function [CFailure]
+           containment and abort the whole crate. Mirrors the [EFrame] case
+           below. *)
+        [%craise] span ("Variable not found: " ^ LocalId.to_string vid)
     | EBinding (BVar var, v) :: env' ->
         if var.index = vid then (var, v) else lookup env'
     | (EBinding (BDummy _, _) | EAbs _) :: env' -> lookup env'

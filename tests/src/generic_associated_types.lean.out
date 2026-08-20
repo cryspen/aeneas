@@ -1,0 +1,5 @@
+[[92mInfo[39m ] Imported: /Users/karthik/aeneas-dev/tests/llbc/generic_associated_types.llbc
+[[91mError[39m] Unimplemented: generic associated types (associated types that take their own generic parameters) are not supported
+Source: 'tests/src/generic_associated_types.rs', lines 32:4-34:5
+Compiler source: symbolic/SymbolicToPureTypes.ml, line 412
+

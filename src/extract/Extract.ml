@@ -1164,7 +1164,15 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
       | FromLlbc (TraitMethod (trait_ref, method_name), lp_id) ->
           let trait_decl_id = trait_ref.trait_decl_ref.trait_decl_id in
           let trait_decl =
-            TraitDeclId.Map.find trait_decl_id ctx.trans_trait_decls
+            (* Use [find_opt]: the trait declaration may have been dropped if it
+               failed to translate (e.g. an unsupported feature). Raising a
+               contained [CFailure] rather than an uncaught [Not_found] lets the
+               enclosing [export_decl_group] skip this group instead of aborting
+               the whole extraction. (Note: the identical lookup a few lines
+               below, at the "explicit info" computation, is already protected by
+               a [try ... with CFailure] - this one was not.) *)
+            [%silent_unwrap] span
+              (TraitDeclId.Map.find_opt trait_decl_id ctx.trans_trait_decls)
           in
 
           [%sanity_check] trait_decl.item_meta.span (lp_id = None);
@@ -1329,7 +1337,13 @@ and extract_field_projector (span : Meta.span) (ctx : extraction_ctx)
       let num_fields =
         match proj.adt_id with
         | TAdtId id -> (
-            let d = TypeDeclId.Map.find id ctx.trans_types in
+            (* Use [find_opt]: the type declaration may have been dropped if it
+               failed to translate. Raising a contained [CFailure] rather than an
+               uncaught [Not_found] lets [export_decl_group] skip this group
+               instead of aborting the whole extraction. *)
+            let d =
+              [%silent_unwrap] span (TypeDeclId.Map.find_opt id ctx.trans_types)
+            in
             match d.kind with
             | Struct fields -> Some (List.length fields)
             | _ -> None)

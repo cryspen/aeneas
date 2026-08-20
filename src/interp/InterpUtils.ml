@@ -375,8 +375,16 @@ let symbolic_value_id_in_ctx (sv_id : SymbolicValueId.id) (ctx : eval_ctx) :
     the type (this is more general). *)
 let symbolic_value_has_ended_regions (ended_regions : RegionId.Set.t)
     (s : symbolic_value) : bool =
-  let regions = ty_regions s.sv_ty in
-  not (RegionId.Set.disjoint regions ended_regions)
+  (* [ended_regions] only ever contains *free* region ids, so a symbolic value
+     "has ended regions" iff its type mentions a free region belonging to that
+     set. We must therefore tolerate erased/body regions (via [~allow_erased]):
+     they can never be ended, and they legitimately appear here in normalized
+     projection types (e.g. a symbolic value of type [[<T as Trait>::Assoc]]).
+     Using the plain [ty_regions] would raise on such regions and abort the
+     translation of the whole crate. *)
+  ty_has_regions_in_pred
+    (fun r -> region_in_set ~allow_erased:true r ended_regions)
+    s.sv_ty
 
 let region_is_owned (abs : abs) (r : region) : bool =
   match r with

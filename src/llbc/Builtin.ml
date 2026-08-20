@@ -292,8 +292,13 @@ let get_builtin_fun_info (id : builtin_fun_id) : builtin_fun_info =
   match BuiltinFunIdMap.find_opt id builtin_fun_infos with
   | Some info -> info
   | None ->
-      raise
-        (Failure ("get_builtin_fun_info: not found: " ^ show_builtin_fun_id id))
+      (* Some builtins are not (yet) supported - e.g. indexing with a range
+         ([Index { is_range = true; _ }]). We raise a [CFailure] rather than a
+         raw [Failure] so that, unless [-abort-on-error] is set, the failure is
+         contained at item granularity (the enclosing function/method is skipped
+         with a warning) instead of aborting the translation of the whole crate. *)
+      [%craise_opt_span] None
+        ("Unsupported builtin function: " ^ show_builtin_fun_id id)
 
 let get_builtin_fun_sig (id : builtin_fun_id) : bound_fun_sig =
   (get_builtin_fun_info id).fun_sig
