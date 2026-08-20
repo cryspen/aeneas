@@ -32,6 +32,7 @@
    aeneas.ppx))
  (libraries
   charon
+  easy_logging
   core_unix
   ocamlgraph
   str
@@ -85,6 +86,7 @@
   InterpStatements
   InterpUtils
   Invariants
+  LeanKeywords
   LlbcAst
   LlbcAstUtils
   LlbcOfJson
