@@ -878,6 +878,19 @@ let extract_type_decl_register_names (ctx : extraction_ctx) (def : type_decl) :
                     in
                     (variant_id, name))
                   variants
+            | Some { body_info = None; extract_name; _ } ->
+                (* External, but its body is not described: name the variants
+                   as the crate which extracted the type did. *)
+                VariantId.mapi
+                  (fun variant_id (variant : variant) ->
+                    let name = ctx_compute_variant_name ctx def variant in
+                    (* Add the type name prefix for Lean *)
+                    let name =
+                      if Config.backend () = Lean then extract_name ^ "." ^ name
+                      else name
+                    in
+                    (variant_id, name))
+                  variants
             | Some { body_info = Some (Enum variant_infos); _ } ->
                 (* We need to compute the map from variant to variant *)
                 let variant_map =

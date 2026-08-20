@@ -2888,37 +2888,39 @@ let extract_global_decl (ctx : extraction_ctx) (fmt : F.formatter)
   | Some global -> extract_global_decl_aux ctx fmt global body interface
   | None -> ()
 
+(** The name a trait declaration is known by *)
+let external_trait_decl_name (ctx : extraction_ctx) (trait_decl : trait_decl)
+    (external_info : Pure.external_trait_decl_info option) : string =
+  match external_info with
+  | Some info -> info.extract_name
+  | None -> ctx_compute_trait_decl_name ctx trait_decl
+
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_register_parent_clause_names (ctx : extraction_ctx)
     (trait_decl : trait_decl)
     (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
-  (* Compute the clause names *)
-  let clause_names =
+  (* The external information supplies names, not shapes: we compute the ones it
+     leaves out, and match the clauses by position. *)
+  let given =
     match external_info with
-    | None ->
-        List.map
-          (fun (c : trait_param) ->
-            let name = ctx_compute_trait_parent_clause_name ctx trait_decl c in
-            (* Add a prefix if necessary *)
-            let name =
-              if !record_fields_short_names then name
-              else ctx_compute_trait_decl_name ctx trait_decl ^ name
-            in
-            (c.clause_id, name))
-          trait_decl.parent_clauses
-    | Some info ->
-        [%cassert] trait_decl.item_meta.span
-          (List.length trait_decl.parent_clauses
-          = List.length info.parent_clauses)
-          ("Invalid builtin information for trait decl: "
-          ^ name_to_string ctx trait_decl.item_meta.name
-          ^ "; expected "
-          ^ string_of_int (List.length trait_decl.parent_clauses)
-          ^ " parent clauses, found "
-          ^ string_of_int (List.length info.parent_clauses));
-        List.map
-          (fun (c, name) -> (c.clause_id, name))
-          (List.combine trait_decl.parent_clauses info.parent_clauses)
+    | None -> []
+    | Some info -> info.parent_clauses
+  in
+  let decl_name = external_trait_decl_name ctx trait_decl external_info in
+  let clause_names =
+    List.mapi
+      (fun i (c : trait_param) ->
+        let name =
+          match List.nth_opt given i with
+          | Some name -> name
+          | None ->
+              let name =
+                ctx_compute_trait_parent_clause_name ctx trait_decl c
+              in
+              if !record_fields_short_names then name else decl_name ^ name
+        in
+        (c.clause_id, name))
+      trait_decl.parent_clauses
   in
   (* Register the names *)
   List.fold_left
@@ -2935,24 +2937,25 @@ let extract_trait_decl_register_constant_names (ctx : extraction_ctx)
   let consts = trait_decl.consts in
   (* Compute the names *)
   let constant_names =
-    match external_info with
-    | None ->
-        List.map
-          (fun (const_id, item_name, _) ->
-            let name = ctx_compute_trait_const_name ctx trait_decl item_name in
-            (* Add a prefix if necessary *)
-            let name =
-              if !record_fields_short_names then name
-              else ctx_compute_trait_decl_name ctx trait_decl ^ name
-            in
-            (const_id, name))
-          consts
-    | Some info ->
-        let const_map = StringMap.of_list info.consts in
-        List.map
-          (fun (const_id, item_name, _) ->
-            (const_id, StringMap.find item_name const_map))
-          consts
+    let given =
+      match external_info with
+      | None -> StringMap.empty
+      | Some info -> StringMap.of_list info.consts
+    in
+    let decl_name = external_trait_decl_name ctx trait_decl external_info in
+    List.map
+      (fun (const_id, item_name, _) ->
+        let name =
+          match StringMap.find_opt item_name given with
+          | Some name -> name
+          | None ->
+              let name =
+                ctx_compute_trait_const_name ctx trait_decl item_name
+              in
+              if !record_fields_short_names then name else decl_name ^ name
+        in
+        (const_id, name))
+      consts
   in
   (* Register the names *)
   List.fold_left
@@ -2969,35 +2972,26 @@ let extract_trait_decl_type_names (ctx : extraction_ctx)
   let types = trait_decl.types in
   (* Compute the names *)
   let type_names =
-    match external_info with
-    | None ->
-        let compute_type_name (item_name : string) : string =
-          let type_name =
-            ctx_compute_trait_type_name ctx trait_decl item_name
-          in
-          if !record_fields_short_names then type_name
-          else ctx_compute_trait_decl_name ctx trait_decl ^ type_name
+    let given =
+      match external_info with
+      | None -> StringMap.empty
+      | Some info -> StringMap.of_list info.types
+    in
+    let decl_name = external_trait_decl_name ctx trait_decl external_info in
+    List.map
+      (fun (type_id, item_name) ->
+        let type_name =
+          match StringMap.find_opt item_name given with
+          | Some type_name -> type_name
+          | None ->
+              let type_name =
+                ctx_compute_trait_type_name ctx trait_decl item_name
+              in
+              if !record_fields_short_names then type_name
+              else decl_name ^ type_name
         in
-        List.map
-          (fun (type_id, item_name) ->
-            (* Type name *)
-            let type_name = compute_type_name item_name in
-            (type_id, type_name))
-          types
-    | Some info ->
-        let type_map = StringMap.of_list info.types in
-        List.map
-          (fun (type_id, item_name) ->
-            match StringMap.find_opt item_name type_map with
-            | Some type_name -> (type_id, type_name)
-            | None ->
-                [%craise] trait_decl.item_meta.span
-                  ("Unexpected error: could not find the information for the \
-                    trait associated type '" ^ item_name
-                 ^ "' for trait declaration '"
-                  ^ name_to_string ctx trait_decl.item_meta.name
-                  ^ "'"))
-          types
+        (type_id, type_name))
+      types
   in
   (* Register the names *)
   List.fold_left
@@ -3033,46 +3027,32 @@ let extract_trait_decl_method_names (ctx : extraction_ctx)
     (* Add a prefix if necessary *)
     let name =
       if !record_fields_short_names then name
-      else ctx_compute_trait_decl_name ctx trait_decl ^ "_" ^ name
+      else external_trait_decl_name ctx trait_decl external_info ^ "_" ^ name
     in
     (None, name)
   in
   (* Compute the names *)
   let method_names =
-    match external_info with
-    | None ->
-        (* Not an external function *)
-        List.map
-          (fun meth ->
-            let default_id, fun_name = compute_item_name meth in
+    let given =
+      match external_info with
+      | None -> StringMap.empty
+      | Some info -> StringMap.of_list info.methods
+    in
+    List.map
+      (fun meth ->
+        (* Having a default comes from the LLBC either way. *)
+        let default_id =
+          Option.map
+            (fun (default : fun_decl_ref) -> default.fun_id)
+            meth.default.binder_value
+        in
+        match StringMap.find_opt meth.item_name given with
+        | Some (info : Pure.external_fun_info) ->
+            (meth.method_id, default_id, info.extract_name)
+        | None ->
+            let _, fun_name = compute_item_name meth in
             (meth.method_id, default_id, fun_name))
-          methods
-    | Some info ->
-        (* This is an external function *)
-        let funs_map = StringMap.of_list info.methods in
-        List.map
-          (fun meth ->
-            match StringMap.find_opt meth.item_name funs_map with
-            | None ->
-                [%warn] trait_decl.item_meta.span
-                  ("When retrieving the builtin information for trait decl '"
-                 ^ trait_decl.name
-                 ^ "', could not find the information for item '"
-                 ^ meth.item_name ^ "'. The model defined in the "
-                 ^ Config.backend_name ()
-                 ^ " library seems to be missing the corresponding field.");
-                (* Use the LLBC definition to compute the name *)
-                let default_id, fun_name = compute_item_name meth in
-                (meth.method_id, default_id, fun_name)
-            | Some info ->
-                let fun_name = info.extract_name in
-                let default_id =
-                  Option.map
-                    (fun (default : fun_decl_ref) -> default.fun_id)
-                    meth.default.binder_value
-                in
-                (meth.method_id, default_id, fun_name))
-          methods
+      methods
   in
   (* Register the names *)
   List.fold_left
