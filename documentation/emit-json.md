@@ -53,7 +53,7 @@ The manifest describes **what Aeneas did**: the Lean declarations it produced an
 
 ### Type and global entries
 
-Type and global entries carry `def_id`, `lean_name`, `extract_name`, `lean_file`, `rust_name`, `rust_pattern`, `is_local`, and `source`; global entries additionally carry `can_fail`. Note that `def_id` is `TypeDeclId` or `GlobalDeclId` respectively. 
+Type and global entries carry `def_id`, `lean_name`, `extract_name`, `lean_file`, `rust_name`, `rust_pattern`, `is_local`, and `source`; global entries additionally carry `can_fail`. Note that `def_id` is `TypeDeclId` or `GlobalDeclId` respectively.
 
 ### Trait entries
 
@@ -78,9 +78,8 @@ is needed. `tests/src/roundtrip-lib` and `tests/src/roundtrip-user` are a worked
 
 **`extract_name`** repeats `lean_name` under the name a backend-agnostic reader asks
 for; `lean_name` says which backend produced it. **`rust_pattern`** is the pattern the
-entry
-is registered under, which is *not* always the pattern form of `rust_name`: the latter is
-human-readable and stops being pattern syntax once an impl block is involved
+entry is registered under, which is *not* always the pattern form of `rust_name`: the
+latter is human-readable and stops being pattern syntax once an impl block is involved
 (`m::{impl m::Trait for bool}::f` against `m::{m::Trait<bool>}::f`), and on `trait_impls`
 the two describe different things, since an implementation is looked up under the trait it
 implements applied to its arguments (`m::Trait<m::Ty>`) rather than under its own path.
