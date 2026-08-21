@@ -177,27 +177,33 @@ let update_array_default (crate : crate) : crate =
      doesn't require that the type of the elements also has a default
      implementation. *)
   let matches_default_array (impl : trait_impl) : constant_expr option =
-    let trait_decl =
-      [%silent_unwrap_opt_span] (Some impl.item_meta.span)
-        (TraitDeclId.Map.find_opt impl.impl_trait.id crate.trait_decls)
-    in
-    if not (match_name impl_pat trait_decl.item_meta.name) then None
-    else
-      match impl.impl_trait.generics with
-      | {
-       regions = [];
-       types =
-         [
-           TArray
-             ( TVar (Free _),
-               ({ kind = CLiteral (VScalar (UnsignedScalar (Usize, nv))); _ } as
-                n) );
-         ];
-       const_generics = [];
-       trait_refs = _;
-      }
-        when Z.to_int nv != 0 -> Some n
-      | _ -> None
+    (* Look up the trait declaration. If it is absent (e.g. it was dropped or
+       [--exclude]d, leaving a dangling [impl_trait.id]), the impl simply cannot
+       match the [Default<[T; N]>] pattern, so we return [None] rather than
+       raising - this pre-pass runs before item-level containment, so a raw
+       failure here would abort the whole crate. *)
+    match TraitDeclId.Map.find_opt impl.impl_trait.id crate.trait_decls with
+    | None -> None
+    | Some trait_decl -> (
+        if not (match_name impl_pat trait_decl.item_meta.name) then None
+        else
+          match impl.impl_trait.generics with
+          | {
+           regions = [];
+           types =
+             [
+               TArray
+                 ( TVar (Free _),
+                   ({
+                      kind = CLiteral (VScalar (UnsignedScalar (Usize, nv)));
+                      _;
+                    } as n) );
+             ];
+           const_generics = [];
+           trait_refs = _;
+          }
+            when Z.to_int nv != 0 -> Some n
+          | _ -> None)
   in
 
   (* First pass: collect all the trait impls matching [Default<[T; N]>] and
