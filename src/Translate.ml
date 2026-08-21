@@ -284,6 +284,41 @@ let translate_function_to_pure_aux (trans_ctx : trans_ctx)
   (* *)
   f
 
+(** Run [f] under the per-function wall-clock timeout
+    ({!Config.symbolic_exec_max_seconds}). If [f] exceeds it, we raise a
+    contained [CFailure] via [span] so the enclosing per-function handler skips
+    that one function, rather than letting a diverging symbolic execution hang
+    the whole crate. A step budget cannot catch this: divergence occurs inside
+    the pure loop-fixed-point join / context machinery, with no per-step
+    chokepoint. Uses an [ITIMER_REAL] one-shot alarm; the handler raises at the
+    next safe point. Relies on running on the main domain — enabling the timeout
+    forces sequential translation (see {!Main} / {!Config.parallel}). *)
+let with_symbolic_exec_timeout (span : Meta.span) (f : unit -> 'a) : 'a =
+  let seconds = !Config.symbolic_exec_max_seconds in
+  if seconds <= 0 then f ()
+  else
+    let disarm_timer () =
+      ignore
+        (Unix.setitimer Unix.ITIMER_REAL
+           { Unix.it_interval = 0.; it_value = 0. })
+    in
+    let old_handler =
+      Sys.signal Sys.sigalrm
+        (Sys.Signal_handle
+           (fun _ ->
+             disarm_timer ();
+             [%craise] span
+               "symbolic-execution timed out (possible divergence)"))
+    in
+    let finally () =
+      disarm_timer ();
+      Sys.set_signal Sys.sigalrm old_handler
+    in
+    ignore
+      (Unix.setitimer Unix.ITIMER_REAL
+         { Unix.it_interval = 0.; it_value = float_of_int seconds });
+    Fun.protect ~finally f
+
 let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     (pure_type_decls : Pure.type_decl Pure.TypeDeclId.Map.t)
     (pure_global_decls : Pure.global_decl Pure.GlobalDeclId.Map.t)
@@ -291,8 +326,9 @@ let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     (fdef : fun_decl) : pure_fun_translation_no_loops option =
   try
     Some
-      (translate_function_to_pure_aux trans_ctx marked_ids pure_type_decls
-         pure_global_decls fun_sigs fdef)
+      (with_symbolic_exec_timeout fdef.item_meta.span (fun () ->
+           translate_function_to_pure_aux trans_ctx marked_ids pure_type_decls
+             pure_global_decls fun_sigs fdef))
   with CFailure error ->
     let name = name_to_string trans_ctx fdef.item_meta.name in
     let name_pattern =

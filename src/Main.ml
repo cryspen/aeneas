@@ -116,6 +116,11 @@ let () =
       ( "-use-fuel",
         Arg.Set use_fuel,
         " Use a fuel parameter to control divergence" );
+      ( "-symbolic-exec-timeout",
+        Arg.Set_int symbolic_exec_max_seconds,
+        " Per-function wall-clock timeout (seconds) for symbolic execution: a \
+         function exceeding it fails with a contained error rather than \
+         diverging. Forces sequential translation. (0 = disabled)" );
       ( "-no-template-clauses",
         Arg.Clear extract_template_decreases_clauses,
         " Do not generate templates for the required decreases \
@@ -505,6 +510,14 @@ let () =
   check_arg_not
     !loops_to_recursive_functions
     "-loops-to-rec" !no_recursive_loops "-loops-no-rec";
+
+  (* The per-function timeout relies on the signal handler interrupting the
+     diverging function on the main domain, so it requires sequential
+     translation. *)
+  if !symbolic_exec_max_seconds > 0 && !parallel then (
+    log#lwarning
+      (lazy "-symbolic-exec-timeout forces sequential translation (disabling -parallel)");
+    parallel := false);
 
   (* Check that the user specified a backend *)
   let _ =

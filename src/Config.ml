@@ -234,6 +234,21 @@ let return_unit_end_abs_with_no_loans = true
 *)
 let loop_fixed_point_max_num_iters = 2
 
+(** Per-function wall-clock timeout (in seconds) for the symbolic execution and
+    translation to pure. When a function exceeds it we raise a contained
+    [CFailure], on the assumption that its symbolic execution is diverging (e.g.
+    a loop fixed point that never stabilizes), so the enclosing per-function
+    handler skips that one function rather than letting the whole crate hang.
+    [0] disables the mechanism (the default).
+
+    A step budget is insufficient here: divergence occurs inside the pure
+    loop-fixed-point join / context machinery, which does not go back through the
+    statement evaluator, so there is no per-step chokepoint to bound. A timer
+    catches divergence wherever it hides. It relies on the diverging function
+    running on the main domain, hence forces sequential translation (see
+    {!parallel}). Set via [-symbolic-exec-timeout]. *)
+let symbolic_exec_max_seconds = ref 0
+
 (** {1 Translation} *)
 
 (** Forbids using field projectors for structures.
