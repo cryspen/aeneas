@@ -3646,8 +3646,14 @@ let extract_trait_impl_method_items_aux (ctx : extraction_ctx)
   let trans =
     [%unwrap_with_span] span
       (ctx_lookup_fun_decl_info ctx method_decl_id)
-      "Could not lookup the translated function, probably because of an error \
-       which happened before"
+      (* Name the culprit item so this cascade error is routable: the method's
+         translated function is missing, most likely because its body failed to
+         translate earlier (the root error is attributed to that function). *)
+      ("Could not lookup the translated function (fun decl id: "
+      ^ A.FunDeclId.to_string method_decl_id
+      ^ ") for a method of trait implementation '"
+      ^ name_to_string ctx impl.item_meta.name
+      ^ "', probably because of an error which happened before")
   in
   (* Extract the items *)
   let fun_name = ctx_get_trait_method span trait_decl_id method_id ctx in

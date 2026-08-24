@@ -191,12 +191,47 @@ let generic_args_of_params_erase_regions (span : Meta.span option)
   in
   { generics with regions; trait_refs }
 
+(* A best-effort, crate-free rendering of a type's name, for diagnostics raised
+   from places that don't have the crate in scope. Keeps the identifier path
+   elements and drops the [impl] blocks. *)
+let type_decl_name_hint (def : type_decl) : string =
+  match
+    List.filter_map
+      (function
+        | PeIdent (s, _) -> Some s
+        | _ -> None)
+      def.item_meta.name
+  with
+  | [] -> "<unknown>"
+  | elems -> String.concat "::" elems
+
+(* Run a field-types computation, containing the raw exceptions that Charon's
+   field getters raise when the ADT has no fields to project into - e.g. because
+   its [type_decl] was made opaque (fields erased, say by [--opaque]) or dropped
+   by a previous error. Rather than letting the raw [Invalid_argument]/[Failure]
+   abort the whole crate with an uncaught exception, we route them through
+   [%craise], which names the offending ADT: a contained [CFailure] (skipping
+   the projecting item) in the default mode, or a clean hard error under
+   [-abort-on-error]. [subst] is a pure Charon call, so catching [Failure] here
+   cannot mask an Aeneas [craise]. *)
+let get_instantiated_fields_guarded (span : Meta.span) (def : type_decl)
+    (subst : unit -> 'a) : 'a =
+  try subst ()
+  with Failure _ | Invalid_argument _ ->
+    [%craise] span
+      ("Could not retrieve the field types of type '" ^ type_decl_name_hint def
+     ^ "': its definition has no fields to project into (it was likely made \
+        opaque - e.g. by --opaque - or dropped by a previous error)")
+
 let type_decl_get_instantiated_variants_fields_types (span : Meta.span)
     (def : type_decl) (generics : generic_args) :
     (VariantId.id option * ty list) list =
-  let subst () =
-    Charon.Substitute.type_decl_get_instantiated_variants_fields_types def
-      generics
-  in
-  if !Config.fail_hard then subst ()
-  else try subst () with Failure _ -> [%craise] span "Unexpected error"
+  get_instantiated_fields_guarded span def (fun () ->
+      Charon.Substitute.type_decl_get_instantiated_variants_fields_types def
+        generics)
+
+let type_decl_get_instantiated_field_types (span : Meta.span) (def : type_decl)
+    (opt_variant_id : VariantId.id option) (generics : generic_args) : ty list =
+  get_instantiated_fields_guarded span def (fun () ->
+      Charon.Substitute.type_decl_get_instantiated_field_types def
+        opt_variant_id generics)

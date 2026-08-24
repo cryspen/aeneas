@@ -579,8 +579,8 @@ let check_typing_invariant_visitor span ctx (lookups : bool) =
           | _ -> [%craise] span "Erroneous typing");
           (* Check that the field types are correct *)
           let field_types =
-            Substitute.type_decl_get_instantiated_field_types def av.variant_id
-              generics
+            Substitute.type_decl_get_instantiated_field_types span def
+              av.variant_id generics
           in
           let fields_with_types = List.combine av.fields field_types in
           List.iter

@@ -307,8 +307,7 @@ let with_symbolic_exec_timeout (span : Meta.span) (f : unit -> 'a) : 'a =
         (Sys.Signal_handle
            (fun _ ->
              disarm_timer ();
-             [%craise] span
-               "symbolic-execution timed out (possible divergence)"))
+             [%craise] span "symbolic-execution timed out (possible divergence)"))
     in
     let finally () =
       disarm_timer ();
@@ -1694,21 +1693,39 @@ let extract_translated_crate (filename : string) (dest_dir : string)
 
      For this reason, we need to generate names for the types *before* generating
      names for the functions (which include the method definitions). *)
+  (* When registering extraction names for an item fails, we skip that item
+     (emitting a warning) instead of aborting the whole crate. Besides the
+     contained [CFailure], we also tolerate the raw exceptions that can escape
+     name computation - e.g. [Not_found] from the Charon name-matcher resolving
+     a type pattern whose referent was dropped by a previous error, or
+     [Invalid_argument] from a projection into an opacified type - but only when
+     [-abort-on-error] is not set. *)
+  let register_names_recoverable (exn : exn) : bool =
+    match exn with
+    | CFailure _ -> true
+    | Not_found | Invalid_argument _ | Failure _ -> not !Config.fail_hard
+    | _ -> false
+  in
   let ctx =
     List.fold_left
       (fun ctx def ->
         try Extract.extract_type_decl_register_names ctx def
-        with CFailure error ->
-          (* An exception was raised: ignore it *)
+        with exn when register_names_recoverable exn ->
+          (* An exception was raised: skip this item *)
+          let error_span =
+            match exn with
+            | CFailure error -> error.span
+            | _ -> Some def.item_meta.span
+          in
           let name = name_to_string trans_ctx def.item_meta.name in
           let name_pattern =
             try
               name_to_pattern_string (Some def.item_meta.span) trans_ctx
                 def.item_meta.name
-            with CFailure _ ->
+            with _ ->
               "(could not compute the name pattern due to a different error)"
           in
-          [%warn_opt_span] error.span
+          [%warn_opt_span] error_span
             ("Could not generate names for the type declaration '" ^ name
            ^ " because of previous error\nName pattern: '" ^ name_pattern ^ "'"
            ^ "\nDefinition span: "
@@ -1737,17 +1754,22 @@ let extract_translated_crate (filename : string) (dest_dir : string)
              [extract_global_decl_register_names] - but still registers the
              loops/bodies, which are ordinary auxiliary functions. *)
           Extract.extract_fun_decl_register_names ctx gen_decr_clause trans
-        with CFailure error ->
-          (* An exception was raised: ignore it *)
+        with exn when register_names_recoverable exn ->
+          (* An exception was raised: skip this item *)
+          let error_span =
+            match exn with
+            | CFailure error -> error.span
+            | _ -> Some trans.f.item_meta.span
+          in
           let name = name_to_string trans_ctx trans.f.item_meta.name in
           let name_pattern =
             try
               name_to_pattern_string (Some trans.f.item_meta.span) trans_ctx
                 trans.f.item_meta.name
-            with CFailure _ ->
+            with _ ->
               "(could not compute the name pattern due to a different error)"
           in
-          [%warn_opt_span] error.span
+          [%warn_opt_span] error_span
             ("Could not generate names for the function declaration '" ^ name
            ^ " because of previous error\nName pattern: '" ^ name_pattern ^ "'"
            ^ "\nDefinition span: "
@@ -1763,17 +1785,22 @@ let extract_translated_crate (filename : string) (dest_dir : string)
     List.fold_left
       (fun ctx def ->
         try Extract.extract_global_decl_register_names ctx def
-        with CFailure error ->
-          (* An exception was raised: ignore it *)
+        with exn when register_names_recoverable exn ->
+          (* An exception was raised: skip this item *)
+          let error_span =
+            match exn with
+            | CFailure error -> error.span
+            | _ -> Some def.item_meta.span
+          in
           let name = name_to_string trans_ctx def.item_meta.name in
           let name_pattern =
             try
               name_to_pattern_string (Some def.item_meta.span) trans_ctx
                 def.item_meta.name
-            with CFailure _ ->
+            with _ ->
               "(could not compute the name pattern due to a different error)"
           in
-          [%warn_opt_span] error.span
+          [%warn_opt_span] error_span
             ("Could not generate names for the global declaration '" ^ name
            ^ " because of previous error\nName pattern: '" ^ name_pattern ^ "'"
            ^ "\nDefinition span: "
@@ -1787,17 +1814,22 @@ let extract_translated_crate (filename : string) (dest_dir : string)
     List.fold_left
       (fun ctx def ->
         try Extract.extract_trait_decl_register_names ctx def
-        with CFailure error ->
-          (* An exception was raised: ignore it *)
+        with exn when register_names_recoverable exn ->
+          (* An exception was raised: skip this item *)
+          let error_span =
+            match exn with
+            | CFailure error -> error.span
+            | _ -> Some def.item_meta.span
+          in
           let name = name_to_string trans_ctx def.item_meta.name in
           let name_pattern =
             try
               name_to_pattern_string (Some def.item_meta.span) trans_ctx
                 def.item_meta.name
-            with CFailure _ ->
+            with _ ->
               "(could not compute the name pattern due to a different error)"
           in
-          [%warn_opt_span] error.span
+          [%warn_opt_span] error_span
             ("Could not generate names for the trait declaration '" ^ name
            ^ " because of previous error\nName pattern: '" ^ name_pattern ^ "'"
            ^ "\nDefinition span: "
@@ -1812,17 +1844,22 @@ let extract_translated_crate (filename : string) (dest_dir : string)
     List.fold_left
       (fun ctx def ->
         try Extract.extract_trait_impl_register_names ctx def
-        with CFailure error ->
-          (* An exception was raised: ignore it *)
+        with exn when register_names_recoverable exn ->
+          (* An exception was raised: skip this item *)
+          let error_span =
+            match exn with
+            | CFailure error -> error.span
+            | _ -> Some def.item_meta.span
+          in
           let name = name_to_string trans_ctx def.item_meta.name in
           let name_pattern =
             try
               name_to_pattern_string (Some def.item_meta.span) trans_ctx
                 def.item_meta.name
-            with CFailure _ ->
+            with _ ->
               "(could not compute the name pattern due to a different error)"
           in
-          [%warn_opt_span] error.span
+          [%warn_opt_span] error_span
             ("Could not generate names for the trait implementation '" ^ name
            ^ " because of previous error\nName pattern: '" ^ name_pattern ^ "'"
            ^ "\nDefinition span: "

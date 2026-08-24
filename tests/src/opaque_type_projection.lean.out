@@ -1,0 +1,5 @@
+[[92mInfo[39m ] Imported: tests/llbc/opaque_type_projection.llbc
+[[91mError[39m] Could not retrieve the field types of type 'opaque_type_projection::Foo': its definition has no fields to project into (it was likely made opaque - e.g. by --opaque - or dropped by a previous error)
+Source: 'tests/src/opaque_type_projection.rs', lines 24:4-24:22
+Compiler source: llbc/Substitute.ml, line 221
+

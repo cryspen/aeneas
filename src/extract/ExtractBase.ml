@@ -687,6 +687,12 @@ let id_to_string (span : Meta.span option) (id : id) (ctx : extraction_ctx) :
     let trait_name = trait_decl_id_to_string ctx id in
     "trait_decl: " ^ trait_name ^ " (id: " ^ A.TraitDeclId.to_string id ^ ")"
   in
+  let trait_impl_id_to_string (id : A.TraitImplId.id) : string =
+    let impl_name =
+      PrintPure.trait_impl_id_to_string (extraction_ctx_to_fmt_env ctx) id
+    in
+    "trait_impl: " ^ impl_name ^ " (id: " ^ A.TraitImplId.to_string id ^ ")"
+  in
   match id with
   | GlobalId gid -> global_decl_id_to_string ctx gid
   | GlobalPureValueId gid ->
@@ -724,8 +730,8 @@ let id_to_string (span : Meta.span option) (id : id) (ctx : extraction_ctx) :
       "type name: " ^ type_name ^ ", field name: " ^ field_name
   | KeywordId -> "keyword"
   | FVarId id -> "var_id: " ^ FVarId.to_string id
-  | TraitDeclId id -> "trait_decl_id: " ^ TraitDeclId.to_string id
-  | TraitImplId id -> "trait_impl_id: " ^ TraitImplId.to_string id
+  | TraitDeclId id -> trait_decl_id_to_string id
+  | TraitImplId id -> trait_impl_id_to_string id
   | TypeVarId (origin, id) ->
       "type_var_id: " ^ TypeVarId.to_string id ^ " from "
       ^ show_generic_origin origin
@@ -1741,125 +1747,145 @@ let ctx_compute_trait_impl_name_raw (ctx : extraction_ctx)
      where the instance has been defined (it is indepedent of the file, etc.).
 
      Note that if the user provided a [rename] attribute, we simply use that.
+
+     Deriving the name resolves the implemented trait's generic arguments to
+     name patterns via the Charon name-matcher, which does a raw [Map.find] on
+     the type declarations: if one of those types was excluded (e.g. by
+     [--exclude]) or dropped by a previous error, that lookup raises a raw
+     [Not_found] (or [Invalid_argument]) that would otherwise abort the whole
+     crate. Route it through [%craise] so it is contained (skipping this impl's
+     name) in the default mode, or reported as a clean hard error under
+     [-abort-on-error], while naming the offending trait implementation.
   *)
-  match trait_impl.item_meta.attr_info.rename with
-  | None -> (
-      let params = trait_impl.generics in
-      let args = trait_impl.impl_trait.generics in
-      let name =
-        ctx_prepare_name trait_impl.item_meta ctx trait_decl.item_meta.name
-      in
-      (* Check if the impl is a blanket impl and add a suffix to avoid name
+  try
+    match trait_impl.item_meta.attr_info.rename with
+    | None -> (
+        let params = trait_impl.generics in
+        let args = trait_impl.impl_trait.generics in
+        let name =
+          ctx_prepare_name trait_impl.item_meta ctx trait_decl.item_meta.name
+        in
+        (* Check if the impl is a blanket impl and add a suffix to avoid name
              clashes if it is the case *)
-      let is_blanket =
-        match args.types with
-        | TVar _ :: _ -> true
-        | _ -> false
-      in
-      let add_blanket_suffix n = if is_blanket then n @ [ "Blanket" ] else n in
-      (* Check if the user provided a rename attribute: if it is the case we
+        let is_blanket =
+          match args.types with
+          | TVar _ :: _ -> true
+          | _ -> false
+        in
+        let add_blanket_suffix n =
+          if is_blanket then n @ [ "Blanket" ] else n
+        in
+        (* Check if the user provided a rename attribute: if it is the case we
              simply use it *)
-      match trait_impl.item_meta.attr_info.rename with
-      | Some rename ->
-          let name = rename_llbc_name rename name in
-          let name =
-            trait_name_with_generics_to_simple_name ctx.trans_ctx name params
-              args
-          in
-          let name = add_blanket_suffix name in
-          flatten_name name
-      | _ ->
-          (* No renaming.
+        match trait_impl.item_meta.attr_info.rename with
+        | Some rename ->
+            let name = rename_llbc_name rename name in
+            let name =
+              trait_name_with_generics_to_simple_name ctx.trans_ctx name params
+                args
+            in
+            let name = add_blanket_suffix name in
+            flatten_name name
+        | _ ->
+            (* No renaming.
 
              Check if it is a blanket impl, in which case we use the trait name. *)
-          if is_blanket then
-            let params = trait_impl.generics in
-            let args = trait_impl.impl_trait.generics in
-            let name =
-              ctx_prepare_name trait_impl.item_meta ctx
-                trait_decl.item_meta.name
-            in
-            let name =
-              opt_rename_llbc_name trait_impl.item_meta.attr_info name
-            in
-            trait_name_with_generics_to_simple_name ctx.trans_ctx name params
-              args
-            |> add_blanket_suffix |> flatten_name
-          else
-            (* Retrieve the self type *)
-            let self, args =
-              match args.types with
-              | self :: types -> (self, { args with types })
-              | _ ->
-                  (* A trait reference has at least one type parameter, for Self *)
-                  [%internal_error] span
-            in
-            [%ldebug
-              let fmt = Print.crate_to_fmt_env ctx.crate in
-              "- self type:\n"
-              ^ Print.ty_to_string fmt self
-              ^ "\n- args without self type:\n"
-              ^ Print.generic_args_to_string fmt args];
-            (* Generate the name for the self type *)
-            let nm_ctx = Charon.NameMatcher.ctx_from_crate ctx.crate in
-            let self_name =
-              match self with
-              | TAdt { id = TAdtId id; generics } -> (
-                  (* Lookup the ADT *)
-                  match TypeDeclId.Map.find_opt id ctx.crate.type_decls with
-                  | None ->
-                      [%save_error] span
-                        "Missing type declaration, probably because of an \
-                         error which happened before";
-                      "__UNKNOWN__" ^ TypeDeclId.to_string id
-                  | Some decl ->
-                      let name =
-                        opt_ctx_prepare_name decl.item_meta ctx
-                          decl.item_meta.name
-                      in
-                      name_with_generics_to_simple_name ctx.trans_ctx name
-                        params generics
-                      |> flatten_name)
-              | _ ->
-                  let name =
-                    NameMatcher.ty_to_pattern nm_ctx
-                      ExtractName.default_to_pat_config trait_impl.generics self
-                  in
-                  name_matcher_expr_to_simple_name (Some span) name
-            in
+            if is_blanket then
+              let params = trait_impl.generics in
+              let args = trait_impl.impl_trait.generics in
+              let name =
+                ctx_prepare_name trait_impl.item_meta ctx
+                  trait_decl.item_meta.name
+              in
+              let name =
+                opt_rename_llbc_name trait_impl.item_meta.attr_info name
+              in
+              trait_name_with_generics_to_simple_name ctx.trans_ctx name params
+                args
+              |> add_blanket_suffix |> flatten_name
+            else
+              (* Retrieve the self type *)
+              let self, args =
+                match args.types with
+                | self :: types -> (self, { args with types })
+                | _ ->
+                    (* A trait reference has at least one type parameter, for Self *)
+                    [%internal_error] span
+              in
+              [%ldebug
+                let fmt = Print.crate_to_fmt_env ctx.crate in
+                "- self type:\n"
+                ^ Print.ty_to_string fmt self
+                ^ "\n- args without self type:\n"
+                ^ Print.generic_args_to_string fmt args];
+              (* Generate the name for the self type *)
+              let nm_ctx = Charon.NameMatcher.ctx_from_crate ctx.crate in
+              let self_name =
+                match self with
+                | TAdt { id = TAdtId id; generics } -> (
+                    (* Lookup the ADT *)
+                    match TypeDeclId.Map.find_opt id ctx.crate.type_decls with
+                    | None ->
+                        [%save_error] span
+                          "Missing type declaration, probably because of an \
+                           error which happened before";
+                        "__UNKNOWN__" ^ TypeDeclId.to_string id
+                    | Some decl ->
+                        let name =
+                          opt_ctx_prepare_name decl.item_meta ctx
+                            decl.item_meta.name
+                        in
+                        name_with_generics_to_simple_name ctx.trans_ctx name
+                          params generics
+                        |> flatten_name)
+                | _ ->
+                    let name =
+                      NameMatcher.ty_to_pattern nm_ctx
+                        ExtractName.default_to_pat_config trait_impl.generics
+                        self
+                    in
+                    name_matcher_expr_to_simple_name (Some span) name
+              in
 
-            (* Generate the name for the trait *)
-            let trait_name =
-              name_with_generics_to_simple_name ctx.trans_ctx
-                trait_decl.item_meta.name params args
-              |> flatten_name_no_sep
-            in
-            [%ldebug "trait_name: " ^ trait_name];
+              (* Generate the name for the trait *)
+              let trait_name =
+                name_with_generics_to_simple_name ctx.trans_ctx
+                  trait_decl.item_meta.name params args
+                |> flatten_name_no_sep
+              in
+              [%ldebug "trait_name: " ^ trait_name];
 
-            (* Put together. Under [-core-models-lib], non-local trait impls
+              (* Put together. Under [-core-models-lib], non-local trait impls
                get prefixed with the Rust crate they originate from (matching
                the convention used for non-impl items, where the crate is the
                leading namespace component). For local impls, the local crate
                is stripped, as elsewhere. We also skip the prefix if the self
                type's name already starts with that crate (the ADT case),
                which would otherwise yield a duplicated crate component. *)
-            let name_parts = [ self_name; "Insts"; trait_name ] in
-            let name_parts =
-              if !core_models_lib && not trait_impl.item_meta.is_local then
-                match trait_impl.item_meta.name with
-                | PeIdent (crate, _) :: _ ->
-                    let already_prefixed =
-                      self_name = crate
-                      || String.starts_with ~prefix:(crate ^ ".") self_name
-                    in
-                    if already_prefixed then name_parts else crate :: name_parts
-                | _ -> name_parts
-              else name_parts
-            in
-            let name = flatten_name name_parts in
-            [%ldebug "Final name: " ^ name];
-            name)
-  | Some name -> name
+              let name_parts = [ self_name; "Insts"; trait_name ] in
+              let name_parts =
+                if !core_models_lib && not trait_impl.item_meta.is_local then
+                  match trait_impl.item_meta.name with
+                  | PeIdent (crate, _) :: _ ->
+                      let already_prefixed =
+                        self_name = crate
+                        || String.starts_with ~prefix:(crate ^ ".") self_name
+                      in
+                      if already_prefixed then name_parts
+                      else crate :: name_parts
+                  | _ -> name_parts
+                else name_parts
+              in
+              let name = flatten_name name_parts in
+              [%ldebug "Final name: " ^ name];
+              name)
+    | Some name -> name
+  with Not_found | Invalid_argument _ ->
+    [%craise] span
+      ("Could not compute the extraction name for trait implementation '"
+      ^ name_to_string ctx trait_impl.item_meta.name
+      ^ "': failed to resolve a type in its signature to a name (a referenced \
+         type was likely excluded or dropped by a previous error)")
 
 let ctx_compute_trait_impl_name_aux (ctx : extraction_ctx)
     (trait_impl_id : trait_impl_id) : string =

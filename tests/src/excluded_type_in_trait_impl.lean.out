@@ -1,0 +1,5 @@
+[[92mInfo[39m ] Imported: tests/llbc/excluded_type_in_trait_impl.llbc
+[[91mError[39m] Could not compute the extraction name for trait implementation 'excluded_type_in_trait_impl::{impl excluded_type_in_trait_impl::MyTrait<excluded_type_in_trait_impl::Excluded> for excluded_type_in_trait_impl::Holder}': failed to resolve a type in its signature to a name (a referenced type was likely excluded or dropped by a previous error)
+Source: 'tests/src/excluded_type_in_trait_impl.rs', lines 30:0-34:1
+Compiler source: extract/ExtractBase.ml, line 1884
+
