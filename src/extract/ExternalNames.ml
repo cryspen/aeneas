@@ -163,10 +163,8 @@ module Json = struct
   (* Converting the entries                                                 *)
   (* ---------------------------------------------------------------------- *)
 
-  (** The name of the Rust definition an entry is about, as written in the file.
-
-      An entry may give both, in which case ["rust_pattern"] wins *)
-  let entry_name (rust_pattern : string option) (rust_name : string option) :
+  (** Pattern (preferred) or name for a rust entry *)
+  let pattern_or_name (rust_pattern : string option) (rust_name : string option) :
       string =
     match (rust_pattern, rust_name) with
     | Some name, _ | None, Some name -> name
@@ -181,7 +179,7 @@ module Json = struct
 
   let entry_pattern (rust_pattern : string option) (rust_name : string option) :
       pattern =
-    parse_entry_pattern (entry_name rust_pattern rust_name)
+    parse_entry_pattern (pattern_or_name rust_pattern rust_name)
 
   (** The files store *bare* variant names, so we prefix them with the
       extraction name of their type unless the entry opted out. Same separators
@@ -249,7 +247,6 @@ module Json = struct
         keep_trait_clauses = row.keep_trait_clauses;
         extract_name = row.extract_name;
         can_fail = row.can_fail;
-        (* [stateful] is never read: see [FunsAnalysis.analyze_fun_decl]. *)
         stateful = false;
         lift = row.lift;
         has_default = row.has_default;
@@ -407,7 +404,7 @@ module Json = struct
       read "trait_decls" json_trait_decl_of_yojson
         (fun (row : json_trait_decl) ->
           (* The name as written in the file is what [trait_items] refers to. *)
-          let name = entry_name row.rust_pattern row.rust_name in
+          let name = pattern_or_name row.rust_pattern row.rust_name in
           (row, name, parse_entry_pattern name))
     in
     let declared =
