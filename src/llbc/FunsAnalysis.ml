@@ -215,6 +215,15 @@ let analyze_module (m : crate) (funs_map : fun_decl FunDeclId.Map.t) :
       let external_info = get_external_info f in
       let has_external_info = external_info <> None in
       group_has_external_info := !group_has_external_info || has_external_info;
+      (* Check if the function is mapped to an external name *)
+      LlbcAstUtils.check_not_external m "This function"
+        ~opaque:(not (LlbcAstUtils.body_is_known f.body))
+        f.item_meta
+        (Option.map
+           (fun (i : Pure.external_fun_info) -> i.extract_name)
+           (ExtractName.NameMatcherMap.find_opt name_matcher_ctx
+              f.item_meta.name
+              (ExternalNames.external_funs_map ())));
       match f.body with
       | StructuredBody body -> obj#visit_block body.body.span body.body
       | TargetDispatchBody targets ->

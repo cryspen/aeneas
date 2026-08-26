@@ -143,6 +143,12 @@ let () =
       ( "-emit-json",
         Arg.Set emit_json,
         " Emit a translation.json file alongside the Lean files (Lean only)" );
+      ( "-external-names",
+        Arg.String add_external_names_file,
+        " Read a list of external names (definitions which we do not extract, \
+         and which we map to models in the backend) from a JSON file. Can be \
+         given several times: later files take precedence over earlier ones, \
+         and over the entries which ship with Aeneas" );
       ("-print-llbc", Arg.Set print_llbc, " Print the imported LLBC");
       ( "-abort-on-error",
         Arg.Set fail_hard,
@@ -547,6 +553,13 @@ let () =
             if !use_fuel then (
               log#error "The HOL4 backend doesn't support the -use-fuel option";
               fail true))
+  in
+
+  (* Load the lists of external names given through [-external-names]. This has
+     to happen before we force the maps below, as they are memoized. *)
+  let () =
+    try ExternalNames.load_files ()
+    with ExternalNames.Read_error msg -> fail_with_error_no_doc msg
   in
 
   (* If running in parallel mode there can be racing conditions on the memoized
