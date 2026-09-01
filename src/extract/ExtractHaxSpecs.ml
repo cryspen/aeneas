@@ -46,7 +46,7 @@ module Helpers = struct
     let id = Pure.FunOrOp (Fun (FromLlbc (FunId (FRegular id), None))) in
     { e = Qualif { id; generics }; ty }
 
-  (** Emit [(<cond> <generics> <args>).holds] for a fn [f].  *)
+  (** Emit [(<cond> <generics> <args>).holds] for a fn [f]. *)
   let emit_holds span ctx fmt generics args (f : Pure.fun_decl) =
     let head = fun_head f.def_id generics f.signature.output in
     F.pp_open_hovbox fmt 0;
