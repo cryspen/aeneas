@@ -213,9 +213,10 @@
         };
         
         # Vendor all cargo dependencies for the hax_specs test crate
-        haxSpecsVendor = pkgs.rustPlatform.importCargoLock {
-          lockFile = ./tests/src/hax_specs/Cargo.lock;
-        };
+        haxSpecsVendor =
+          (import inputs.charon.inputs.nixpkgs {
+            inherit system;
+          }).rustPlatform.importCargoLock { lockFile = ./tests/src/hax_specs/Cargo.lock; };
 
         # Run the translation on various files.
         # Make sure we don't need to recompile the package whenever we make
