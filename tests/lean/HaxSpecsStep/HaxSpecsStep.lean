@@ -113,6 +113,62 @@ def future.swap_and_add
   let i ← x + y
   ok (i, y, x)
 
+/-- [hax_specs::const_generic_ty::MyStruct]
+    Source: 'src/lib.rs', lines 113:4-115:5
+    Visibility: public -/
+structure const_generic_ty.MyStruct (N : Std.Usize) where
+  cap : Std.Usize
+
+/-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::build]:
+    Source: 'src/lib.rs', lines 123:8-125:9
+    Visibility: public -/
+def const_generic_ty.MyStruct.build
+  (N : Std.Usize) (k : Std.Usize) : RustM (const_generic_ty.MyStruct N) := do
+  ok { cap := k }
+
+/-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::get]:
+    Source: 'src/lib.rs', lines 129:8-131:9
+    Visibility: public -/
+def const_generic_ty.MyStruct.get
+  {N : Std.Usize} (self : const_generic_ty.MyStruct N) : RustM Std.Usize := do
+  ok self.cap
+
+/-- [hax_specs::implicit_generics::Pair]
+    Source: 'src/lib.rs', lines 139:4-141:5
+    Visibility: public -/
+structure implicit_generics.Pair (T : Type) (N : Std.Usize) where
+  fst : T
+
+/-- [hax_specs::implicit_generics::nothing]:
+    Source: 'src/lib.rs', lines 147:4-149:5 -/
+def implicit_generics.nothing
+  (T : Type) (k : Std.Usize) : RustM (Option T) := do
+  ok none
+
+/-- [hax_specs::implicit_generics::of_fst]:
+    Source: 'src/lib.rs', lines 153:4-155:5 -/
+def implicit_generics.of_fst
+  {T : Type} (N : Std.Usize) (t : T) : RustM (implicit_generics.Pair T N) := do
+  ok { fst := t }
+
+/-- [hax_specs::implicit_generics::empty]:
+    Source: 'src/lib.rs', lines 159:4-161:5 -/
+def implicit_generics.empty
+  (T : Type) (N : Std.Usize) (k : Std.Usize) :
+  RustM (Option (implicit_generics.Pair T N))
+  := do
+  ok none
+
+/-- [hax_specs::implicit_generics::from_default]:
+    Source: 'src/lib.rs', lines 167:4-169:5 -/
+def implicit_generics.from_default
+  {T : Type} (N : Std.Usize) (coredefaultDefaultInst : core.default.Default T)
+  (k : Std.Usize) :
+  RustM (implicit_generics.Pair T N)
+  := do
+  let t ← coredefaultDefaultInst.default
+  ok { fst := t }
+
 
 /-- [hax_specs::basic::only_requires::pre]:
     Source: 'src/lib.rs', lines 5:4-5:24 -/
@@ -324,6 +380,117 @@ def future.swap_and_add.spec (x : Std.U32) (y : Std.U32) : Prop :=
   future.swap_and_add x y
   ⦃ res => (future.swap_and_add.post x y res).holds ⦄
 
+
+/-- [hax_specs::implicit_generics::nothing::post]:
+    Source: 'src/lib.rs', lines 146:4-146:24 -/
+@[reducible]
+def implicit_generics.nothing.post
+  {T : Type} (k : Std.Usize) (o : Option T) : RustM Bool := do
+  ok true
+
+def implicit_generics.nothing.spec (T : Type) (k : Std.Usize) : Prop :=
+  implicit_generics.nothing T k
+  ⦃ res => (implicit_generics.nothing.post k res).holds ⦄
+
+
+/-- [hax_specs::implicit_generics::of_fst::post]:
+    Source: 'src/lib.rs', lines 152:4-152:24 -/
+@[reducible]
+def implicit_generics.of_fst.post
+  {T : Type} {N : Std.Usize} (t : T) (p : implicit_generics.Pair T N) :
+  RustM Bool
+  := do
+  ok true
+
+def implicit_generics.of_fst.spec {T : Type} (N : Std.Usize) (t : T) : Prop :=
+  implicit_generics.of_fst N t
+  ⦃ res => (implicit_generics.of_fst.post t res).holds ⦄
+
+
+/-- [hax_specs::implicit_generics::empty::post]:
+    Source: 'src/lib.rs', lines 158:4-158:24 -/
+@[reducible]
+def implicit_generics.empty.post
+  {T : Type} {N : Std.Usize} (k : Std.Usize)
+  (o : Option (implicit_generics.Pair T N)) :
+  RustM Bool
+  := do
+  ok true
+
+def implicit_generics.empty.spec (T : Type) (N : Std.Usize) (k : Std.Usize)
+  : Prop :=
+  implicit_generics.empty T N k
+  ⦃ res => (implicit_generics.empty.post k res).holds ⦄
+
+
+/-- [hax_specs::implicit_generics::from_default::pre]:
+    Source: 'src/lib.rs', lines 165:4-165:24 -/
+@[reducible]
+def implicit_generics.from_default.pre
+  {T : Type} (N : Std.Usize) (coredefaultDefaultInst : core.default.Default T)
+  (k : Std.Usize) :
+  RustM Bool
+  := do
+  ok (k < 100#usize)
+
+/-- [hax_specs::implicit_generics::from_default::post]:
+    Source: 'src/lib.rs', lines 166:4-166:24 -/
+@[reducible]
+def implicit_generics.from_default.post
+  {T : Type} {N : Std.Usize} (coredefaultDefaultInst : core.default.Default T)
+  (k : Std.Usize) (p : implicit_generics.Pair T N) :
+  RustM Bool
+  := do
+  ok true
+
+def
+  implicit_generics.from_default.spec {T : Type} (N : Std.Usize)
+                                     (coredefaultDefaultInst :
+                                     core.default.Default T) (k : Std.Usize)
+  : Prop :=
+  (implicit_generics.from_default.pre N coredefaultDefaultInst k).holds →
+  implicit_generics.from_default N coredefaultDefaultInst k
+  ⦃ res =>
+  (implicit_generics.from_default.post coredefaultDefaultInst k res).holds ⦄
+
+
+/-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::build::pre]:
+    Source: 'src/lib.rs', lines 121:8-121:28 -/
+@[reducible]
+def const_generic_ty.MyStruct.build.pre
+  (N : Std.Usize) (k : Std.Usize) : RustM Bool := do
+  ok (k < 100#usize)
+
+/-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::build::post]:
+    Source: 'src/lib.rs', lines 122:8-122:28 -/
+@[reducible]
+def const_generic_ty.MyStruct.build.post
+  {N : Std.Usize} (k : Std.Usize) (ms : const_generic_ty.MyStruct N) :
+  RustM Bool
+  := do
+  ok true
+
+def const_generic_ty.MyStruct.build.spec (N : Std.Usize) (k : Std.Usize)
+  : Prop :=
+  (const_generic_ty.MyStruct.build.pre N k).holds →
+  const_generic_ty.MyStruct.build N k
+  ⦃ res => (const_generic_ty.MyStruct.build.post k res).holds ⦄
+
+
+/-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::get::post]:
+    Source: 'src/lib.rs', lines 128:8-128:28 -/
+@[reducible]
+def const_generic_ty.MyStruct.get.post
+  {N : Std.Usize} (self_ : const_generic_ty.MyStruct N) (i : Std.Usize) :
+  RustM Bool
+  := do
+  ok true
+
+def const_generic_ty.MyStruct.get.spec {N : Std.Usize}
+  (self : const_generic_ty.MyStruct N) : Prop :=
+  const_generic_ty.MyStruct.get self
+  ⦃ res => (const_generic_ty.MyStruct.get.post self res).holds ⦄
+
 @[step]
 theorem basic.only_requires.spec.proof (x : Std.U32) :
   basic.only_requires.spec x
@@ -370,6 +537,41 @@ theorem future.incr_i.spec.proof (x : Slice Std.U32) (i : Std.Usize) :
 @[step]
 theorem future.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32) :
   future.swap_and_add.spec x y
+  := by sorry
+
+@[step]
+theorem implicit_generics.nothing.spec.proof (T : Type) (k : Std.Usize) :
+  implicit_generics.nothing.spec T k
+  := by sorry
+
+@[step]
+theorem implicit_generics.of_fst.spec.proof {T : Type} (N : Std.Usize) 
+  (t : T) : implicit_generics.of_fst.spec N t
+  := by sorry
+
+@[step]
+theorem implicit_generics.empty.spec.proof (T : Type) (N : Std.Usize)
+  (k : Std.Usize) : implicit_generics.empty.spec T N k
+  := by sorry
+
+@[step]
+theorem
+  implicit_generics.from_default.spec.proof {T : Type} (N : Std.Usize)
+                                           (coredefaultDefaultInst :
+                                           core.default.Default T)
+  (k : Std.Usize) :
+  implicit_generics.from_default.spec N coredefaultDefaultInst k
+  := by sorry
+
+@[step]
+theorem const_generic_ty.MyStruct.build.spec.proof (N : Std.Usize)
+  (k : Std.Usize) : const_generic_ty.MyStruct.build.spec N k
+  := by sorry
+
+@[step]
+theorem const_generic_ty.MyStruct.get.spec.proof {N : Std.Usize}
+  (self : const_generic_ty.MyStruct N) :
+  const_generic_ty.MyStruct.get.spec self
   := by sorry
 
 end hax_specs

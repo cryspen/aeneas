@@ -27,7 +27,9 @@ module Helpers = struct
     Extract.emit_delim fmt "⦃" k "⦄"
 
   (** Emit [<name> <generics> <args>] — an application head applied to its
-      generic and value arguments (caller controls the surrounding box). *)
+      generic and value arguments (caller controls the surrounding box). This is
+      for [<fn>.spec], which is synthesized at extraction time and thus has no
+      declaration to point at. *)
   let emit_app span ctx fmt explicit generics args (name : string) =
     F.pp_print_string fmt name;
     (* Generic args, matching the head's generic binders. *)
@@ -39,12 +41,18 @@ module Helpers = struct
         Extract.extract_texpr span ctx fmt ~inside:true ~inside_do:false te)
       args
 
-  (** Emit [(<cond> <generics> <args>).holds] for a fn [f] *)
-  let emit_holds span ctx fmt explicit generics args (f : Pure.fun_decl) =
-    let name = ExtractBase.ctx_get_local_function span f.def_id None ctx in
+  (** The head of an application of the local function [id] to [generics]. *)
+  let fun_head (id : Pure.FunDeclId.id) generics (ty : Pure.ty) : Pure.texpr =
+    let id = Pure.FunOrOp (Fun (FromLlbc (FunId (FRegular id), None))) in
+    { e = Qualif { id; generics }; ty }
+
+  (** Emit [(<cond> <generics> <args>).holds] for a fn [f]. *)
+  let emit_holds span ctx fmt generics args (f : Pure.fun_decl) =
+    let head = fun_head f.def_id generics f.signature.output in
     F.pp_open_hovbox fmt 0;
     F.pp_print_string fmt "(";
-    emit_app span ctx fmt explicit generics args name;
+    Extract.extract_App span ctx fmt ~inside:false ~inside_do:false head args
+      f.signature.output;
     F.pp_print_string fmt ").holds";
     F.pp_close_box fmt ()
 end
@@ -82,29 +90,19 @@ let compute_spec_name (def : Pure.fun_decl) (ctx : ExtractBase.extraction_ctx) :
 (** Prelude shared by both statement styles: register the result variable (a
     collision-safe fvar), build the [.holds] / application printers, emit the
     (shared) optional precondition hypothesis [(<fn>.pre <args>).holds →] *)
-let emit_statement_prelude ctx fmt span (fn : Pure.FunDeclId.id) explicit
-    generics output_ty arg_texprs res_id ~(pre : Pure.fun_decl option)
+let emit_statement_prelude ctx fmt span (fn : Pure.FunDeclId.id) generics
+    output_ty arg_texprs res_id ~(pre : Pure.fun_decl option)
     ~(post : Pure.fun_decl option) =
   let open ExtractBase in
   (* Register the postcondition's result variable *)
   let ctx, res_name = ctx_add_var span "res" res_id ctx in
   let res_texpr : Pure.texpr = { e = FVar res_id; ty = output_ty } in
 
-  let emit_holds = emit_holds span ctx fmt explicit generics in
+  let emit_holds = emit_holds span ctx fmt generics in
 
   (* The real function application [<fn> <args>], via the standard printer. *)
   let emit_fn_call () : unit =
-    let head : Pure.texpr =
-      {
-        e =
-          Qualif
-            {
-              id = FunOrOp (Fun (FromLlbc (FunId (FRegular fn), None)));
-              generics;
-            };
-        ty = output_ty;
-      }
-    in
+    let head = fun_head fn generics output_ty in
     Extract.extract_App span ctx fmt ~inside:false ~inside_do:false head
       arg_texprs output_ty
   in
@@ -135,11 +133,11 @@ let emit_statement_prelude ctx fmt span (fn : Pure.FunDeclId.id) explicit
       foo args
       ⦃ res => (foo.post args res).holds ⦄
     ]} *)
-let emit_statement_step ctx fmt span fn explicit generics output_ty arg_texprs
-    res_id pre post =
+let emit_statement_step ctx fmt span fn generics output_ty arg_texprs res_id pre
+    post =
   let emit_fn_call, res_name, emit_post_content =
-    emit_statement_prelude ctx fmt span fn explicit generics output_ty
-      arg_texprs res_id ~pre ~post
+    emit_statement_prelude ctx fmt span fn generics output_ty arg_texprs res_id
+      ~pre ~post
   in
   line fmt emit_fn_call;
   line fmt (fun () ->
@@ -158,11 +156,11 @@ let emit_statement_step ctx fmt span fn explicit generics output_ty arg_texprs
       foo args
       ⦃ ⇓ res => ⌜ (foo.post args res).holds ⌝ ⦄
     ]} *)
-let emit_statement_mvcgen ctx fmt span fn explicit generics output_ty arg_texprs
-    res_id pre post =
+let emit_statement_mvcgen ctx fmt span fn generics output_ty arg_texprs res_id
+    pre post =
   let emit_fn_call, res_name, emit_post_content =
-    emit_statement_prelude ctx fmt span fn explicit generics output_ty
-      arg_texprs res_id ~pre ~post
+    emit_statement_prelude ctx fmt span fn generics output_ty arg_texprs res_id
+      ~pre ~post
   in
   let emit_pure k = Extract.emit_delim fmt "⌜" k "⌝" in
   line fmt (fun () ->
@@ -180,14 +178,14 @@ let current_spec_backend () : Config.spec_backend =
 
 (** Emit the spec statement shape, dispatching on the spec backend configured
     via [-specs]. *)
-let emit_statement ctx fmt span fn explicit generics output_ty arg_texprs res_id
-    pre post =
+let emit_statement ctx fmt span fn generics output_ty arg_texprs res_id pre post
+    =
   let emit =
     match current_spec_backend () with
     | Config.Mvcgen -> emit_statement_mvcgen
     | Config.Step -> emit_statement_step
   in
-  emit ctx fmt span fn explicit generics output_ty arg_texprs res_id pre post
+  emit ctx fmt span fn generics output_ty arg_texprs res_id pre post
 
 (** Emit one [Spec.spec] entry *)
 let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
@@ -201,15 +199,25 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
             ^ Pure.FunDeclId.to_string fn
             ^ "'")
       | Some ft ->
-          (* Register the pre/post condition fns' names in the (local) context *)
+          (* Register the pre/post conditions in the (local) context *)
           let reg f_opt ctx =
-            Option.fold ~some:(fun f -> ctx_add_fun_decl f ctx) ~none:ctx f_opt
+            let some (f : Pure.fun_decl) =
+              let ctx = ctx_add_fun_decl f ctx in
+              let trans : TranslateCore.pure_fun_translation =
+                { f; loops = []; bodies = [] }
+              in
+              {
+                ctx with
+                trans_funs =
+                  Pure.FunDeclId.Map.add f.def_id trans ctx.trans_funs;
+              }
+            in
+            Option.fold ~some ~none:ctx f_opt
           in
           let ctx = ctx |> reg pre |> reg post in
           let parent = ft.f in
           let span = parent.item_meta.span in
           let sg = parent.signature in
-          let explicit = sg.explicit_info in
           let generics = PureUtils.generic_args_of_params sg.generics in
 
           (* Open the parent's body binders *)
@@ -257,8 +265,8 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
           F.pp_close_box fmt ();
 
           (* Statement shape (the def body). *)
-          emit_statement ctx fmt span fn explicit generics sg.output arg_texprs
-            res_id pre post;
+          emit_statement ctx fmt span fn generics sg.output arg_texprs res_id
+            pre post;
           F.pp_close_box fmt ();
           (* inner vbox *)
           F.pp_close_box fmt ();

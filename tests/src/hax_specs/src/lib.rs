@@ -100,3 +100,71 @@ mod future {
         tmp_x + tmp_y
     }
 }
+
+// A generic parameter is implicit when it can be inferred from an input type or
+// a trait clause. `post` takes the result as an extra input, so it can infer
+// parameters that the function it describes has to take explicitly: each of
+// them must be applied with its own implicit/explicit information. (`pre` has
+// exactly the inputs of the function, so it never diverges from it.)
+#[allow(dead_code)]
+mod const_generic_ty {
+    use hax_lib::*;
+
+    pub struct MyStruct<const N: usize> {
+        pub cap: usize,
+    }
+
+    #[hax_lib::attributes]
+    impl<const N: usize> MyStruct<N> {
+        // Associated function (no `self`): `N` only appears in the output type,
+        // so it is explicit in the function and in `pre`, implicit in `post`.
+        #[requires(k < 100)]
+        #[ensures(|_| true)]
+        pub fn build(k: usize) -> Self {
+            MyStruct { cap: k }
+        }
+
+        // Control: a `&self` method, where `N` appears in an input type.
+        #[ensures(|_| true)]
+        pub fn get(&self) -> usize {
+            self.cap
+        }
+    }
+}
+
+#[allow(dead_code)]
+mod implicit_generics {
+    use hax_lib::*;
+
+    pub struct Pair<T, const N: usize> {
+        pub fst: T,
+    }
+
+    // A type parameter which only appears in the output type. (Note the dummy
+    // argument: a condition on a function with no argument at all is dropped,
+    // see `basic::no_args`.)
+    #[ensures(|_| true)]
+    fn nothing<T>(k: usize) -> Option<T> {
+        None
+    }
+
+    // Mixed: `T` is inferable from the inputs, `N` only from the result.
+    #[ensures(|_| true)]
+    fn of_fst<T, const N: usize>(t: T) -> Pair<T, N> {
+        Pair { fst: t }
+    }
+
+    // Both parameters only appear in the output type.
+    #[ensures(|_| true)]
+    fn empty<T, const N: usize>(k: usize) -> Option<Pair<T, N>> {
+        None
+    }
+
+    // A trait clause (which makes `T` implicit, and is passed to `post` too)
+    // next to a const generic which only `post` can infer.
+    #[requires(k < 100)]
+    #[ensures(|_| true)]
+    fn from_default<T: Default, const N: usize>(k: usize) -> Pair<T, N> {
+        Pair { fst: T::default() }
+    }
+}
