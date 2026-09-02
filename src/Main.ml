@@ -558,18 +558,19 @@ let () =
   (* Load the lists of external names given through [-external-names]. This has
      to happen before we force the maps below, as they are memoized. *)
   let () =
-    try ExternalNames.load_files ()
+    try
+      ExternalNames.load_files ();
+      (* If running in parallel mode there can be racing conditions on the
+         memoized elements. Precompute them so that it doesn't happen. *)
+      let _ = ExternalNames.external_globals_map () in
+      let _ = ExternalNames.external_types_map () in
+      let _ = ExternalNames.external_trait_decls_map () in
+      let _ = ExternalNames.external_trait_impls_map () in
+      let _ = ExternalNames.external_funs_map () in
+      let _ = ExternalNames.external_fun_effects_map () in
+      ()
     with ExternalNames.Read_error msg -> fail_with_error_no_doc msg
   in
-
-  (* If running in parallel mode there can be racing conditions on the memoized
-     elements. Precompute them so that it doesn't happen. *)
-  let _ = ExternalNames.external_globals_map () in
-  let _ = ExternalNames.external_types_map () in
-  let _ = ExternalNames.external_trait_decls_map () in
-  let _ = ExternalNames.external_trait_impls_map () in
-  let _ = ExternalNames.external_funs_map () in
-  let _ = ExternalNames.external_fun_effects_map () in
 
   (* Retrieve and check the filename *)
   let filename =
