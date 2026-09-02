@@ -667,12 +667,6 @@ let mk_builtin_funs () : (pattern * Pure.builtin_fun_info) list =
           ^ StringUtils.capitalize_first_letter ty
           ^ ".from_be_bytes")
         ~can_fail:false ()
-    (* Box::new is erased together with the builtin Box type. *)
-    @ [
-        mk_fun "alloc::boxed::{Box<@T>}::new"
-          ~extract_name:(Some "alloc.boxed.Box.new") ~can_fail:false ~lift:false
-          ();
-      ]
     (* Clone<bool> *)
     @ mk_funs
         (fun fn -> "core::clone::impls::{core::clone::Clone<bool>}::" ^ fn)
@@ -687,6 +681,18 @@ let mk_builtin_funs () : (pattern * Pure.builtin_fun_info) list =
           ^ StringUtils.capitalize_first_letter ty
           ^ "." ^ fn)
         [ (false, "clone"); (false, "clone_from") ])
+  (* Box::new is erased together with the builtin Box type (see
+     [PureMicroPassesGeneral.eliminate_box_functions]), so its extract name is
+     never printed: this entry only carries the shape overrides ([can_fail:false]
+     and [lift:false]) which make the erased call type-check. Like
+     {!mk_builtin_types_keep_params_map}, it therefore stays active under
+     [-core-models-lib]: the [core_models] library does not get to model
+     [Box::new] because we erase it before extraction, whatever the mode. *)
+  @ [
+      mk_fun "alloc::boxed::{Box<@T>}::new"
+        ~extract_name:(Some "alloc.boxed.Box.new") ~can_fail:false ~lift:false
+        ();
+    ]
   (* Definitions not for Lean *)
   @ mk_not_lean
       [
