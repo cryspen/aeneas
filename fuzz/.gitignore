@@ -1,0 +1,7 @@
+# Fuzzing harness scratch and build artifacts.
+work/
+harness/target/
+semdiff/lean-driver/.lake/
+semdiff/lean-driver/.driver.tests
+pure-eval/target/
+stage-diff/__pycache__/

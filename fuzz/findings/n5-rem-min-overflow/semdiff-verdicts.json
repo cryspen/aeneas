@@ -1,0 +1,24 @@
+[
+  {
+    "name": "test_rem_min",
+    "native": {
+      "name": "test_rem_min",
+      "status": "PANIC",
+      "kind": "integerOverflow",
+      "msg": "attempt to calculate the remainder with overflow"
+    },
+    "lean": "OK",
+    "verdict": "MISMATCH"
+  },
+  {
+    "name": "test_rem_ok",
+    "native": {
+      "name": "test_rem_ok",
+      "status": "OK",
+      "kind": "ok",
+      "msg": ""
+    },
+    "lean": "OK",
+    "verdict": "MATCH"
+  }
+]

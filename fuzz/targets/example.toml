@@ -1,0 +1,79 @@
+# Example target config for the Aeneas fuzzing harness — DOCUMENTS THE SCHEMA.
+#
+# A "target" describes how to invoke one (charon, aeneas) pair. All commands are
+# config-driven: the harness never hardcodes charon/aeneas paths. Real target
+# configs (e.g. `fork.toml`, `upstream.toml`) are dropped in beside this file by
+# the orchestrator.
+#
+# Copy this file, fill in the paths/flags, and pass it with `--target`.
+
+# Human-readable target name. Used in logs, findings dedup, and repro dirs.
+name = "example"
+
+# ---------------------------------------------------------------------------
+# charon: produces the .llbc from the packed lib.rs.
+#   Placeholders substituted per crate:
+#     {input}  -> absolute path to the generated lib.rs
+#     {output} -> absolute path to the .llbc to write
+# The first element is the program; the rest are its argv template.
+# ---------------------------------------------------------------------------
+charon_cmd = [
+  "/path/to/charon/target/release/charon",
+  "rustc", "--preset=aeneas", "--dest-file", "{output}",
+  "--", "--crate-type=rlib", "{input}",
+]
+
+# ---------------------------------------------------------------------------
+# aeneas: base argv (usually just the binary). The per-mode flag sets below are
+# appended to this — that is where the {llbc}/{dest} placeholders live.
+# ---------------------------------------------------------------------------
+aeneas_cmd = ["/path/to/aeneas/bin/aeneas"]
+
+# Fast translation pass — run on EVERY campaign crate.
+#   Placeholders: {llbc} (input .llbc), {dest} (output dir).
+# Always keep `-abort-on-error` and `-no-progress-bar` (spinner pollutes stderr).
+translate_flags = ["-backend", "lean", "-abort-on-error", "-no-progress-bar", "{llbc}", "-dest", "{dest}"]
+
+# Slow, thorough verification pass — used ONLY in the verify/minimize path (a
+# candidate finding is re-confirmed here). On the fork this is `-checks`
+# (~100x slower); upstream uses `-type-check-pure-code`. Optional: if empty,
+# the harness falls back to translate_flags.
+checks_flags = ["-backend", "lean", "-abort-on-error", "-checks", "-no-progress-bar", "{llbc}", "-dest", "{dest}"]
+
+# Standalone borrow-check mode (incompatible with -backend/-dest on the fork).
+#   Placeholder: {llbc} only (no dest). Optional.
+borrowck_flags = ["-borrow-check", "-abort-on-error", "-no-progress-bar", "{llbc}"]
+
+# Extra environment variables applied to every stage. Optional.
+[extra_env]
+# RUST_BACKTRACE = "1"
+
+# Path to the Lean backend dir (for the O3 elaboration oracle). Optional; omit
+# to disable O3 for this target.
+lean_backend_dir = "/path/to/aeneas/backends/lean"
+
+# Whether this aeneas supports `-dump-pure-ir` (used by phase 3). Optional.
+supports_dump_pure_ir = false
+
+# Per-stage process timeouts, in seconds. All fields optional (defaults shown).
+[timeout_secs]
+rustc = 30
+charon = 60
+aeneas = 120
+lake = 600
+
+# ---------------------------------------------------------------------------
+# Known-bug fingerprints this target is EXPECTED to reproduce. These augment
+# fuzz/findings/db.json so a campaign auto-recognizes them as known (deduped)
+# rather than filing them as new. Repeat the [[known_findings]] block per bug.
+#   error_class: InternalError | Unreachable | SanityCheck | Other
+#   file: aeneas source path exactly as printed in "Compiler source:"
+#         (matched by basename, so a dir prefix is fine)
+# ---------------------------------------------------------------------------
+# [[known_findings]]
+# id = "F4"
+# error_class = "InternalError"
+# message = "Internal error, please file an issue"
+# file = "pure/PureMicroPassesLoops.ml"
+# line = 1818
+# issue = "cryspen/aeneas#22"

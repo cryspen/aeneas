@@ -1,0 +1,212 @@
+{
+  "findings": [
+    {
+      "id": "F4",
+      "fingerprint": {
+        "error_class": "InternalError",
+        "file": "pure/PureMicroPassesLoops.ml",
+        "line": 1818
+      },
+      "first_seen": "2026-07-25",
+      "targets_reproducing": {
+        "fork": 1818,
+        "upstream": 1818
+      },
+      "status": "Filed",
+      "issue_ref": "cryspen/aeneas#22",
+      "repro_dir": "documentation/translation-study/upstream-repros/f4-return-in-loop",
+      "min_source": null,
+      "notes": "return-in-loop crash: SymbolicToPure emits `ok (v, v)` (forward result and final value of x are the same fvar); compute_outputs_indices_if_followed_by_ok assumes the ok-tuple is a permutation of the loop-output pattern; the break-rewriter sanity check at PureMicroPassesLoops.ml:1818-1819 fires."
+    },
+    {
+      "id": "F5",
+      "fingerprint": null,
+      "first_seen": "2026-07-25",
+      "targets_reproducing": {},
+      "status": "Filed",
+      "issue_ref": "cryspen/aeneas#23",
+      "repro_dir": "documentation/translation-study/upstream-repros/f5-let-branching-scope",
+      "min_source": null,
+      "notes": "simplify_let_branching scope escape (latent; no crash fingerprint today). Endpoint output candidates are never filtered against bound_fvars. PureMicroPassesGeneral.ml:1244-1544."
+    },
+    {
+      "id": "F6",
+      "fingerprint": {
+        "error_class": "Unreachable",
+        "file": "interp/InterpAbs.ml",
+        "line": 1671
+      },
+      "first_seen": "2026-07-25",
+      "targets_reproducing": {
+        "fork": 1671,
+        "upstream": 1688
+      },
+      "status": "Filed",
+      "issue_ref": "cryspen/aeneas#24",
+      "repro_dir": "documentation/translation-study/upstream-repros/f6-inverted-guard",
+      "min_source": null,
+      "notes": "inverted can_end guard in eliminate_shared_loans (InterpReduceCollapse.ml:44-46) mutates the frozen abstractions and skips the endable ones; rejects valid programs with [Error] Unreachable at InterpAbs.ml:1671."
+    },
+    {
+      "id": "N1",
+      "aka": "other-interpexpressions-55",
+      "fingerprint": {
+        "error_class": "Other",
+        "message": "There should be no bottoms in the value",
+        "file": "interp/InterpExpressions.ml",
+        "line": 55
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {
+        "fork": 55,
+        "upstream": 55
+      },
+      "status": "Filed",
+      "severity": "MEDIUM",
+      "issue_ref": "cryspen/aeneas#28",
+      "issue_draft": "findings/n1-assert-double-eval/ISSUE.md",
+      "repro_dir": "findings/n1-assert-double-eval",
+      "min_source": "findings/n1-assert-double-eval/min.rs",
+      "notes": "assert-operand double-evaluation. eval_assertion evaluates the assert cond, then the concrete-bool path re-calls eval_operand in eval_assertion_concrete (InterpStatements.ml:133 vs :156); the assert's `move` operand is re-read after the 1st eval bottomed it. Triggered by a second assert of the same (now-concretized) bool. Valid Rust; crashes fork AND upstream at InterpExpressions.ml:55. NOT a dup of upstream#392 (that is invalid move-then-use). Verified on clean builds of both. Provenance: tests/src/assert-cfg.rs::assert_b0_and_not_b1, mutations=[StmtSwap,StmtDup,StmtDup], auto-minimized."
+    },
+    {
+      "id": "N2",
+      "aka": "interpjoin-loop-match-fail",
+      "fingerprint": {
+        "error_class": "Other",
+        "message": "Could not match the contexts",
+        "file": "interp/InterpJoin.ml",
+        "line": 1515
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {
+        "fork": 1515,
+        "upstream": 1542
+      },
+      "status": "Duplicate",
+      "severity": "MEDIUM",
+      "issue_ref": "AeneasVerif/aeneas#930",
+      "repro_dir": "findings/interpjoin-loop-match-fail",
+      "min_source": "findings/interpjoin-loop-match-fail/min.rs",
+      "notes": "DUPLICATE of open upstream #930 (early `return` in a loop followed by more code -> 'Could not match the contexts' at InterpJoin.ml:1515 — same line) and related #1206 (the `break` variant, InterpJoin.ml:1542). N2's own break-variant sibling matches #1206. Two sequential loops over a mutable-borrow iterator where the FIRST early-returns: loop fixed-point match_ctx_with_target -> try_match_ctxs cannot reconcile contexts. Valid Rust; crashes fork (1515) AND upstream (1542) -> a known upstream bug the fork inherits, NOT new. Do NOT file. Discovered independently by the harness (fork Wave A seed 21); recorded for dedup + as a good regression test once #930 is fixed."
+    },
+    {
+      "id": "N3",
+      "aka": "fork-closure-mut-capture-366",
+      "fingerprint": {
+        "error_class": "InternalError",
+        "message": "Internal error: please file an issue",
+        "file": "symbolic/SymbolicToPureValues.ml",
+        "line": 366
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {
+        "fork": 366
+      },
+      "status": "Filed",
+      "severity": "MEDIUM",
+      "fork_only": true,
+      "issue_ref": "cryspen/aeneas#40",
+      "repro_dir": "findings/fork-closure-mut-capture-366",
+      "min_source": "findings/fork-closure-mut-capture-366/min.rs",
+      "notes": "FORK-TOOLCHAIN-ONLY. A closure that READS through a captured &mut (`|| -> u8 { *a }`) crashes the fork toolchain at symbolic/SymbolicToPureValues.ml:366 (gtranslate_adt_fields 'preserve all fields' branch: [%try_unwrap] on a None field of the closure-env ADT during backward translation). Preceded by a non-fatal InterpBorrows.ml:1203. The UPSTREAM toolchain translates it fine (exit 0). Verified firsthand: fork crash + upstream OK + rustc accepts. ATTRIBUTION (corrected): NOT the uncommitted work (F1-F3 touch only dump points + pure-micro-pass gating, which run outside/after symbolic-to-pure). The crash-site function gtranslate_adt_fields is BYTE-IDENTICAL between fork and upstream src (only a comment differs), so it is NOT fork-modified aeneas code either. The fork (aeneas 6a3fc35b + charon 0.1.196) and upstream (aeneas main + charon 0.1.225) differ in BOTH aeneas version and charon version, and the .llbc formats are mutually incompatible so the two cannot be cross-matched on charon — the true differentiator (charon closure-lowering change vs an upstream aeneas fix landed after the fork's base) is UNRESOLVED. Most likely already fixed upstream / resolved by rebasing the fork onto newer aeneas+charon. DO NOT FILE until disentangled (e.g. build upstream aeneas at its charon-0.1.196-era commit and re-test). Controls: closure that MUTATES *a -> clean expected feature-gate reject; closure reading shared &[u8] -> InterpBorrows.ml:1203 (#804 family)."
+    },
+    {
+      "id": "N5",
+      "aka": "rem-min-overflow",
+      "fingerprint": {
+        "error_class": "Soundness",
+        "message": "iN::MIN % -1 modeled as 0 but panics in Rust",
+        "file": "interp/InterpExpressions.ml",
+        "line": 1039
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {
+        "fork": 1039,
+        "upstream": 1039
+      },
+      "status": "Known",
+      "severity": "HIGH",
+      "oracle": "semantic-differential (native vs Lean) — reproduction only",
+      "provenance": "prior manual audit (Karthik, 2026-07-22); NOT a campaign discovery",
+      "issue_ref": "cryspen/aeneas#21 (PR, open; issue also filed)",
+      "fix_branch": "fix/rem-min-overflow (commit 75f59901)",
+      "repro_dir": "findings/n5-rem-min-overflow",
+      "min_source": "findings/n5-rem-min-overflow/min.rs",
+      "notes": "SOUNDNESS/miscompilation (not a crash). iN::MIN % -1 overflows in Rust (panics; checked_rem -> None) but the Aeneas model returns 0 — the result 0 is representable so mk_scalar's division-overflow range check never fires for Rem. Affects the interpreter concrete eval (InterpExpressions.ml Rem OPanic) AND all three backend models (Lean IScalar.rem + CheckedOps, F* scalar_rem, Coq Primitives.v which also mis-returned Ok x for x%0). BOTH targets + all backends (fix parent is upstream 004e11fe -> predates the fork; present in upstream main). PROVENANCE: found by prior MANUAL AUDITING (2026-07-22) and already fixed/filed as cryspen/aeneas PR #21 (fix/rem-min-overflow) BEFORE this fuzzing campaign (2026-07-26) — it is NOT a campaign discovery. The campaign's contribution is only INDEPENDENT REPRODUCTION: the Phase-2 semantic differential, on a hand-written MIN%-1 test, flags native (overflow-checks=on) PANIC integerOverflow vs Lean #eval ok 0 -> MISMATCH, validating that the oracle catches this soundness class. Verified firsthand."
+    },
+    {
+      "id": "N4",
+      "aka": "other-interpstatements-1100",
+      "fingerprint": {
+        "error_class": "Other",
+        "message": "Inconsistent state",
+        "file": "interp/InterpStatements.ml",
+        "line": 1100
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {
+        "fork": 1100,
+        "upstream": 1132
+      },
+      "status": "Duplicate",
+      "severity": "MEDIUM",
+      "issue_ref": "AeneasVerif/aeneas#797",
+      "repro_dir": "findings/other-interpstatements-1100",
+      "min_source": "findings/other-interpstatements-1100/min.rs",
+      "notes": "Matching on a `char` crashes eval_switch_raw. Concrete char (`let ch='g'; match ch {...}`) -> 'Inconsistent state' InterpStatements.ml:1100 (fork) / 1132 (upstream); symbolic char (`fn g(ch:char){match ch{...}}`) -> '(Failure Unexpected)' from charon-ml literal_as_scalar via InterpStatements.ml:1064. Valid Rust; crashes fork AND upstream. DUPLICATE of open upstream AeneasVerif/aeneas#797 ('Matching on chars throws an Uncaught exception', reproducer `match c {'a'=>0,_=>1}`). Not new; do NOT file. Found while de-risking the Phase-2 generator's char-match shape (subsequently removed from the semdiff set). Verified firsthand on clean fork + upstream."
+    },
+    {
+      "id": "other-interpborrows-1203",
+      "fingerprint": {
+        "error_class": "Other",
+        "message": "Can't end abstraction N as it is set as non-endable",
+        "file": "interp/InterpBorrows.ml",
+        "line": 1203
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {
+        "fork": 1203
+      },
+      "status": "Duplicate",
+      "issue_ref": "AeneasVerif/aeneas#804",
+      "repro_dir": "findings/other-interpborrows-1203",
+      "min_source": "findings/other-interpborrows-1203/min.rs",
+      "notes": "Closure returning refs via array::from_fn; L2 safety-net craise in backward eval. Seed is the #804 regression test. Fork crashes; upstream OK (axiomatizes from_fn). Not filable (known upstream)."
+    },
+    {
+      "id": "gate-interploops-407",
+      "fingerprint": {
+        "error_class": "Other",
+        "message": "infinite loops without breaks not supported yet",
+        "file": "interp/InterpLoops.ml",
+        "line": 407
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {
+        "fork": 407
+      },
+      "status": "ExpectedReject",
+      "issue_ref": null,
+      "repro_dir": "findings/unreachable-interploops-407",
+      "min_source": "findings/unreachable-interploops-407/min.rs",
+      "notes": "Intended feature-gate craise (breakless infinite loop). -abort-on-error promotes it to an uncaught Failure so it looked like a crash. Not a bug. Also the pack bundled an F6 dup (the actual fatal crash)."
+    },
+    {
+      "id": "invalid-extract-2851",
+      "fingerprint": {
+        "error_class": "Other",
+        "message": "",
+        "file": "extract/Extract.ml",
+        "line": 2851
+      },
+      "first_seen": "2026-07-26",
+      "targets_reproducing": {},
+      "status": "Invalid",
+      "issue_ref": null,
+      "repro_dir": "findings/other-extract-2851",
+      "min_source": "findings/other-extract-2851/min.rs",
+      "notes": "extract/Extract.ml:2851 is a [%warn] (missing Iterator::collect model). aeneas exits 0 and generates Lean. Harness false positive: fingerprinted on the [%warn]'s 'Compiler source:' marker without requiring nonzero exit / an actual backtrace. HARNESS FIX NEEDED (see triage note)."
+    }
+  ]
+}
