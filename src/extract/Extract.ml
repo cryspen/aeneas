@@ -1164,7 +1164,9 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
       | FromLlbc (TraitMethod (trait_ref, method_name), lp_id) ->
           let trait_decl_id = trait_ref.trait_decl_ref.trait_decl_id in
           let trait_decl =
-            TraitDeclId.Map.find trait_decl_id ctx.trans_trait_decls
+            (* The trait declaration may be absent if it failed to translate. *)
+            [%silent_unwrap] span
+              (TraitDeclId.Map.find_opt trait_decl_id ctx.trans_trait_decls)
           in
 
           [%sanity_check] trait_decl.item_meta.span (lp_id = None);
