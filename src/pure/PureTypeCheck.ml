@@ -22,7 +22,15 @@ let get_adt_field_types (span : Meta.span)
       generics.types
   | TAdtId def_id ->
       (* "Regular" ADT *)
-      let def = TypeDeclId.Map.find def_id type_decls in
+      let def =
+        (* This type may be missing from [type_decls] if its declaration failed
+           to translate but is still referenced (e.g. an [AdtCons] for a struct
+           whose type was opacified). *)
+        [%unwrap_with_span] span
+          (TypeDeclId.Map.find_opt def_id type_decls)
+          ("Could not find the declaration of type "
+         ^ TypeDeclId.to_string def_id ^ " (it may have failed to translate)")
+      in
       type_decl_get_instantiated_fields_types def variant_id generics
   | TBuiltin aty -> (
       (* Builtin type *)
