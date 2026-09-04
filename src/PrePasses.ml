@@ -177,12 +177,14 @@ let update_array_default (crate : crate) : crate =
      doesn't require that the type of the elements also has a default
      implementation. *)
   let matches_default_array (impl : trait_impl) : constant_expr option =
-    let trait_decl =
-      [%silent_unwrap_opt_span] (Some impl.item_meta.span)
-        (TraitDeclId.Map.find_opt impl.impl_trait.id crate.trait_decls)
-    in
-    if not (match_name impl_pat trait_decl.item_meta.name) then None
-    else
+    (* A missing trait declaration (e.g. charon-sliced input) simply means this
+       is not the [Default<[T; N]>] pattern. This runs in a whole-crate pre-pass,
+       so returning [None] avoids escaping past the per-item boundaries. *)
+    match TraitDeclId.Map.find_opt impl.impl_trait.id crate.trait_decls with
+    | None -> None
+    | Some trait_decl ->
+        if not (match_name impl_pat trait_decl.item_meta.name) then None
+        else
       match impl.impl_trait.generics with
       | {
        regions = [];
