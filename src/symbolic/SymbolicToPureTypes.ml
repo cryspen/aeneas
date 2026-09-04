@@ -258,8 +258,8 @@ let translate_variant (span : Meta.span) (v : T.variant) : variant =
   let variant_attr_info = v.attr_info in
   let discriminant, ty =
     match v.discriminant with
-    | VScalar (SignedScalar (ty, v)) -> (Z.to_int v, TInt ty)
-    | VScalar (UnsignedScalar (ty, v)) -> (Z.to_int v, TUInt ty)
+    | VScalar (SignedScalar (ty, v)) -> (v, TInt ty)
+    | VScalar (UnsignedScalar (ty, v)) -> (v, TUInt ty)
     | _ ->
         [%craise] span
           "Internal error, please report an issue: found an enumeration \
