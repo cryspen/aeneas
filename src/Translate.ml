@@ -1121,8 +1121,10 @@ let trait_impl_is_builtin (ctx : gen_ctx) (id : Pure.trait_impl_id) : bool =
       (TraitImplId.Map.find_opt id ctx.trans_trait_impls)
   in
   let trait_decl =
-    Pure.TraitDeclId.Map.find trait_impl.impl_trait.trait_decl_id
-      ctx.trans_trait_decls
+    (* The parent trait declaration may be absent if it failed to translate. *)
+    [%silent_unwrap_opt_span] None
+      (Pure.TraitDeclId.Map.find_opt trait_impl.impl_trait.trait_decl_id
+         ctx.trans_trait_decls)
   in
   let builtin_info =
     let open ExtractBuiltin in
