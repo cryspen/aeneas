@@ -253,8 +253,8 @@ let get_builtin_fun_info (id : builtin_fun_id) : builtin_fun_info =
   match BuiltinFunIdMap.find_opt id builtin_fun_infos with
   | Some info -> info
   | None ->
-      raise
-        (Failure ("get_builtin_fun_info: not found: " ^ show_builtin_fun_id id))
+      [%craise_opt_span] None
+        ("get_builtin_fun_info: not found: " ^ show_builtin_fun_id id)
 
 let get_builtin_fun_sig (id : builtin_fun_id) : bound_fun_sig =
   (get_builtin_fun_info id).fun_sig
