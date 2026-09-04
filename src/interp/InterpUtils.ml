@@ -375,8 +375,13 @@ let symbolic_value_id_in_ctx (sv_id : SymbolicValueId.id) (ctx : eval_ctx) :
     the type (this is more general). *)
 let symbolic_value_has_ended_regions (ended_regions : RegionId.Set.t)
     (s : symbolic_value) : bool =
-  let regions = ty_regions s.sv_ty in
-  not (RegionId.Set.disjoint regions ended_regions)
+  (* [ended_regions] only contains free region ids. Erased and body regions can
+     never be ended and legitimately appear here in normalized projection types,
+     so we tolerate them via [~allow_erased] rather than raising as [ty_regions]
+     would. *)
+  ty_has_regions_in_pred
+    (fun r -> region_in_set ~allow_erased:true r ended_regions)
+    s.sv_ty
 
 let region_is_owned (abs : abs) (r : region) : bool =
   match r with
