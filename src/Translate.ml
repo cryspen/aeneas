@@ -295,6 +295,38 @@ let translate_function_to_pure_aux (trans_ctx : trans_ctx)
   (* *)
   f
 
+(** Run [f] under the per-function wall-clock timeout
+    ({!Config.symbolic_exec_max_seconds}). On timeout, raise a contained
+    [CFailure] via [span] (caught by the [translate_function_to_pure] handler),
+    so a diverging symbolic execution skips one function rather than hanging the
+    crate. Uses a one-shot [ITIMER_REAL] alarm; requires running on the main
+    domain, hence sequential translation. *)
+let with_symbolic_exec_timeout (span : Meta.span) (f : unit -> 'a) : 'a =
+  let seconds = !Config.symbolic_exec_max_seconds in
+  if seconds <= 0 then f ()
+  else
+    let disarm () =
+      ignore
+        (Unix.setitimer Unix.ITIMER_REAL
+           { Unix.it_interval = 0.; it_value = 0. })
+    in
+    let old_handler =
+      Sys.signal Sys.sigalrm
+        (Sys.Signal_handle
+           (fun _ ->
+             disarm ();
+             [%craise] span
+               "symbolic-execution timed out (possible divergence)"))
+    in
+    let finally () =
+      disarm ();
+      Sys.set_signal Sys.sigalrm old_handler
+    in
+    ignore
+      (Unix.setitimer Unix.ITIMER_REAL
+         { Unix.it_interval = 0.; it_value = float_of_int seconds });
+    Fun.protect ~finally f
+
 let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     (pure_type_decls : Pure.type_decl Pure.TypeDeclId.Map.t)
     (pure_global_decls : Pure.global_decl Pure.GlobalDeclId.Map.t)
@@ -302,8 +334,9 @@ let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     (fdef : fun_decl) : pure_fun_translation_no_loops option =
   try
     Some
-      (translate_function_to_pure_aux trans_ctx marked_ids pure_type_decls
-         pure_global_decls fun_sigs fdef)
+      (with_symbolic_exec_timeout fdef.item_meta.span (fun () ->
+           translate_function_to_pure_aux trans_ctx marked_ids pure_type_decls
+             pure_global_decls fun_sigs fdef))
   with CFailure error ->
     let name = name_to_string trans_ctx fdef.item_meta.name in
     let name_pattern =
