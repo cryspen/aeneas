@@ -133,9 +133,17 @@ let translate_function_to_pure_aux (trans_ctx : trans_ctx)
   TypesAnalysis.check_fun_decl_no_bound_free_implied_bounds
     trans_ctx.type_ctx.type_decls fdef;
 
-  (* Compute the symbolic ASTs, if the function is transparent *)
+  (* Compute the symbolic ASTs, if the function is transparent. If the body
+     fails to translate, keep the successful signature and fall back to an
+     opaque stub, so callers still see the function's interface. *)
   let symbolic_trans =
-    translate_function_to_symbolics trans_ctx marked_ids fdef
+    try translate_function_to_symbolics trans_ctx marked_ids fdef
+    with CFailure error ->
+      [%warn_opt_span] error.span
+        ("Could not translate the body of '"
+        ^ name_to_string trans_ctx fdef.item_meta.name
+        ^ "' because of previous error; emitting an opaque signature");
+      None
   in
 
   (* Convert the symbolic ASTs to pure ASTs: *)
@@ -263,7 +271,10 @@ let translate_function_to_pure_aux (trans_ctx : trans_ctx)
             ctx
         in
         { ctx with forward_inputs }
-    | _ -> [%craise] fdef.item_meta.span "Unreachable"
+    | Some _, None ->
+        (* The body failed to translate: emit an opaque stub, which has no
+           forward inputs. *)
+        ctx
   in
 
   (* Add the backward inputs *)
