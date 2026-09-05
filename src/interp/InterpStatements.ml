@@ -36,10 +36,15 @@ let drop_value (config : config) (span : Meta.span) (p : place) : cm_fun =
   (* Replace the value with {!Bottom} *)
   let ctx =
     (* Move the value at destination (that we will overwrite) to a dummy variable
-     * to preserve the borrows it may contain *)
+     * to preserve the borrows it may contain. Skip this when there are no loans
+     * or borrows to preserve: the dummy would otherwise live until the end of
+     * the function. *)
     let _, mv = InterpPaths.read_place span access p ctx in
-    let dummy_id = ctx.fresh_dummy_var_id () in
-    let ctx = ctx_push_dummy_var ctx dummy_id mv in
+    let ctx =
+      if tvalue_has_loans_or_borrows (Some span) ctx mv then
+        ctx_push_dummy_var ctx (ctx.fresh_dummy_var_id ()) mv
+      else ctx
+    in
     (* Update the destination to ⊥ *)
     let nv = { v with value = VBottom } in
     let ctx = write_place span access p nv ctx in
@@ -100,10 +105,14 @@ let assign_to_place (config : config) (span : Meta.span) (rv : tvalue)
   (* Retrieve the rvalue from the dummy variable *)
   let rv, ctx = remove_dummy_var span rvalue_vid ctx in
   (* Move the value at destination (that we will overwrite) to a dummy variable
-     to preserve the borrows *)
+     to preserve the borrows. Skip this when there are no loans or borrows to
+     preserve: the dummy would otherwise live until the end of the function. *)
   let _, mv = InterpPaths.read_place span Write p ctx in
-  let dest_vid = ctx.fresh_dummy_var_id () in
-  let ctx = ctx_push_dummy_var ctx dest_vid mv in
+  let ctx =
+    if tvalue_has_loans_or_borrows (Some span) ctx mv then
+      ctx_push_dummy_var ctx (ctx.fresh_dummy_var_id ()) mv
+    else ctx
+  in
   (* Write to the destination *)
   (* Checks - maybe the bookkeeping updated the rvalue and introduced bottoms *)
   [%cassert] span
