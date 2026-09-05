@@ -160,7 +160,11 @@ let analyze_module (m : crate) (funs_map : fun_decl FunDeclId.Map.t) :
 
                    Check the external globals map first (for opaque externals like
                    [u32::MAX]), then fall back to the initializer function's info. *)
-                let global = GlobalDeclId.Map.find gref.id m.global_decls in
+                let global =
+                  [%unwrap_with_span] env
+                    (GlobalDeclId.Map.find_opt gref.id m.global_decls)
+                    "Could not find the global declaration"
+                in
                 let open ExtractName in
                 let open ExternalNames in
                 let external_info =

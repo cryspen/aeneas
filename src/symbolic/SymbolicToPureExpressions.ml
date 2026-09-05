@@ -452,7 +452,9 @@ and translate_function_call_aux (call : S.call) (e : S.expr) (ctx : bs_ctx) :
               match fid with
               | Fun fid ->
                   compute_back_fun_name ctx
-                    (FunDeclId.Map.find fid ctx.fun_ctx.llbc_fun_decls)
+                    ([%unwrap_with_span] ctx.span
+                       (FunDeclId.Map.find_opt fid ctx.fun_ctx.llbc_fun_decls)
+                       "Could not find the function declaration")
               | TraitMethod (trait_ref, method_id) ->
                   Charon.GAstUtils.get_method_name ctx.decls_ctx.crate
                     trait_ref.trait_decl_ref.id method_id
@@ -828,7 +830,9 @@ and translate_cast_unsize (call : S.call) (e : S.expr) (ty0 : T.ty) (ty1 : T.ty)
   let arg = tvalue_to_texpr ctx call.ctx arg in
   let arg_mp =
     translate_opt_mplace (Some call.span) ctx.decls_ctx
-      (List.hd call.args_places)
+      ([%unwrap_with_span] ctx.span
+         (List.nth_opt call.args_places 0)
+         "Unexpected empty list of argument places")
   in
   let arg = mk_opt_mplace_texpr arg_mp arg in
 
