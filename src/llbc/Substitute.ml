@@ -21,7 +21,13 @@ let fresh_regions_with_substs (region_vars : RegionId.id list)
     RegionId.Map.of_list
       (List.map (fun var -> (var, fresh_region_id ())) region_vars)
   in
-  fun id -> RegionId.Map.find id rid_map
+  (* Catchable error rather than a raw [Not_found] on an out-of-range region var
+     id (which would bypass the [CFailure] handlers and abort the whole crate).
+     No span here, so [None]; the enclosing per-item boundary reports it. *)
+  fun id ->
+    [%unwrap_opt_span] None
+      (RegionId.Map.find_opt id rid_map)
+      "Ill-formed region substitution: unknown region variable"
 
 let make_subst_from_generics file line span (params : generic_params)
     (args : generic_args) (tr_self : trait_ref_kind) : subst =

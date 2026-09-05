@@ -878,7 +878,11 @@ let extract_type_decl_register_names (ctx : extraction_ctx) (def : type_decl) :
                 in
                 VariantId.mapi
                   (fun variant_id (variant : variant) ->
-                    (variant_id, StringMap.find variant.variant_name variant_map))
+                    ( variant_id,
+                      [%unwrap_with_span] span
+                        (StringMap.find_opt variant.variant_name variant_map)
+                        ("Could not find the variant '" ^ variant.variant_name
+                       ^ "' in the builtin type information") ))
                   variants
             | Some info ->
                 [%craise] span

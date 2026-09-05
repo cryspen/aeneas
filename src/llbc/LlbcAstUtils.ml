@@ -50,7 +50,11 @@ let lookup_fun_sig (fun_id : fun_id) (fun_decls : fun_decl FunDeclId.Map.t) :
     bound_fun_sig =
   match fun_id with
   | FRegular id ->
-      let fun_decl = FunDeclId.Map.find id fun_decls in
+      let fun_decl =
+        [%unwrap_opt_span] None
+          (FunDeclId.Map.find_opt id fun_decls)
+          "Could not find the function declaration"
+      in
       bound_fun_sig_of_decl fun_decl
   | FBuiltin aid -> Builtin.get_builtin_fun_sig aid
 

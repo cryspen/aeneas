@@ -1042,7 +1042,10 @@ and eval_switch_raw (config : config) (span : Meta.span) (data : switch_data)
         match p_v.value with
         | VAdt adt ->
             (* Evaluate the discriminant *)
-            let dv = Option.get adt.variant_id in
+            let dv =
+              [%unwrap_with_span] span adt.variant_id
+                "The value being matched on is not an enumeration"
+            in
             (* Find the branch, evaluate and continue *)
             let target =
               branch_for_case (fun case ->

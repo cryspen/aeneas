@@ -40,7 +40,10 @@ let translate_function_to_symbolics (trans_ctx : trans_ctx)
       let inputs, symb =
         evaluate_function_symbolic synthesize trans_ctx marked_ids fdef
       in
-      Some (inputs, Option.get symb)
+      Some
+        ( inputs,
+          [%unwrap_with_span] fdef.item_meta.span symb
+            "The symbolic execution did not produce an output" )
   | TargetDispatchBody targets ->
       (* Multi-target dispatch: we don't run the symbolic interpreter, we
          directly build a [TargetDispatch] node. We still need dummy symbolic
@@ -420,8 +423,7 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
            ^ bound_method.binder_value.name ^ "' of trait '" ^ trait_name
            ^ "' because of previous error\nTrait name pattern: '" ^ name_pattern
            ^ "'" ^ "\nDefinition span: "
-            ^ Errors.raw_span_to_string
-                bound_method.binder_value.item_meta.span
+            ^ Errors.raw_span_to_string bound_method.binder_value.item_meta.span
             ^ compute_local_uses_error_message trans_ctx
                 (IdTraitDecl trait_decl.def_id));
           None
@@ -1056,7 +1058,9 @@ let export_global (fmt : Format.formatter) (config : gen_config) (ctx : gen_ctx)
   let global_decls = ctx.trans_ctx.crate.global_decls in
   let global = GlobalDeclId.Map.find id global_decls in
   let global_init =
-    Option.get (Charon.GAstUtils.init_fun_id_of_global global)
+    [%unwrap_opt_span] None
+      (Charon.GAstUtils.init_fun_id_of_global global)
+      "Could not find the initializer function of the global declaration"
   in
   let trans =
     [%silent_unwrap_opt_span] None

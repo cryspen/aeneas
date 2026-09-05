@@ -248,7 +248,9 @@ let translate_trait_decl (ctx : Contexts.decls_ctx) (trait_decl : A.trait_decl)
       (T.AssocConstId.Map.to_list consts)
   in
   let methods_to_extract =
-    TraitDeclId.Map.find def_id ctx.trait_methods_to_extract
+    [%unwrap_with_span] span
+      (TraitDeclId.Map.find_opt def_id ctx.trait_methods_to_extract)
+      "Could not find the trait methods to extract"
   in
   let methods =
     List.map
@@ -362,7 +364,11 @@ let translate_trait_impl (ctx : Contexts.decls_ctx) (trait_impl : A.trait_impl)
 let translate_global (ctx : Contexts.decls_ctx) (decl : A.global_decl) :
     global_decl =
   let { A.item_meta; def_id; generics = llbc_generics; ty; src; _ } = decl in
-  let body_id = Option.get (Charon.GAstUtils.init_fun_id_of_global decl) in
+  let body_id =
+    [%unwrap_with_span] decl.item_meta.span
+      (Charon.GAstUtils.init_fun_id_of_global decl)
+      "Could not find the initializer function of the global declaration"
+  in
   let name =
     Print.name_to_string
       (Print.Contexts.decls_ctx_to_fmt_env ctx)

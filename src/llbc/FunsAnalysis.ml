@@ -164,7 +164,11 @@ let analyze_module (m : crate) (funs_map : fun_decl FunDeclId.Map.t) :
 
                    Check the builtin globals map first (for opaque builtins like
                    [u32::MAX]), then fall back to the initializer function's info. *)
-                let global = GlobalDeclId.Map.find gref.id m.global_decls in
+                let global =
+                  [%unwrap_with_span] env
+                    (GlobalDeclId.Map.find_opt gref.id m.global_decls)
+                    "Could not find the global declaration"
+                in
                 let open ExtractBuiltin in
                 let builtin_info =
                   NameMatcherMap.find_opt name_matcher_ctx global.item_meta.name
@@ -174,7 +178,10 @@ let analyze_module (m : crate) (funs_map : fun_decl FunDeclId.Map.t) :
                 | Some info -> self#may_fail info.can_fail
                 | None ->
                     self#visit_fid env
-                      (Option.get (init_fun_id_of_global global)))
+                      ([%unwrap_with_span] env
+                         (init_fun_id_of_global global)
+                         "Could not find the initializer function of the global")
+                )
             | UnaryOp (uop, _) -> can_fail := unop_can_fail uop || !can_fail
             | BinaryOp (bop, _, _) ->
                 can_fail := binop_can_fail bop || !can_fail

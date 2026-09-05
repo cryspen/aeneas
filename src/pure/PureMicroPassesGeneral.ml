@@ -155,7 +155,9 @@ let simplify_decompose_struct_visitor (ctx : ctx) (def : fun_decl) =
       | PAdt adt_pat, TAdt (TAdtId adt_id, generics) ->
           (* Detect if this is an enumeration or not *)
           let tdef =
-            TypeDeclId.Map.find adt_id ctx.trans_ctx.type_ctx.type_decls
+            [%unwrap_with_span] span
+              (TypeDeclId.Map.find_opt adt_id ctx.trans_ctx.type_ctx.type_decls)
+              "Could not find the type declaration"
           in
           let is_enum = TypesUtils.type_decl_is_enum tdef in
           (* We deconstruct the ADT with a single let-binding in two situations:
@@ -250,7 +252,9 @@ let intro_struct_updates_visitor (ctx : ctx) (def : fun_decl) =
         } ->
         (* Lookup the def *)
         let decl =
-          TypeDeclId.Map.find adt_id ctx.trans_ctx.type_ctx.type_decls
+          [%unwrap_with_span] def.item_meta.span
+            (TypeDeclId.Map.find_opt adt_id ctx.trans_ctx.type_ctx.type_decls)
+            "Could not find the type declaration"
         in
         (* Check if the def will be extracted as a tuple *)
         if
@@ -266,8 +270,10 @@ let intro_struct_updates_visitor (ctx : ctx) (def : fun_decl) =
             (* Check if the definition is recursive *)
             let is_rec =
               match
-                TypeDeclId.Map.find adt_id
-                  ctx.trans_ctx.type_ctx.type_decls_groups
+                [%unwrap_with_span] def.item_meta.span
+                  (TypeDeclId.Map.find_opt adt_id
+                     ctx.trans_ctx.type_ctx.type_decls_groups)
+                  "Could not find the type declaration group"
               with
               | NonRecGroup _ -> false
               | RecGroup _ -> true
@@ -1662,7 +1668,10 @@ let simplify_aggregates_visitor (ctx : ctx) (def : fun_decl) =
               (* This is a struct *)
               (* Retrieve the definiton, to find how many fields there are *)
               let adt_decl =
-                TypeDeclId.Map.find adt_id ctx.trans_ctx.type_ctx.type_decls
+                [%unwrap_with_span] def.item_meta.span
+                  (TypeDeclId.Map.find_opt adt_id
+                     ctx.trans_ctx.type_ctx.type_decls)
+                  "Could not find the type declaration"
               in
               let fields =
                 match adt_decl.kind with
@@ -3009,7 +3018,10 @@ let add_fuel_one (ctx : ctx) (loops : fun_decl LoopId.Map.t) (def : fun_decl) :
               (* Lookup the decl *)
               let def' : fun_decl =
                 match lp_id with
-                | None -> FunDeclId.Map.find fid' ctx.fun_decls
+                | None ->
+                    [%unwrap_with_span] span
+                      (FunDeclId.Map.find_opt fid' ctx.fun_decls)
+                      "Could not find the function declaration"
                 | Some (lp_id, _) ->
                     [%sanity_check] span (fid' = def.def_id);
                     LoopId.Map.find lp_id loops
@@ -3045,7 +3057,10 @@ let add_fuel_one (ctx : ctx) (loops : fun_decl LoopId.Map.t) (def : fun_decl) :
               (* Lookup the decl *)
               let def' : fun_decl =
                 match lp_id with
-                | None -> FunDeclId.Map.find fid' ctx.fun_decls
+                | None ->
+                    [%unwrap_with_span] span
+                      (FunDeclId.Map.find_opt fid' ctx.fun_decls)
+                      "Could not find the function declaration"
                 | Some (lp_id, _) ->
                     [%sanity_check] span (fid' = def.def_id);
                     LoopId.Map.find lp_id loops

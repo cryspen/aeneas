@@ -255,7 +255,11 @@ let symbolic_value_is_greedily_expandable (span : Meta.span option)
     | TRef _ -> true
     | TAdt { id; builtin = None; _ } ->
         (* Lookup the type of the ADT to check if we can expand it *)
-        let def = TypeDeclId.Map.find id type_decls in
+        let def =
+          [%unwrap_opt_span] span
+            (TypeDeclId.Map.find_opt id type_decls)
+            "Could not find the type declaration"
+        in
         begin
           match def.kind with
           | Struct _ | Enum [] ->
