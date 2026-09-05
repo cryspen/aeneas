@@ -313,7 +313,7 @@ theorem Slice.subslice_spec {α : Type u} [Inhabited α] (s : Slice α) (r : Ran
   := by
   unfold subslice
   split
-  · simp only [slice, partialSpec_ok, true_and]
+  · simp only [slice, partialSpec_ok]
     refine ⟨by grind, by grind, by grind, by grind, ?_⟩
     intro i _
     grind [List.getElem!_slice r.start.val r.end.val i s.val (by scalar_tac)]
