@@ -29,7 +29,8 @@ let get_adt_field_types (span : Meta.span)
         [%unwrap_with_span] span
           (TypeDeclId.Map.find_opt def_id type_decls)
           ("Could not find the declaration of type "
-         ^ TypeDeclId.to_string def_id ^ " (it may have failed to translate)")
+          ^ TypeDeclId.to_string def_id
+          ^ " (it may have failed to translate)")
       in
       type_decl_get_instantiated_fields_types def variant_id generics
   | TBuiltin aty -> (
@@ -74,7 +75,7 @@ let get_adt_field_types (span : Meta.span)
           if variant_id = fuel_zero_id then []
           else if variant_id = fuel_succ_id then [ mk_fuel_ty ]
           else [%craise] span "Unreachable: improper variant id for fuel type"
-      | TArray | TSlice | TStr | TRawPtr _ ->
+      | TArray | TSlice | TStr | TRawPtr _ | TErased ->
           (* Array: when not symbolic values (for instance, because of aggregates),
              the array expressions are introduced as struct updates *)
           [%craise] span "Attempting to access the fields of an opaque type")

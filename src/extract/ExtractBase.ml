@@ -1154,6 +1154,7 @@ let builtin_adts () : (builtin_ty * string) list =
         (TStr, "Str");
         (TRawPtr Mut, "MutRawPtr");
         (TRawPtr Const, "ConstRawPtr");
+        (TErased, "Erased");
       ]
   | Coq | FStar | HOL4 ->
       [
@@ -1165,6 +1166,7 @@ let builtin_adts () : (builtin_ty * string) list =
         (TStr, "str");
         (TRawPtr Mut, "mut_raw_ptr");
         (TRawPtr Const, "const_raw_ptr");
+        (TErased, "erased");
       ]
 
 let builtin_struct_constructors () : (builtin_ty * string) list =
@@ -2055,6 +2057,7 @@ let ctx_compute_var_basename (span : Meta.span) (ctx : extraction_ctx)
           | TBuiltin TArray -> "a"
           | TBuiltin TSlice -> "s"
           | TBuiltin TStr -> "s"
+          | TBuiltin TErased -> "x"
           | TBuiltin (TRawPtr _) -> "p"
           | TAdtId adt_id ->
               let def =
