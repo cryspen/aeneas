@@ -438,6 +438,14 @@ structure Dyn (Trait : Type u → Type v) where
   /-- The value itself -/
   value : self
 
+/-!
+# Erased
+-/
+
+/-- Placeholder standing in for a type sub-term that could not be translated
+    (e.g. an arrow type or a generic associated type). -/
+opaque Erased : Type := Unit
+
 end Std
 
 end Aeneas

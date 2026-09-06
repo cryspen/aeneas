@@ -970,6 +970,7 @@ let mk_result_ty (ty : ty) : ty =
   TAdt (TBuiltin TResult, mk_generic_args_from_types [ ty ])
 
 let mk_error_ty : ty = TAdt (TBuiltin TError, empty_generic_args)
+let mk_erased_ty : ty = TAdt (TBuiltin TErased, empty_generic_args)
 let mk_fuel_ty : ty = TAdt (TBuiltin TFuel, empty_generic_args)
 
 let mk_error (error : VariantId.id) : texpr =
