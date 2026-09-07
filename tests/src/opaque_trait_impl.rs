@@ -1,4 +1,5 @@
 //@ charon-args=--exclude=opaque_trait_impl::{impl opaque_trait_impl::Tr for opaque_trait_impl::S}::m
+//@[!lean] skip
 //! When a trait implementation's method is excluded (or fails to translate), the
 //! instance is emitted as an opaque axiom rather than a record with a `sorry`
 //! field, so that declarations referring to the instance still typecheck.
