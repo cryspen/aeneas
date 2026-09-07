@@ -95,6 +95,11 @@ type builtin_ty =
           declarations for the slices). For now, we use a dedicated type to
           "mark" the raw pointers, and make sure that those functions are
           actually not used in the translation. *)
+  | TErased
+      (** Opaque placeholder for a type sub-term we can't translate (e.g. an
+          arrow type or a generic associated type). Substituting it for the
+          untranslatable sub-term keeps the enclosing type or signature
+          translatable. *)
 [@@deriving show, ord]
 
 type array_or_slice = Array | Slice [@@deriving show, ord]

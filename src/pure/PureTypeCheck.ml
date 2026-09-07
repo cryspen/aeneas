@@ -66,7 +66,7 @@ let get_adt_field_types (span : Meta.span)
           if variant_id = fuel_zero_id then []
           else if variant_id = fuel_succ_id then [ mk_fuel_ty ]
           else [%craise] span "Unreachable: improper variant id for fuel type"
-      | TArray | TSlice | TStr | TRawPtr _ ->
+      | TArray | TSlice | TStr | TRawPtr _ | TErased ->
           (* Array: when not symbolic values (for instance, because of aggregates),
              the array expressions are introduced as struct updates *)
           [%craise] span "Attempting to access the fields of an opaque type")

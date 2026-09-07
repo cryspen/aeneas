@@ -176,19 +176,17 @@ let rec translate_sty (span : Meta.span option) (ty : T.ty) : ty =
       let generics = { types = [ ty ]; const_generics = []; trait_refs = [] } in
       TAdt (TBuiltin (TRawPtr mut), generics)
   | TTraitType (trait_ref, type_name, generics) ->
-      let trait_ref = translate_strait_ref span trait_ref in
-      [%cassert_opt_span] span
-        (generics = TypesUtils.empty_generic_args)
-        "Unimplemented";
-      TTraitType (trait_ref, type_name)
-  | TFnDef _ | TFnPtr _ ->
-      [%craise_opt_span] span "Arrow types are not supported yet"
+      if generics = TypesUtils.empty_generic_args then
+        let trait_ref = translate_strait_ref span trait_ref in
+        TTraitType (trait_ref, type_name)
+      else mk_erased_ty
+  | TFnDef _ | TFnPtr _ -> mk_erased_ty
   | TDynTrait { binder } ->
       let params, _ = translate_generic_params span binder.binder_params in
       TDynTrait { params }
   | TError _ ->
       [%craise_opt_span] span "Found type error in the output of charon"
-  | _ -> [%craise_opt_span] span ("unsupported type: " ^ T.show_ty ty)
+  | _ -> mk_erased_ty
 
 and translate_sgeneric_args (span : Meta.span option)
     (generics : T.generic_args) : generic_args =
@@ -198,8 +196,8 @@ and translate_strait_ref (span : Meta.span option) (tr : T.trait_ref) :
     trait_ref =
   translate_trait_ref span (translate_sty span) tr
 
-and translate_strait_decl_ref (span : Meta.span option)
-    (tr : T.trait_decl_ref) : trait_decl_ref =
+and translate_strait_decl_ref (span : Meta.span option) (tr : T.trait_decl_ref)
+    : trait_decl_ref =
   translate_trait_decl_ref span (translate_sty span) tr
 
 and translate_trait_clause (span : Meta.span option) (clause : T.trait_param) :
@@ -404,38 +402,34 @@ let rec translate_fwd_ty (span : Meta.span option) (decls_ctx : C.decls_ctx)
       let generics = { types = [ ty ]; const_generics = []; trait_refs = [] } in
       TAdt (TBuiltin (TRawPtr mut), generics)
   | TTraitType (trait_ref, type_name, generics) ->
-      [%cassert_opt_span] span
-        (generics = TypesUtils.empty_generic_args)
-        "Unimplemented";
-      let trait_ref = translate_fwd_trait_ref span decls_ctx trait_ref in
-      TTraitType (trait_ref, type_name)
+      if generics = TypesUtils.empty_generic_args then
+        let trait_ref = translate_fwd_trait_ref span decls_ctx trait_ref in
+        TTraitType (trait_ref, type_name)
+      else mk_erased_ty
   | TFnDef { binder_regions; binder_value = { kind; generics } } -> (
-      [%cassert_opt_span] span (binder_regions = []) "Unimplemented";
-      let generics = translate_fwd_generic_args span decls_ctx generics in
-      match kind with
-      | T.FunId (FBuiltin _) -> [%craise_opt_span] span "Unimplemented"
-      | T.FunId (FRegular fid) ->
-          let fdecl =
-            [%unwrap_opt_span] span
-              (FunDeclId.Map.find_opt fid decls_ctx.fun_ctx.fun_decls)
-              "Could not lookup a function declaration"
-          in
-          let sigs = translate_fun_sigs_from_decl decls_ctx fdecl in
-          let sg = sigs.sg in
-          (* Check that the function lives in the expected effect - otherwise we
-                 have to lift it *)
-          [%cassert_opt_span] span sg.fwd_info.effect_info.can_fail
-            "Unimplemented";
-          [%cassert_opt_span] span
-            (RegionGroupId.Map.for_all
-               (fun _ (e : fun_effect_info) -> not e.can_fail)
-               sg.back_effect_info)
-            "Unimplemented";
-          (* Substitute *)
-          let subst = make_subst_from_generics sg.generics generics in
-          ty_substitute subst sigs.ty
-      | T.TraitMethod _ -> [%craise_opt_span] span "Unimplemented")
-  | TFnPtr _ -> [%craise_opt_span] span "Arrow types are not supported yet"
+      if binder_regions <> [] then mk_erased_ty
+      else
+        let generics = translate_fwd_generic_args span decls_ctx generics in
+        match kind with
+        | T.FunId (FRegular fid) -> (
+            match FunDeclId.Map.find_opt fid decls_ctx.fun_ctx.fun_decls with
+            | None -> mk_erased_ty
+            | Some fdecl ->
+                let sigs = translate_fun_sigs_from_decl decls_ctx fdecl in
+                let sg = sigs.sg in
+                (* We can only inline the type of a function living in the
+                   expected effect *)
+                if
+                  sg.fwd_info.effect_info.can_fail
+                  && RegionGroupId.Map.for_all
+                       (fun _ (e : fun_effect_info) -> not e.can_fail)
+                       sg.back_effect_info
+                then
+                  let subst = make_subst_from_generics sg.generics generics in
+                  ty_substitute subst sigs.ty
+                else mk_erased_ty)
+        | T.FunId (FBuiltin _) | T.TraitMethod _ -> mk_erased_ty)
+  | TFnPtr _ -> mk_erased_ty
   | TDynTrait { binder } ->
       let params, _predicates =
         translate_generic_params span binder.binder_params
@@ -443,7 +437,7 @@ let rec translate_fwd_ty (span : Meta.span option) (decls_ctx : C.decls_ctx)
       TDynTrait { params }
   | TError _ ->
       [%craise_opt_span] span "Found type error in the output of charon"
-  | _ -> [%craise_opt_span] span ("unsupported type: " ^ T.show_ty ty)
+  | _ -> mk_erased_ty
 
 and translate_fwd_generic_args (span : Meta.span option)
     (decls_ctx : C.decls_ctx) (generics : T.generic_args) : generic_args =
@@ -546,18 +540,15 @@ and compute_back_ty_num_levels (span : Meta.span option)
         (* TODO: not sure what to do here *)
         save_count outer_regions
     | TTraitType (trait_ref, _, generics) ->
-        [%sanity_check_opt_span] span
-          (TypesUtils.trait_ref_kind_is_local_clause_or_builtin trait_ref.kind);
-        [%cassert_opt_span] span
-          (generics = TypesUtils.empty_generic_args)
-          "Unimplemented";
+        if generics = TypesUtils.empty_generic_args then
+          [%sanity_check_opt_span] span
+            (TypesUtils.trait_ref_kind_is_local_clause_or_builtin trait_ref.kind);
         save_count outer_regions
-    | TFnDef _ | TFnPtr _ ->
-        [%craise_opt_span] span "Arrow types are not supported yet"
+    | TFnDef _ | TFnPtr _ -> save_count outer_regions
     | TDynTrait _ -> save_count outer_regions
     | TError _ ->
         [%craise_opt_span] span "Found type error in the output of charon"
-    | _ -> [%craise_opt_span] span ("unsupported type: " ^ T.show_ty ty)
+    | _ -> save_count outer_regions
   in
   explore T.RegionGroupId.Set.empty ty;
   !max_level
@@ -680,18 +671,15 @@ and translate_back_ty_aux (span : Meta.span option) (decls_ctx : C.decls_ctx)
         (* TODO: not sure what to do here *)
         stop outer_regions ty
     | TTraitType (trait_ref, _, generics) ->
-        [%sanity_check_opt_span] span
-          (TypesUtils.trait_ref_kind_is_local_clause_or_builtin trait_ref.kind);
-        [%cassert_opt_span] span
-          (generics = TypesUtils.empty_generic_args)
-          "Unimplemented";
+        if generics = TypesUtils.empty_generic_args then
+          [%sanity_check_opt_span] span
+            (TypesUtils.trait_ref_kind_is_local_clause_or_builtin trait_ref.kind);
         stop outer_regions ty
-    | TFnDef _ | TFnPtr _ ->
-        [%craise_opt_span] span "Arrow types are not supported yet"
+    | TFnDef _ | TFnPtr _ -> stop outer_regions ty
     | TDynTrait _ -> stop outer_regions ty
     | TError _ ->
         [%craise_opt_span] span "Found type error in the output of charon"
-    | _ -> [%craise_opt_span] span ("unsupported type: " ^ T.show_ty ty)
+    | _ -> stop outer_regions ty
   in
   explore T.RegionGroupId.Set.empty ty
 

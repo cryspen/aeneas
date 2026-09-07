@@ -280,6 +280,7 @@ let builtin_ty_to_string (aty : builtin_ty) : string =
   | TStr -> "Str"
   | TRawPtr Mut -> "MutRawPtr"
   | TRawPtr Const -> "ConstRawPtr"
+  | TErased -> "Erased"
 
 let type_id_to_string (env : fmt_env) (id : type_id) : string =
   match id with
@@ -509,7 +510,7 @@ let adt_variant_to_string ?(span = None) (env : fmt_env) (adt_id : type_id)
   | TBuiltin aty -> (
       (* Builtin type *)
       match aty with
-      | TArray | TSlice | TStr | TRawPtr _ ->
+      | TArray | TSlice | TStr | TRawPtr _ | TErased ->
           (* Those types are opaque: we can't get there *)
           [%craise_opt_span] span "Unreachable"
       | TResult ->
@@ -562,7 +563,7 @@ let adt_field_to_string ?(span = None) (env : fmt_env) (adt_id : type_id)
   | TBuiltin aty -> (
       (* Builtin type *)
       match aty with
-      | TFuel | TArray | TSlice | TStr ->
+      | TFuel | TArray | TSlice | TStr | TErased ->
           (* Opaque types: we can't get there *)
           [%craise_opt_span] span "Unreachable"
       | TResult | TError | TSum | TLoopResult | TRawPtr _ ->
@@ -635,7 +636,7 @@ and adt_pat_to_string_core (span : Meta.span option) (env : fmt_env)
     | TAdt (TBuiltin aty, _) -> (
         (* Builtin type *)
         match aty with
-        | TRawPtr _ ->
+        | TRawPtr _ | TErased ->
             (* This type is opaque: we can't get there *)
             [%craise_opt_span] span "Unreachable"
         | TResult ->

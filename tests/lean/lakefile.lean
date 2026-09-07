@@ -112,5 +112,6 @@ package «tests» {}
 @[default_target] lean_lib TargetFeatures
 @[default_target] lean_lib Traits
 @[default_target] lean_lib Tutorial
+@[default_target] lean_lib TypeErasure
 @[default_target] lean_lib Vec
 @[default_target] lean_lib VecIter
