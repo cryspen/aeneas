@@ -3666,6 +3666,21 @@ let extract_trait_impl_method_items (ctx : extraction_ctx) (fmt : F.formatter)
     F.pp_print_space fmt ();
     extract_admit fmt
 
+(** A trait implementation must be emitted as an opaque axiom (rather than a
+    record instance) when one of the items it should provide is missing - e.g. a
+    method or constant whose definition failed to translate. Building the record
+    would require a [sorry] for the missing field. *)
+let trait_impl_is_opaque (ctx : extraction_ctx) (impl : trait_impl) : bool =
+  List.exists
+    (fun (_, _, (fn : fun_decl_ref binder)) ->
+      Option.is_none (ctx_lookup_fun_decl_info ctx fn.binder_value.fun_id))
+    impl.methods
+  || List.exists
+       (fun (_, _, (gref : global_decl_ref)) ->
+         Option.is_none
+           (GlobalDeclId.Map.find_opt gref.global_id ctx.trans_globals))
+       impl.consts
+
 (** Extract a trait implementation *)
 let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
     ~(is_rec : bool) (impl : trait_impl) : unit =
@@ -3673,6 +3688,9 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
   let span = impl.item_meta.span in
   (* Retrieve the impl name *)
   let impl_name = ctx_get_trait_impl span impl.def_id ctx in
+  (* If one of the impl's items is missing, emit an opaque axiom instance rather
+     than a record with a [sorry] field. *)
+  let is_opaque = trait_impl_is_opaque ctx impl in
   (* Add a break before *)
   F.pp_print_break fmt 0 0;
   (* Print a comment to link the extracted type to its original rust definition *)
@@ -3710,7 +3728,9 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
        span);
     F.pp_print_break fmt 0 0;
     (* Extract the attributes *)
-    let attributes = if backend () = Lean then [ "reducible" ] else [] in
+    let attributes =
+      if backend () = Lean && not is_opaque then [ "reducible" ] else []
+    in
     extract_attributes span ctx fmt name (Some generics) attributes
       "rust_trait_impl" []
       ~is_external:(not impl.item_meta.is_local)
@@ -3733,7 +3753,10 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
   (* Open the box for the name + generics *)
   F.pp_open_hovbox fmt ctx.indent_incr;
   (* Lean only: we have a special elaboration if the impl is recursive *)
-  (if is_rec then (
+  (if is_opaque then (
+     F.pp_print_string fmt "axiom";
+     F.pp_print_space fmt ())
+   else if is_rec then (
      F.pp_print_string fmt "impl_def";
      F.pp_print_space fmt ())
    else
@@ -3786,141 +3809,152 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
 
   let is_empty = trait_impl_is_empty impl in
 
-  F.pp_print_space fmt ();
-  if is_empty && backend () = FStar then (
-    F.pp_print_string fmt "= ()";
-    (* Outer box *)
-    F.pp_close_box fmt ())
-  else if is_empty && backend () = Coq then (
-    (* Coq is not very good at infering constructors *)
-    let cons =
-      ctx_get_trait_constructor span impl.impl_trait.trait_decl_id ctx
-    in
-    F.pp_print_string fmt (":= " ^ cons ^ ".");
-    (* Outer box *)
+  if is_opaque then (
+    (* An opaque axiom instance has no body: close the name and inner boxes. *)
+    F.pp_close_box fmt ();
     F.pp_close_box fmt ())
   else (
-    if backend () = Lean then F.pp_print_string fmt ":= {"
-    else if backend () = Coq then F.pp_print_string fmt ":= {|"
-    else F.pp_print_string fmt "= {";
+    F.pp_print_space fmt ();
+    if is_empty && backend () = FStar then (
+      F.pp_print_string fmt "= ()";
+      (* Outer box *)
+      F.pp_close_box fmt ())
+    else if is_empty && backend () = Coq then (
+      (* Coq is not very good at infering constructors *)
+      let cons =
+        ctx_get_trait_constructor span impl.impl_trait.trait_decl_id ctx
+      in
+      F.pp_print_string fmt (":= " ^ cons ^ ".");
+      (* Outer box *)
+      F.pp_close_box fmt ())
+    else (
+      if backend () = Lean then F.pp_print_string fmt ":= {"
+      else if backend () = Coq then F.pp_print_string fmt ":= {|"
+      else F.pp_print_string fmt "= {";
 
-    (* Close the box for the name + generics *)
-    F.pp_close_box fmt ();
+      (* Close the box for the name + generics *)
+      F.pp_close_box fmt ();
 
-    (*
-     * Extract the items
-     *)
-    let trait_decl_id = impl.impl_trait.trait_decl_id in
-    let trait_decl = TraitDeclId.Map.find trait_decl_id ctx.crate.trait_decls in
+      (*
+       * Extract the items
+       *)
+      let trait_decl_id = impl.impl_trait.trait_decl_id in
+      let trait_decl =
+        TraitDeclId.Map.find trait_decl_id ctx.crate.trait_decls
+      in
 
-    (* The constants *)
-    List.iter
-      (fun (const_id, _, gref) ->
-        let item_name = ctx_get_trait_const span trait_decl_id const_id ctx in
-        (* Lookup the information about the explicit/implicit parameters *)
-        let explicit =
-          match GlobalDeclId.Map.find_opt gref.global_id ctx.trans_globals with
-          | None ->
-              (* The declaration might be missing if there was an error *) None
-          | Some d -> Some d.explicit_info
-        in
-        let print_params () =
-          extract_generic_args span ctx fmt TypeDeclId.Set.empty ~explicit
-            gref.global_generics
-        in
-        let global_decl =
-          [%unwrap_with_span] span
-            (GlobalDeclId.Map.find_opt gref.global_id ctx.trans_globals)
-            "Internal error"
-        in
-        let needs_brackets =
-          (not global_decl.can_fail)
-          &&
-          match explicit with
-          | Some explicit ->
-              PureUtils.explicit_info_has_explicit explicit
-              || gref.global_generics.trait_refs <> []
-          | None -> gref.global_generics <> empty_generic_args
-        in
-        let ty () =
-          F.pp_print_space fmt ();
-          if not global_decl.can_fail then (
-            let ok =
-              match backend () with
-              | Lean -> "ok"
-              | _ -> "Ok"
-            in
-            F.pp_print_string fmt ok;
-            F.pp_print_space fmt ());
-          if needs_brackets then F.pp_print_string fmt "(";
-          F.pp_print_string fmt (ctx_get_global span gref.global_id ctx);
-          print_params ();
-          if needs_brackets then F.pp_print_string fmt ")"
-        in
+      (* The constants *)
+      List.iter
+        (fun (const_id, _, gref) ->
+          let item_name = ctx_get_trait_const span trait_decl_id const_id ctx in
+          (* Lookup the information about the explicit/implicit parameters *)
+          let explicit =
+            match
+              GlobalDeclId.Map.find_opt gref.global_id ctx.trans_globals
+            with
+            | None ->
+                (* The declaration might be missing if there was an error *)
+                None
+            | Some d -> Some d.explicit_info
+          in
+          let print_params () =
+            extract_generic_args span ctx fmt TypeDeclId.Set.empty ~explicit
+              gref.global_generics
+          in
+          let global_decl =
+            [%unwrap_with_span] span
+              (GlobalDeclId.Map.find_opt gref.global_id ctx.trans_globals)
+              "Internal error"
+          in
+          let needs_brackets =
+            (not global_decl.can_fail)
+            &&
+            match explicit with
+            | Some explicit ->
+                PureUtils.explicit_info_has_explicit explicit
+                || gref.global_generics.trait_refs <> []
+            | None -> gref.global_generics <> empty_generic_args
+          in
+          let ty () =
+            F.pp_print_space fmt ();
+            if not global_decl.can_fail then (
+              let ok =
+                match backend () with
+                | Lean -> "ok"
+                | _ -> "Ok"
+              in
+              F.pp_print_string fmt ok;
+              F.pp_print_space fmt ());
+            if needs_brackets then F.pp_print_string fmt "(";
+            F.pp_print_string fmt (ctx_get_global span gref.global_id ctx);
+            print_params ();
+            if needs_brackets then F.pp_print_string fmt ")"
+          in
 
-        extract_trait_impl_item ctx fmt item_name ty)
-      impl.consts;
+          extract_trait_impl_item ctx fmt item_name ty)
+        impl.consts;
 
-    (* The types *)
-    List.iter
-      (fun (type_id, _, ty) ->
-        (* Extract the type *)
-        let item_name = ctx_get_trait_type span trait_decl_id type_id ctx in
-        let ty () =
-          F.pp_print_space fmt ();
-          extract_ty span ctx fmt TypeDeclId.Set.empty ~inside:false ty
-        in
-        extract_trait_impl_item ctx fmt item_name ty)
-      impl.types;
+      (* The types *)
+      List.iter
+        (fun (type_id, _, ty) ->
+          (* Extract the type *)
+          let item_name = ctx_get_trait_type span trait_decl_id type_id ctx in
+          let ty () =
+            F.pp_print_space fmt ();
+            extract_ty span ctx fmt TypeDeclId.Set.empty ~inside:false ty
+          in
+          extract_trait_impl_item ctx fmt item_name ty)
+        impl.types;
 
-    (* The parent clauses *)
-    List.iter
-      (fun (clause, trait_ref) ->
-        let item_name =
-          ctx_get_trait_parent_clause span trait_decl_id clause.T.clause_id ctx
-        in
-        let ty () =
-          F.pp_print_space fmt ();
-          extract_trait_ref span ctx fmt TypeDeclId.Set.empty ~inside:false
-            trait_ref
-        in
-        extract_trait_impl_item ctx fmt item_name ty)
-      (List.combine trait_decl.implied_clauses impl.parent_trait_refs);
+      (* The parent clauses *)
+      List.iter
+        (fun (clause, trait_ref) ->
+          let item_name =
+            ctx_get_trait_parent_clause span trait_decl_id clause.T.clause_id
+              ctx
+          in
+          let ty () =
+            F.pp_print_space fmt ();
+            extract_trait_ref span ctx fmt TypeDeclId.Set.empty ~inside:false
+              trait_ref
+          in
+          extract_trait_impl_item ctx fmt item_name ty)
+        (List.combine trait_decl.implied_clauses impl.parent_trait_refs);
 
-    (* The methods.
+      (* The methods.
 
        If the [filter_trait_impl_methods] option is on, we skip the methods
        which are absent from the model of the trait declaration. *)
-    let keep_method : string -> bool =
-      if not !filter_trait_impl_methods then fun _ -> true
-      else
-        let pure_trait_decl =
-          [%unwrap_with_span] span
-            (TraitDeclId.Map.find_opt trait_decl_id ctx.trans_trait_decls)
-            "Could not lookup the translated trait declaration"
-        in
-        match pure_trait_decl.builtin_info with
-        | None -> fun _ -> true
-        | Some info ->
-            let method_names =
-              Collections.StringSet.of_list (List.map fst info.methods)
-            in
-            fun item_name -> Collections.StringSet.mem item_name method_names
-    in
-    List.iter
-      (fun (method_id, name, bound_fn) ->
-        if keep_method name then
-          extract_trait_impl_method_items ctx fmt impl method_id bound_fn)
-      impl.methods;
+      let keep_method : string -> bool =
+        if not !filter_trait_impl_methods then fun _ -> true
+        else
+          let pure_trait_decl =
+            [%unwrap_with_span] span
+              (TraitDeclId.Map.find_opt trait_decl_id ctx.trans_trait_decls)
+              "Could not lookup the translated trait declaration"
+          in
+          match pure_trait_decl.builtin_info with
+          | None -> fun _ -> true
+          | Some info ->
+              let method_names =
+                Collections.StringSet.of_list (List.map fst info.methods)
+              in
+              fun item_name -> Collections.StringSet.mem item_name method_names
+      in
+      List.iter
+        (fun (method_id, name, bound_fn) ->
+          if keep_method name then
+            extract_trait_impl_method_items ctx fmt impl method_id bound_fn)
+        impl.methods;
 
-    (* Close the outer boxes for the definition, as well as the brackets *)
-    F.pp_close_box fmt ();
-    if backend () = Coq then (
-      F.pp_print_space fmt ();
-      F.pp_print_string fmt "|}.")
-    else if (not (backend () = FStar)) || not is_empty then (
-      F.pp_print_space fmt ();
-      F.pp_print_string fmt "}"));
+      (* Close the outer boxes for the definition, as well as the brackets *)
+      F.pp_close_box fmt ();
+      if backend () = Coq then (
+        F.pp_print_space fmt ();
+        F.pp_print_string fmt "|}.")
+      else if (not (backend () = FStar)) || not is_empty then (
+        F.pp_print_space fmt ();
+        F.pp_print_string fmt "}")));
   F.pp_close_box fmt ();
   (* Add breaks to insert new lines between definitions *)
   F.pp_print_break fmt 0 0
