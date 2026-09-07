@@ -1,3 +1,4 @@
+//@[!lean] skip
 //! An arrow-typed field cannot be translated, so it is replaced by the opaque
 //! `Erased` placeholder: the containing type and its callers still translate,
 //! instead of the whole type being dropped.
