@@ -317,16 +317,27 @@ let generic_args_substitute (subst : subst) (generics : generic_args) :
   in
   visitor#visit_generic_args subst generics
 
+(* The substitution closures below use catchable errors rather than raw
+   [Map.find]: an out-of-range variable id (e.g. from a malformed or opacified
+   generic instantiation) would otherwise raise a raw [Not_found] that bypasses
+   the [CFailure] handlers and aborts the whole crate. We have no span here, so
+   we use [None] - the enclosing per-item boundary reports the failing item. *)
 let make_type_subst (vars : type_param list) (tys : ty list) :
     TypeVarId.id -> ty =
   let var_ids = List.map (fun k -> (k : type_param).index) vars in
   let mp = TypeVarId.Map.of_list (List.combine var_ids tys) in
-  fun id -> TypeVarId.Map.find id mp
+  fun id ->
+    [%unwrap_opt_span] None
+      (TypeVarId.Map.find_opt id mp)
+      "Ill-formed type substitution: unknown type variable"
 
 let make_const_generic_subst_from_var_ids (var_ids : ConstGenericVarId.id list)
     (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
   let map = ConstGenericVarId.Map.of_list (List.combine var_ids cgs) in
-  fun varid -> ConstGenericVarId.Map.find varid map
+  fun varid ->
+    [%unwrap_opt_span] None
+      (ConstGenericVarId.Map.find_opt varid map)
+      "Ill-formed const-generic substitution: unknown const-generic variable"
 
 let make_const_generic_subst (vars : const_generic_param list)
     (cgs : const_generic list) : ConstGenericVarId.id -> const_generic =
@@ -338,7 +349,10 @@ let make_trait_subst (clauses : trait_param list) (refs : trait_ref list) :
   let clauses = List.map (fun x -> x.clause_id) clauses in
   let refs = List.map (fun (x : trait_ref) -> x.trait_id) refs in
   let mp = TraitClauseId.Map.of_list (List.combine clauses refs) in
-  fun id -> TraitClauseId.Map.find id mp
+  fun id ->
+    [%unwrap_opt_span] None
+      (TraitClauseId.Map.find_opt id mp)
+      "Ill-formed trait substitution: unknown trait clause"
 
 (** Like [make_subst_from_generics] but also substitute the [Self] clause. Use
     this when substituting for trait generics. *)
@@ -964,7 +978,7 @@ let literal_as_integer (literal : literal_type) : integer_type =
   match literal with
   | TInt ty -> Signed ty
   | TUInt ty -> Unsigned ty
-  | _ -> raise (Failure "Unreachable")
+  | _ -> [%craise_opt_span] None "Unexpected: not an integer literal type"
 
 let mk_result_ty (ty : ty) : ty =
   TAdt (TBuiltin TResult, mk_generic_args_from_types [ ty ])
@@ -1416,7 +1430,7 @@ let type_decl_from_type_id_is_tuple_struct (ctx : TypesAnalysis.type_infos)
   match id with
   | TTuple -> true
   | TAdtId id ->
-      let info = TypeDeclId.Map.find id ctx in
+      let info = TypesUtils.type_info_find ctx id in
       info.is_tuple_struct
   | TBuiltin _ -> false
 
@@ -2686,7 +2700,11 @@ let tpat_decomposes_enum span (type_decls : type_decl TypeDeclId.Map.t)
         let type_id, _ = ty_as_adt span ty in
         match type_id with
         | TAdtId id ->
-            let decl = TypeDeclId.Map.find id type_decls in
+            let decl =
+              [%unwrap_with_span] span
+                (TypeDeclId.Map.find_opt id type_decls)
+                "Could not find the type declaration"
+            in
             begin
               match decl.kind with
               | Struct _ | Opaque -> ()

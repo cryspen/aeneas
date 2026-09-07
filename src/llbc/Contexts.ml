@@ -248,7 +248,9 @@ let ctx_lookup_var_value (span : Meta.span) (ctx : eval_ctx) (vid : LocalId.id)
 (** Retrieve a const generic value in an evaluation context *)
 let ctx_lookup_const_generic_value (ctx : eval_ctx) (vid : ConstGenericVarId.id)
     : tvalue =
-  Types.ConstGenericVarId.Map.find vid ctx.const_generic_vars_map
+  [%unwrap_opt_span] None
+    (Types.ConstGenericVarId.Map.find_opt vid ctx.const_generic_vars_map)
+    "Could not find the const generic variable value"
 
 (** Update a variable's value in the current frame.
 
@@ -484,7 +486,11 @@ let ctx_set_abs_can_end (span : Meta.span) (ctx : eval_ctx) (abs_id : AbsId.id)
   fst (ctx_subst_abs span ctx abs_id abs)
 
 let ctx_type_decl_is_rec (ctx : eval_ctx) (id : TypeDeclId.id) : bool =
-  let decl_group = TypeDeclId.Map.find id ctx.type_ctx.type_decls_groups in
+  let decl_group =
+    [%unwrap_opt_span] None
+      (TypeDeclId.Map.find_opt id ctx.type_ctx.type_decls_groups)
+      "Could not find the type declaration group"
+  in
   match decl_group with
   | RecGroup _ -> true
   | NonRecGroup _ -> false

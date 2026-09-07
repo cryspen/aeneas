@@ -356,9 +356,13 @@ let initialize_symbolic_context_for_fun (ctx : decls_ctx)
   in
   (* Split the variables between return var, inputs and remaining locals *)
   let body = [%add_loc] body_as_body_exn fdef.body in
-  let ret_var = List.hd body.locals.locals in
+  let ret_var, other_locals =
+    match body.locals.locals with
+    | ret_var :: other_locals -> (ret_var, other_locals)
+    | [] -> [%craise] span "Unexpected empty list of local variables"
+  in
   let input_vars, local_vars =
-    Collections.List.split_at (List.tl body.locals.locals) body.locals.arg_count
+    Collections.List.split_at other_locals body.locals.arg_count
   in
   (* Push the return variable (initialized with ⊥) *)
   let ctx = ctx_push_uninitialized_var span ctx ret_var in

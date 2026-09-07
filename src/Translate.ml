@@ -40,7 +40,10 @@ let translate_function_to_symbolics (trans_ctx : trans_ctx)
       let inputs, symb =
         evaluate_function_symbolic synthesize trans_ctx marked_ids fdef
       in
-      Some (inputs, Option.get symb)
+      Some
+        ( inputs,
+          [%unwrap_with_span] fdef.item_meta.span symb
+            "The symbolic execution did not produce an output" )
   | TargetDispatchBody targets ->
       (* Multi-target dispatch: we don't run the symbolic interpreter, we
          directly build a [TargetDispatch] node. We still need dummy symbolic
@@ -284,6 +287,37 @@ let translate_function_to_pure_aux (trans_ctx : trans_ctx)
   (* *)
   f
 
+(** Run [f] under the per-function wall-clock timeout
+    ({!Config.symbolic_exec_max_seconds}). On timeout, raise a contained
+    [CFailure] via [span] (caught by the [translate_function_to_pure] handler),
+    so a diverging symbolic execution skips one function rather than hanging the
+    crate. Uses a one-shot [ITIMER_REAL] alarm; requires running on the main
+    domain, hence sequential translation. *)
+let with_symbolic_exec_timeout (span : Meta.span) (f : unit -> 'a) : 'a =
+  let seconds = !Config.symbolic_exec_max_seconds in
+  if seconds <= 0 then f ()
+  else
+    let disarm () =
+      ignore
+        (Unix.setitimer Unix.ITIMER_REAL
+           { Unix.it_interval = 0.; it_value = 0. })
+    in
+    let old_handler =
+      Sys.signal Sys.sigalrm
+        (Sys.Signal_handle
+           (fun _ ->
+             disarm ();
+             [%craise] span "symbolic-execution timed out (possible divergence)"))
+    in
+    let finally () =
+      disarm ();
+      Sys.set_signal Sys.sigalrm old_handler
+    in
+    ignore
+      (Unix.setitimer Unix.ITIMER_REAL
+         { Unix.it_interval = 0.; it_value = float_of_int seconds });
+    Fun.protect ~finally f
+
 let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     (pure_type_decls : Pure.type_decl Pure.TypeDeclId.Map.t)
     (pure_global_decls : Pure.global_decl Pure.GlobalDeclId.Map.t)
@@ -291,8 +325,9 @@ let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
     (fdef : fun_decl) : pure_fun_translation_no_loops option =
   try
     Some
-      (translate_function_to_pure_aux trans_ctx marked_ids pure_type_decls
-         pure_global_decls fun_sigs fdef)
+      (with_symbolic_exec_timeout fdef.item_meta.span (fun () ->
+           translate_function_to_pure_aux trans_ctx marked_ids pure_type_decls
+             pure_global_decls fun_sigs fdef))
   with CFailure error ->
     let name = name_to_string trans_ctx fdef.item_meta.name in
     let name_pattern =
@@ -400,18 +435,39 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
       let translate_method_sig (trait_decl : LlbcAst.trait_decl)
           (method_id : TraitMethodId.id)
           (bound_method : LlbcAst.trait_method Types.binder) =
-        let sg =
-          SymbolicToPureTypes.translate_flat_trait_method_sigs trans_ctx
-            trait_decl method_id bound_method
-        in
-        (FunOrMethodId.Method (trait_decl.def_id, method_id), sg)
+        try
+          let sg =
+            SymbolicToPureTypes.translate_flat_trait_method_sigs trans_ctx
+              trait_decl method_id bound_method
+          in
+          Some (FunOrMethodId.Method (trait_decl.def_id, method_id), sg)
+        with CFailure error ->
+          let trait_name = name_to_string trans_ctx trait_decl.item_meta.name in
+          let name_pattern =
+            try
+              name_to_pattern_string (Some trait_decl.item_meta.span) trans_ctx
+                trait_decl.item_meta.name
+            with CFailure _ ->
+              "(could not compute the name pattern due to a different error)"
+          in
+          [%warn_opt_span] error.span
+            ("Could not translate the signature of method '"
+           ^ bound_method.binder_value.name ^ "' of trait '" ^ trait_name
+           ^ "' because of previous error\nTrait name pattern: '" ^ name_pattern
+           ^ "'" ^ "\nDefinition span: "
+            ^ Errors.raw_span_to_string bound_method.binder_value.item_meta.span
+            ^ compute_local_uses_error_message trans_ctx
+                (IdTraitDecl trait_decl.def_id));
+          None
       in
       let translate_trait_methods (trait_decl : LlbcAst.trait_decl) =
         let methods =
-          TraitDeclId.Map.find trait_decl.def_id
-            trans_ctx.trait_methods_to_extract
+          [%unwrap_with_span] trait_decl.item_meta.span
+            (TraitDeclId.Map.find_opt trait_decl.def_id
+               trans_ctx.trait_methods_to_extract)
+            "Could not find the trait methods to extract"
         in
-        List.map
+        List.filter_map
           (fun (method_id, bound_method) ->
             translate_method_sig trait_decl method_id bound_method)
           (TraitMethodId.Map.to_list methods)
@@ -1034,7 +1090,9 @@ let export_global (fmt : Format.formatter) (config : gen_config) (ctx : gen_ctx)
   let global_decls = ctx.trans_ctx.crate.global_decls in
   let global = GlobalDeclId.Map.find id global_decls in
   let global_init =
-    Option.get (Charon.GAstUtils.init_fun_id_of_global global)
+    [%unwrap_opt_span] None
+      (Charon.GAstUtils.init_fun_id_of_global global)
+      "Could not find the initializer function of the global declaration"
   in
   let trans =
     [%silent_unwrap_opt_span] None
@@ -1099,8 +1157,10 @@ let trait_impl_is_builtin (ctx : gen_ctx) (id : Pure.trait_impl_id) : bool =
       (TraitImplId.Map.find_opt id ctx.trans_trait_impls)
   in
   let trait_decl =
-    Pure.TraitDeclId.Map.find trait_impl.impl_trait.trait_decl_id
-      ctx.trans_trait_decls
+    (* The parent trait declaration may be absent if it failed to translate. *)
+    [%silent_unwrap_opt_span] None
+      (Pure.TraitDeclId.Map.find_opt trait_impl.impl_trait.trait_decl_id
+         ctx.trans_trait_decls)
   in
   let builtin_info =
     let open ExtractBuiltin in

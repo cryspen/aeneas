@@ -1164,7 +1164,9 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
       | FromLlbc (TraitMethod (trait_ref, method_name), lp_id) ->
           let trait_decl_id = trait_ref.trait_decl_ref.trait_decl_id in
           let trait_decl =
-            TraitDeclId.Map.find trait_decl_id ctx.trans_trait_decls
+            (* The trait declaration may be absent if it failed to translate. *)
+            [%silent_unwrap] span
+              (TraitDeclId.Map.find_opt trait_decl_id ctx.trans_trait_decls)
           in
 
           [%sanity_check] trait_decl.item_meta.span (lp_id = None);
@@ -1204,14 +1206,21 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
             end
           | FromLlbc (TraitMethod (trait_ref, method_id), lp_id) -> begin
               [%sanity_check] span (lp_id = None);
+              (* Catchable lookups (find_opt + silent_unwrap) rather than raw
+                 [Map.find]/[List.find]: the trait decl or method may be missing
+                 when it failed to translate. A raw [Not_found] would escape the
+                 [with CFailure _] fallback below and abort the whole crate. *)
               let trait_decl =
-                TraitDeclId.Map.find trait_ref.trait_decl_ref.trait_decl_id
-                  ctx.trans_trait_decls
+                [%silent_unwrap] span
+                  (TraitDeclId.Map.find_opt
+                     trait_ref.trait_decl_ref.trait_decl_id
+                     ctx.trans_trait_decls)
               in
               let meth =
-                List.find
-                  (fun (meth : trait_method) -> meth.method_id = method_id)
-                  trait_decl.methods
+                [%silent_unwrap] span
+                  (List.find_opt
+                     (fun (meth : trait_method) -> meth.method_id = method_id)
+                     trait_decl.methods)
               in
               let explicit = meth.signature.explicit_info in
               Some (adjust_explicit_info explicit true generics)
@@ -2949,7 +2958,11 @@ let extract_trait_decl_register_constant_names (ctx : extraction_ctx)
         let const_map = StringMap.of_list info.consts in
         List.map
           (fun (const_id, item_name, _) ->
-            (const_id, StringMap.find item_name const_map))
+            ( const_id,
+              [%unwrap_with_span] trait_decl.item_meta.span
+                (StringMap.find_opt item_name const_map)
+                ("Could not find the constant '" ^ item_name
+               ^ "' in the builtin trait declaration information") ))
           consts
   in
   (* Register the names *)
@@ -3678,7 +3691,11 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
   (* Print a comment to link the extracted type to its original rust definition *)
   begin
     let decl_id = impl.impl_trait.trait_decl_id in
-    let trait_decl = TraitDeclId.Map.find decl_id ctx.trans_trait_decls in
+    let trait_decl =
+      [%unwrap_with_span] span
+        (TraitDeclId.Map.find_opt decl_id ctx.trans_trait_decls)
+        "Could not find the trait declaration"
+    in
     let decl_ref = impl.llbc_impl_trait in
     let name = trait_decl.item_meta.name in
     let generics = (impl.llbc_generics, decl_ref.generics) in
@@ -3752,7 +3769,11 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
      See the comment in {!extract_trait_decl}. *)
   let ctx =
     let decl_id = impl.impl_trait.trait_decl_id in
-    let trait_decl = TraitDeclId.Map.find decl_id ctx.trans_trait_decls in
+    let trait_decl =
+      [%unwrap_with_span] span
+        (TraitDeclId.Map.find_opt decl_id ctx.trans_trait_decls)
+        "Could not find the trait declaration"
+    in
     let field_names =
       List.map
         (fun (const_id, _, _) -> ctx_get_trait_const span decl_id const_id ctx)
@@ -3811,7 +3832,11 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
      * Extract the items
      *)
     let trait_decl_id = impl.impl_trait.trait_decl_id in
-    let trait_decl = TraitDeclId.Map.find trait_decl_id ctx.crate.trait_decls in
+    let trait_decl =
+      [%unwrap_with_span] span
+        (TraitDeclId.Map.find_opt trait_decl_id ctx.crate.trait_decls)
+        "Could not find the trait declaration"
+    in
 
     (* The constants *)
     List.iter

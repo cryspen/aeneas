@@ -1928,7 +1928,11 @@ let ctx_compute_trait_clause_name (ctx : extraction_ctx)
     *)
     let prefix = Some current_def_name in
     let clause =
-      List.find (fun (c : Types.trait_param) -> c.clause_id = clause_id) clauses
+      [%unwrap_opt_span] None
+        (List.find_opt
+           (fun (c : Types.trait_param) -> c.clause_id = clause_id)
+           clauses)
+        "Could not find the trait clause"
     in
     (* Note that we ignore the binder *)
     let clause_trait = clause.trait.binder_value in
@@ -2062,7 +2066,10 @@ let ctx_compute_var_basename (span : Meta.span) (ctx : extraction_ctx)
           | TBuiltin (TRawPtr _) -> "p"
           | TAdtId adt_id ->
               let def =
-                TypeDeclId.Map.find adt_id ctx.trans_ctx.type_ctx.type_decls
+                [%unwrap_with_span] span
+                  (TypeDeclId.Map.find_opt adt_id
+                     ctx.trans_ctx.type_ctx.type_decls)
+                  "Could not find the type declaration"
               in
               (* Derive the var name from the last ident of the type name
                  Ex.: ["hashmap"; "HashMap"] ~~> "HashMap" -> "hash_map" -> "hm"

@@ -471,16 +471,26 @@ let ctx_get_effect_info_for_bid (ctx : bs_ctx) (bid : RegionGroupId.id option) :
 let ctx_get_effect_info (ctx : bs_ctx) : fun_effect_info =
   ctx_get_effect_info_for_bid ctx ctx.bid
 
+(* These lookups use a catchable error rather than a raw [Map.find]: the id may
+   be missing when the referenced declaration failed to translate (or was made
+   opaque) but is still referenced by the item being translated. A raw
+   [Not_found] would bypass the [CFailure] handlers and abort the whole crate. *)
 let bs_ctx_lookup_llbc_type_decl (id : TypeDeclId.id) (ctx : bs_ctx) :
     T.type_decl =
-  TypeDeclId.Map.find id ctx.type_ctx.llbc_type_decls
+  [%unwrap_with_span] ctx.span
+    (TypeDeclId.Map.find_opt id ctx.type_ctx.llbc_type_decls)
+    ("Could not find the LLBC type declaration " ^ TypeDeclId.to_string id)
 
 let bs_ctx_lookup_llbc_fun_decl (id : A.FunDeclId.id) (ctx : bs_ctx) :
     A.fun_decl =
-  A.FunDeclId.Map.find id ctx.fun_ctx.llbc_fun_decls
+  [%unwrap_with_span] ctx.span
+    (A.FunDeclId.Map.find_opt id ctx.fun_ctx.llbc_fun_decls)
+    ("Could not find the LLBC function declaration " ^ A.FunDeclId.to_string id)
 
 let bs_ctx_lookup_type_decl (id : TypeDeclId.id) (ctx : bs_ctx) : type_decl =
-  TypeDeclId.Map.find id ctx.type_ctx.type_decls
+  [%unwrap_with_span] ctx.span
+    (TypeDeclId.Map.find_opt id ctx.type_ctx.type_decls)
+    ("Could not find the translated type declaration " ^ TypeDeclId.to_string id)
 
 (** This generates a fresh variable **which is not to be linked to any symbolic
     value** *)

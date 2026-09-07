@@ -246,6 +246,18 @@ let ty_has_borrow_under_mut span (infos : TypesAnalysis.type_infos) (ty : ty) :
   let info = TypesAnalysis.analyze_ty span infos ty in
   info.TypesAnalysis.contains_borrow_under_mut
 
+(** Look up the type-analysis information for a type declaration, returning a
+    catchable error if it is missing (its declaration may have failed to
+    translate or been made opaque). The span-less error is reported by the
+    enclosing per-item boundary. *)
+let type_info_find (infos : TypesAnalysis.type_infos) id =
+  match TypeDeclId.Map.find_opt id infos with
+  | Some info -> info
+  | None ->
+      [%craise_opt_span] None
+        ("Could not find the type-analysis information for type declaration "
+       ^ TypeDeclId.to_string id)
+
 (** Check if a {!type:Charon.Types.ty} contains a mutable borrow which uses a
     region from a given set. *)
 let ty_has_mut_borrow_for_region_in_pred (infos : TypesAnalysis.type_infos)
@@ -268,7 +280,7 @@ let ty_has_mut_borrow_for_region_in_pred (infos : TypesAnalysis.type_infos)
           match tref.builtin with
           | Some (TTuple | TBox | TStr) -> ()
           | None ->
-              let info = TypeDeclId.Map.find tref.id infos in
+              let info = type_info_find infos tref.id in
               RegionId.iteri
                 (fun adt_rid r ->
                   if RegionId.Set.mem adt_rid info.mut_regions && pred r then
@@ -318,7 +330,7 @@ let ty_get_mutable_regions (infos : TypesAnalysis.type_infos)
           | Some (TTuple | TBox | TStr) -> ()
           | None ->
               (* Check which region parameters are mutable *)
-              let info = TypeDeclId.Map.find tref.id infos in
+              let info = type_info_find infos tref.id in
               RegionId.iteri
                 (fun adt_rid r ->
                   if RegionId.Set.mem adt_rid info.mut_regions then add_region r)
@@ -480,7 +492,7 @@ let trait_type_constraint_no_regions (x : trait_type_constraint) : bool =
     is a non-recursive structure with unnamed fields. *)
 let type_decl_from_decl_id_is_tuple_struct (ctx : TypesAnalysis.type_infos)
     (id : TypeDeclId.id) : bool =
-  let info = TypeDeclId.Map.find id ctx in
+  let info = type_info_find ctx id in
   info.is_tuple_struct
 
 (** A trait instance id refers to a local clause if it only uses the variants:

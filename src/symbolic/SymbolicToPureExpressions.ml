@@ -418,7 +418,9 @@ and translate_function_call_aux (call : S.call) (e : S.expr) (ctx : bs_ctx) :
                 end
               | FunId (FRegular fid) -> (
                   let decl =
-                    FunDeclId.Map.find fid ctx.fun_ctx.llbc_fun_decls
+                    [%unwrap_with_span] ctx.span
+                      (FunDeclId.Map.find_opt fid ctx.fun_ctx.llbc_fun_decls)
+                      "Could not find the function declaration"
                   in
                   let name =
                     LlbcAstUtils.strip_target_or_instantiated_suffix
@@ -800,7 +802,9 @@ and translate_cast_unsize (call : S.call) (e : S.expr) (ty0 : T.ty) (ty1 : T.ty)
   let arg = tvalue_to_texpr ctx call.ctx arg in
   let arg_mp =
     translate_opt_mplace (Some call.span) ctx.decls_ctx
-      (List.hd call.args_places)
+      ([%unwrap_with_span] ctx.span
+         (List.nth_opt call.args_places 0)
+         "Unexpected empty list of argument places")
   in
   let arg = mk_opt_mplace_texpr arg_mp arg in
 
