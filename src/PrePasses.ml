@@ -182,24 +182,26 @@ let update_array_default (crate : crate) : crate =
        so returning [None] avoids escaping past the per-item boundaries. *)
     match TraitDeclId.Map.find_opt impl.impl_trait.id crate.trait_decls with
     | None -> None
-    | Some trait_decl ->
+    | Some trait_decl -> (
         if not (match_name impl_pat trait_decl.item_meta.name) then None
         else
-      match impl.impl_trait.generics with
-      | {
-       regions = [];
-       types =
-         [
-           TArray
-             ( TVar (Free _),
-               ({ kind = CLiteral (VScalar (UnsignedScalar (Usize, nv))); _ } as
-                n) );
-         ];
-       const_generics = [];
-       trait_refs = _;
-      }
-        when Z.to_int nv != 0 -> Some n
-      | _ -> None
+          match impl.impl_trait.generics with
+          | {
+           regions = [];
+           types =
+             [
+               TArray
+                 ( TVar (Free _),
+                   ({
+                      kind = CLiteral (VScalar (UnsignedScalar (Usize, nv)));
+                      _;
+                    } as n) );
+             ];
+           const_generics = [];
+           trait_refs = _;
+          }
+            when Z.to_int nv != 0 -> Some n
+          | _ -> None)
   in
 
   (* First pass: collect all the trait impls matching [Default<[T; N]>] and

@@ -29,7 +29,8 @@ let get_adt_field_types (span : Meta.span)
         [%unwrap_with_span] span
           (TypeDeclId.Map.find_opt def_id type_decls)
           ("Could not find the declaration of type "
-         ^ TypeDeclId.to_string def_id ^ " (it may have failed to translate)")
+          ^ TypeDeclId.to_string def_id
+          ^ " (it may have failed to translate)")
       in
       type_decl_get_instantiated_fields_types def variant_id generics
   | TBuiltin aty -> (

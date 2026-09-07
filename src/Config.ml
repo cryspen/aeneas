@@ -237,11 +237,12 @@ let loop_fixed_point_max_num_iters = 2
 (** Per-function wall-clock timeout (seconds) for symbolic execution and pure
     translation. When a function exceeds it we raise a contained [CFailure], on
     the assumption that its symbolic execution is diverging (a loop fixed point
-    that never stabilizes), so the enclosing per-function handler skips it rather
-    than letting the whole crate hang. A step budget cannot catch this: the
-    divergence lives in the pure join/context machinery, off the statement
+    that never stabilizes), so the enclosing per-function handler skips it
+    rather than letting the whole crate hang. A step budget cannot catch this:
+    the divergence lives in the pure join/context machinery, off the statement
     evaluator. Relies on running on the main domain, hence forces sequential
-    translation. [0] disables it (the default). Set via [-symbolic-exec-timeout]. *)
+    translation. [0] disables it (the default). Set via
+    [-symbolic-exec-timeout]. *)
 let symbolic_exec_max_seconds = ref 0
 
 (** {1 Translation} *)

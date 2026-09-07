@@ -307,8 +307,7 @@ let with_symbolic_exec_timeout (span : Meta.span) (f : unit -> 'a) : 'a =
         (Sys.Signal_handle
            (fun _ ->
              disarm ();
-             [%craise] span
-               "symbolic-execution timed out (possible divergence)"))
+             [%craise] span "symbolic-execution timed out (possible divergence)"))
     in
     let finally () =
       disarm ();
