@@ -164,8 +164,8 @@ module Json = struct
   (* ---------------------------------------------------------------------- *)
 
   (** Pattern (preferred) or name for a rust entry *)
-  let pattern_or_name (rust_pattern : string option) (rust_name : string option) :
-      string =
+  let pattern_or_name (rust_pattern : string option) (rust_name : string option)
+      : string =
     match (rust_pattern, rust_name) with
     | Some name, _ | None, Some name -> name
     | None, None ->
