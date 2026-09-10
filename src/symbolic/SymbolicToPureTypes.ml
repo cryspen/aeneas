@@ -311,6 +311,13 @@ let translate_type_decl (ctx : Contexts.decls_ctx) (def : T.type_decl) :
     match_name_find_opt ctx def.item_meta.name
       (ExternalNames.external_types_map ())
   in
+  (* Check if the type is mapped to an external name *)
+  LlbcAstUtils.check_not_external ctx.crate "This type"
+    ~opaque:(Charon.TypesUtils.type_decl_is_opaque def)
+    def.item_meta
+    (Option.map
+       (fun (i : Pure.external_type_info) -> i.extract_name)
+       external_info);
   (* Under [-core-models-lib] the external type overrides are disabled, so the
      lookup above returns [None]. We still need the allocator [keep_params] of
      types like [IntoIter] so that the dangling allocator type parameter (left
