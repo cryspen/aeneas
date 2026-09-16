@@ -23,6 +23,23 @@ let generic_args_to_string (ctx : extraction_ctx) =
 let texpr_to_string (ctx : extraction_ctx) =
   PrintPure.texpr_to_string (extraction_ctx_to_fmt_env ctx) false "" "  "
 
+(** The crates that the core models library provides. *)
+let core_models_crates = [ "core"; "alloc"; "std" ]
+
+(** Whether the allocator filter should be registered for an item.
+
+    Under [-core-models-lib], this filter is supposed to remove type parameters
+    and trait clauses left dangling by Charon's [hide_allocator] pass. The
+    filter can cause signature mismatches between function declarations and
+    function calls, so we activate it only for the crates that the core models
+    library provides. *)
+let should_register_allocator_filter (item_meta : Types.item_meta) : bool =
+  !Config.core_models_lib && (not item_meta.is_local)
+  &&
+  match item_meta.name with
+  | Types.PeIdent (crate, _) :: _ -> List.mem crate core_models_crates
+  | _ -> false
+
 (** Under [-core-models-lib], detect type parameters and trait clauses left
     dangling by Charon's [hide_allocator] pass (which strips the [A] parameter
     from [Vec], [Box], etc. and removes the [core::alloc::Allocator] trait
@@ -172,7 +189,7 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
     (has_decreases_clause : fun_decl -> bool) (def : pure_fun_translation) :
     extraction_ctx =
   let maybe_register_allocator_filter (ctx : extraction_ctx) : extraction_ctx =
-    if not !Config.core_models_lib then ctx
+    if not (should_register_allocator_filter def.f.item_meta) then ctx
     else
       let sg = def.f.signature in
       let type_args_filter id =
@@ -3166,7 +3183,7 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
      pass all of those as extra scan context so they don't get wrongly
      classified as unused. *)
   let ctx =
-    if not !Config.core_models_lib then ctx
+    if not (should_register_allocator_filter trait_impl.item_meta) then ctx
     else
       let assoc_tys = List.map (fun (_, _, ty) -> ty) trait_impl.types in
       let type_args_filter id =
