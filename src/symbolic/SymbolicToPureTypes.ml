@@ -306,12 +306,12 @@ let translate_type_decl (ctx : Contexts.decls_ctx) (def : T.type_decl) :
   [%ldebug "explicit info:\n" ^ show_explicit_info explicit_info];
   let kind = translate_type_decl_kind span def.T.kind in
   let item_meta = def.item_meta in
-  (* Lookup the builtin information, if there is *)
-  let builtin_info =
+  (* Lookup the external information, if there is *)
+  let external_info =
     match_name_find_opt ctx def.item_meta.name
-      (ExtractBuiltin.builtin_types_map ())
+      (ExternalNames.external_types_map ())
   in
-  (* Under [-core-models-lib] the builtin type overrides are disabled, so the
+  (* Under [-core-models-lib] the external type overrides are disabled, so the
      lookup above returns [None]. We still need the allocator [keep_params] of
      types like [IntoIter] so that the dangling allocator type parameter (left
      by Charon's [hide_allocator] pass) is filtered out, matching the
@@ -319,18 +319,18 @@ let translate_type_decl (ctx : Contexts.decls_ctx) (def : T.type_decl) :
      This only carries [keep_params]; the extract name still comes from the
      standard name mangling (which, for these types, coincides with the builtin
      name anyway). *)
-  let builtin_info =
-    if Option.is_some builtin_info || not !Config.core_models_lib then
-      builtin_info
+  let external_info =
+    if Option.is_some external_info || not !Config.core_models_lib then
+      external_info
     else
       match_name_find_opt ctx def.item_meta.name
-        (ExtractBuiltin.builtin_types_keep_params_map ())
+        (ExternalNames.external_types_keep_params_map ())
   in
   {
     def_id;
     name;
     item_meta;
-    builtin_info;
+    external_info;
     generics;
     explicit_info;
     llbc_generics = def.generics;

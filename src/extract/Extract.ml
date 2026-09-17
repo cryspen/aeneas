@@ -222,10 +222,10 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
                   ctx.funs_filter_trait_clauses_map;
             }
   in
-  (* Use the builtin names if necessary *)
-  match def.f.builtin_info with
+  (* Use the external names if necessary *)
+  match def.f.external_info with
   | Some info ->
-      (* Builtin function: register the filtering information, if there is *)
+      (* External function: register the filtering information, if there is *)
       let ctx =
         match info.keep_params with
         | Some keep ->
@@ -253,7 +253,7 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
       let fun_id = (Pure.FunId (FRegular f.def_id), f.loop_id) in
       ctx_add f.item_meta.span (FunId (FromLlbc fun_id)) info.extract_name ctx
   | None ->
-      (* Not builtin *)
+      (* Not external *)
       let ctx = maybe_register_allocator_filter ctx in
       (* Register the decrease clauses, if necessary *)
       let register_decreases ctx def =
@@ -465,7 +465,7 @@ let extract_global (span : Meta.span) (ctx : extraction_ctx) (fmt : F.formatter)
   F.pp_close_box fmt ()
 
 (* Filter the generics of a function if it is builtin *)
-let fun_builtin_filter_types_trait_clauses (ty_to_string : 'a -> string)
+let fun_external_filter_types_trait_clauses (ty_to_string : 'a -> string)
     (clause_to_string : 'b -> string) (id : FunDeclId.id) (types : 'a list)
     (explicit : explicit_info option) (clauses : 'b list) (ctx : extraction_ctx)
     : ('a list * explicit_info option * 'b list, string) Result.result =
@@ -1273,7 +1273,7 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
       let types_explicit_traits =
         match fun_id with
         | FromLlbc (FunId (FRegular id), _) ->
-            fun_builtin_filter_types_trait_clauses (ty_to_string ctx)
+            fun_external_filter_types_trait_clauses (ty_to_string ctx)
               (trait_ref_to_string ctx) id generics.types explicit
               generics.trait_refs ctx
         | _ -> Result.Ok (generics.types, explicit, generics.trait_refs)
@@ -2906,10 +2906,10 @@ let extract_global_decl (ctx : extraction_ctx) (fmt : F.formatter)
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_register_parent_clause_names (ctx : extraction_ctx)
     (trait_decl : trait_decl)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
   (* Compute the clause names *)
   let clause_names =
-    match builtin_info with
+    match external_info with
     | None ->
         List.map
           (fun (c : trait_param) ->
@@ -2946,11 +2946,11 @@ let extract_trait_decl_register_parent_clause_names (ctx : extraction_ctx)
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_register_constant_names (ctx : extraction_ctx)
     (trait_decl : trait_decl)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
   let consts = trait_decl.consts in
   (* Compute the names *)
   let constant_names =
-    match builtin_info with
+    match external_info with
     | None ->
         List.map
           (fun (const_id, item_name, _) ->
@@ -2980,11 +2980,11 @@ let extract_trait_decl_register_constant_names (ctx : extraction_ctx)
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_type_names (ctx : extraction_ctx)
     (trait_decl : trait_decl)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
   let types = trait_decl.types in
   (* Compute the names *)
   let type_names =
-    match builtin_info with
+    match external_info with
     | None ->
         let compute_type_name (item_name : string) : string =
           let type_name =
@@ -3025,7 +3025,7 @@ let extract_trait_decl_type_names (ctx : extraction_ctx)
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_method_names (ctx : extraction_ctx)
     (trait_decl : trait_decl) (_trait_decl_name : string)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
   [%ltrace trait_decl.name];
   let methods = trait_decl.methods in
   (* Small helper *)
@@ -3054,16 +3054,16 @@ let extract_trait_decl_method_names (ctx : extraction_ctx)
   in
   (* Compute the names *)
   let method_names =
-    match builtin_info with
+    match external_info with
     | None ->
-        (* Not a builtin function *)
+        (* Not an external function *)
         List.map
           (fun meth ->
             let default_id, fun_name = compute_item_name meth in
             (meth.method_id, default_id, fun_name))
           methods
     | Some info ->
-        (* This is a builtin *)
+        (* This is an external function *)
         let funs_map = StringMap.of_list info.methods in
         List.map
           (fun meth ->
@@ -3109,7 +3109,7 @@ let extract_trait_decl_register_names (ctx : extraction_ctx)
     (trait_decl : trait_decl) : extraction_ctx =
   let ctx, trait_name =
     let trait_name, trait_constructor =
-      match trait_decl.builtin_info with
+      match trait_decl.external_info with
       | None ->
           ( ctx_compute_trait_decl_name ctx trait_decl,
             ctx_compute_trait_decl_constructor ctx trait_decl )
@@ -3125,20 +3125,20 @@ let extract_trait_decl_register_names (ctx : extraction_ctx)
     in
     (ctx, trait_name)
   in
-  let builtin_info = trait_decl.builtin_info in
+  let external_info = trait_decl.external_info in
   (* Parent clauses *)
   let ctx =
-    extract_trait_decl_register_parent_clause_names ctx trait_decl builtin_info
+    extract_trait_decl_register_parent_clause_names ctx trait_decl external_info
   in
   (* Constants *)
   let ctx =
-    extract_trait_decl_register_constant_names ctx trait_decl builtin_info
+    extract_trait_decl_register_constant_names ctx trait_decl external_info
   in
   (* Types *)
-  let ctx = extract_trait_decl_type_names ctx trait_decl builtin_info in
+  let ctx = extract_trait_decl_type_names ctx trait_decl external_info in
   (* Required methods *)
   let ctx =
-    extract_trait_decl_method_names ctx trait_decl trait_name builtin_info
+    extract_trait_decl_method_names ctx trait_decl trait_name external_info
   in
   ctx
 
@@ -3147,13 +3147,13 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
     (trait_impl : trait_impl) : extraction_ctx =
   [%ldebug
     "trait_impl.impl_trait" ^ trait_decl_ref_to_string ctx trait_impl.impl_trait];
-  (* Register some builtin information (if necessary) *)
-  let ctx, builtin_info =
-    match trait_impl.builtin_info with
+  (* Register some external information (if necessary) *)
+  let ctx, external_info =
+    match trait_impl.external_info with
     | None -> (ctx, None)
-    | Some builtin_info ->
+    | Some external_info ->
         let ctx =
-          match builtin_info.keep_params with
+          match external_info.keep_params with
           | None -> ctx
           | Some filter ->
               {
@@ -3164,7 +3164,7 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
               }
         in
         let ctx =
-          match builtin_info.keep_trait_clauses with
+          match external_info.keep_trait_clauses with
           | None -> ctx
           | Some filter ->
               {
@@ -3174,7 +3174,7 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
                     ctx.trait_impls_filter_trait_clauses_map;
               }
         in
-        (ctx, Some builtin_info)
+        (ctx, Some external_info)
   in
   (* Under [-core-models-lib], drop dangling allocator-shaped type params and
      orphan trait clauses (same heuristic as for functions). Trait impls have
@@ -3227,7 +3227,7 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
      the name of the implementation itself *)
   (* Compute the name *)
   let name =
-    match builtin_info with
+    match external_info with
     | None -> ctx_compute_trait_impl_name ctx trait_impl
     | Some info -> info.extract_name
   in
