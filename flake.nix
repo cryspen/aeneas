@@ -251,9 +251,8 @@
             export CARGO_CMD=cargo
 
             # Configure cargo to use pre-vendored dependencies
-            for dir in tests/src/hax_specs tests/src/hax_specs_step; do
-              mkdir -p "$dir/.cargo"
-              cat > "$dir/.cargo/config.toml" <<CARGOEOF
+            mkdir -p tests/src/hax_specs/.cargo
+            cat > tests/src/hax_specs/.cargo/config.toml <<CARGOEOF
             [net]
             offline = true
             [source.crates-io]
@@ -261,7 +260,6 @@
             [source.vendored-sources]
             directory = "${haxSpecsVendor}"
             CARGOEOF
-            done
 
             # Copy the tests
             cp -r tests tests-copy

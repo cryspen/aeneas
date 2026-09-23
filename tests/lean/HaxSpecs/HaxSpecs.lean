@@ -515,70 +515,55 @@ def const_generic_ty.MyStruct.get.spec {N : Std.Usize}
   ⦃ ⇓ res => ⌜ (const_generic_ty.MyStruct.get.post self res).holds ⌝
   ⦄
 
-@[spec]
 theorem basic.only_requires.spec.proof (x : Std.U32) :
   basic.only_requires.spec x
   := by sorry
 
-@[spec]
 theorem basic.only_ensures.spec.proof (x : Std.U32) : basic.only_ensures.spec x
   := by sorry
 
-@[spec]
 theorem basic.both.spec.proof (x : Std.U32) : basic.both.spec x := by sorry
 
-@[spec]
 theorem basic.returns_unit.spec.proof (x : Std.U32) : basic.returns_unit.spec x
   := by sorry
 
-@[spec]
 theorem basic.block_in_requires.spec.proof (x : Std.U32) :
   basic.block_in_requires.spec x
   := by sorry
 
-@[spec]
 theorem basic.returns_pair.spec.proof (x : Std.U32) : basic.returns_pair.spec x
   := by sorry
 
-@[spec]
 theorem extra_args.generic.spec.proof (N : Std.U32) (x : Std.U32) :
   extra_args.generic.spec N x
   := by sorry
 
-@[spec]
 theorem extra_args.traits.spec.proof {T : Type} (ValInst : extra_args.Val T)
   (t : T) (x : Std.U32) : extra_args.traits.spec ValInst t x
   := by sorry
 
-@[spec]
 theorem future.incr.spec.proof (x : Std.U32) : future.incr.spec x := by sorry
 
-@[spec]
 theorem future.incr_i.spec.proof (x : Slice Std.U32) (i : Std.Usize) :
   future.incr_i.spec x i
   := by sorry
 
-@[spec]
 theorem future.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32) :
   future.swap_and_add.spec x y
   := by sorry
 
-@[spec]
 theorem implicit_generics.nothing.spec.proof (T : Type) (k : Std.Usize) :
   implicit_generics.nothing.spec T k
   := by sorry
 
-@[spec]
 theorem implicit_generics.of_fst.spec.proof {T : Type} (N : Std.Usize) 
   (t : T) : implicit_generics.of_fst.spec N t
   := by sorry
 
-@[spec]
 theorem implicit_generics.empty.spec.proof (T : Type) (N : Std.Usize)
   (k : Std.Usize) : implicit_generics.empty.spec T N k
   := by sorry
 
-@[spec]
 theorem
   implicit_generics.from_default.spec.proof {T : Type} (N : Std.Usize)
                                            (coredefaultDefaultInst :
@@ -587,12 +572,10 @@ theorem
   implicit_generics.from_default.spec N coredefaultDefaultInst k
   := by sorry
 
-@[spec]
 theorem const_generic_ty.MyStruct.build.spec.proof (N : Std.Usize)
   (k : Std.Usize) : const_generic_ty.MyStruct.build.spec N k
   := by sorry
 
-@[spec]
 theorem const_generic_ty.MyStruct.get.spec.proof {N : Std.Usize}
   (self : const_generic_ty.MyStruct N) :
   const_generic_ty.MyStruct.get.spec self
