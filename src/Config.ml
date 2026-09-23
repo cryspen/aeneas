@@ -29,20 +29,17 @@ let set_backend (b : string) : unit =
 (** {1 Specs config} *)
 
 type spec_source = Hax
-type spec_backend = Mvcgen | Step
-type spec_config = spec_source * spec_backend
 
-let spec_config_options = [ "hax"; "hax-step" ]
+let spec_config_options = [ "hax" ]
 
 (** Utility to compute a spec source from an input parameter *)
-let spec_config_of_string (s : string) : spec_config option =
+let spec_config_of_string (s : string) : spec_source option =
   match s with
-  | "hax" | "Hax" -> Some (Hax, Mvcgen)
-  | "hax-step" | "Hax-Step" -> Some (Hax, Step)
+  | "hax" | "Hax" -> Some Hax
   | _ -> None
 
 (** The spec source requested via [-specs] *)
-let opt_spec_config : spec_config option ref = ref None
+let opt_spec_config : spec_source option ref = ref None
 
 let set_spec_config (s : string) : unit =
   match spec_config_of_string s with
@@ -57,13 +54,7 @@ let spec_config_enabled () = Option.is_some !opt_spec_config
 
 (** Returns [true] if the saved config for specs uses Hax annotations as a
     source *)
-let spec_config_is_hax () =
-  match !opt_spec_config with
-  | Some (Hax, _) -> true
-  | _ -> false
-
-(** The spec backend selected via [-specs], if specs are enabled. *)
-let spec_backend () : spec_backend option = Option.map snd !opt_spec_config
+let spec_config_is_hax () = !opt_spec_config = Some Hax
 
 (** Specify the namespace of the extract code.
 
