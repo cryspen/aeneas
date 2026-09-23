@@ -8,11 +8,13 @@ namespace Aeneas.Std
 structure core.str.iter.Chars where
   iter : core.slice.iter.Iter U8
 
+-- TODO:
 @[rust_fun "core::str::iter::{core::iter::traits::iterator::Iterator<core::str::iter::Chars<'a>, char>}::next"]
 def core.str.iter.IteratorChars.next (it : core.str.iter.Chars) : RustM ((Option Char) × core.str.iter.Chars) := do
   let (r, iter) ← core.slice.iter.IteratorSliceIter.next it.iter
   .ok (r.map Char.ofNat, ⟨iter⟩)
 
+-- TODO:
 @[rust_fun "core::str::iter::{core::iter::traits::iterator::Iterator<core::str::iter::Chars<'a>, char>}::collect"]
 noncomputable opaque core.str.iter.IteratorChars.collect
   {B : Type} (itertraitscollectFromIteratorBCharInst :
