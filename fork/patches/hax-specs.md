@@ -4,12 +4,13 @@
 
 With `-specs hax`, `hax_lib::requires`/`ensures` annotations become Lean specs
 and proof obligations (fork PRs #7, #58, #62). For `f` with a precondition and a
-postcondition, Aeneas emits `f.pre`, `f.post`, `f.spec` and an `@[spec]`
-obligation `f.spec.proof`. The design is generic: `src/specs/Spec.ml` is the
-spec interface, `src/specs/HaxProducer.ml` gathers hax specs (helpers in
+postcondition, Aeneas emits `f.pre`, `f.post`, `f.spec` and an obligation
+`f.spec.proof`. The design is generic: `src/specs/Spec.ml` is the spec
+interface, `src/specs/HaxProducer.ml` gathers hax specs (helpers in
 `src/utils/HaxAttributes.ml`), `src/extract/ExtractSpec.ml` dispatches the
-printing and `src/extract/ExtractHaxSpecs.ml` prints hax specs. Two backends:
-`mvcgen`-style (`-specs hax`) and `step`-style (`-specs hax-step`).
+printing and `src/extract/ExtractHaxSpecs.ml` prints hax specs. `f.spec` is an
+`mvcgen`-style Hoare triple (files that use specs `open Std.Do`); the
+`step`-style backend (`-specs hax-step`) was removed (fork PR #76).
 
 A prepass (`HaxLateSkipFilterPrePass`) removes the items hax marks as
 `late_skip` (helper items without a `Uid`); decoration functions (with a `Uid`)
@@ -20,6 +21,8 @@ are consumed by the producer.
 - Without `-specs`, the output is unchanged and the prepass is a no-op.
 - Decoration functions never appear as such; only as `<fn>.pre`/`<fn>.post`.
 - Arguments of spec functions are printed with `Extract.extract_App` (#58).
+- Obligations are plain theorems, not `@[spec]` lemmas: users register the
+  specs they prove.
 - Spec and obligation files are emitted only when non-empty; their imports come
   from `Spec.required_imports`.
 - With the default `-use-lean-modules`, the hax proof library (`Hax`) must be a
@@ -27,10 +30,9 @@ are consumed by the producer.
 
 ## Tests
 
-- `tests/src/hax_specs` (expected outputs `tests/lean/HaxSpecs`) and
-  `tests/src/hax_specs_step` (same sources, `tests/lean/HaxSpecsStep`): basic
-  specs, const and trait generics, `future`, implicit generics, mutually
-  recursive functions.
+- `tests/src/hax_specs` (expected outputs `tests/lean/HaxSpecs`): basic specs,
+  const and trait generics, `future`, implicit generics, mutually recursive
+  functions.
 - The `hax-lib` crates are vendored for the nix check (`haxSpecsVendor` in
   `flake.nix`).
 
@@ -41,3 +43,6 @@ are consumed by the producer.
 - 2026-10-20: ported to the removal of `replace_static` (#1438) and the
   promoted-constant pre-passes (#1404); the late-skip filter keeps its place
   after `filter_type_aliases`.
+- 2026-10-23: the `step`-style backend (`-specs hax-step`, its test
+  `tests/src/hax_specs_step` and the `@[spec]` attribute on obligations) removed
+  (fork PR #76).

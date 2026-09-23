@@ -87,25 +87,24 @@ let compute_spec_name (def : Pure.fun_decl) (ctx : ExtractBase.extraction_ctx) :
   in
   fname ^ lp_suffix ^ ".spec"
 
-(** Prelude shared by both statement styles: register the result variable (a
-    collision-safe fvar), build the [.holds] / application printers, emit the
-    (shared) optional precondition hypothesis [(<fn>.pre <args>).holds →] *)
-let emit_statement_prelude ctx fmt span (fn : Pure.FunDeclId.id) generics
-    output_ty arg_texprs res_id ~(pre : Pure.fun_decl option)
+(** Emits the spec statement — the body of [def foo.spec … : Prop :=] (the
+    [theorem foo.spec.proof … := by sorry] wrapper is the obligation, emitted
+    separately):
+    {[
+      (foo.pre args).holds →
+      ⦃ ⌜ True ⌝ ⦄
+      foo args
+      ⦃ ⇓ res => ⌜ (foo.post args res).holds ⌝ ⦄
+    ]} *)
+let emit_statement ctx fmt span (fn : Pure.FunDeclId.id) generics output_ty
+    arg_texprs res_id ~(pre : Pure.fun_decl option)
     ~(post : Pure.fun_decl option) =
   let open ExtractBase in
   (* Register the postcondition's result variable *)
   let ctx, res_name = ctx_add_var span "res" res_id ctx in
   let res_texpr : Pure.texpr = { e = FVar res_id; ty = output_ty } in
-
   let emit_holds = emit_holds span ctx fmt generics in
-
-  (* The real function application [<fn> <args>], via the standard printer. *)
-  let emit_fn_call () : unit =
-    let head = fun_head fn generics output_ty in
-    Extract.extract_App span ctx fmt ~inside:false ~inside_do:false head
-      arg_texprs output_ty
-  in
+  let emit_pure k = Extract.emit_delim fmt "⌜" k "⌝" in
 
   (* Optional pre-hypothesis: [(<fn>.pre <args>).holds →]. *)
   (match pre with
@@ -116,76 +115,26 @@ let emit_statement_prelude ctx fmt span (fn : Pure.FunDeclId.id) generics
           F.pp_print_space fmt ();
           F.pp_print_string fmt "→"));
 
-  (* The postcondition body: [(<fn>.post <args> res).holds] or [True] *)
-  let emit_post_content () =
-    match post with
-    | None -> F.pp_print_string fmt "True"
-    | Some post_fn -> emit_holds (arg_texprs @ [ res_texpr ]) post_fn
-  in
-  (emit_fn_call, res_name, emit_post_content)
-
-(** Emits the [Step]-style spec statement — the body of
-    [def foo.spec … : Prop :=] (the
-    [@[step] theorem foo.spec.proof … := by sorry] wrapper is the obligation,
-    emitted separately):
-    {[
-      (foo.pre args).holds →
-      foo args
-      ⦃ res => (foo.post args res).holds ⦄
-    ]} *)
-let emit_statement_step ctx fmt span fn generics output_ty arg_texprs res_id pre
-    post =
-  let emit_fn_call, res_name, emit_post_content =
-    emit_statement_prelude ctx fmt span fn generics output_ty arg_texprs res_id
-      ~pre ~post
-  in
-  line fmt emit_fn_call;
-  line fmt (fun () ->
-      emit_wp fmt (fun () ->
-          emit_words fmt [ res_name; "=>" ];
-          F.pp_print_space fmt ();
-          emit_post_content ()))
-
-(** Emits the [Mvcgen]-style spec statement — the body of
-    [def foo.spec … : Prop :=] (the
-    [@[spec] theorem foo.spec.proof … := by sorry] wrapper is the obligation,
-    emitted separately):
-    {[
-      (foo.pre args).holds →
-      ⦃ ⌜ True ⌝ ⦄
-      foo args
-      ⦃ ⇓ res => ⌜ (foo.post args res).holds ⌝ ⦄
-    ]} *)
-let emit_statement_mvcgen ctx fmt span fn generics output_ty arg_texprs res_id
-    pre post =
-  let emit_fn_call, res_name, emit_post_content =
-    emit_statement_prelude ctx fmt span fn generics output_ty arg_texprs res_id
-      ~pre ~post
-  in
-  let emit_pure k = Extract.emit_delim fmt "⌜" k "⌝" in
+  (* The (trivial) triple precondition. *)
   line fmt (fun () ->
       emit_wp fmt (fun () -> emit_pure (fun () -> F.pp_print_string fmt "True")));
-  line fmt emit_fn_call;
+
+  (* The real function application [<fn> <args>], via the standard printer. *)
+  line fmt (fun () ->
+      let head = fun_head fn generics output_ty in
+      Extract.extract_App span ctx fmt ~inside:false ~inside_do:false head
+        arg_texprs output_ty);
+
+  (* The triple postcondition: [(<fn>.post <args> res).holds], or [True] when
+     the function has no postcondition. *)
   line fmt (fun () ->
       emit_wp fmt (fun () ->
           emit_words fmt [ "⇓"; res_name; "=>" ];
           F.pp_print_space fmt ();
-          emit_pure emit_post_content))
-
-(** The spec backend selected via [-specs] (defaults to [Step]). *)
-let current_spec_backend () : Config.spec_backend =
-  Option.value (Config.spec_backend ()) ~default:Config.Step
-
-(** Emit the spec statement shape, dispatching on the spec backend configured
-    via [-specs]. *)
-let emit_statement ctx fmt span fn generics output_ty arg_texprs res_id pre post
-    =
-  let emit =
-    match current_spec_backend () with
-    | Config.Mvcgen -> emit_statement_mvcgen
-    | Config.Step -> emit_statement_step
-  in
-  emit ctx fmt span fn generics output_ty arg_texprs res_id pre post
+          emit_pure (fun () ->
+              match post with
+              | None -> F.pp_print_string fmt "True"
+              | Some post_fn -> emit_holds (arg_texprs @ [ res_texpr ]) post_fn)))
 
 (** Emit one [Spec.spec] entry *)
 let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
@@ -266,7 +215,7 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
 
           (* Statement shape (the def body). *)
           emit_statement ctx fmt span fn generics sg.output arg_texprs res_id
-            pre post;
+            ~pre ~post;
           F.pp_close_box fmt ();
           (* inner vbox *)
           F.pp_close_box fmt ();
@@ -276,10 +225,10 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
 (** Emit one [HaxSpecs.obligation] entry as the proof obligation that discharges
     a spec's statement of correctness:
     {[
-      @[spec]/@[step]
       theorem foo.spec.proof args : foo.spec args := by sorry
     ]}
-    The attribute ([step] / [spec]) follows the configured spec backend. *)
+    No attribute is emitted: registering the obligation with [mvcgen] (via
+    [@[spec]]) is left to the user, who decides which specs to feed it. *)
 let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
   let open ExtractBase in
   match o with
@@ -326,17 +275,7 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
              [ [theorem name] binders : [statement] ]  [:= by sorry]
              The outer [hvbox] keeps the whole theorem on one line if it fits;
              otherwise [:= by sorry] breaks onto its own line first, and only if
-             the statement box itself still overflows do the binders/type wrap.
-             [extract_attributes]'s trailing break becomes a newline in the vbox. *)
-          let attr =
-            match current_spec_backend () with
-            | Config.Mvcgen -> "spec"
-            | Config.Step -> "step"
-          in
-          F.pp_open_vbox fmt 0;
-          ExtractTypes.extract_attributes span ctx fmt parent.item_meta.name
-            None [ attr ] "" [] ~is_external:false;
-          (* Outer box: [<statement> := by sorry] — break before the proof first. *)
+             the statement box itself still overflows do the binders/type wrap. *)
           F.pp_open_hvbox fmt ctx.indent_incr;
           (* The theorem statement: [theorem name binders : <type>]. *)
           F.pp_open_hovbox fmt ctx.indent_incr;
@@ -360,6 +299,4 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
           emit_proof fmt proof;
           F.pp_close_box fmt ();
           (* outer hvbox *)
-          F.pp_close_box fmt ();
-          (* attribute vbox *)
           F.pp_print_cut fmt ())

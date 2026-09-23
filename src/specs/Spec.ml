@@ -24,5 +24,5 @@ type proof_obligation = {
 (** The extra Lean modules the configured spec source needs to elaborate *)
 let required_imports () : string list =
   match !Config.opt_spec_config with
-  | Some (Config.Hax, _) -> HaxSpecs.required_imports ()
+  | Some Config.Hax -> HaxSpecs.required_imports ()
   | None -> []
