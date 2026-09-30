@@ -40,6 +40,108 @@ let should_register_allocator_filter (item_meta : Types.item_meta) : bool =
   | Types.PeIdent (crate, _) :: _ -> List.mem crate core_models_crates
   | _ -> false
 
+(** The type parameters of the enclosing impl that don't appear in its header.
+    Rust forbids the latter (E0207), so they are allocators whose argument was
+    removed by Charon's [hide_allocator]. Arguments dropped by an ADT's
+    [keep_params] (e.g. [IntoIter<T, A>]) don't count as appearing. *)
+let impl_params_not_in_header (ctx : extraction_ctx)
+    (item_meta : Types.item_meta) : Pure.TypeVarId.Set.t =
+  let impl_elem =
+    List.fold_left
+      (fun acc (e : Types.path_elem) ->
+        match e with
+        | PeImpl elem -> Some elem
+        | _ -> acc)
+      None item_meta.name
+  in
+  let header_params =
+    match impl_elem with
+    | None -> None
+    | Some (ImplElemTy bound_ty) ->
+        Some
+          (bound_ty.binder_params, fun v -> v#visit_ty () bound_ty.binder_value)
+    | Some (ImplElemTrait impl_id) -> (
+        match Types.TraitImplId.Map.find_opt impl_id ctx.crate.trait_impls with
+        | None -> None
+        | Some impl ->
+            Some
+              (impl.generics, fun v -> v#visit_trait_decl_ref () impl.impl_trait)
+        )
+  in
+  match header_params with
+  | None -> Pure.TypeVarId.Set.empty
+  | Some (params, visit_header) ->
+      let in_header = ref Types.TypeVarId.Set.empty in
+      let visitor =
+        object (self)
+          inherit [_] Types.iter_type_decl as super
+
+          method! visit_TAdt env (tref : Types.type_decl_ref) =
+            match
+              TypeDeclId.Map.find_opt tref.id ctx.types_filter_type_args_map
+            with
+            | Some keep when List.length keep = List.length tref.generics.types
+              ->
+                let types =
+                  List.filteri (fun i _ -> List.nth keep i) tref.generics.types
+                in
+                self#visit_generic_args env { tref.generics with types }
+            | _ -> super#visit_TAdt env tref
+
+          method! visit_type_var_id _ id =
+            in_header := Types.TypeVarId.Set.add id !in_header
+        end
+      in
+      visit_header visitor;
+      List.fold_left
+        (fun acc (p : Types.type_param) ->
+          if Types.TypeVarId.Set.mem p.index !in_header then acc
+          else Pure.TypeVarId.Set.add p.index acc)
+        Pure.TypeVarId.Set.empty params.types
+
+(** The non-local functions whose own type parameters include an allocator, with
+    the mask of their type parameters (the impl's first, as for [keep_params]):
+    [false] marks an allocator.
+
+    Charon's [hide_allocator] pass removes the allocator arguments of [Box],
+    [Vec], [Rc] and [Arc] and the [Allocator] bounds, but leaves the parameter
+    itself, now unused. Under [-core-models-lib], the allocator filter drops it
+    to match the [core_models] library. For an impl parameter, being absent from
+    the impl header is enough (Rust forbids unconstrained impl parameters,
+    E0207). Nothing in the LLBC distinguishes an item's own allocator parameter
+    from a phantom one, such as the [T] of [size_of<T>]: the filter drops it
+    only if this list says so. *)
+let core_models_fun_allocator_params : (string * bool list) list =
+  [ ("alloc::slice::{[@T]}::into_vec", [ true; false ]) ]
+
+let core_models_fun_allocator_params_map :
+    bool list NameMatcher.NameMatcherMap.t Lazy.t =
+  lazy
+    (NameMatcher.NameMatcherMap.of_list
+       (List.map
+          (fun (pattern, keep) -> (NameMatcher.parse_pattern pattern, keep))
+          core_models_fun_allocator_params))
+
+(** The type parameters of a function that {!core_models_fun_allocator_params}
+    marks as allocators. *)
+let listed_allocator_params (ctx : extraction_ctx) (item_meta : Types.item_meta)
+    (params : Pure.type_param list) : Pure.TypeVarId.Set.t =
+  match
+    TranslateCore.match_name_find_opt ctx.trans_ctx item_meta.name
+      (Lazy.force core_models_fun_allocator_params_map)
+  with
+  | None -> Pure.TypeVarId.Set.empty
+  | Some keep ->
+      [%cassert] item_meta.span
+        (List.length keep = List.length params)
+        ("The allocator mask of "
+        ^ TranslateCore.name_to_string ctx.trans_ctx item_meta.name
+        ^ " does not match its type parameters");
+      List.fold_left2
+        (fun acc (p : Pure.type_param) keep ->
+          if keep then acc else Pure.TypeVarId.Set.add p.index acc)
+        Pure.TypeVarId.Set.empty params keep
+
 (** Under [-core-models-lib], detect type parameters and trait clauses left
     dangling by Charon's [hide_allocator] pass (which strips the [A] parameter
     from [Vec], [Box], etc. and removes the [core::alloc::Allocator] trait
@@ -47,10 +149,11 @@ let should_register_allocator_filter (item_meta : Types.item_meta) : bool =
     in place).
 
     A type parameter is dropped iff it is unused in the function's inputs,
-    output, and predicates. A trait clause is dropped iff every type variable it
-    references is itself being dropped (i.e., it is "orphan" — only constraining
-    dropped parameters). The "used" set is saturated through trait clauses so
-    that a parameter pulled in by a kept clause is itself kept.
+    output, and predicates and, if [droppable] is given, belongs to it. A trait
+    clause is dropped iff every type variable it references is itself being
+    dropped (i.e., it is "orphan" — only constraining dropped parameters). The
+    "used" set is saturated through trait clauses so that a parameter pulled in
+    by a kept clause is itself kept.
 
     [scan]: caller-supplied closure that gets invoked with a visitor and may
     visit any extra structures (e.g. a trait_impl's [impl_trait] /
@@ -62,8 +165,10 @@ let should_register_allocator_filter (item_meta : Types.item_meta) : bool =
     function-style inputs; instead, the type variables they bind appear in
     [impl_trait] and the parent trait refs, which the caller passes here.
 
+    [droppable]: if provided, only these type parameters may be dropped.
+
     Returns [None] if nothing needs filtering. *)
-let compute_allocator_filter
+let compute_allocator_filter ?(droppable : Pure.TypeVarId.Set.t option)
     ?(extra_trait_decl_refs : Pure.trait_decl_ref list = [])
     ?(extra_trait_refs : Pure.trait_ref list = [])
     ?(type_args_filter : Pure.type_decl_id -> bool list option = fun _ -> None)
@@ -105,6 +210,8 @@ let compute_allocator_filter
             when visit_filtered_ty_args self env type_id generics -> ()
           | _ -> super#visit_ty env t
 
+        (* The impl arguments are determined by the trait decl ref *)
+        method! visit_TraitImpl _ _ _ = ()
         method! visit_type_var_id _ id = used := Pure.TypeVarId.Set.add id !used
       end
     in
@@ -157,7 +264,12 @@ let compute_allocator_filter
     let unused_set =
       List.fold_left
         (fun acc (p : Pure.type_param) ->
-          if Pure.TypeVarId.Set.mem p.index !used then acc
+          let is_droppable =
+            match droppable with
+            | None -> true
+            | Some s -> Pure.TypeVarId.Set.mem p.index s
+          in
+          if Pure.TypeVarId.Set.mem p.index !used || not is_droppable then acc
           else Pure.TypeVarId.Set.add p.index acc)
         Pure.TypeVarId.Set.empty type_params
     in
@@ -195,9 +307,16 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
       let type_args_filter id =
         TypeDeclId.Map.find_opt id ctx.types_filter_type_args_map
       in
+      (* The item's own parameters are not covered by E0207: drop them only if
+         they are listed (e.g. the [A] of [<[T]>::into_vec<A>]) *)
+      let droppable =
+        Pure.TypeVarId.Set.union
+          (impl_params_not_in_header ctx def.f.item_meta)
+          (listed_allocator_params ctx def.f.item_meta sg.generics.types)
+      in
       match
-        compute_allocator_filter ~type_args_filter sg.generics sg.inputs
-          (Some sg.output) sg.preds
+        compute_allocator_filter ~droppable ~type_args_filter sg.generics
+          sg.inputs (Some sg.output) sg.preds
       with
       | None -> ctx
       | Some (keep_params, keep_trait_clauses) ->
@@ -3157,11 +3276,13 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
         (ctx, Some external_info)
   in
   (* Under [-core-models-lib], drop dangling allocator-shaped type params and
-     orphan trait clauses (same heuristic as for functions). Trait impls have
-     no "inputs"; the type variables they bind show up in [impl_trait], its
-     parent trait refs, the associated types it implements, and so on. We
-     pass all of those as extra scan context so they don't get wrongly
-     classified as unused. *)
+     orphan trait clauses. A trait impl has no own parameters and [impl_trait]
+     is scanned, so an unused parameter is absent from the impl header: by
+     E0207, a hidden allocator, as for the impl parameters of functions (no
+     [droppable] restriction is needed). Trait impls have no "inputs"; the type
+     variables they bind show up in [impl_trait], its parent trait refs, the
+     associated types it implements, and so on. We pass all of those as extra
+     scan context so they don't get wrongly classified as unused. *)
   let ctx =
     if not (should_register_allocator_filter trait_impl.item_meta) then ctx
     else

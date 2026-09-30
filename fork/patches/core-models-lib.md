@@ -2,8 +2,8 @@
 
 ## Summary
 
-Adds the Lean-only flag `-core-models-lib` (fork PRs #2, #6, #65, #75). Under it,
-items of `core`, `alloc` and `std` are taken from the external
+Adds the Lean-only flag `-core-models-lib` (fork PRs #2, #6, #65, #75, #77).
+Under it, items of `core`, `alloc` and `std` are taken from the external
 [rust-core-models](https://github.com/cryspen/rust-core-models) Lean library
 (`CoreModels`) instead of the models in the Aeneas standard library:
 
@@ -20,7 +20,12 @@ items of `core`, `alloc` and `std` are taken from the external
 - `compute_allocator_filter` drops the type parameters and trait clauses that
   Charon's `hide_allocator` pass leaves dangling, for non-local `core`/`alloc`/
   `std` items only: local items are declared by us, so their uses must keep all
-  generics (#75).
+  generics (#75). Only allocators are dropped (#77): an impl parameter is
+  droppable only if it does not appear in the impl header (Rust forbids that,
+  E0207, so it is an allocator whose argument was hidden), and an item's own
+  parameter only if `Extract.core_models_fun_allocator_params` lists it
+  (e.g. the `A` of `<[T]>::into_vec<A>`): the LLBC no longer distinguishes it
+  from a phantom parameter, such as the `T` of `size_of<T>`, which is kept.
 
 ## Invariants
 
@@ -31,7 +36,8 @@ items of `core`, `alloc` and `std` are taken from the external
   shape-only ones (`Box::new`, the allocator `keep_params` map). The
   backend-independent globals of `builtin_globals` (the integer `MIN`, `MAX`
   and `BITS` constants, `UNIT_METADATA`) stay active.
-- The allocator filter never applies to local items.
+- The allocator filter never applies to local items, and drops only
+  parameters that can be allocators (#77).
 - With the default `-use-lean-modules`, `CoreModels` must be a Lean module:
   generated files are modules and `public import CoreModels`.
 
@@ -50,6 +56,13 @@ items of `core`, `alloc` and `std` are taken from the external
   builtin globals `core.num.U32.MAX`/`core.num.Usize.BITS`: if the integer
   `MIN`/`MAX`/`BITS` globals were disabled under the flag, they would become
   monadic reads of unknown globals (checked on 2026-11-02).
+- `tests/src/core-models-lib-generics.rs` (expected output
+  `tests/lean/CoreModelsLib/CoreModelsLibGenerics.lean`, #77): phantom type
+  parameters (`size_of`, `align_of`, `needs_drop`, `iter::empty`) are kept;
+  the allocators of `Vec`, `Rc`, `Arc` impls (including `A: Clone` clauses,
+  two allocators in `PartialEq`, `IntoIter<T, A>` in the header) and of
+  `<[T]>::into_vec<A>` are dropped; `VecDeque`'s allocator, which
+  `hide_allocator` does not hide, is kept.
 
 ## Rebase notes
 
@@ -68,6 +81,14 @@ items of `core`, `alloc` and `std` are taken from the external
   `CoreModels` uses `Type`. Lean solves the `_` to `Type` from the uses of
   `CoreModels` items, so the generated code stays compatible; only the
   expected output changes.
+- On each charon bump, check whether `hide_allocator` still leaves an item's
+  own allocator parameter bound and unused (charon's own snapshot
+  `charon/tests/ui/issue-165-vec-macro.out` shows
+  `pub fn into_vec<T, A>(_1: Box<[T]>) -> Vec<T>`, called as
+  `into_vec<i32, Global>`). Not reported upstream as of 2026-11-04 (work.org
+  [F24]). Once charon removes these parameters, drop
+  `Extract.core_models_fun_allocator_params` and the own-parameter case of
+  the allocator filter.
 
 ## History
 
@@ -76,5 +97,11 @@ items of `core`, `alloc` and `std` are taken from the external
   (#1230); the clause-filter length fix moved to `fix-trait-clause-filter-length`.
 - 2026-10-20: the global filter is merged with upstream's promoted-constant
   check (#1404); test for promoted constants added.
+- 2026-10-23: the allocator filter keeps the type parameters that are not
+  allocators (fork PR #77).
 - 2026-11-02: test for constants (local and builtin) under the flag, against
   the charon consts rework (upstream #1471, #1496).
+- 2026-11-04: rebased on the 2026-11-02 dev (no change; the
+  `core-models-lib-generics` test sits next to the new constants test). An
+  item's own parameters are dropped only if listed, instead of whenever its
+  signature mentions `Box`/`Vec`/`Rc`/`Arc`.
