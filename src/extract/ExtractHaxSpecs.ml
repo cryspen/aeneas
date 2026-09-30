@@ -46,6 +46,17 @@ module Helpers = struct
     let id = Pure.FunOrOp (Fun (FromLlbc (FunId (FRegular id), None))) in
     { e = Qualif { id; generics }; ty }
 
+  (** The arguments passed for the input patterns of a function. Unit inputs are
+      [_] (see [unit_vars_to_unit]): we pass them as [()]. *)
+  let input_args span (inputs : Pure.tpat list) : Pure.texpr list =
+    List.map
+      (fun (p : Pure.tpat) ->
+        match PureUtils.tpat_to_texpr span p with
+        | Some e -> e
+        | None when p.ty = PureUtils.mk_unit_ty -> PureUtils.mk_unit_texpr
+        | None -> [%internal_error] span)
+      inputs
+
   (** Emit [(<cond> <generics> <args>).holds] for a fn [f]. *)
   let emit_holds span ctx fmt generics args (f : Pure.fun_decl) =
     let head = fun_head f.def_id generics f.signature.output in
@@ -184,8 +195,7 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
           let arg_texprs =
             match parent.body with
             | None -> []
-            | Some { inputs; _ } ->
-                List.filter_map (PureUtils.tpat_to_texpr span) inputs
+            | Some { inputs; _ } -> input_args span inputs
           in
           (* Fresh result-var id, from the body generator so it can't clash. *)
           let res_id = fresh_fvar_id () in
@@ -264,8 +274,7 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
           let arg_texprs =
             match parent.body with
             | None -> []
-            | Some { inputs; _ } ->
-                List.filter_map (PureUtils.tpat_to_texpr span) inputs
+            | Some { inputs; _ } -> input_args span inputs
           in
 
           (* Blank line before the entry. *)
