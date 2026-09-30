@@ -201,6 +201,33 @@ partial_fixpoint
 
 end
 
+/-- Trait declaration: [hax_specs::unit_args::Size]
+    Source: 'src/lib.rs', lines 197:4-199:5 -/
+structure unit_args.Size (Self : Type _) where
+  len : Self → RustM Std.Usize
+
+/-- [hax_specs::unit_args::{impl hax_specs::unit_args::Size for ()}::len]:
+    Source: 'src/lib.rs', lines 205:8-207:9 -/
+def Tuple.Insts.Hax_specsUnit_argsSize.len (_ : Unit) : RustM Std.Usize := do
+  ok 0#usize
+
+/-- Trait implementation: [hax_specs::unit_args::{impl hax_specs::unit_args::Size for ()}]
+    Source: 'src/lib.rs', lines 203:4-208:5 -/
+@[reducible]
+def Tuple.Insts.Hax_specsUnit_argsSize : unit_args.Size Unit := {
+  len := Tuple.Insts.Hax_specsUnit_argsSize.len
+}
+
+/-- [hax_specs::unit_args::named]:
+    Source: 'src/lib.rs', lines 211:4-213:5 -/
+def unit_args.named (_ : Unit) : RustM Std.Usize := do
+  ok 0#usize
+
+/-- [hax_specs::unit_args::before_other]:
+    Source: 'src/lib.rs', lines 218:4-220:5 -/
+def unit_args.before_other (_ : Unit) (y : Std.U32) : RustM Std.U32 := do
+  ok y
+
 
 /-- [hax_specs::basic::only_requires::pre]:
     Source: 'src/lib.rs', lines 5:4-5:24 -/
@@ -543,6 +570,38 @@ def mutual.is_odd.spec (n : Std.U32) : Prop :=
   ⦃ ⇓ res => ⌜ (mutual.is_odd.post n res).holds ⌝ ⦄
 
 
+/-- [hax_specs::unit_args::named::post]:
+    Source: 'src/lib.rs', lines 210:4-210:36 -/
+@[reducible]
+def unit_args.named.post (_ : Unit) (result : Std.Usize) : RustM Bool := do
+  ok (result = 0#usize)
+
+def unit_args.named.spec (_ : Unit) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  unit_args.named ()
+  ⦃ ⇓ res => ⌜ (unit_args.named.post () res).holds ⌝ ⦄
+
+
+/-- [hax_specs::unit_args::before_other::pre]:
+    Source: 'src/lib.rs', lines 216:4-216:24 -/
+@[reducible]
+def unit_args.before_other.pre (_ : Unit) (y : Std.U32) : RustM Bool := do
+  ok (y < 100#u32)
+
+/-- [hax_specs::unit_args::before_other::post]:
+    Source: 'src/lib.rs', lines 217:4-217:36 -/
+@[reducible]
+def unit_args.before_other.post
+  (_ : Unit) (y : Std.U32) (result : Std.U32) : RustM Bool := do
+  ok (result = y)
+
+def unit_args.before_other.spec (_ : Unit) (y : Std.U32) : Prop :=
+  (unit_args.before_other.pre () y).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  unit_args.before_other () y
+  ⦃ ⇓ res => ⌜ (unit_args.before_other.post () y res).holds ⌝ ⦄
+
+
 /-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::build::pre]:
     Source: 'src/lib.rs', lines 121:8-121:28 -/
 @[reducible]
@@ -582,6 +641,18 @@ def const_generic_ty.MyStruct.get.spec {N : Std.Usize}
   const_generic_ty.MyStruct.get self
   ⦃ ⇓ res => ⌜ (const_generic_ty.MyStruct.get.post self res).holds ⌝
   ⦄
+
+
+/-- [hax_specs::unit_args::{impl hax_specs::unit_args::Size for ()}::len::post]:
+    Source: 'src/lib.rs', lines 204:8-204:28 -/
+@[reducible]
+def unit_args.SizeTuple.len.post (_ : Unit) (i : Std.Usize) : RustM Bool := do
+  ok true
+
+def Tuple.Insts.Hax_specsUnit_argsSize.len.spec (_ : Unit) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  Tuple.Insts.Hax_specsUnit_argsSize.len ()
+  ⦃ ⇓ res => ⌜ (unit_args.SizeTuple.len.post () res).holds ⌝ ⦄
 
 theorem basic.only_requires.spec.proof (x : Std.U32) :
   basic.only_requires.spec x
@@ -646,6 +717,13 @@ theorem mutual.is_even.spec.proof (n : Std.U32) : mutual.is_even.spec n
 theorem mutual.is_odd.spec.proof (n : Std.U32) : mutual.is_odd.spec n
   := by sorry
 
+theorem unit_args.named.spec.proof (_ : Unit) : unit_args.named.spec ()
+  := by sorry
+
+theorem unit_args.before_other.spec.proof (_ : Unit) (y : Std.U32) :
+  unit_args.before_other.spec () y
+  := by sorry
+
 theorem const_generic_ty.MyStruct.build.spec.proof (N : Std.Usize)
   (k : Std.Usize) : const_generic_ty.MyStruct.build.spec N k
   := by sorry
@@ -653,6 +731,10 @@ theorem const_generic_ty.MyStruct.build.spec.proof (N : Std.Usize)
 theorem const_generic_ty.MyStruct.get.spec.proof {N : Std.Usize}
   (self : const_generic_ty.MyStruct N) :
   const_generic_ty.MyStruct.get.spec self
+  := by sorry
+
+theorem Tuple.Insts.Hax_specsUnit_argsSize.len.spec.proof (_ : Unit) :
+  Tuple.Insts.Hax_specsUnit_argsSize.len.spec ()
   := by sorry
 
 end hax_specs

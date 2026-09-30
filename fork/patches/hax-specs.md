@@ -21,6 +21,8 @@ are consumed by the producer.
 - Without `-specs`, the output is unchanged and the prepass is a no-op.
 - Decoration functions never appear as such; only as `<fn>.pre`/`<fn>.post`.
 - Arguments of spec functions are printed with `Extract.extract_App` (#58).
+- Specs and obligations pass every input of the function, in order: unit
+  inputs, which are extracted as `_` binders, are passed as `()` (#79).
 - Obligations are plain theorems, not `@[spec]` lemmas: users register the
   specs they prove.
 - Spec and obligation files are emitted only when non-empty; their imports come
@@ -32,7 +34,7 @@ are consumed by the producer.
 
 - `tests/src/hax_specs` (expected outputs `tests/lean/HaxSpecs`): basic specs,
   const and trait generics, `future`, implicit generics, mutually recursive
-  functions.
+  functions, unit arguments (#79).
 - The `hax-lib` crates are vendored for the nix check (`haxSpecsVendor` in
   `flake.nix`).
 
@@ -46,3 +48,4 @@ are consumed by the producer.
 - 2026-10-23: the `step`-style backend (`-specs hax-step`, its test
   `tests/src/hax_specs_step` and the `@[spec]` attribute on obligations) removed
   (fork PR #76).
+- 2026-10-23: unit arguments are kept in specs and obligations (fork PR #79).
