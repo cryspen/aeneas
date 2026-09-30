@@ -8,4 +8,4 @@ name = "hax_specs"
 path = "src/lib.rs"
 
 [dependencies]
-hax-lib = "0.3.6"
+hax-lib = "0.4.1"

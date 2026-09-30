@@ -201,6 +201,70 @@ def unit_args.named (_ : Unit) : RustM Std.Usize := do
 def unit_args.before_other (_ : Unit) (y : Std.U32) : RustM Std.U32 := do
   ok y
 
+/-- Trait declaration: [hax_specs::supertraits::A]
+    Source: 'src/lib.rs', lines 210:4-212:5
+    Visibility: public -/
+structure supertraits.A (Self : Type) where
+  a : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_specs::supertraits::B]
+    Source: 'src/lib.rs', lines 215:4-223:5
+    Visibility: public -/
+structure supertraits.B (Self : Type) where
+  AInst : supertraits.A Self
+  b : Self → RustM Std.Usize
+  provided : Self → RustM Std.Usize
+
+/-- [hax_specs::supertraits::B::provided]:
+    Source: 'src/lib.rs', lines 220:8-222:9
+    Visibility: public -/
+@[trait_default]
+def supertraits.B.provided.default
+  {Self : Type} (BInst : supertraits.B Self) (self : Self) :
+  RustM Std.Usize
+  := do
+  BInst.AInst.a self
+
+/-- Trait declaration: [hax_specs::supertraits::C]
+    Source: 'src/lib.rs', lines 227:4-232:5
+    Visibility: public -/
+structure supertraits.C (Self : Type) where
+  BInst : supertraits.B Self
+  provided_c : Self → RustM Std.Usize
+
+/-- [hax_specs::supertraits::C::provided_c]:
+    Source: 'src/lib.rs', lines 229:8-231:9
+    Visibility: public -/
+@[trait_default]
+def supertraits.C.provided_c.default
+  {Self : Type} (CInst : supertraits.C Self) (self : Self) :
+  RustM Std.Usize
+  := do
+  CInst.BInst.AInst.a self
+
+/-- Trait declaration: [hax_specs::supertraits::G]
+    Source: 'src/lib.rs', lines 235:4-237:5
+    Visibility: public -/
+structure supertraits.G (Self : Type) (T : Type) where
+  g : Self → RustM T
+
+/-- Trait declaration: [hax_specs::supertraits::H]
+    Source: 'src/lib.rs', lines 240:4-245:5
+    Visibility: public -/
+structure supertraits.H (Self : Type) (T : Type) where
+  GInst : supertraits.G Self T
+  provided_h : Self → RustM T
+
+/-- [hax_specs::supertraits::H::provided_h]:
+    Source: 'src/lib.rs', lines 242:8-244:9
+    Visibility: public -/
+@[trait_default]
+def supertraits.H.provided_h.default
+  {Self : Type} {T : Type} (HInst : supertraits.H Self T) (self : Self) :
+  RustM T
+  := do
+  HInst.GInst.g self
+
 
 /-- [hax_specs::basic::only_requires::pre]:
     Source: 'src/lib.rs', lines 5:4-5:24 -/
@@ -586,6 +650,78 @@ def Tuple.Insts.Hax_specsUnit_argsSize.len.spec (_ : Unit) : Prop :=
   Tuple.Insts.Hax_specsUnit_argsSize.len ()
   ⦃ ⇓ res => ⌜ (unit_args.SizeTuple.len.post () res).holds ⌝ ⦄
 
+
+/-- [hax_specs::supertraits::B::provided::pre]:
+    Source: 'src/lib.rs', lines 214:4-214:26 -/
+@[reducible]
+def supertraits.B.provided.pre
+  {Self_ : Type} (AInst : supertraits.A Self_) (BInst : supertraits.B Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  let i ← AInst.a self_
+  ok (i < 100#usize)
+
+/-- [hax_specs::supertraits::B::provided::post]:
+    Source: 'src/lib.rs', lines 214:4-214:26 -/
+@[reducible]
+def supertraits.B.provided.post
+  {Self_ : Type} (AInst : supertraits.A Self_) (BInst : supertraits.B Self_)
+  (self_ : Self_) (res : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← AInst.a self_
+  ok (res = i)
+
+def
+  supertraits.B.provided.default.spec {Self : Type} (BInst : supertraits.B
+                                     Self) (self : Self) : Prop :=
+  (supertraits.B.provided.pre BInst.AInst BInst self).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  supertraits.B.provided.default BInst self
+  ⦃ ⇓ res =>
+  ⌜ (supertraits.B.provided.post BInst.AInst BInst self res).holds ⌝ ⦄
+
+
+/-- [hax_specs::supertraits::C::provided_c::post]:
+    Source: 'src/lib.rs', lines 226:4-226:26 -/
+@[reducible]
+def supertraits.C.provided_c.post
+  {Self_ : Type} (BInst : supertraits.B Self_) (CInst : supertraits.C Self_)
+  (self_ : Self_) (res : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← BInst.AInst.a self_
+  ok (res = i)
+
+def
+  supertraits.C.provided_c.default.spec {Self : Type} (CInst : supertraits.C
+                                       Self) (self : Self) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  supertraits.C.provided_c.default CInst self
+  ⦃ ⇓ res =>
+  ⌜ (supertraits.C.provided_c.post CInst.BInst CInst self res).holds ⌝ ⦄
+
+
+/-- [hax_specs::supertraits::H::provided_h::post]:
+    Source: 'src/lib.rs', lines 239:4-239:26 -/
+@[reducible]
+def supertraits.H.provided_h.post
+  {Self_ : Type} {T : Type} (GInst : supertraits.G Self_ T) (HInst :
+  supertraits.H Self_ T) (self_ : Self_) (t : T) :
+  RustM Bool
+  := do
+  ok true
+
+def
+  supertraits.H.provided_h.default.spec {Self : Type} {T : Type} (HInst :
+                                       supertraits.H Self T) (self : Self)
+  : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  supertraits.H.provided_h.default HInst self
+  ⦃ ⇓ res =>
+  ⌜ (supertraits.H.provided_h.post HInst.GInst HInst self res).holds ⌝ ⦄
+
 theorem basic.only_requires.spec.proof (x : Std.U32) :
   basic.only_requires.spec x
   := by sorry
@@ -661,6 +797,24 @@ theorem const_generic_ty.MyStruct.get.spec.proof {N : Std.Usize}
 
 theorem Tuple.Insts.Hax_specsUnit_argsSize.len.spec.proof (_ : Unit) :
   Tuple.Insts.Hax_specsUnit_argsSize.len.spec ()
+  := by sorry
+
+theorem
+  supertraits.B.provided.default.spec.proof {Self : Type} (BInst :
+                                           supertraits.B Self) (self : Self) :
+  supertraits.B.provided.default.spec BInst self
+  := by sorry
+
+theorem
+  supertraits.C.provided_c.default.spec.proof {Self : Type} (CInst :
+                                             supertraits.C Self) (self : Self)
+  : supertraits.C.provided_c.default.spec CInst self
+  := by sorry
+
+theorem
+  supertraits.H.provided_h.default.spec.proof {Self : Type} {T : Type} (HInst :
+                                             supertraits.H Self T)
+  (self : Self) : supertraits.H.provided_h.default.spec HInst self
   := by sorry
 
 end hax_specs
