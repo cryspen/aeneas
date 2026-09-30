@@ -200,3 +200,47 @@ mod unit_args {
         y
     }
 }
+
+// The conditions of a trait method take one trait clause per supertrait, while
+// the method reaches the supertraits through its `Self` clause.
+#[allow(dead_code)]
+mod supertraits {
+    use hax_lib::*;
+
+    pub trait A {
+        fn a(&self) -> usize;
+    }
+
+    #[hax_lib::attributes]
+    pub trait B: A {
+        fn b(&self) -> usize;
+
+        #[requires(self.a() < 100)]
+        #[ensures(|res| res == self.a())]
+        fn provided(&self) -> usize {
+            self.a()
+        }
+    }
+
+    // A supertrait of a supertrait.
+    #[hax_lib::attributes]
+    pub trait C: B {
+        #[ensures(|res| res == self.a())]
+        fn provided_c(&self) -> usize {
+            self.a()
+        }
+    }
+
+    // A generic supertrait.
+    pub trait G<T> {
+        fn g(&self) -> T;
+    }
+
+    #[hax_lib::attributes]
+    pub trait H<T>: G<T> {
+        #[ensures(|_| true)]
+        fn provided_h(&self) -> T {
+            self.g()
+        }
+    }
+}
