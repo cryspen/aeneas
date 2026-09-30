@@ -40,12 +40,13 @@ let should_register_allocator_filter (item_meta : Types.item_meta) : bool =
   | Types.PeIdent (crate, _) :: _ -> List.mem crate core_models_crates
   | _ -> false
 
-(** The type parameters of the enclosing impl that don't appear in its header.
-    Rust forbids those (E0207), so they are allocators whose argument was
-    removed by Charon's [hide_allocator]. Arguments dropped by an ADT's
-    [keep_params] (e.g. [IntoIter<T, A>]) don't count as appearing. *)
+(** The number of type parameters of the enclosing impl, and those of them that
+    don't appear in its header. Rust forbids the latter (E0207), so they are
+    allocators whose argument was removed by Charon's [hide_allocator].
+    Arguments dropped by an ADT's [keep_params] (e.g. [IntoIter<T, A>]) don't
+    count as appearing. *)
 let impl_params_not_in_header (ctx : extraction_ctx)
-    (item_meta : Types.item_meta) : Pure.TypeVarId.Set.t =
+    (item_meta : Types.item_meta) : int * Pure.TypeVarId.Set.t =
   let impl_elem =
     List.fold_left
       (fun acc (e : Types.path_elem) ->
@@ -69,7 +70,7 @@ let impl_params_not_in_header (ctx : extraction_ctx)
         )
   in
   match header_params with
-  | None -> Pure.TypeVarId.Set.empty
+  | None -> (0, Pure.TypeVarId.Set.empty)
   | Some (params, visit_header) ->
       let in_header = ref Types.TypeVarId.Set.empty in
       let visitor =
@@ -93,11 +94,61 @@ let impl_params_not_in_header (ctx : extraction_ctx)
         end
       in
       visit_header visitor;
-      List.fold_left
-        (fun acc (p : Types.type_param) ->
-          if Types.TypeVarId.Set.mem p.index !in_header then acc
-          else Pure.TypeVarId.Set.add p.index acc)
-        Pure.TypeVarId.Set.empty params.types
+      ( List.length params.types,
+        List.fold_left
+          (fun acc (p : Types.type_param) ->
+            if Types.TypeVarId.Set.mem p.index !in_header then acc
+            else Pure.TypeVarId.Set.add p.index acc)
+          Pure.TypeVarId.Set.empty params.types )
+
+(** The types whose allocator argument Charon's [hide_allocator] removes. *)
+let hidden_allocator_types =
+  List.map NameMatcher.parse_pattern
+    [
+      "alloc::boxed::Box";
+      "alloc::vec::Vec";
+      "alloc::rc::Rc";
+      "alloc::sync::Arc";
+    ]
+
+(** Whether the LLBC signature of a function mentions one of
+    {!hidden_allocator_types}, i.e. may have lost an allocator argument. *)
+let mentions_hidden_allocator_type (ctx : extraction_ctx) (id : FunDeclId.id) :
+    bool =
+  let mctx = NameMatcher.ctx_from_crate ctx.crate in
+  let is_hidden (tref : Types.type_decl_ref) =
+    tref.builtin = Some TBox
+    ||
+    match Types.TypeDeclId.Map.find_opt tref.id ctx.crate.type_decls with
+    | None -> false
+    | Some d ->
+        List.exists
+          (fun p ->
+            NameMatcher.match_name mctx
+              {
+                map_vars_to_vars = false;
+                match_with_trait_decl_refs =
+                  Config.match_patterns_with_trait_decl_refs;
+              }
+              p d.item_meta.name)
+          hidden_allocator_types
+  in
+  let visitor =
+    object
+      inherit [_] Types.iter_type_decl as super
+
+      method! visit_TAdt env tref =
+        if is_hidden tref then raise Utils.Found else super#visit_TAdt env tref
+    end
+  in
+  match FunDeclId.Map.find_opt id ctx.crate.fun_decls with
+  | None -> false
+  | Some f -> (
+      try
+        List.iter (visitor#visit_ty ()) f.signature.inputs;
+        visitor#visit_ty () f.signature.output;
+        false
+      with Utils.Found -> true)
 
 (** Under [-core-models-lib], detect type parameters and trait clauses left
     dangling by Charon's [hide_allocator] pass (which strips the [A] parameter
@@ -166,6 +217,8 @@ let compute_allocator_filter ?(droppable : Pure.TypeVarId.Set.t option)
             when visit_filtered_ty_args self env type_id generics -> ()
           | _ -> super#visit_ty env t
 
+        (* The impl arguments are determined by the trait decl ref *)
+        method! visit_TraitImpl _ _ _ = ()
         method! visit_type_var_id _ id = used := Pure.TypeVarId.Set.add id !used
       end
     in
@@ -261,7 +314,21 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
       let type_args_filter id =
         TypeDeclId.Map.find_opt id ctx.types_filter_type_args_map
       in
-      let droppable = impl_params_not_in_header ctx def.f.item_meta in
+      (* The item's own parameters are not covered by E0207: drop them only if
+         the signature may have lost an allocator (e.g. [<[T]>::into_vec<A>]) *)
+      let num_impl_params, droppable =
+        impl_params_not_in_header ctx def.f.item_meta
+      in
+      let droppable =
+        if not (mentions_hidden_allocator_type ctx def.f.def_id) then droppable
+        else
+          List.fold_left
+            (fun acc (p : Pure.type_param) ->
+              if Pure.TypeVarId.to_int p.index >= num_impl_params then
+                Pure.TypeVarId.Set.add p.index acc
+              else acc)
+            droppable sg.generics.types
+      in
       match
         compute_allocator_filter ~droppable ~type_args_filter sg.generics
           sg.inputs (Some sg.output) sg.preds

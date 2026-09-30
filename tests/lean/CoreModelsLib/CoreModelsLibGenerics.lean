@@ -24,42 +24,144 @@ noncomputable section
 namespace core_models_lib_generics
 
 /-- [core_models_lib_generics::size_of_concrete]:
-    Source: 'tests/src/core-models-lib-generics.rs', lines 8:0-10:1
+    Source: 'tests/src/core-models-lib-generics.rs', lines 11:0-13:1
     Visibility: public -/
 def size_of_concrete : RustM Std.Usize := do
   core.mem.size_of Std.U32
 
 /-- [core_models_lib_generics::size_of_generic]:
-    Source: 'tests/src/core-models-lib-generics.rs', lines 12:0-14:1
+    Source: 'tests/src/core-models-lib-generics.rs', lines 15:0-17:1
     Visibility: public -/
 def size_of_generic (T : Type) : RustM Std.Usize := do
   core.mem.size_of T
 
+/-- [core_models_lib_generics::size_of_vec]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 19:0-21:1
+    Visibility: public -/
+def size_of_vec (T : Type) : RustM Std.Usize := do
+  core.mem.size_of (alloc.vec.Vec T)
+
 /-- [core_models_lib_generics::align_of_generic]:
-    Source: 'tests/src/core-models-lib-generics.rs', lines 16:0-18:1
+    Source: 'tests/src/core-models-lib-generics.rs', lines 23:0-25:1
     Visibility: public -/
 def align_of_generic (T : Type) : RustM Std.Usize := do
   core.mem.align_of T
 
+/-- [core_models_lib_generics::needs_drop_generic]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 27:0-29:1
+    Visibility: public -/
+def needs_drop_generic (T : Type) : RustM Bool := do
+  core.mem.needs_drop T
+
+/-- [core_models_lib_generics::empty_iter]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 31:0-33:1
+    Visibility: public -/
+def empty_iter (T : Type) : RustM (core.iter.sources.empty.Empty T) := do
+  core.iter.sources.empty.empty T
+
 /-- [core_models_lib_generics::vec_push]:
-    Source: 'tests/src/core-models-lib-generics.rs', lines 21:0-24:1
+    Source: 'tests/src/core-models-lib-generics.rs', lines 36:0-39:1
     Visibility: public -/
 def vec_push (v : alloc.vec.Vec Std.U32) : RustM (alloc.vec.Vec Std.U32) := do
   alloc.vec.Vec.push v 0#u32
 
+/-- [core_models_lib_generics::vec_push_generic]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 41:0-43:1
+    Visibility: public -/
+def vec_push_generic
+  {T : Type} (v : alloc.vec.Vec T) (x : T) : RustM (alloc.vec.Vec T) := do
+  alloc.vec.Vec.push v x
+
 /-- [core_models_lib_generics::vec_len]:
-    Source: 'tests/src/core-models-lib-generics.rs', lines 26:0-28:1
+    Source: 'tests/src/core-models-lib-generics.rs', lines 45:0-47:1
     Visibility: public -/
 def vec_len (v : alloc.vec.Vec Std.U32) : RustM Std.Usize := do
   alloc.vec.Vec.len v
 
+/-- [core_models_lib_generics::vec_deref]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 49:0-51:1
+    Visibility: public -/
+def vec_deref
+  (v : alloc.vec.Vec Std.U32) : RustM (core.slice.iter.Iter Std.U32) := do
+  let s ← alloc.vec.Vec.Insts.CoreOpsDerefDerefSlice.deref v
+  core.slice.Slice.iter s
+
+/-- [core_models_lib_generics::vec_into_boxed_slice]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 53:0-55:1
+    Visibility: public -/
+def vec_into_boxed_slice
+  (v : alloc.vec.Vec Std.U32) : RustM (Slice Std.U32) := do
+  alloc.vec.Vec.into_boxed_slice v
+
+/-- [core_models_lib_generics::vec_clone]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 58:0-60:1
+    Visibility: public -/
+def vec_clone (v : alloc.vec.Vec Std.U32) : RustM (alloc.vec.Vec Std.U32) := do
+  alloc.vec.Vec.Insts.CoreCloneClone.clone core.U32.Insts.CoreCloneClone v
+
+/-- [core_models_lib_generics::rc_clone]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 62:0-64:1
+    Visibility: public -/
+def rc_clone (r : alloc.rc.Rc Std.U32) : RustM (alloc.rc.Rc Std.U32) := do
+  alloc.rc.Rc.Insts.CoreCloneClone.clone r
+
+/-- [core_models_lib_generics::arc_clone]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 66:0-68:1
+    Visibility: public -/
+def arc_clone
+  (a : alloc.sync.Arc Std.U32) : RustM (alloc.sync.Arc Std.U32) := do
+  alloc.sync.Arc.Insts.CoreCloneClone.clone a
+
+/-- [core_models_lib_generics::vec_eq]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 71:0-73:1
+    Visibility: public -/
+def vec_eq
+  (a : alloc.vec.Vec Std.U32) (b : alloc.vec.Vec Std.U32) : RustM Bool := do
+  alloc.vec.Vec.Insts.CoreCmpPartialEqVec.eq core.U32.Insts.CoreCmpPartialEqU32
+    a b
+
 /-- [core_models_lib_generics::vec_into_iter]:
-    Source: 'tests/src/core-models-lib-generics.rs', lines 31:0-33:1
+    Source: 'tests/src/core-models-lib-generics.rs', lines 76:0-78:1
     Visibility: public -/
 def vec_into_iter
   (v : alloc.vec.Vec Std.U32) :
   RustM (alloc.vec.into_iter.IntoIter Std.U32)
   := do
   alloc.vec.Vec.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter.into_iter v
+
+/-- [core_models_lib_generics::vec_extend]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 81:0-83:1
+    Visibility: public -/
+def vec_extend
+  (v : alloc.vec.Vec Std.U32) (w : alloc.vec.Vec Std.U32) :
+  RustM (alloc.vec.Vec Std.U32)
+  := do
+  alloc.vec.Vec.Insts.CoreIterTraitsCollectExtend.extend
+    (alloc.vec.Vec.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter Std.U32) v
+    w
+
+/-- [core_models_lib_generics::slice_into_vec]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 86:0-88:1
+    Visibility: public -/
+def slice_into_vec (b : Slice Std.U32) : RustM (alloc.vec.Vec Std.U32) := do
+  alloc.slice.Slice.into_vec b
+
+/-- [core_models_lib_generics::vec_macro]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 90:0-92:1
+    Visibility: public -/
+def vec_macro : RustM (alloc.vec.Vec Std.U32) := do
+  let y ←
+    lift (Std.Array.to_slice (Array.make 3#usize [ 1#u32, 2#u32, 3#u32 ] :
+      Array Std.U32 3#usize))
+  alloc.slice.Slice.into_vec y
+
+/-- [core_models_lib_generics::vecdeque_push]:
+    Source: 'tests/src/core-models-lib-generics.rs', lines 95:0-97:1
+    Visibility: public -/
+def vecdeque_push
+  (d : alloc.collections.vec_deque.VecDeque Std.U32 alloc.alloc.Global) :
+  RustM (alloc.collections.vec_deque.VecDeque Std.U32 alloc.alloc.Global)
+  := do
+  alloc.collections.vec_deque.VecDeque.push_back d 0#u32
 
 end core_models_lib_generics
