@@ -57,8 +57,65 @@ module Helpers = struct
         | None -> [%internal_error] span)
       inputs
 
+  (** The generics to pass to a pre/post condition [cond], from the [generics]
+      of the function it describes. The types and const generics match, but the
+      trait clauses may not: for [trait B: A], the conditions of a method of [B]
+      have clauses [Self_: A] and [Self_: B], while the method only has
+      [Self: B]. We look up each clause of [cond] among the trait refs of
+      [generics] and their parent clauses. *)
+  let cond_generics span (ctx : ExtractBase.extraction_ctx)
+      (generics : Pure.generic_args) (cond : Pure.fun_decl) : Pure.generic_args
+      =
+    let rec with_parents (tr : Pure.trait_ref) : Pure.trait_ref list =
+      let decl_ref = tr.trait_decl_ref in
+      match
+        Pure.TraitDeclId.Map.find_opt decl_ref.trait_decl_id
+          ctx.trans_trait_decls
+      with
+      | None -> [ tr ]
+      | Some d ->
+          let subst =
+            PureUtils.make_subst_from_generics_for_trait d.generics tr.trait_id
+              decl_ref.decl_generics
+          in
+          let parent (c : Pure.trait_param) : Pure.trait_ref =
+            {
+              trait_id = ParentClause (tr.trait_id, d.def_id, c.clause_id);
+              trait_decl_ref =
+                {
+                  trait_decl_id = c.trait_id;
+                  decl_generics =
+                    PureUtils.generic_args_substitute subst c.generics;
+                };
+            }
+          in
+          tr
+          :: List.concat_map (fun c -> with_parents (parent c)) d.parent_clauses
+    in
+    let available = List.concat_map with_parents generics.trait_refs in
+    let find (c : Pure.trait_param) : Pure.trait_ref =
+      let decl_ref : Pure.trait_decl_ref =
+        { trait_decl_id = c.trait_id; decl_generics = c.generics }
+      in
+      match
+        List.find_opt
+          (fun (tr : Pure.trait_ref) -> tr.trait_decl_ref = decl_ref)
+          available
+      with
+      | Some tr -> tr
+      | None ->
+          [%craise] span
+            "Could not find an instance for a trait clause of a pre/post \
+             condition"
+    in
+    {
+      generics with
+      trait_refs = List.map find cond.signature.generics.trait_clauses;
+    }
+
   (** Emit [(<cond> <generics> <args>).holds] for a fn [f]. *)
   let emit_holds span ctx fmt generics args (f : Pure.fun_decl) =
+    let generics = cond_generics span ctx generics f in
     let head = fun_head f.def_id generics f.signature.output in
     F.pp_open_hovbox fmt 0;
     F.pp_print_string fmt "(";
