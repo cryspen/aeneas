@@ -13,7 +13,7 @@ let log = Logging.builtin_log
 
 let builtin_globals () : Pure.external_global_info list =
   let mk_int_global (ty : string) (name : string) : Pure.external_global_info =
-    let rust_name = "core::num::{" ^ ty ^ "}::" ^ name in
+    let rust_name = parse_pattern ("core::num::{" ^ ty ^ "}::" ^ name) in
     let extract_name =
       let sep = if backend () = Lean then "." else "_" in
       "core" ^ sep ^ "num" ^ sep
@@ -27,7 +27,7 @@ let builtin_globals () : Pure.external_global_info list =
   in
   let unit_metadata : Pure.external_global_info =
     {
-      rust_name = "UNIT_METADATA";
+      rust_name = parse_pattern "UNIT_METADATA";
       extract_name = "UNIT_METADATA";
       can_fail = false;
     }
