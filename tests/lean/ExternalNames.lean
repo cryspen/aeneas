@@ -2,10 +2,13 @@
 -- [external_names]
 import Aeneas
 import ExternalNamesModel
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
+set_option linter.style.whitespace false
+set_option linter.style.setOption false
+set_option linter.style.longLine false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -17,7 +20,7 @@ namespace external_names
 
 /-- [external_names::use_is_mult]:
     Source: 'tests/src/external-names.rs', lines 11:0-13:1 -/
-def use_is_mult (x : Std.U32) : Result Bool := do
+def use_is_mult (x : Std.U32) : RustM Bool := do
   ExternalNamesModel.isMult x 3#u32
 
 end external_names
