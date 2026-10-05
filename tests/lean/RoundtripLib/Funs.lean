@@ -2,10 +2,13 @@
 -- [roundtrip_lib]: function definitions
 import Aeneas
 import RoundtripLib.Types
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
+set_option linter.style.whitespace false
+set_option linter.style.setOption false
+set_option linter.style.longLine false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -23,8 +26,7 @@ namespace roundtrip_lib
 /-- [roundtrip_lib::{impl roundtrip_lib::Base for roundtrip_lib::Counter}::base]:
     Source: 'src/lib.rs', lines 40:4-42:5
     Visibility: public -/
-def Counter.Insts.Roundtrip_libBase.base
-  (self : Counter) : Result Std.U32 := do
+def Counter.Insts.Roundtrip_libBase.base (self : Counter) : RustM Std.U32 := do
   ok self.value
 
 /-- Trait implementation: [roundtrip_lib::{impl roundtrip_lib::Base for roundtrip_lib::Counter}]
@@ -37,8 +39,7 @@ def Counter.Insts.Roundtrip_libBase : Base Counter := {
 /-- [roundtrip_lib::{impl roundtrip_lib::Step for roundtrip_lib::Counter}::step]:
     Source: 'src/lib.rs', lines 48:4-50:5
     Visibility: public -/
-def Counter.Insts.Roundtrip_libStep.step
-  (self : Counter) : Result Std.U32 := do
+def Counter.Insts.Roundtrip_libStep.step (self : Counter) : RustM Std.U32 := do
   ok self.value
 
 /-- [roundtrip_lib::{impl roundtrip_lib::Step for roundtrip_lib::Counter}::STRIDE]
@@ -59,7 +60,7 @@ def Counter.Insts.Roundtrip_libStep : Step Counter := {
 /-- [roundtrip_lib::add_one]:
     Source: 'src/lib.rs', lines 53:0-55:1
     Visibility: public -/
-def add_one (x : Std.U32) : Result Std.U32 := do
+def add_one (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
 /-- [roundtrip_lib::sum_to]: loop body 0:
@@ -68,7 +69,7 @@ def add_one (x : Std.U32) : Result Std.U32 := do
 @[rust_loop_body]
 def sum_to_loop.body
   (n : Std.U32) (s : Std.U32) (i : Std.U32) :
-  Result (ControlFlow (Std.U32 × Std.U32) Std.U32)
+  RustM (ControlFlow (Std.U32 × Std.U32) Std.U32)
   := do
   if i < n
   then let s1 ← s + i
@@ -80,8 +81,7 @@ def sum_to_loop.body
     Source: 'src/lib.rs', lines 64:4-67:5
     Visibility: public -/
 @[rust_loop]
-def sum_to_loop
-  (n : Std.U32) (s : Std.U32) (i : Std.U32) : Result Std.U32 := do
+def sum_to_loop (n : Std.U32) (s : Std.U32) (i : Std.U32) : RustM Std.U32 := do
   loop
     (fun (s1, i1) => sum_to_loop.body n s1 i1)
     (s, i)
@@ -90,7 +90,7 @@ def sum_to_loop
     Source: 'src/lib.rs', lines 61:0-69:1
     Visibility: public -/
 @[reducible]
-def sum_to (n : Std.U32) : Result Std.U32 := do
+def sum_to (n : Std.U32) : RustM Std.U32 := do
   sum_to_loop n 0#u32 0#u32
 
 end roundtrip_lib

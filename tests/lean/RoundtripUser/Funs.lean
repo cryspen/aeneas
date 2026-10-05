@@ -3,10 +3,13 @@
 import Aeneas
 import RoundtripUser.Types
 import RoundtripLib
-open Aeneas Aeneas.Std Result ControlFlow Error
+open Aeneas Aeneas.Std RustM ControlFlow Error
 set_option linter.dupNamespace false
 set_option linter.hashCommand false
 set_option linter.unusedVariables false
+set_option linter.style.whitespace false
+set_option linter.style.setOption false
+set_option linter.style.longLine false
 
 /- You can set the `maxHeartbeats` value with the `-max-heartbeats` CLI option -/
 set_option maxHeartbeats 1000000
@@ -19,31 +22,31 @@ namespace roundtrip_user
 /-- [roundtrip_user::use_fun]:
     Source: 'src/lib.rs', lines 13:0-15:1
     Visibility: public -/
-def use_fun (x : Std.U32) : Result Std.U32 := do
+def use_fun (x : Std.U32) : RustM Std.U32 := do
   roundtrip_lib.add_one x
 
 /-- [roundtrip_user::use_loop_fun]:
     Source: 'src/lib.rs', lines 17:0-19:1
     Visibility: public -/
-def use_loop_fun (n : Std.U32) : Result Std.U32 := do
+def use_loop_fun (n : Std.U32) : RustM Std.U32 := do
   roundtrip_lib.sum_to n
 
 /-- [roundtrip_user::use_global]:
     Source: 'src/lib.rs', lines 23:0-25:1
     Visibility: public -/
-def use_global : Result Std.U32 := do
+def use_global : RustM Std.U32 := do
   ok roundtrip_lib.START
 
 /-- [roundtrip_user::use_type]:
     Source: 'src/lib.rs', lines 27:0-29:1
     Visibility: public -/
-def use_type (c : roundtrip_lib.Counter) : Result roundtrip_lib.Counter := do
+def use_type (c : roundtrip_lib.Counter) : RustM roundtrip_lib.Counter := do
   ok c
 
 /-- [roundtrip_user::use_enum]:
     Source: 'src/lib.rs', lines 34:0-39:1
     Visibility: public -/
-def use_enum (b : roundtrip_lib.Bound) : Result Std.U32 := do
+def use_enum (b : roundtrip_lib.Bound) : RustM Std.U32 := do
   match b with
   | roundtrip_lib.Bound.Below => ok 0#u32
   | roundtrip_lib.Bound.Above => ok 1#u32
@@ -51,7 +54,7 @@ def use_enum (b : roundtrip_lib.Bound) : Result Std.U32 := do
 /-- [roundtrip_user::use_trait]:
     Source: 'src/lib.rs', lines 45:0-47:1
     Visibility: public -/
-def use_trait (c : roundtrip_lib.Counter) : Result Std.U32 := do
+def use_trait (c : roundtrip_lib.Counter) : RustM Std.U32 := do
   roundtrip_lib.Counter.Insts.Roundtrip_libStep.step c
 
 /-- [roundtrip_user::use_trait_items]:
@@ -59,7 +62,7 @@ def use_trait (c : roundtrip_lib.Counter) : Result Std.U32 := do
     Visibility: public -/
 def use_trait_items
   {T : Type} (roundtrip_libStepInst : roundtrip_lib.Step T) (t : T) :
-  Result Std.U32
+  RustM Std.U32
   := do
   let i ← roundtrip_libStepInst.step t
   let i1 ← roundtrip_libStepInst.STRIDE
