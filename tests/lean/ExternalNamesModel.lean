@@ -10,3 +10,15 @@ open Aeneas Aeneas.Std RustM
     of external names may point at definitions of the user's own library. -/
 def ExternalNamesModel.isMult (n m : U32) : RustM Bool :=
   ok (n.val % m.val == 0)
+
+/-- A hand-written model for the opaque `external_names_split::Counter`,
+    which `tests/external-names/external-names-split.json` maps to this
+    definition. -/
+structure ExternalNamesModel.Counter where
+  n : U32
+
+/-- A hand-written model for the opaque `external_names_split::incr`. -/
+def ExternalNamesModel.incr (c : ExternalNamesModel.Counter) :
+    RustM ExternalNamesModel.Counter := do
+  let n ← c.n + 1#u32
+  ok ⟨n⟩
