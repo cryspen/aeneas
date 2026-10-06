@@ -39,6 +39,9 @@ package «tests» {}
 @[default_target] lean_lib DropBug
 @[default_target] lean_lib Dyn
 @[default_target] lean_lib DynamicSize
+@[default_target] lean_lib ExternalNames
+@[default_target] lean_lib ExternalNamesModel
+@[default_target] lean_lib ExternalNamesSplit
 @[default_target] lean_lib ExtraIncludes
 @[default_target] lean_lib FromTo
 @[default_target] lean_lib GenericUnitOutput

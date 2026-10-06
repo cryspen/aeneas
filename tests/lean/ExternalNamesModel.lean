@@ -1,0 +1,24 @@
+import Aeneas
+open Aeneas Aeneas.Std RustM
+
+/-- A hand-written model for `external_names::is_mult`.
+
+    `tests/external-names/external-names.json` maps the Rust function to this
+    definition, and the test passes `-extra-includes=ExternalNamesModel` so that
+    the generated file imports it. Nothing here belongs to the Core/Std/Alloc
+    models which ship with the compiler: that is the point of the test - a list
+    of external names may point at definitions of the user's own library. -/
+def ExternalNamesModel.isMult (n m : U32) : RustM Bool :=
+  ok (n.val % m.val == 0)
+
+/-- A hand-written model for the opaque `external_names_split::Counter`,
+    which `tests/external-names/external-names-split.json` maps to this
+    definition. -/
+structure ExternalNamesModel.Counter where
+  n : U32
+
+/-- A hand-written model for the opaque `external_names_split::incr`. -/
+def ExternalNamesModel.incr (c : ExternalNamesModel.Counter) :
+    RustM ExternalNamesModel.Counter := do
+  let n ← c.n + 1#u32
+  ok ⟨n⟩
