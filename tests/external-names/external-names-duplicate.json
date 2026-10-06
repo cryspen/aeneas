@@ -1,0 +1,12 @@
+{
+  "functions": [
+    {
+      "rust_pattern": "external_names_duplicate::f",
+      "extract_name": "ExternalNamesModel.f"
+    },
+    {
+      "rust_pattern": "external_names_duplicate::f",
+      "extract_name": "ExternalNamesModel.g"
+    }
+  ]
+}

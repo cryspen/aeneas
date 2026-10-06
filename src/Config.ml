@@ -284,6 +284,19 @@ let lean_gen_lakefile = ref false
 (** Only for Lean: emit a translation.json file alongside the Lean files. *)
 let emit_json = ref false
 
+(** JSON files listing external names (i.e., definitions which we do not
+    extract, and which we map to models in the backend), given through the
+    [-external-names] option.
+
+    In command-line order: later files take precedence over earlier ones, and
+    over the entries we ship. *)
+let external_names_files : string list ref = ref []
+
+(** Add a file to {!external_names_files}. We append, so that the list stays in
+    command-line order. *)
+let add_external_names_file (file : string) : unit =
+  external_names_files := !external_names_files @ [ file ]
+
 (** If true, treat the unit functions (function taking no inputs and returning
     no outputs) as unit tests: evaluate them with the interpreter and check that
     they don't panic. *)
