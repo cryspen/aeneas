@@ -63,6 +63,7 @@
   ExtractName
   ExtractSpec
   ExtractTypes
+  ExternalNames
   FormatCompat
   FunsAnalysis
   GitVersion
