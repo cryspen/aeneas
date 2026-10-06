@@ -1,0 +1,161 @@
+# Checks this version of aeneas against the latest `main` of hax
+# (https://github.com/cryspen/hax): hax's Lean proof library and Lean examples
+# are built with the aeneas and charon binaries and the aeneas Lean library of
+# this commit, instead of the ones hax pins.
+#
+# This check is informational: hax `main` can break independently of aeneas,
+# and some aeneas changes need a matching change in hax. A failure means that
+# hax will need adapting when it next bumps its aeneas pin.
+#
+# A pull request can test against another branch of cryspen/hax instead of
+# `main`, e.g. one carrying the matching hax change, with a line of its own in
+# the pull request description:
+#
+#     hax-branch: <branch>
+#
+# The description is read when the workflow runs, so after changing that line,
+# re-run the workflow (or push) to test against the newly selected branch.
+name: hax main
+
+on:
+  pull_request:
+  push:
+    branches:
+      - dev
+  # Catches changes on the hax side.
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Reads the pull request description.
+      pull-requests: read
+    outputs:
+      hax_rev: ${{ steps.rev.outputs.hax_rev }}
+      examples: ${{ steps.examples.outputs.examples }}
+    steps:
+      # Resolved once so that every job tests the same hax commit.
+      - id: rev
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Empty outside of pull requests.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Fetched rather than taken from `github.event`, so re-running the CI
+          # job will use the latest `hax-branch:`-tag from the PR description.
+          PR_BODY=""
+          if [ -n "$PR_NUMBER" ]; then
+            PR_BODY="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.body // ""')"
+          fi
+          branch="$(printf '%s\n' "$PR_BODY" | tr -d '\r' \
+            | sed -n 's/^hax-branch:[[:space:]]*\([^[:space:]]*\)[[:space:]]*$/\1/p' | tail -n 1)"
+          branch="${branch:-main}"
+          if ! git check-ref-format --branch "$branch" > /dev/null 2>&1; then
+            echo "::error::Invalid hax branch name '$branch' in the pull request description."
+            exit 1
+          fi
+          hax_rev="$(git ls-remote https://github.com/cryspen/hax.git "refs/heads/$branch" | cut -f1)"
+          if [ -z "$hax_rev" ]; then
+            echo "::error::hax branch '$branch' not found in cryspen/hax."
+            exit 1
+          fi
+          if [ "$branch" != main ]; then
+            echo "::notice::Testing against the hax branch '$branch' instead of 'main'."
+          fi
+          echo "hax_rev=$hax_rev" >> "$GITHUB_OUTPUT"
+          echo "Testing against hax \`$branch\` at [\`${hax_rev:0:7}\`](https://github.com/cryspen/hax/commit/$hax_rev)." >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@v4
+        with:
+          path: aeneas
+      - uses: actions/checkout@v4
+        with:
+          repository: cryspen/hax
+          ref: ${{ steps.rev.outputs.hax_rev }}
+          path: hax
+      - id: examples
+        run: |
+          examples=$(aeneas/scripts/ci-hax-main.sh list-examples hax | jq -Rsc 'split("\n") | map(select(length > 0)) | if length == 0 then error("no examples found") else . end')
+          echo "examples=$examples" >> "$GITHUB_OUTPUT"
+
+  proof-libs:
+    needs: [resolve]
+    runs-on: ubuntu-latest
+    steps:
+      - &free_disk_space # YAML anchor to reduce duplication
+        name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+      - &install_nix
+        name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            extra-substituters = https://hacl.cachix.org
+            extra-trusted-public-keys = hacl.cachix.org-1:FzsZ2xsByOwKwIWNPII7yMOelJNDZ12mDAj3d1eGX0c=
+      - &setup_cachix
+        # The caches hax's own CI pulls from.
+        name: Set up Cachix
+        uses: cachix/cachix-action@v17
+        with:
+          name: hax
+          skipPush: true
+          extraPullNames: fstar-nix-versions, z3-nix-versions
+      - &checkout_aeneas
+        uses: actions/checkout@v4
+        with:
+          path: aeneas
+      - &checkout_hax
+        uses: actions/checkout@v4
+        with:
+          repository: cryspen/hax
+          ref: ${{ needs.resolve.outputs.hax_rev }}
+          path: hax
+      - &build_aeneas
+        name: Build aeneas
+        run: nix build -L ./aeneas#aeneas -o aeneas-bin
+      - name: Point hax at this aeneas
+        working-directory: hax
+        run: |
+          nix develop .#ci-examples --command \
+            ../aeneas/scripts/ci-hax-main.sh setup . ../aeneas ../aeneas-bin/bin
+      - name: Build the Lean proof library
+        working-directory: hax/hax-lib/proof-libs/lean
+        run: |
+          nix develop ../../..#ci-examples --command bash -c \
+            "lake exe cache get && lake build && lake build Tests"
+
+  examples:
+    needs: [resolve]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        example: ${{ fromJSON(needs.resolve.outputs.examples) }}
+    name: example-${{ matrix.example }}
+    steps:
+      - *free_disk_space
+      - *install_nix
+      - *setup_cachix
+      - *checkout_aeneas
+      - *checkout_hax
+      - *build_aeneas
+      - name: Point hax at this aeneas
+        working-directory: hax
+        env:
+          EXAMPLE: ${{ matrix.example }}
+        run: |
+          nix develop .#ci-examples --command \
+            ../aeneas/scripts/ci-hax-main.sh setup . ../aeneas ../aeneas-bin/bin "$EXAMPLE"
+      - name: Extract and build the example
+        working-directory: hax
+        env:
+          EXAMPLE: ${{ matrix.example }}
+        run: |
+          nix develop .#ci-examples --command make -C "examples/$EXAMPLE" clean lean
