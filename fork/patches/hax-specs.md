@@ -27,6 +27,11 @@ are consumed by the producer.
   supertrait, while the method reaches them through its `Self` clause: each
   clause of a condition is instantiated with the matching trait ref of the
   method or one of its parent clauses (`cond_generics`, #80).
+- The names `<fn>.pre`, `<fn>.post`, `<fn>.spec` and `<fn>.spec.proof` derive
+  from the registered name of `<fn>` (the conditions of a default method
+  `<Trait>.<m>.default` are `<Trait>.<m>.pre`/`.post`). They are registered
+  (`ExtractSpec.register_names`, ids `SpecId`/`ProofObligationId`) after the
+  crate items, so a clash with an item of the crate is an error (#82).
 - Obligations are plain theorems, not `@[spec]` lemmas: users register the
   specs they prove.
 - Spec and obligation files are emitted only when non-empty; their imports come
@@ -39,7 +44,8 @@ are consumed by the producer.
 - `tests/src/hax_specs` (expected outputs `tests/lean/HaxSpecs`): basic specs,
   const and trait generics, `future`, implicit generics, mutually recursive
   functions, unit arguments (#79), supertraits (direct, transitive and
-  generic, #80). The test crate uses `hax-lib` 0.4.2.
+  generic, #80), items whose names look like generated ones without
+  clashing (#82). The test crate uses `hax-lib` 0.4.2.
 - The `hax-lib` crates are vendored for the nix check (`haxSpecsVendor` in
   `flake.nix`).
 
@@ -56,3 +62,5 @@ are consumed by the producer.
 - 2026-10-23: unit arguments are kept in specs and obligations (fork PR #79).
 - 2026-10-23: supertrait clauses are passed to the conditions of trait methods
   (fork PR #80).
+- 2026-10-23: the names generated for specs are registered, and clashes are
+  errors (fork PR #82).

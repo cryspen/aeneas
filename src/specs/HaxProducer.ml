@@ -85,12 +85,13 @@ let produce (_ctx : TranslateCore.trans_ctx)
   (* Pass 2: resolve uids to decoration fns and build [Spec.spec] /
      [Spec.proof_obligation] entries.
 
-     A decoration fn is reused as a proper function: we rename it to
-     [<parent>::<suffix>] and mark it [reducible], so the standard function
-     extractor prints it as [@[reducible] def <fn>.pre …] / [… .post …]. The
-     whole [Pure.fun_decl] is stashed in the spec (it is stripped from
-     [crate.fun_decls] in pass 3, so it isn't also printed among the regular
-     functions). *)
+     A decoration fn is reused as a proper function: we mark it [reducible], so
+     the standard function extractor prints it as [@[reducible] def …]. We
+     rename it to [<parent>::<suffix>], which only shows in its doc comment:
+     [ExtractHaxSpecs] registers its extracted name ([<fn>.pre] / [<fn>.post])
+     from the parent's. The whole [Pure.fun_decl] is stashed in the spec (it
+     is stripped from [crate.fun_decls] in pass 3, so it isn't also printed
+     among the regular functions). *)
   let rename_decoration (parent : Pure.fun_decl) (suffix : string)
       (dec : Pure.fun_decl) : Pure.fun_decl =
     let name =
