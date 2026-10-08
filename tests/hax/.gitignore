@@ -1,0 +1,15 @@
+# Only build artifacts and machine-specific files: links to the hax checkout,
+# the dependency versions it resolves to, and the `*External_Template.lean`
+# files Aeneas regenerates on each extraction. The Lean project under `proofs/`
+# (extracted code, handwritten proofs, lakefile) is committed, so that
+# regressions in the extraction show up as diffs after `make test-hax`.
+/Cargo.lock
+/target/
+/.cargo/
+/proofs/*/lean/.hax-lean
+/proofs/*/lean/lake-manifest.json
+/proofs/*/lean/.lake/
+/proofs/*/lean/llbc/
+/proofs/*/lean/aeneas-error.log
+/proofs/*/lean/*/Extraction/TypesExternal_Template.lean
+/proofs/*/lean/*/Extraction/FunsExternal_Template.lean

@@ -66,6 +66,17 @@ gmake test-paper.rs
 This runs the Charon→Aeneas pipeline and updates the generated Lean/Coq/F* files
 in `tests/`. Always regenerate after changing the compiler or the Rust source of a test.
 
+The hax tests (`tests/hax/`) are not part of `gmake test`: they go through
+`cargo hax extract` (proof scenario `hax-tests`) and need `cargo hax` on `PATH` plus a checkout of
+[hax](https://github.com/cryspen/hax):
+
+```bash
+gmake test-hax HAX_DIR=../hax      # extract, then build the Lean output
+gmake extract-hax HAX_DIR=../hax   # extract only
+```
+
+See `tests/README.md` ("hax tests") for details.
+
 ## Adding a Unit Test
 
 When adding a new Rust test file in `tests/src/`:
