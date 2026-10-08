@@ -213,6 +213,7 @@ let register_spec_names (ctx : ExtractBase.extraction_ctx)
               ctx conds
           in
           ExtractBase.ctx_add span (SpecId spec_id) spec ctx)
+  | TraitSpec _ -> (* Not produced yet *) ctx
 
 (** Same as {!register_spec_names}, for a proof obligation *)
 let register_obligation_names (ctx : ExtractBase.extraction_ctx)
@@ -228,6 +229,7 @@ let register_obligation_names (ctx : ExtractBase.extraction_ctx)
           in
           ExtractBase.ctx_add parent.item_meta.span (ProofObligationId proof_id)
             proof ctx)
+  | ImplLawful _ -> (* Not produced yet *) ctx
 
 (** Emits the spec statement — the body of [def foo.spec … : Prop :=] (the
     [theorem foo.spec.proof … := by sorry] wrapper is the obligation, emitted
@@ -362,6 +364,7 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
           F.pp_close_box fmt ();
           (* outer vbox *)
           F.pp_print_cut fmt ())
+  | TraitSpec _ -> (* Not produced yet *) ()
 
 (** Emit one [HaxSpecs.obligation] entry as the proof obligation that discharges
     a spec's statement of correctness:
@@ -439,3 +442,4 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
           F.pp_close_box fmt ();
           (* outer hvbox *)
           F.pp_print_cut fmt ())
+  | ImplLawful _ -> (* Not produced yet *) ()
