@@ -1,0 +1,12 @@
+# The hax test crate, extracted with `cargo hax extract` (see
+# `scripts/test-hax.sh`). `hax.toml` must sit next to this manifest.
+[package]
+name = "hax_tests"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+hax-lib = "0.4.2"

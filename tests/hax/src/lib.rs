@@ -1,3 +1,6 @@
+// Several functions take dummy arguments (see `implicit_generics::nothing`).
+#![allow(unused_variables)]
+
 #[allow(dead_code)]
 mod basic {
     use hax_lib::*;
@@ -18,17 +21,17 @@ mod basic {
         x + 1
     }
 
+    // Unit return with a by-value argument
+    #[requires(x < 10)]
+    #[ensures(|_| true)]
+    fn returns_unit(x: u32) {}
+
     // No arguments
     #[ensures(|_| true)]
     fn no_args() {
         let _x = 0;
         ()
     }
-
-    // Unit return with a by-value argument
-    #[requires(x < 10)]
-    #[ensures(|_| true)]
-    fn returns_unit(x: u32) {}
 
     // Block expression (with a `let`) inside `requires`
     #[requires({ let bound = x; bound > 10 })]
@@ -82,7 +85,7 @@ mod future {
         *x += 1;
     }
 
-    #[requires(i < x.len())]
+    #[requires(i < x.len() && x[i] < u32::MAX)]
     #[ensures(|_| {
             let r = future(x);
             r[i] == x[i] + 1})]
@@ -91,7 +94,9 @@ mod future {
     }
 
     #[requires(*x < 1000 && *y < 1000)]
-    #[ensures(|r| { *future(y) == *x && *future(x) == *y && r == x + y})]
+    // `*x + *y` rather than `x + y`: the latter calls `impl Add<&u32> for &u32`,
+    // which hax's core models do not define yet.
+    #[ensures(|r| { *future(y) == *x && *future(x) == *y && r == *x + *y})]
     fn swap_and_add(x: &mut u32, y: &mut u32) -> u32 {
         let tmp_x = *x;
         let tmp_y = *y;
@@ -108,7 +113,6 @@ mod future {
 // exactly the inputs of the function, so it never diverges from it.)
 #[allow(dead_code)]
 mod const_generic_ty {
-    use hax_lib::*;
 
     pub struct MyStruct<const N: usize> {
         pub cap: usize,
@@ -160,10 +164,9 @@ mod implicit_generics {
         None
     }
 
-    // A trait clause (which makes `T` implicit, and is passed to `post` too)
-    // next to a const generic which only `post` can infer.
-    #[requires(k < 100)]
-    #[ensures(|_| true)]
+    // A trait clause next to a const generic which only appears in the output
+    // type. No spec: it would be unprovable, since nothing guarantees that
+    // `T::default()` succeeds.
     fn from_default<T: Default, const N: usize>(k: usize) -> Pair<T, N> {
         Pair { fst: T::default() }
     }
@@ -205,8 +208,6 @@ mod unit_args {
 // the method reaches the supertraits through its `Self` clause.
 #[allow(dead_code)]
 mod supertraits {
-    use hax_lib::*;
-
     pub trait A {
         fn a(&self) -> usize;
     }
@@ -222,9 +223,11 @@ mod supertraits {
         }
     }
 
-    // A supertrait of a supertrait.
+    // A supertrait of a supertrait. The precondition evaluates `self.a()`, which
+    // makes the spec provable without knowing anything about `A`'s impls.
     #[hax_lib::attributes]
     pub trait C: B {
+        #[requires(self.a() < 100)]
         #[ensures(|res| res == self.a())]
         fn provided_c(&self) -> usize {
             self.a()
@@ -236,9 +239,9 @@ mod supertraits {
         fn g(&self) -> T;
     }
 
-    #[hax_lib::attributes]
+    // No spec: it would be unprovable, since nothing guarantees that `self.g()`
+    // succeeds.
     pub trait H<T>: G<T> {
-        #[ensures(|_| true)]
         fn provided_h(&self) -> T {
             self.g()
         }
@@ -274,4 +277,3 @@ mod reserved_names {
         pub fn pre() {}
     }
 }
-

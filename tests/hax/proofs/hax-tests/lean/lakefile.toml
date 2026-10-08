@@ -1,0 +1,24 @@
+# Builds the Lean code `cargo hax` extracts from the hax test crate, against
+# the aeneas Lean library of this checkout and the hax Lean library of the hax
+# checkout that `.hax-lean` links to (set up by `make test-hax HAX_DIR=...`).
+name = "hax_tests"
+defaultTargets = ["HaxTests"]
+
+# Required before `hax`, so that this `aeneas` is the one hax's library builds
+# against too, instead of the revision it pins.
+[[require]]
+name = "aeneas"
+path = "../../../../../backends/lean"
+
+[[require]]
+name = "hax"
+path = ".hax-lean"
+
+# Every module under `HaxTests`: the extraction, the template of the proof
+# obligations that aeneas generates (`Extraction/ProofObligations.lean`, with
+# `sorry`s), and the handwritten proofs copied from it
+# (`Verification/ProofObligations.lean`). A glob rather than `roots`: Lake only
+# builds the modules matched by the globs, or under a root that they match.
+[[lean_lib]]
+name = "HaxTests"
+globs = ["HaxTests.+"]
