@@ -30,96 +30,108 @@ noncomputable section
 
 namespace hax_tests
 
-theorem basic.only_requires.spec.proof (x : Std.U32) :
-  basic.only_requires.spec x
+theorem specs.contracts.only_requires.spec.proof (x : Std.U32) :
+  specs.contracts.only_requires.spec x
   := by sorry
 
-theorem basic.only_ensures.spec.proof (x : Std.U32) : basic.only_ensures.spec x
+theorem specs.contracts.only_ensures.spec.proof (x : Std.U32) :
+  specs.contracts.only_ensures.spec x
   := by sorry
 
-theorem basic.both.spec.proof (x : Std.U32) : basic.both.spec x := by sorry
-
-theorem basic.no_args.spec.proof : basic.no_args.spec := by sorry
-
-theorem basic.returns_unit.spec.proof (x : Std.U32) : basic.returns_unit.spec x
+theorem specs.contracts.both.spec.proof (x : Std.U32) :
+  specs.contracts.both.spec x
   := by sorry
 
-theorem basic.block_in_requires.spec.proof (x : Std.U32) :
-  basic.block_in_requires.spec x
+theorem specs.contracts.no_args.spec.proof : specs.contracts.no_args.spec
   := by sorry
 
-theorem basic.returns_pair.spec.proof (x : Std.U32) : basic.returns_pair.spec x
+theorem specs.contracts.returns_unit.spec.proof (x : Std.U32) :
+  specs.contracts.returns_unit.spec x
   := by sorry
 
-theorem extra_args.generic.spec.proof (N : Std.U32) (x : Std.U32) :
-  extra_args.generic.spec N x
+theorem specs.contracts.block_in_requires.spec.proof (x : Std.U32) :
+  specs.contracts.block_in_requires.spec x
   := by sorry
 
-theorem extra_args.traits.spec.proof {T : Type _} (ValInst : extra_args.Val T)
-  (t : T) (x : Std.U32) : extra_args.traits.spec ValInst t x
+theorem specs.contracts.returns_pair.spec.proof (x : Std.U32) :
+  specs.contracts.returns_pair.spec x
   := by sorry
 
-theorem future.incr.spec.proof (x : Std.U32) : future.incr.spec x := by sorry
-
-theorem future.incr_i.spec.proof (x : Slice Std.U32) (i : Std.Usize) :
-  future.incr_i.spec x i
+theorem specs.arguments.named.spec.proof (_ : Unit) :
+  specs.arguments.named.spec ()
   := by sorry
 
-theorem future.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32) :
-  future.swap_and_add.spec x y
+theorem specs.arguments.before_other.spec.proof (_ : Unit) (y : Std.U32) :
+  specs.arguments.before_other.spec () y
   := by sorry
 
-theorem implicit_generics.nothing.spec.proof (T : Type _) (k : Std.Usize) :
-  implicit_generics.nothing.spec T k
+theorem specs.mutable_borrows.incr.spec.proof (x : Std.U32) :
+  specs.mutable_borrows.incr.spec x
   := by sorry
 
-theorem implicit_generics.of_fst.spec.proof {T : Type _} (N : Std.Usize)
-  (t : T) : implicit_generics.of_fst.spec N t
+theorem specs.mutable_borrows.incr_i.spec.proof (x : Slice Std.U32)
+  (i : Std.Usize) : specs.mutable_borrows.incr_i.spec x i
   := by sorry
 
-theorem implicit_generics.empty.spec.proof (T : Type _) (N : Std.Usize)
-  (k : Std.Usize) : implicit_generics.empty.spec T N k
+theorem specs.mutable_borrows.swap_and_add.spec.proof (x : Std.U32)
+  (y : Std.U32) : specs.mutable_borrows.swap_and_add.spec x y
   := by sorry
 
-theorem mutual.is_even.spec.proof (n : Std.U32) : mutual.is_even.spec n
-  := by sorry
-
-theorem mutual.is_odd.spec.proof (n : Std.U32) : mutual.is_odd.spec n
-  := by sorry
-
-theorem unit_args.named.spec.proof (_ : Unit) : unit_args.named.spec ()
-  := by sorry
-
-theorem unit_args.before_other.spec.proof (_ : Unit) (y : Std.U32) :
-  unit_args.before_other.spec () y
-  := by sorry
-
-theorem reserved_names.foo.spec.proof (x : Std.U32) : reserved_names.foo.spec x
-  := by sorry
-
-theorem const_generic_ty.MyStruct.build.spec.proof (N : Std.Usize)
-  (k : Std.Usize) : const_generic_ty.MyStruct.build.spec N k
-  := by sorry
-
-theorem const_generic_ty.MyStruct.get.spec.proof {N : Std.Usize}
-  (self : const_generic_ty.MyStruct N) :
-  const_generic_ty.MyStruct.get.spec self
-  := by sorry
-
-theorem Tuple.Insts.Hax_testsUnit_argsSize.len.spec.proof (_ : Unit) :
-  Tuple.Insts.Hax_testsUnit_argsSize.len.spec ()
+theorem specs.generics.generic.spec.proof (N : Std.U32) (x : Std.U32) :
+  specs.generics.generic.spec N x
   := by sorry
 
 theorem
-  supertraits.B.provided.default.spec.proof {Self : Type _} (BInst :
-                                           supertraits.B Self) (self : Self) :
-  supertraits.B.provided.default.spec BInst self
+  specs.generics.trait_clause.spec.proof {T : Type _} (ValInst :
+                                        specs.generics.Val T) (t : T)
+  (x : Std.U32) : specs.generics.trait_clause.spec ValInst t x
+  := by sorry
+
+theorem specs.generics.nothing.spec.proof (T : Type _) (k : Std.Usize) :
+  specs.generics.nothing.spec T k
+  := by sorry
+
+theorem specs.generics.of_fst.spec.proof {T : Type _} (N : Std.Usize) 
+  (t : T) : specs.generics.of_fst.spec N t
+  := by sorry
+
+theorem specs.generics.empty.spec.proof (T : Type _) (N : Std.Usize)
+  (k : Std.Usize) : specs.generics.empty.spec T N k
+  := by sorry
+
+theorem specs.mutual.is_even.spec.proof (n : Std.U32) :
+  specs.mutual.is_even.spec n
+  := by sorry
+
+theorem specs.mutual.is_odd.spec.proof (n : Std.U32) :
+  specs.mutual.is_odd.spec n
+  := by sorry
+
+theorem specs.naming.foo.spec.proof (x : Std.U32) : specs.naming.foo.spec x
+  := by sorry
+
+theorem Tuple.Insts.Hax_testsSpecsArgumentsSize.len.spec.proof (_ : Unit) :
+  Tuple.Insts.Hax_testsSpecsArgumentsSize.len.spec ()
+  := by sorry
+
+theorem specs.generics.MyStruct.build.spec.proof (N : Std.Usize)
+  (k : Std.Usize) : specs.generics.MyStruct.build.spec N k
+  := by sorry
+
+theorem specs.generics.MyStruct.get.spec.proof {N : Std.Usize}
+  (self : specs.generics.MyStruct N) : specs.generics.MyStruct.get.spec self
   := by sorry
 
 theorem
-  supertraits.C.provided_c.default.spec.proof {Self : Type _} (CInst :
-                                             supertraits.C Self) (self : Self)
-  : supertraits.C.provided_c.default.spec CInst self
+  specs.traits.B.provided.default.spec.proof {Self : Type _} (BInst :
+                                            specs.traits.B Self) (self : Self)
+  : specs.traits.B.provided.default.spec BInst self
+  := by sorry
+
+theorem
+  specs.traits.C.provided_c.default.spec.proof {Self : Type _} (CInst :
+                                              specs.traits.C Self)
+  (self : Self) : specs.traits.C.provided_c.default.spec CInst self
   := by sorry
 
 end hax_tests

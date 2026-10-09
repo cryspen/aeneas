@@ -29,236 +29,236 @@ noncomputable section
 
 namespace hax_tests
 
-/-- [hax_tests::basic::only_requires]:
-    Source: 'src/lib.rs', lines 9:4-11:5 -/
-def basic.only_requires (x : Std.U32) : RustM Std.U32 := do
+/-- [hax_tests::specs::arguments::{impl hax_tests::specs::arguments::Size for ()}::len]:
+    Source: 'src/specs/arguments.rs', lines 13:4-15:5 -/
+def Tuple.Insts.Hax_testsSpecsArgumentsSize.len
+  (_ : Unit) : RustM Std.Usize := do
+  ok 0#usize
+
+/-- Trait implementation: [hax_tests::specs::arguments::{impl hax_tests::specs::arguments::Size for ()}]
+    Source: 'src/specs/arguments.rs', lines 11:0-16:1 -/
+@[reducible]
+def Tuple.Insts.Hax_testsSpecsArgumentsSize : specs.arguments.Size Unit := {
+  len := Tuple.Insts.Hax_testsSpecsArgumentsSize.len
+}
+
+/-- [hax_tests::specs::arguments::named]:
+    Source: 'src/specs/arguments.rs', lines 19:0-21:1 -/
+def specs.arguments.named (_ : Unit) : RustM Std.Usize := do
+  ok 0#usize
+
+/-- [hax_tests::specs::arguments::before_other]:
+    Source: 'src/specs/arguments.rs', lines 26:0-28:1 -/
+def specs.arguments.before_other (_ : Unit) (y : Std.U32) : RustM Std.U32 := do
+  ok y
+
+/-- [hax_tests::specs::contracts::only_requires]:
+    Source: 'src/specs/contracts.rs', lines 4:0-6:1 -/
+def specs.contracts.only_requires (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
-/-- [hax_tests::basic::only_ensures]:
-    Source: 'src/lib.rs', lines 14:4-16:5 -/
-def basic.only_ensures (x : Std.U32) : RustM Std.U32 := do
+/-- [hax_tests::specs::contracts::only_ensures]:
+    Source: 'src/specs/contracts.rs', lines 9:0-11:1 -/
+def specs.contracts.only_ensures (x : Std.U32) : RustM Std.U32 := do
   ok x
 
-/-- [hax_tests::basic::both]:
-    Source: 'src/lib.rs', lines 20:4-22:5 -/
-def basic.both (x : Std.U32) : RustM Std.U32 := do
+/-- [hax_tests::specs::contracts::both]:
+    Source: 'src/specs/contracts.rs', lines 15:0-17:1 -/
+def specs.contracts.both (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
-/-- [hax_tests::basic::no_args]:
-    Source: 'src/lib.rs', lines 26:4-29:5 -/
-def basic.no_args : RustM Unit := do
+/-- [hax_tests::specs::contracts::no_args]:
+    Source: 'src/specs/contracts.rs', lines 21:0-24:1 -/
+def specs.contracts.no_args : RustM Unit := do
   ok ()
 
-/-- [hax_tests::basic::returns_unit]:
-    Source: 'src/lib.rs', lines 34:4-34:30 -/
-def basic.returns_unit (x : Std.U32) : RustM Unit := do
+/-- [hax_tests::specs::contracts::returns_unit]:
+    Source: 'src/specs/contracts.rs', lines 29:0-29:26 -/
+def specs.contracts.returns_unit (x : Std.U32) : RustM Unit := do
   ok ()
 
-/-- [hax_tests::basic::block_in_requires]:
-    Source: 'src/lib.rs', lines 38:4-40:5 -/
-def basic.block_in_requires (x : Std.U32) : RustM Std.U32 := do
+/-- [hax_tests::specs::contracts::block_in_requires]:
+    Source: 'src/specs/contracts.rs', lines 33:0-35:1 -/
+def specs.contracts.block_in_requires (x : Std.U32) : RustM Std.U32 := do
   ok x
 
-/-- [hax_tests::basic::returns_pair]:
-    Source: 'src/lib.rs', lines 44:4-46:5 -/
-def basic.returns_pair (x : Std.U32) : RustM (Std.U32 × Std.U32) := do
+/-- [hax_tests::specs::contracts::returns_pair]:
+    Source: 'src/specs/contracts.rs', lines 39:0-41:1 -/
+def specs.contracts.returns_pair
+  (x : Std.U32) : RustM (Std.U32 × Std.U32) := do
   ok (x, x)
 
-/-- [hax_tests::extra_args::generic]:
-    Source: 'src/lib.rs', lines 56:4-58:5 -/
-def extra_args.generic (N : Std.U32) (x : Std.U32) : RustM Std.U32 := do
+/-- [hax_tests::specs::generics::generic]:
+    Source: 'src/specs/generics.rs', lines 11:0-13:1 -/
+def specs.generics.generic (N : Std.U32) (x : Std.U32) : RustM Std.U32 := do
   N - x
 
-/-- [hax_tests::extra_args::{impl hax_tests::extra_args::Val for u32}::value]:
-    Source: 'src/lib.rs', lines 66:8-68:9 -/
-def U32.Insts.Hax_testsExtra_argsVal.value
+/-- [hax_tests::specs::generics::{impl hax_tests::specs::generics::Val for u32}::value]:
+    Source: 'src/specs/generics.rs', lines 21:4-23:5 -/
+def U32.Insts.Hax_testsSpecsGenericsVal.value
   (self : Std.U32) : RustM Std.U32 := do
   ok self
 
-/-- Trait implementation: [hax_tests::extra_args::{impl hax_tests::extra_args::Val for u32}]
-    Source: 'src/lib.rs', lines 65:4-69:5 -/
+/-- Trait implementation: [hax_tests::specs::generics::{impl hax_tests::specs::generics::Val for u32}]
+    Source: 'src/specs/generics.rs', lines 20:0-24:1 -/
 @[reducible]
-def U32.Insts.Hax_testsExtra_argsVal : extra_args.Val Std.U32 := {
-  value := U32.Insts.Hax_testsExtra_argsVal.value
+def U32.Insts.Hax_testsSpecsGenericsVal : specs.generics.Val Std.U32 := {
+  value := U32.Insts.Hax_testsSpecsGenericsVal.value
 }
 
-/-- [hax_tests::extra_args::traits]:
-    Source: 'src/lib.rs', lines 73:4-75:5 -/
-def extra_args.traits
-  {T : Type _} (ValInst : extra_args.Val T) (t : T) (x : Std.U32) :
+/-- [hax_tests::specs::generics::trait_clause]:
+    Source: 'src/specs/generics.rs', lines 28:0-30:1 -/
+def specs.generics.trait_clause
+  {T : Type _} (ValInst : specs.generics.Val T) (t : T) (x : Std.U32) :
   RustM Std.U32
   := do
   let i ← ValInst.value t
   i + x
 
-/-- [hax_tests::future::incr]:
-    Source: 'src/lib.rs', lines 84:4-86:5 -/
-def future.incr (x : Std.U32) : RustM Std.U32 := do
+/-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::build]:
+    Source: 'src/specs/generics.rs', lines 42:4-44:5
+    Visibility: public -/
+def specs.generics.MyStruct.build
+  (N : Std.Usize) (k : Std.Usize) : RustM (specs.generics.MyStruct N) := do
+  ok { cap := k }
+
+/-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::get]:
+    Source: 'src/specs/generics.rs', lines 48:4-50:5
+    Visibility: public -/
+def specs.generics.MyStruct.get
+  {N : Std.Usize} (self : specs.generics.MyStruct N) : RustM Std.Usize := do
+  ok self.cap
+
+/-- [hax_tests::specs::generics::nothing]:
+    Source: 'src/specs/generics.rs', lines 59:0-61:1 -/
+def specs.generics.nothing
+  (T : Type _) (k : Std.Usize) : RustM (core.option.Option T) := do
+  ok core.option.Option.None
+
+/-- [hax_tests::specs::generics::of_fst]:
+    Source: 'src/specs/generics.rs', lines 65:0-67:1 -/
+def specs.generics.of_fst
+  {T : Type _} (N : Std.Usize) (t : T) : RustM (specs.generics.Pair T N) := do
+  ok { fst := t }
+
+/-- [hax_tests::specs::generics::empty]:
+    Source: 'src/specs/generics.rs', lines 71:0-73:1 -/
+def specs.generics.empty
+  (T : Type _) (N : Std.Usize) (k : Std.Usize) :
+  RustM (core.option.Option (specs.generics.Pair T N))
+  := do
+  ok core.option.Option.None
+
+/-- [hax_tests::specs::generics::from_default]:
+    Source: 'src/specs/generics.rs', lines 78:0-80:1 -/
+def specs.generics.from_default
+  {T : Type _} (N : Std.Usize) (coredefaultDefaultInst : core.default.Default
+  T) (k : Std.Usize) :
+  RustM (specs.generics.Pair T N)
+  := do
+  let t ← coredefaultDefaultInst.default
+  ok { fst := t }
+
+/-- [hax_tests::specs::mutable_borrows::incr]:
+    Source: 'src/specs/mutable_borrows.rs', lines 5:0-7:1 -/
+def specs.mutable_borrows.incr (x : Std.U32) : RustM Std.U32 := do
   x + 1#u32
 
-/-- [hax_tests::future::incr_i]:
-    Source: 'src/lib.rs', lines 92:4-94:5 -/
-def future.incr_i
+/-- [hax_tests::specs::mutable_borrows::incr_i]:
+    Source: 'src/specs/mutable_borrows.rs', lines 13:0-15:1 -/
+def specs.mutable_borrows.incr_i
   (x : Slice Std.U32) (i : Std.Usize) : RustM (Slice Std.U32) := do
   let i1 ← Slice.index_usize x i
   let i2 ← i1 + 1#u32
   Slice.update x i i2
 
-/-- [hax_tests::future::swap_and_add]:
-    Source: 'src/lib.rs', lines 100:4-106:5 -/
-def future.swap_and_add
+/-- [hax_tests::specs::mutable_borrows::swap_and_add]:
+    Source: 'src/specs/mutable_borrows.rs', lines 21:0-27:1 -/
+def specs.mutable_borrows.swap_and_add
   (x : Std.U32) (y : Std.U32) : RustM (Std.U32 × Std.U32 × Std.U32) := do
   let i ← x + y
   ok (i, y, x)
 
-/-- [hax_tests::const_generic_ty::{hax_tests::const_generic_ty::MyStruct<N>}::build]:
-    Source: 'src/lib.rs', lines 127:8-129:9
-    Visibility: public -/
-def const_generic_ty.MyStruct.build
-  (N : Std.Usize) (k : Std.Usize) : RustM (const_generic_ty.MyStruct N) := do
-  ok { cap := k }
-
-/-- [hax_tests::const_generic_ty::{hax_tests::const_generic_ty::MyStruct<N>}::get]:
-    Source: 'src/lib.rs', lines 133:8-135:9
-    Visibility: public -/
-def const_generic_ty.MyStruct.get
-  {N : Std.Usize} (self : const_generic_ty.MyStruct N) : RustM Std.Usize := do
-  ok self.cap
-
-/-- [hax_tests::implicit_generics::nothing]:
-    Source: 'src/lib.rs', lines 149:4-151:5 -/
-def implicit_generics.nothing
-  (T : Type _) (k : Std.Usize) : RustM (core.option.Option T) := do
-  ok core.option.Option.None
-
-/-- [hax_tests::implicit_generics::of_fst]:
-    Source: 'src/lib.rs', lines 155:4-157:5 -/
-def implicit_generics.of_fst
-  {T : Type _} (N : Std.Usize) (t : T) :
-  RustM (implicit_generics.Pair T N)
-  := do
-  ok { fst := t }
-
-/-- [hax_tests::implicit_generics::empty]:
-    Source: 'src/lib.rs', lines 161:4-163:5 -/
-def implicit_generics.empty
-  (T : Type _) (N : Std.Usize) (k : Std.Usize) :
-  RustM (core.option.Option (implicit_generics.Pair T N))
-  := do
-  ok core.option.Option.None
-
-/-- [hax_tests::implicit_generics::from_default]:
-    Source: 'src/lib.rs', lines 168:4-170:5 -/
-def implicit_generics.from_default
-  {T : Type _} (N : Std.Usize) (coredefaultDefaultInst : core.default.Default
-  T) (k : Std.Usize) :
-  RustM (implicit_generics.Pair T N)
-  := do
-  let t ← coredefaultDefaultInst.default
-  ok { fst := t }
-
 mutual
 
-/-- [hax_tests::mutual::is_even]:
-    Source: 'src/lib.rs', lines 181:4-183:5 -/
-def mutual.is_even (n : Std.U32) : RustM Bool := do
+/-- [hax_tests::specs::mutual::is_even]:
+    Source: 'src/specs/mutual.rs', lines 7:0-9:1 -/
+def specs.mutual.is_even (n : Std.U32) : RustM Bool := do
   if n = 0#u32
   then ok true
   else let i ← n - 1#u32
-       mutual.is_odd i
+       specs.mutual.is_odd i
 partial_fixpoint
 
-/-- [hax_tests::mutual::is_odd]:
-    Source: 'src/lib.rs', lines 187:4-189:5 -/
-def mutual.is_odd (n : Std.U32) : RustM Bool := do
+/-- [hax_tests::specs::mutual::is_odd]:
+    Source: 'src/specs/mutual.rs', lines 13:0-15:1 -/
+def specs.mutual.is_odd (n : Std.U32) : RustM Bool := do
   if n = 0#u32
   then ok false
   else let i ← n - 1#u32
-       mutual.is_even i
+       specs.mutual.is_even i
 partial_fixpoint
 
 end
 
-/-- [hax_tests::unit_args::{impl hax_tests::unit_args::Size for ()}::len]:
-    Source: 'src/lib.rs', lines 206:8-208:9 -/
-def Tuple.Insts.Hax_testsUnit_argsSize.len (_ : Unit) : RustM Std.Usize := do
-  ok 0#usize
+/-- [hax_tests::specs::naming::foo]:
+    Source: 'src/specs/naming.rs', lines 7:0-9:1
+    Visibility: public -/
+def specs.naming.foo (x : Std.U32) : RustM Std.U32 := do
+  x + 1#u32
 
-/-- Trait implementation: [hax_tests::unit_args::{impl hax_tests::unit_args::Size for ()}]
-    Source: 'src/lib.rs', lines 204:4-209:5 -/
-@[reducible]
-def Tuple.Insts.Hax_testsUnit_argsSize : unit_args.Size Unit := {
-  len := Tuple.Insts.Hax_testsUnit_argsSize.len
-}
+/-- [hax_tests::specs::naming::foo::precondition]:
+    Source: 'src/specs/naming.rs', lines 13:4-15:5
+    Visibility: public -/
+def specs.naming.foo.precondition (x : Std.U32) : RustM Bool := do
+  ok (x < 100#u32)
 
-/-- [hax_tests::unit_args::named]:
-    Source: 'src/lib.rs', lines 212:4-214:5 -/
-def unit_args.named (_ : Unit) : RustM Std.Usize := do
-  ok 0#usize
+/-- [hax_tests::specs::naming::foo::spec::lemma]:
+    Source: 'src/specs/naming.rs', lines 18:8-18:25
+    Visibility: public -/
+def specs.naming.foo.spec.lemma : RustM Unit := do
+  ok ()
 
-/-- [hax_tests::unit_args::before_other]:
-    Source: 'src/lib.rs', lines 219:4-221:5 -/
-def unit_args.before_other (_ : Unit) (y : Std.U32) : RustM Std.U32 := do
-  ok y
+/-- [hax_tests::specs::naming::proof]:
+    Source: 'src/specs/naming.rs', lines 23:0-23:17
+    Visibility: public -/
+def specs.naming.proof : RustM Unit := do
+  ok ()
 
-/-- [hax_tests::supertraits::B::provided]:
-    Source: 'src/lib.rs', lines 238:8-240:9
+/-- [hax_tests::specs::naming::bar::pre]:
+    Source: 'src/specs/naming.rs', lines 26:4-26:19
+    Visibility: public -/
+def specs.naming.bar.pre : RustM Unit := do
+  ok ()
+
+/-- [hax_tests::specs::traits::B::provided]:
+    Source: 'src/specs/traits.rs', lines 13:4-15:5
     Visibility: public -/
 @[trait_default]
-def supertraits.B.provided.default
-  {Self : Type _} (BInst : supertraits.B Self) (self : Self) :
+def specs.traits.B.provided.default
+  {Self : Type _} (BInst : specs.traits.B Self) (self : Self) :
   RustM Std.Usize
   := do
   BInst.AInst.a self
 
-/-- [hax_tests::supertraits::C::provided_c]:
-    Source: 'src/lib.rs', lines 249:8-251:9
+/-- [hax_tests::specs::traits::C::provided_c]:
+    Source: 'src/specs/traits.rs', lines 24:4-26:5
     Visibility: public -/
 @[trait_default]
-def supertraits.C.provided_c.default
-  {Self : Type _} (CInst : supertraits.C Self) (self : Self) :
+def specs.traits.C.provided_c.default
+  {Self : Type _} (CInst : specs.traits.C Self) (self : Self) :
   RustM Std.Usize
   := do
   CInst.BInst.AInst.a self
 
-/-- [hax_tests::supertraits::H::provided_h]:
-    Source: 'src/lib.rs', lines 262:8-264:9
+/-- [hax_tests::specs::traits::H::provided_h]:
+    Source: 'src/specs/traits.rs', lines 37:4-39:5
     Visibility: public -/
 @[trait_default]
-def supertraits.H.provided_h.default
-  {Self : Type _} {T : Type _} (HInst : supertraits.H Self T) (self : Self) :
+def specs.traits.H.provided_h.default
+  {Self : Type _} {T : Type _} (HInst : specs.traits.H Self T) (self : Self) :
   RustM T
   := do
   HInst.GInst.g self
-
-/-- [hax_tests::reserved_names::foo]:
-    Source: 'src/lib.rs', lines 276:4-278:5
-    Visibility: public -/
-def reserved_names.foo (x : Std.U32) : RustM Std.U32 := do
-  x + 1#u32
-
-/-- [hax_tests::reserved_names::foo::precondition]:
-    Source: 'src/lib.rs', lines 282:8-284:9
-    Visibility: public -/
-def reserved_names.foo.precondition (x : Std.U32) : RustM Bool := do
-  ok (x < 100#u32)
-
-/-- [hax_tests::reserved_names::foo::spec::lemma]:
-    Source: 'src/lib.rs', lines 287:12-287:29
-    Visibility: public -/
-def reserved_names.foo.spec.lemma : RustM Unit := do
-  ok ()
-
-/-- [hax_tests::reserved_names::proof]:
-    Source: 'src/lib.rs', lines 292:4-292:21
-    Visibility: public -/
-def reserved_names.proof : RustM Unit := do
-  ok ()
-
-/-- [hax_tests::reserved_names::bar::pre]:
-    Source: 'src/lib.rs', lines 295:8-295:23
-    Visibility: public -/
-def reserved_names.bar.pre : RustM Unit := do
-  ok ()
 
 end hax_tests

@@ -50,12 +50,12 @@ are consumed by the producer.
   (`Verification/`). Every contract is proved; one that cannot be is left out
   of the crate, with a comment. `make verify-hax` checks that every obligation
   has a proof, not commented out and without `sorry`.
-- The test cases are in `tests/hax/src/lib.rs`: basic specs, const and trait
-  generics, `future`, implicit generics, mutually recursive functions, unit
-  arguments (#79), supertraits (direct and transitive, #80; the generic
-  supertrait `H<T>: G<T>` has no contract, so the substitution of a parent
-  clause's generics is untested), items whose names look like generated ones
-  without clashing (#82).
+- The modules of `tests/hax/src/specs/`: the shape of contracts, arguments
+  (unit arguments, #79), `&mut` inputs and `future`, generics, mutually
+  recursive functions, trait methods (supertraits, direct and transitive, #80;
+  the generic supertrait `H` has no contract, see `traits.rs`, so the
+  substitution of a parent clause's generics in `cond_generics` is untested)
+  and names that look like generated ones without clashing (#82).
 - Not run by `make test`: `make test-hax HAX_DIR=<hax checkout>`
   (`scripts/test-hax.sh`; `extract-hax` and `verify-hax` run the two steps)
   needs `cargo hax` and a checkout of hax. `make clean-generated-aeneas`
@@ -69,8 +69,9 @@ are consumed by the producer.
 
 - `tests/hax` replaced `tests/src/hax_specs` (and the vendored `hax-lib` of
   the nix check, `haxSpecsVendor`). Tests that upstream-port commits add to
-  `tests/src/hax_specs` belong in `tests/hax/src/lib.rs`, and the outputs must
-  be re-extracted with `make extract-hax`.
+  `tests/src/hax_specs` belong in a module of `tests/hax/src/specs/` (e.g.
+  `mutual.rs`, from the 2026-10-20 rebase), and the outputs must be
+  re-extracted with `make extract-hax`.
 - A bump of `backends/lean/lean-toolchain` must also update
   `tests/hax/proofs/hax-tests/lean/lean-toolchain` (`make verify-hax` checks
   it).

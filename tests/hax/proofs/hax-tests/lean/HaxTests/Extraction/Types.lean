@@ -24,60 +24,60 @@ set_option maxRecDepth 2048
 
 namespace hax_tests
 
-/-- Trait declaration: [hax_tests::extra_args::Val]
-    Source: 'src/lib.rs', lines 61:4-63:5 -/
-structure extra_args.Val (Self : Type _) where
-  value : Self → RustM Std.U32
-
-/-- [hax_tests::const_generic_ty::MyStruct]
-    Source: 'src/lib.rs', lines 117:4-119:5
-    Visibility: public -/
-structure const_generic_ty.MyStruct (N : Std.Usize) where
-  cap : Std.Usize
-
-/-- [hax_tests::implicit_generics::Pair]
-    Source: 'src/lib.rs', lines 143:4-145:5
-    Visibility: public -/
-structure implicit_generics.Pair (T : Type _) (N : Std.Usize) where
-  fst : T
-
-/-- Trait declaration: [hax_tests::unit_args::Size]
-    Source: 'src/lib.rs', lines 198:4-200:5 -/
-structure unit_args.Size (Self : Type _) where
+/-- Trait declaration: [hax_tests::specs::arguments::Size]
+    Source: 'src/specs/arguments.rs', lines 5:0-7:1 -/
+structure specs.arguments.Size (Self : Type _) where
   len : Self → RustM Std.Usize
 
-/-- Trait declaration: [hax_tests::supertraits::A]
-    Source: 'src/lib.rs', lines 228:4-230:5
+/-- Trait declaration: [hax_tests::specs::generics::Val]
+    Source: 'src/specs/generics.rs', lines 16:0-18:1 -/
+structure specs.generics.Val (Self : Type _) where
+  value : Self → RustM Std.U32
+
+/-- [hax_tests::specs::generics::MyStruct]
+    Source: 'src/specs/generics.rs', lines 32:0-34:1
     Visibility: public -/
-structure supertraits.A (Self : Type _) where
+structure specs.generics.MyStruct (N : Std.Usize) where
+  cap : Std.Usize
+
+/-- [hax_tests::specs::generics::Pair]
+    Source: 'src/specs/generics.rs', lines 53:0-55:1
+    Visibility: public -/
+structure specs.generics.Pair (T : Type _) (N : Std.Usize) where
+  fst : T
+
+/-- Trait declaration: [hax_tests::specs::traits::A]
+    Source: 'src/specs/traits.rs', lines 3:0-5:1
+    Visibility: public -/
+structure specs.traits.A (Self : Type _) where
   a : Self → RustM Std.Usize
 
-/-- Trait declaration: [hax_tests::supertraits::B]
-    Source: 'src/lib.rs', lines 233:4-241:5
+/-- Trait declaration: [hax_tests::specs::traits::B]
+    Source: 'src/specs/traits.rs', lines 8:0-16:1
     Visibility: public -/
-structure supertraits.B (Self : Type _) where
-  AInst : supertraits.A Self
+structure specs.traits.B (Self : Type _) where
+  AInst : specs.traits.A Self
   b : Self → RustM Std.Usize
   provided : Self → RustM Std.Usize
 
-/-- Trait declaration: [hax_tests::supertraits::C]
-    Source: 'src/lib.rs', lines 246:4-252:5
+/-- Trait declaration: [hax_tests::specs::traits::C]
+    Source: 'src/specs/traits.rs', lines 21:0-27:1
     Visibility: public -/
-structure supertraits.C (Self : Type _) where
-  BInst : supertraits.B Self
+structure specs.traits.C (Self : Type _) where
+  BInst : specs.traits.B Self
   provided_c : Self → RustM Std.Usize
 
-/-- Trait declaration: [hax_tests::supertraits::G]
-    Source: 'src/lib.rs', lines 255:4-257:5
+/-- Trait declaration: [hax_tests::specs::traits::G]
+    Source: 'src/specs/traits.rs', lines 30:0-32:1
     Visibility: public -/
-structure supertraits.G (Self : Type _) (T : Type _) where
+structure specs.traits.G (Self : Type _) (T : Type _) where
   g : Self → RustM T
 
-/-- Trait declaration: [hax_tests::supertraits::H]
-    Source: 'src/lib.rs', lines 261:4-265:5
+/-- Trait declaration: [hax_tests::specs::traits::H]
+    Source: 'src/specs/traits.rs', lines 36:0-40:1
     Visibility: public -/
-structure supertraits.H (Self : Type _) (T : Type _) where
-  GInst : supertraits.G Self T
+structure specs.traits.H (Self : Type _) (T : Type _) where
+  GInst : specs.traits.G Self T
   provided_h : Self → RustM T
 
 end hax_tests
