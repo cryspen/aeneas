@@ -27,90 +27,133 @@ noncomputable section
 
 namespace hax_tests
 
-theorem basic.only_requires.spec.proof (x : Std.U32) :
-  basic.only_requires.spec x
+theorem standalone.contracts.only_requires.spec.proof (x : Std.U32) :
+  standalone.contracts.only_requires.spec x
   := by sorry
 
-theorem basic.only_ensures.spec.proof (x : Std.U32) : basic.only_ensures.spec x
+theorem standalone.contracts.only_ensures.spec.proof (x : Std.U32) :
+  standalone.contracts.only_ensures.spec x
   := by sorry
 
-theorem basic.both.spec.proof (x : Std.U32) : basic.both.spec x := by sorry
-
-theorem basic.returns_unit.spec.proof (x : Std.U32) : basic.returns_unit.spec x
+theorem standalone.contracts.both.spec.proof (x : Std.U32) :
+  standalone.contracts.both.spec x
   := by sorry
 
-theorem basic.no_args.spec.proof : basic.no_args.spec := by sorry
-
-theorem basic.block_in_requires.spec.proof (x : Std.U32) :
-  basic.block_in_requires.spec x
+theorem standalone.contracts.returns_unit.spec.proof (x : Std.U32) :
+  standalone.contracts.returns_unit.spec x
   := by sorry
 
-theorem basic.returns_pair.spec.proof (x : Std.U32) : basic.returns_pair.spec x
+theorem standalone.contracts.no_args.spec.proof :
+  standalone.contracts.no_args.spec
   := by sorry
 
-theorem extra_args.generic.spec.proof (N : Std.U32) (x : Std.U32) :
-  extra_args.generic.spec N x
+theorem standalone.contracts.block_in_requires.spec.proof (x : Std.U32) :
+  standalone.contracts.block_in_requires.spec x
   := by sorry
 
-theorem extra_args.traits.spec.proof {T : Type} (ValInst : extra_args.Val T)
-  (t : T) (x : Std.U32) : extra_args.traits.spec ValInst t x
+theorem standalone.contracts.returns_pair.spec.proof (x : Std.U32) :
+  standalone.contracts.returns_pair.spec x
   := by sorry
 
-theorem future.incr.spec.proof (x : Std.U32) : future.incr.spec x := by sorry
-
-theorem future.incr_i.spec.proof (x : Slice Std.U32) (i : Std.Usize) :
-  future.incr_i.spec x i
+theorem standalone.contracts.returns_option.spec.proof (x : Std.U32) :
+  standalone.contracts.returns_option.spec x
   := by sorry
 
-theorem future.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32) :
-  future.swap_and_add.spec x y
+theorem standalone.contracts.returns_result.spec.proof (x : Std.U32) :
+  standalone.contracts.returns_result.spec x
   := by sorry
 
-theorem implicit_generics.nothing.spec.proof (T : Type) (k : Std.Usize) :
-  implicit_generics.nothing.spec T k
+theorem standalone.contracts.may_panic.spec.proof (x : Std.U32) (y : Std.U32) :
+  standalone.contracts.may_panic.spec x y
   := by sorry
 
-theorem implicit_generics.of_fst.spec.proof {T : Type} (N : Std.Usize) 
-  (t : T) : implicit_generics.of_fst.spec N t
+theorem standalone.contracts.explicit_panic.spec.proof (x : Std.U32) :
+  standalone.contracts.explicit_panic.spec x
   := by sorry
 
-theorem implicit_generics.empty.spec.proof (T : Type) (N : Std.Usize)
-  (k : Std.Usize) : implicit_generics.empty.spec T N k
+theorem standalone.arguments.named.spec.proof (_ : Unit) :
+  standalone.arguments.named.spec ()
   := by sorry
 
-theorem unit_args.named.spec.proof (_ : Unit) : unit_args.named.spec ()
+theorem standalone.arguments.before_other.spec.proof (_ : Unit) (y : Std.U32) :
+  standalone.arguments.before_other.spec () y
   := by sorry
 
-theorem unit_args.before_other.spec.proof (_ : Unit) (y : Std.U32) :
-  unit_args.before_other.spec () y
+theorem standalone.mutable_borrows.incr.spec.proof (x : Std.U32) :
+  standalone.mutable_borrows.incr.spec x
   := by sorry
 
-theorem reserved_names.foo.spec.proof (x : Std.U32) : reserved_names.foo.spec x
+theorem standalone.mutable_borrows.incr_i.spec.proof (x : Slice Std.U32)
+  (i : Std.Usize) : standalone.mutable_borrows.incr_i.spec x i
   := by sorry
 
-theorem const_generic_ty.MyStruct.build.spec.proof (N : Std.Usize)
-  (k : Std.Usize) : const_generic_ty.MyStruct.build.spec N k
+theorem standalone.mutable_borrows.swap_and_add.spec.proof (x : Std.U32)
+  (y : Std.U32) : standalone.mutable_borrows.swap_and_add.spec x y
   := by sorry
 
-theorem const_generic_ty.MyStruct.get.spec.proof {N : Std.Usize}
-  (self : const_generic_ty.MyStruct N) :
-  const_generic_ty.MyStruct.get.spec self
+theorem standalone.mutable_borrows.read_shared.spec.proof (x : Std.U32) :
+  standalone.mutable_borrows.read_shared.spec x
   := by sorry
 
-theorem Tuple.Insts.Hax_testsUnit_argsSize.len.spec.proof (_ : Unit) :
-  Tuple.Insts.Hax_testsUnit_argsSize.len.spec ()
+theorem standalone.mutable_borrows.add_assign.spec.proof (x : Std.U32)
+  (y : Std.U32) : standalone.mutable_borrows.add_assign.spec x y
   := by sorry
 
-theorem
-  supertraits.B.provided.default.spec.proof {Self : Type} (BInst :
-                                           supertraits.B Self) (self : Self) :
-  supertraits.B.provided.default.spec BInst self
+theorem standalone.generics.generic.spec.proof (N : Std.U32) (x : Std.U32) :
+  standalone.generics.generic.spec N x
   := by sorry
 
 theorem
-  supertraits.C.provided_c.default.spec.proof {Self : Type} (CInst :
-                                             supertraits.C Self) (self : Self)
-  : supertraits.C.provided_c.default.spec CInst self
+  standalone.generics.trait_clause.spec.proof {T : Type} (ValInst :
+                                             standalone.generics.Val T) 
+  (t : T) (x : Std.U32) : standalone.generics.trait_clause.spec ValInst t x
+  := by sorry
+
+theorem
+  standalone.generics.where_clause.spec.proof {T : Type} (ValInst :
+                                             standalone.generics.Val T) 
+  (t : T) : standalone.generics.where_clause.spec ValInst t
+  := by sorry
+
+theorem standalone.generics.nothing.spec.proof (T : Type) (k : Std.Usize) :
+  standalone.generics.nothing.spec T k
+  := by sorry
+
+theorem standalone.generics.of_fst.spec.proof {T : Type} (N : Std.Usize)
+  (t : T) : standalone.generics.of_fst.spec N t
+  := by sorry
+
+theorem standalone.generics.empty.spec.proof (T : Type) (N : Std.Usize)
+  (k : Std.Usize) : standalone.generics.empty.spec T N k
+  := by sorry
+
+theorem standalone.naming.foo.spec.proof (x : Std.U32) :
+  standalone.naming.foo.spec x
+  := by sorry
+
+theorem Tuple.Insts.Hax_testsStandaloneArgumentsSize.len.spec.proof (_ : Unit)
+  : Tuple.Insts.Hax_testsStandaloneArgumentsSize.len.spec ()
+  := by sorry
+
+theorem standalone.generics.MyStruct.build.spec.proof (N : Std.Usize)
+  (k : Std.Usize) : standalone.generics.MyStruct.build.spec N k
+  := by sorry
+
+theorem standalone.generics.MyStruct.get.spec.proof {N : Std.Usize}
+  (self : standalone.generics.MyStruct N) :
+  standalone.generics.MyStruct.get.spec self
+  := by sorry
+
+theorem
+  standalone.traits.B.provided.default.spec.proof {Self : Type} (BInst :
+                                                 standalone.traits.B Self)
+  (self : Self) : standalone.traits.B.provided.default.spec BInst self
+  := by sorry
+
+theorem
+  standalone.traits.C.provided_c.default.spec.proof {Self : Type} (CInst :
+                                                   standalone.traits.C Self)
+  (self : Self) : standalone.traits.C.provided_c.default.spec CInst self
   := by sorry
 
 end hax_tests
