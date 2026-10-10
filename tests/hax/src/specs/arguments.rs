@@ -26,3 +26,30 @@ fn named(x: ()) -> usize {
 fn before_other(x: (), y: u32) -> u32 {
     y
 }
+
+pub struct Point {
+    pub x: u32,
+    pub y: u32,
+}
+
+// Field accesses in the conditions
+#[requires(p.x < 100 && p.y < 100)]
+#[ensures(|result| result == p.x + p.y)]
+fn sum_fields(p: Point) -> u32 {
+    p.x + p.y
+}
+
+pub enum Shape {
+    Dot,
+    Line(u32),
+}
+
+// A `match` on an enum argument in the precondition
+#[requires(match s { Shape::Dot => true, Shape::Line(l) => l < 100 })]
+#[ensures(|result| result <= 100)]
+fn shape_len(s: Shape) -> u32 {
+    match s {
+        Shape::Dot => 0,
+        Shape::Line(l) => l + 1,
+    }
+}

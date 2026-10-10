@@ -38,3 +38,19 @@ pub trait H<T>: G<T> {
         self.g()
     }
 }
+
+// Conditions on a required method, which has no default body to check them
+// against: they could only constrain the impls. Currently dropped: no
+// `pre`/`post` is extracted for them.
+#[hax_lib::attributes]
+pub trait D {
+    #[requires(x < 100)]
+    #[ensures(|res| res > x)]
+    fn required(&self, x: u32) -> u32;
+}
+
+impl D for u32 {
+    fn required(&self, x: u32) -> u32 {
+        x + 1
+    }
+}

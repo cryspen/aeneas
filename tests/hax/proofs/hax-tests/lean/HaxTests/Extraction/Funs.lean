@@ -52,6 +52,19 @@ def specs.arguments.named (_ : Unit) : RustM Std.Usize := do
 def specs.arguments.before_other (_ : Unit) (y : Std.U32) : RustM Std.U32 := do
   ok y
 
+/-- [hax_tests::specs::arguments::sum_fields]:
+    Source: 'src/specs/arguments.rs', lines 38:0-40:1 -/
+def specs.arguments.sum_fields
+  (p : specs.arguments.Point) : RustM Std.U32 := do
+  p.x + p.y
+
+/-- [hax_tests::specs::arguments::shape_len]:
+    Source: 'src/specs/arguments.rs', lines 50:0-55:1 -/
+def specs.arguments.shape_len (s : specs.arguments.Shape) : RustM Std.U32 := do
+  match s with
+  | specs.arguments.Shape.Dot => ok 0#u32
+  | specs.arguments.Shape.Line l => l + 1#u32
+
 /-- [hax_tests::specs::contracts::only_requires]:
     Source: 'src/specs/contracts.rs', lines 4:0-6:1 -/
 def specs.contracts.only_requires (x : Std.U32) : RustM Std.U32 := do
@@ -88,6 +101,243 @@ def specs.contracts.returns_pair
   (x : Std.U32) : RustM (Std.U32 × Std.U32) := do
   ok (x, x)
 
+/-- [hax_tests::specs::contracts::returns_option]:
+    Source: 'src/specs/contracts.rs', lines 45:0-47:1 -/
+def specs.contracts.returns_option
+  (x : Std.U32) : RustM (core.option.Option Std.U32) := do
+  ok (core.option.Option.Some x)
+
+/-- [hax_tests::specs::contracts::returns_result]:
+    Source: 'src/specs/contracts.rs', lines 52:0-54:1 -/
+def specs.contracts.returns_result
+  (x : Std.U32) : RustM (core.result.Result Std.U32 Unit) := do
+  let i ← x + 1#u32
+  ok (core.result.Result.Ok i)
+
+/-- [hax_tests::specs::contracts::may_panic]:
+    Source: 'src/specs/contracts.rs', lines 59:0-61:1 -/
+def specs.contracts.may_panic (x : Std.U32) (y : Std.U32) : RustM Std.U32 := do
+  x / y
+
+/-- [hax_tests::specs::contracts::explicit_panic]:
+    Source: 'src/specs/contracts.rs', lines 66:0-71:1 -/
+def specs.contracts.explicit_panic (x : Std.U32) : RustM Std.U32 := do
+  massert (¬ (x >= 10#u32))
+  ok x
+
+/-- [hax_tests::specs::contracts::implies_cond]:
+    Source: 'src/specs/contracts.rs', lines 76:0-82:1 -/
+def specs.contracts.implies_cond
+  (x : Std.U32) (y : Std.U32) : RustM Std.U32 := do
+  if x >= 10#u32
+  then x + y
+  else ok x
+
+/-- [hax_tests::specs::contracts::_#18::requires::{impl core::ops::function::Fn<(u32,), hax_lib::prop::Prop> for hax_tests::specs::contracts::_#18::requires::{closure}<'_0>}::call]:
+    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+def
+  specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop.call
+  (c : specs.contracts.__18.requires.closure) (tupled_args : Std.U32) :
+  RustM hax_lib.prop.Prop
+  := do
+  hax_lib.prop.implies (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (tupled_args < c) (tupled_args
+    < 100#u32)
+
+/-- [hax_tests::specs::contracts::_#18::requires::{impl core::ops::function::FnMut<(u32,), hax_lib::prop::Prop> for hax_tests::specs::contracts::_#18::requires::{closure}<'_0>}::call_mut]:
+    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+def
+  specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop.call_mut
+  (state : specs.contracts.__18.requires.closure) (args : Std.U32) :
+  RustM (hax_lib.prop.Prop × specs.contracts.__18.requires.closure)
+  := do
+  let p ←
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop.call
+      state args
+  ok (p, state)
+
+/-- [hax_tests::specs::contracts::_#18::requires::{impl core::ops::function::FnOnce<(u32,), hax_lib::prop::Prop> for hax_tests::specs::contracts::_#18::requires::{closure}<'_0>}::call_once]:
+    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+def
+  specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop.call_once
+  (c : specs.contracts.__18.requires.closure) (i : Std.U32) :
+  RustM hax_lib.prop.Prop
+  := do
+  let (p, _) ←
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop.call_mut
+      c i
+  ok p
+
+/-- Trait implementation: [hax_tests::specs::contracts::_#18::requires::{impl core::ops::function::FnOnce<(u32,), hax_lib::prop::Prop> for hax_tests::specs::contracts::_#18::requires::{closure}<'_0>}]
+    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+@[reducible]
+def
+  specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop
+  : core.ops.function.FnOnce specs.contracts.__18.requires.closure Std.U32
+  hax_lib.prop.Prop := {
+  call_once :=
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop.call_once
+}
+
+/-- Trait implementation: [hax_tests::specs::contracts::_#18::requires::{impl core::ops::function::FnMut<(u32,), hax_lib::prop::Prop> for hax_tests::specs::contracts::_#18::requires::{closure}<'_0>}]
+    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+@[reducible]
+def
+  specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop
+  : core.ops.function.FnMut specs.contracts.__18.requires.closure Std.U32
+  hax_lib.prop.Prop := {
+  FnOnceInst :=
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop
+  call_mut :=
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop.call_mut
+}
+
+/-- Trait implementation: [hax_tests::specs::contracts::_#18::requires::{impl core::ops::function::Fn<(u32,), hax_lib::prop::Prop> for hax_tests::specs::contracts::_#18::requires::{closure}<'_0>}]
+    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+@[reducible]
+def specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop :
+  core.ops.function.Fn specs.contracts.__18.requires.closure Std.U32
+  hax_lib.prop.Prop := {
+  FnMutInst :=
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop
+  call :=
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop.call
+}
+
+/-- [hax_tests::specs::contracts::_#19::ensures::{impl core::ops::function::Fn<(u32,), bool> for hax_tests::specs::contracts::_#19::ensures::{closure}<'_0>}::call]:
+    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+def
+  specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool.call
+  (c : specs.contracts.__19.ensures.closure) (tupled_args : Std.U32) :
+  RustM Bool
+  := do
+  ok (c = tupled_args)
+
+/-- [hax_tests::specs::contracts::_#19::ensures::{impl core::ops::function::FnMut<(u32,), bool> for hax_tests::specs::contracts::_#19::ensures::{closure}<'_0>}::call_mut]:
+    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+def
+  specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool.call_mut
+  (state : specs.contracts.__19.ensures.closure) (args : Std.U32) :
+  RustM (Bool × specs.contracts.__19.ensures.closure)
+  := do
+  let b ←
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool.call
+      state args
+  ok (b, state)
+
+/-- [hax_tests::specs::contracts::_#19::ensures::{impl core::ops::function::FnOnce<(u32,), bool> for hax_tests::specs::contracts::_#19::ensures::{closure}<'_0>}::call_once]:
+    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+def
+  specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.call_once
+  (c : specs.contracts.__19.ensures.closure) (i : Std.U32) : RustM Bool := do
+  let (b, _) ←
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool.call_mut
+      c i
+  ok b
+
+/-- Trait implementation: [hax_tests::specs::contracts::_#19::ensures::{impl core::ops::function::FnOnce<(u32,), bool> for hax_tests::specs::contracts::_#19::ensures::{closure}<'_0>}]
+    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+@[reducible]
+def
+  specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
+  : core.ops.function.FnOnce specs.contracts.__19.ensures.closure Std.U32 Bool
+  := {
+  call_once :=
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.call_once
+}
+
+/-- Trait implementation: [hax_tests::specs::contracts::_#19::ensures::{impl core::ops::function::FnMut<(u32,), bool> for hax_tests::specs::contracts::_#19::ensures::{closure}<'_0>}]
+    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+@[reducible]
+def specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool
+  : core.ops.function.FnMut specs.contracts.__19.ensures.closure Std.U32 Bool
+  := {
+  FnOnceInst :=
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
+  call_mut :=
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool.call_mut
+}
+
+/-- Trait implementation: [hax_tests::specs::contracts::_#19::ensures::{impl core::ops::function::Fn<(u32,), bool> for hax_tests::specs::contracts::_#19::ensures::{closure}<'_0>}]
+    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+@[reducible]
+def specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool :
+  core.ops.function.Fn specs.contracts.__19.ensures.closure Std.U32 Bool := {
+  FnMutInst :=
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool
+  call :=
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool.call
+}
+
+/-- [hax_tests::specs::contracts::quantifiers]:
+    Source: 'src/specs/contracts.rs', lines 87:0-89:1 -/
+def specs.contracts.quantifiers (x : Std.U32) : RustM Std.U32 := do
+  ok x
+
+/-- [hax_tests::specs::contracts::int_bounds]:
+    Source: 'src/specs/contracts.rs', lines 95:0-97:1 -/
+def specs.contracts.int_bounds
+  (x : Std.U32) (y : Std.U32) : RustM Std.U32 := do
+  x + y
+
+/-- [hax_tests::specs::contracts::is_small]:
+    Source: 'src/specs/contracts.rs', lines 99:0-101:1 -/
+def specs.contracts.is_small (x : Std.U32) : RustM Bool := do
+  ok (x < 100#u32)
+
+/-- [hax_tests::specs::contracts::helper_in_requires]:
+    Source: 'src/specs/contracts.rs', lines 106:0-108:1 -/
+def specs.contracts.helper_in_requires (x : Std.U32) : RustM Std.U32 := do
+  x + 1#u32
+
+/-- [hax_tests::specs::contracts::calls_contracted]:
+    Source: 'src/specs/contracts.rs', lines 113:0-115:1 -/
+def specs.contracts.calls_contracted (x : Std.U32) : RustM Std.U32 := do
+  let i ← specs.contracts.both x
+  i + 1#u32
+
+/-- [hax_tests::specs::contracts::recursive]:
+    Source: 'src/specs/contracts.rs', lines 120:0-126:1 -/
+def specs.contracts.recursive (n : Std.U32) : RustM Std.U32 := do
+  if n = 0#u32
+  then ok 0#u32
+  else let i ← n - 1#u32
+       let i1 ← specs.contracts.recursive i
+       i1 + 1#u32
+partial_fixpoint
+
+/-- [hax_tests::specs::contracts::with_loop]: loop body 0:
+    Source: 'src/specs/contracts.rs', lines 134:4-136:5 -/
+@[rust_loop_body]
+def specs.contracts.with_loop_loop.body
+  (iter : core.ops.range.Range Std.U32) (acc : Std.U32) :
+  RustM (ControlFlow ((core.ops.range.Range Std.U32) × Std.U32) Std.U32)
+  := do
+  let (o, iter1) ←
+    core.ops.range.Range.Insts.CoreIterTraitsIteratorIterator.next
+      core.U32.Insts.CoreIterRangeStep iter
+  match o with
+  | core.option.Option.None => ok (done acc)
+  | core.option.Option.Some _ =>
+    let acc1 ← acc + 1#u32
+    ok (cont (iter1, acc1))
+
+/-- [hax_tests::specs::contracts::with_loop]: loop 0:
+    Source: 'src/specs/contracts.rs', lines 134:4-136:5 -/
+@[rust_loop]
+def specs.contracts.with_loop_loop
+  (iter : core.ops.range.Range Std.U32) (acc : Std.U32) : RustM Std.U32 := do
+  loop
+    (fun (iter1, acc1) => specs.contracts.with_loop_loop.body iter1 acc1)
+    (iter, acc)
+
+/-- [hax_tests::specs::contracts::with_loop]:
+    Source: 'src/specs/contracts.rs', lines 132:0-138:1 -/
+@[reducible]
+def specs.contracts.with_loop (n : Std.U32) : RustM Std.U32 := do
+  specs.contracts.with_loop_loop { start := 0#u32, «end» := n } 0#u32
+
 /-- [hax_tests::specs::generics::generic]:
     Source: 'src/specs/generics.rs', lines 11:0-13:1 -/
 def specs.generics.generic (N : Std.U32) (x : Std.U32) : RustM Std.U32 := do
@@ -115,34 +365,69 @@ def specs.generics.trait_clause
   let i ← ValInst.value t
   i + x
 
+/-- [hax_tests::specs::generics::where_clause]:
+    Source: 'src/specs/generics.rs', lines 35:0-40:1 -/
+def specs.generics.where_clause
+  {T : Type _} (ValInst : specs.generics.Val T) (t : T) : RustM Std.U32 := do
+  ValInst.value t
+
+/-- [hax_tests::specs::generics::{hax_tests::specs::generics::Wrapper<T>}::inner_value]:
+    Source: 'src/specs/generics.rs', lines 50:4-52:5 -/
+def specs.generics.Wrapper.inner_value
+  {T : Type _} (ValInst : specs.generics.Val T)
+  (self : specs.generics.Wrapper T) :
+  RustM Std.U32
+  := do
+  ValInst.value self
+
+/-- [hax_tests::specs::generics::assoc_type]:
+    Source: 'src/specs/generics.rs', lines 63:0-65:1 -/
+def specs.generics.assoc_type
+  {P : Type _} (ProducerPU32Inst : specs.generics.Producer P Std.U32) (p : P) :
+  RustM Std.U32
+  := do
+  ProducerPU32Inst.produce p
+
+/-- [hax_tests::specs::generics::array_index]:
+    Source: 'src/specs/generics.rs', lines 70:0-72:1 -/
+def specs.generics.array_index
+  {N : Std.Usize} (x : Array Std.U32 N) (i : Std.Usize) : RustM Std.U32 := do
+  Array.index_usize x i
+
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::build]:
-    Source: 'src/specs/generics.rs', lines 42:4-44:5
+    Source: 'src/specs/generics.rs', lines 84:4-86:5
     Visibility: public -/
 def specs.generics.MyStruct.build
   (N : Std.Usize) (k : Std.Usize) : RustM (specs.generics.MyStruct N) := do
   ok { cap := k }
 
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::get]:
-    Source: 'src/specs/generics.rs', lines 48:4-50:5
+    Source: 'src/specs/generics.rs', lines 90:4-92:5
     Visibility: public -/
 def specs.generics.MyStruct.get
   {N : Std.Usize} (self : specs.generics.MyStruct N) : RustM Std.Usize := do
   ok self.cap
 
 /-- [hax_tests::specs::generics::nothing]:
-    Source: 'src/specs/generics.rs', lines 59:0-61:1 -/
+    Source: 'src/specs/generics.rs', lines 101:0-103:1 -/
 def specs.generics.nothing
   (T : Type _) (k : Std.Usize) : RustM (core.option.Option T) := do
   ok core.option.Option.None
 
+/-- [hax_tests::specs::generics::nothing_no_args]:
+    Source: 'src/specs/generics.rs', lines 107:0-109:1 -/
+def specs.generics.nothing_no_args
+  (T : Type _) : RustM (core.option.Option T) := do
+  ok core.option.Option.None
+
 /-- [hax_tests::specs::generics::of_fst]:
-    Source: 'src/specs/generics.rs', lines 65:0-67:1 -/
+    Source: 'src/specs/generics.rs', lines 113:0-115:1 -/
 def specs.generics.of_fst
   {T : Type _} (N : Std.Usize) (t : T) : RustM (specs.generics.Pair T N) := do
   ok { fst := t }
 
 /-- [hax_tests::specs::generics::empty]:
-    Source: 'src/specs/generics.rs', lines 71:0-73:1 -/
+    Source: 'src/specs/generics.rs', lines 119:0-121:1 -/
 def specs.generics.empty
   (T : Type _) (N : Std.Usize) (k : Std.Usize) :
   RustM (core.option.Option (specs.generics.Pair T N))
@@ -150,7 +435,7 @@ def specs.generics.empty
   ok core.option.Option.None
 
 /-- [hax_tests::specs::generics::from_default]:
-    Source: 'src/specs/generics.rs', lines 78:0-80:1 -/
+    Source: 'src/specs/generics.rs', lines 126:0-128:1 -/
 def specs.generics.from_default
   {T : Type _} (N : Std.Usize) (coredefaultDefaultInst : core.default.Default
   T) (k : Std.Usize) :
@@ -178,6 +463,27 @@ def specs.mutable_borrows.swap_and_add
   (x : Std.U32) (y : Std.U32) : RustM (Std.U32 × Std.U32 × Std.U32) := do
   let i ← x + y
   ok (i, y, x)
+
+/-- [hax_tests::specs::mutable_borrows::read_shared]:
+    Source: 'src/specs/mutable_borrows.rs', lines 31:0-33:1 -/
+def specs.mutable_borrows.read_shared (x : Std.U32) : RustM Std.U32 := do
+  ok x
+
+/-- [hax_tests::specs::mutable_borrows::add_assign]:
+    Source: 'src/specs/mutable_borrows.rs', lines 38:0-40:1 -/
+def specs.mutable_borrows.add_assign
+  (x : Std.U32) (y : Std.U32) : RustM Std.U32 := do
+  x + y
+
+/-- [hax_tests::specs::mutable_borrows::{hax_tests::specs::mutable_borrows::Counter}::bump]:
+    Source: 'src/specs/mutable_borrows.rs', lines 51:4-53:5
+    Visibility: public -/
+def specs.mutable_borrows.Counter.bump
+  (self : specs.mutable_borrows.Counter) :
+  RustM specs.mutable_borrows.Counter
+  := do
+  let i ← self.count + 1#u32
+  ok { count := i }
 
 mutual
 
@@ -260,5 +566,19 @@ def specs.traits.H.provided_h.default
   RustM T
   := do
   HInst.GInst.g self
+
+/-- [hax_tests::specs::traits::{impl hax_tests::specs::traits::D for u32}::required]:
+    Source: 'src/specs/traits.rs', lines 53:4-55:5
+    Visibility: public -/
+def U32.Insts.Hax_testsSpecsTraitsD.required
+  (self : Std.U32) (x : Std.U32) : RustM Std.U32 := do
+  x + 1#u32
+
+/-- Trait implementation: [hax_tests::specs::traits::{impl hax_tests::specs::traits::D for u32}]
+    Source: 'src/specs/traits.rs', lines 52:0-56:1 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsD : specs.traits.D Std.U32 := {
+  required := U32.Insts.Hax_testsSpecsTraitsD.required
+}
 
 end hax_tests

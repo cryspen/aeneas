@@ -138,6 +138,253 @@ def specs.contracts.returns_pair.spec (x : Std.U32) : Prop :=
   ⦃ ⇓ res => ⌜ (specs.contracts.returns_pair.post x res).holds ⌝ ⦄
 
 
+/-- [hax_tests::specs::contracts::returns_option::post]:
+    Source: 'src/specs/contracts.rs', lines 44:0-44:70 -/
+@[reducible]
+def specs.contracts.returns_option.post
+  (x : Std.U32) (result : core.option.Option Std.U32) : RustM Bool := do
+  match result with
+  | core.option.Option.None => ok false
+  | core.option.Option.Some v => ok (v = x)
+
+def specs.contracts.returns_option.spec (x : Std.U32) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.returns_option x
+  ⦃ ⇓ res => ⌜ (specs.contracts.returns_option.post x res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::returns_result::pre]:
+    Source: 'src/specs/contracts.rs', lines 50:0-50:20 -/
+@[reducible]
+def specs.contracts.returns_result.pre (x : Std.U32) : RustM Bool := do
+  ok (x < 100#u32)
+
+/-- [hax_tests::specs::contracts::returns_result::post]:
+    Source: 'src/specs/contracts.rs', lines 51:0-51:74 -/
+@[reducible]
+def specs.contracts.returns_result.post
+  (x : Std.U32) (result : core.result.Result Std.U32 Unit) : RustM Bool := do
+  match result with
+  | core.result.Result.Ok v => let i ← x + 1#u32
+                               ok (v = i)
+  | core.result.Result.Err _ => ok false
+
+def specs.contracts.returns_result.spec (x : Std.U32) : Prop :=
+  (specs.contracts.returns_result.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.returns_result x
+  ⦃ ⇓ res => ⌜ (specs.contracts.returns_result.post x res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::may_panic::pre]:
+    Source: 'src/specs/contracts.rs', lines 57:0-57:19 -/
+@[reducible]
+def specs.contracts.may_panic.pre
+  (x : Std.U32) (y : Std.U32) : RustM Bool := do
+  ok (y != 0#u32)
+
+/-- [hax_tests::specs::contracts::may_panic::post]:
+    Source: 'src/specs/contracts.rs', lines 58:0-58:32 -/
+@[reducible]
+def specs.contracts.may_panic.post
+  (x : Std.U32) (y : Std.U32) (result : Std.U32) : RustM Bool := do
+  ok (result <= x)
+
+def specs.contracts.may_panic.spec (x : Std.U32) (y : Std.U32) : Prop :=
+  (specs.contracts.may_panic.pre x y).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.may_panic x y
+  ⦃ ⇓ res => ⌜ (specs.contracts.may_panic.post x y res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::explicit_panic::pre]:
+    Source: 'src/specs/contracts.rs', lines 64:0-64:19 -/
+@[reducible]
+def specs.contracts.explicit_panic.pre (x : Std.U32) : RustM Bool := do
+  ok (x < 10#u32)
+
+/-- [hax_tests::specs::contracts::explicit_panic::post]:
+    Source: 'src/specs/contracts.rs', lines 65:0-65:32 -/
+@[reducible]
+def specs.contracts.explicit_panic.post
+  (x : Std.U32) (result : Std.U32) : RustM Bool := do
+  ok (result = x)
+
+def specs.contracts.explicit_panic.spec (x : Std.U32) : Prop :=
+  (specs.contracts.explicit_panic.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.explicit_panic x
+  ⦃ ⇓ res => ⌜ (specs.contracts.explicit_panic.post x res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::implies_cond::pre]:
+    Source: 'src/specs/contracts.rs', lines 74:0-74:37 -/
+@[reducible]
+def specs.contracts.implies_cond.pre
+  (x : Std.U32) (y : Std.U32) : RustM hax_lib.prop.Prop := do
+  hax_lib.prop.implies (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (x >= 10#u32) (y = 0#u32)
+
+/-- [hax_tests::specs::contracts::implies_cond::post]:
+    Source: 'src/specs/contracts.rs', lines 75:0-75:50 -/
+@[reducible]
+def specs.contracts.implies_cond.post
+  (x : Std.U32) (y : Std.U32) (result : Std.U32) :
+  RustM hax_lib.prop.Prop
+  := do
+  hax_lib.prop.implies (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool) (x >= 10#u32) (result = x)
+
+def specs.contracts.implies_cond.spec (x : Std.U32) (y : Std.U32) : Prop :=
+  (specs.contracts.implies_cond.pre x y).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.implies_cond x y
+  ⦃ ⇓ res => ⌜ (specs.contracts.implies_cond.post x y res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::quantifiers::pre]:
+    Source: 'src/specs/contracts.rs', lines 85:0-85:53 -/
+@[reducible]
+def specs.contracts.quantifiers.pre
+  (x : Std.U32) : RustM hax_lib.prop.Prop := do
+  hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
+    hax_lib.prop.Prop))
+    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop x
+
+/-- [hax_tests::specs::contracts::quantifiers::post]:
+    Source: 'src/specs/contracts.rs', lines 86:0-86:49 -/
+@[reducible]
+def specs.contracts.quantifiers.post
+  (x : Std.U32) (result : Std.U32) : RustM hax_lib.prop.Prop := do
+  hax_lib.prop.exists (core.convert.Into.Blanket
+    hax_lib.prop.Prop.Insts.CoreConvertFromBool)
+    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool
+    result
+
+def specs.contracts.quantifiers.spec (x : Std.U32) : Prop :=
+  (specs.contracts.quantifiers.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.quantifiers x
+  ⦃ ⇓ res => ⌜ (specs.contracts.quantifiers.post x res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::int_bounds::pre]:
+    Source: 'src/specs/contracts.rs', lines 93:0-93:57 -/
+@[reducible]
+def specs.contracts.int_bounds.pre
+  (x : Std.U32) (y : Std.U32) : RustM Bool := do
+  let i ← hax_lib.U32.Insts.Hax_libIntToInt.to_int x
+  let i1 ← hax_lib.U32.Insts.Hax_libIntToInt.to_int y
+  let i2 ← hax_lib.int.Int.Insts.CoreOpsArithAddIntInt.add i i1
+  let i3 ← hax_lib.U32.Insts.Hax_libIntToInt.to_int core.num.U32.MAX
+  core.cmp.PartialOrd.le.default hax_lib.int.Int.Insts.CoreCmpPartialOrdInt i2
+    i3
+
+/-- [hax_tests::specs::contracts::int_bounds::post]:
+    Source: 'src/specs/contracts.rs', lines 94:0-94:63 -/
+@[reducible]
+def specs.contracts.int_bounds.post
+  (x : Std.U32) (y : Std.U32) (result : Std.U32) : RustM Bool := do
+  let i ← hax_lib.U32.Insts.Hax_libIntToInt.to_int result
+  let i1 ← hax_lib.U32.Insts.Hax_libIntToInt.to_int x
+  let i2 ← hax_lib.U32.Insts.Hax_libIntToInt.to_int y
+  let i3 ← hax_lib.int.Int.Insts.CoreOpsArithAddIntInt.add i1 i2
+  hax_lib.int.Int.Insts.CoreCmpPartialEqInt.eq i i3
+
+def specs.contracts.int_bounds.spec (x : Std.U32) (y : Std.U32) : Prop :=
+  (specs.contracts.int_bounds.pre x y).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.int_bounds x y
+  ⦃ ⇓ res => ⌜ (specs.contracts.int_bounds.post x y res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::helper_in_requires::pre]:
+    Source: 'src/specs/contracts.rs', lines 104:0-104:24 -/
+@[reducible]
+def specs.contracts.helper_in_requires.pre (x : Std.U32) : RustM Bool := do
+  specs.contracts.is_small x
+
+/-- [hax_tests::specs::contracts::helper_in_requires::post]:
+    Source: 'src/specs/contracts.rs', lines 105:0-105:36 -/
+@[reducible]
+def specs.contracts.helper_in_requires.post
+  (x : Std.U32) (result : Std.U32) : RustM Bool := do
+  let i ← x + 1#u32
+  ok (result = i)
+
+def specs.contracts.helper_in_requires.spec (x : Std.U32) : Prop :=
+  (specs.contracts.helper_in_requires.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.helper_in_requires x
+  ⦃ ⇓ res => ⌜ (specs.contracts.helper_in_requires.post x res).holds ⌝
+  ⦄
+
+
+/-- [hax_tests::specs::contracts::calls_contracted::pre]:
+    Source: 'src/specs/contracts.rs', lines 111:0-111:19 -/
+@[reducible]
+def specs.contracts.calls_contracted.pre (x : Std.U32) : RustM Bool := do
+  ok (x < 10#u32)
+
+/-- [hax_tests::specs::contracts::calls_contracted::post]:
+    Source: 'src/specs/contracts.rs', lines 112:0-112:42 -/
+@[reducible]
+def specs.contracts.calls_contracted.post
+  (x : Std.U32) (result : Std.U32) : RustM Bool := do
+  let i ← specs.contracts.both x
+  let i1 ← i + 1#u32
+  ok (result = i1)
+
+def specs.contracts.calls_contracted.spec (x : Std.U32) : Prop :=
+  (specs.contracts.calls_contracted.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.calls_contracted x
+  ⦃ ⇓ res => ⌜ (specs.contracts.calls_contracted.post x res).holds ⌝
+  ⦄
+
+
+/-- [hax_tests::specs::contracts::recursive::pre]:
+    Source: 'src/specs/contracts.rs', lines 118:0-118:20 -/
+@[reducible]
+def specs.contracts.recursive.pre (n : Std.U32) : RustM Bool := do
+  ok (n < 100#u32)
+
+/-- [hax_tests::specs::contracts::recursive::post]:
+    Source: 'src/specs/contracts.rs', lines 119:0-119:32 -/
+@[reducible]
+def specs.contracts.recursive.post
+  (n : Std.U32) (result : Std.U32) : RustM Bool := do
+  ok (result = n)
+
+def specs.contracts.recursive.spec (n : Std.U32) : Prop :=
+  (specs.contracts.recursive.pre n).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.recursive n
+  ⦃ ⇓ res => ⌜ (specs.contracts.recursive.post n res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::contracts::with_loop::pre]:
+    Source: 'src/specs/contracts.rs', lines 130:0-130:20 -/
+@[reducible]
+def specs.contracts.with_loop.pre (n : Std.U32) : RustM Bool := do
+  ok (n < 100#u32)
+
+/-- [hax_tests::specs::contracts::with_loop::post]:
+    Source: 'src/specs/contracts.rs', lines 131:0-131:32 -/
+@[reducible]
+def specs.contracts.with_loop.post
+  (n : Std.U32) (result : Std.U32) : RustM Bool := do
+  ok (result = n)
+
+def specs.contracts.with_loop.spec (n : Std.U32) : Prop :=
+  (specs.contracts.with_loop.pre n).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.with_loop n
+  ⦃ ⇓ res => ⌜ (specs.contracts.with_loop.post n res).holds ⌝ ⦄
+
+
 /-- [hax_tests::specs::arguments::named::post]:
     Source: 'src/specs/arguments.rs', lines 18:0-18:32 -/
 @[reducible]
@@ -170,6 +417,53 @@ def specs.arguments.before_other.spec (_ : Unit) (y : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.arguments.before_other () y
   ⦃ ⇓ res => ⌜ (specs.arguments.before_other.post () y res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::arguments::sum_fields::pre]:
+    Source: 'src/specs/arguments.rs', lines 36:0-36:35 -/
+@[reducible]
+def specs.arguments.sum_fields.pre
+  (p : specs.arguments.Point) : RustM Bool := do
+  if p.x < 100#u32
+  then ok (p.y < 100#u32)
+  else ok false
+
+/-- [hax_tests::specs::arguments::sum_fields::post]:
+    Source: 'src/specs/arguments.rs', lines 37:0-37:40 -/
+@[reducible]
+def specs.arguments.sum_fields.post
+  (p : specs.arguments.Point) (result : Std.U32) : RustM Bool := do
+  let i ← p.x + p.y
+  ok (result = i)
+
+def specs.arguments.sum_fields.spec (p : specs.arguments.Point) : Prop :=
+  (specs.arguments.sum_fields.pre p).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.arguments.sum_fields p
+  ⦃ ⇓ res => ⌜ (specs.arguments.sum_fields.post p res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::arguments::shape_len::pre]:
+    Source: 'src/specs/arguments.rs', lines 48:0-48:70 -/
+@[reducible]
+def specs.arguments.shape_len.pre
+  (s : specs.arguments.Shape) : RustM Bool := do
+  match s with
+  | specs.arguments.Shape.Dot => ok true
+  | specs.arguments.Shape.Line l => ok (l < 100#u32)
+
+/-- [hax_tests::specs::arguments::shape_len::post]:
+    Source: 'src/specs/arguments.rs', lines 49:0-49:34 -/
+@[reducible]
+def specs.arguments.shape_len.post
+  (s : specs.arguments.Shape) (result : Std.U32) : RustM Bool := do
+  ok (result <= 100#u32)
+
+def specs.arguments.shape_len.spec (s : specs.arguments.Shape) : Prop :=
+  (specs.arguments.shape_len.pre s).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.arguments.shape_len s
+  ⦃ ⇓ res => ⌜ (specs.arguments.shape_len.post s res).holds ⌝ ⦄
 
 
 /-- [hax_tests::specs::mutable_borrows::incr::pre]:
@@ -257,6 +551,45 @@ def specs.mutable_borrows.swap_and_add.spec (x : Std.U32) (y : Std.U32)
   ⌜ (specs.mutable_borrows.swap_and_add.post x y res).holds ⌝ ⦄
 
 
+/-- [hax_tests::specs::mutable_borrows::read_shared::post]:
+    Source: 'src/specs/mutable_borrows.rs', lines 30:0-30:33 -/
+@[reducible]
+def specs.mutable_borrows.read_shared.post
+  (x : Std.U32) (result : Std.U32) : RustM Bool := do
+  ok (result = x)
+
+def specs.mutable_borrows.read_shared.spec (x : Std.U32) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.mutable_borrows.read_shared x
+  ⦃ ⇓ res => ⌜ (specs.mutable_borrows.read_shared.post x res).holds ⌝
+  ⦄
+
+
+/-- [hax_tests::specs::mutable_borrows::add_assign::pre]:
+    Source: 'src/specs/mutable_borrows.rs', lines 36:0-36:35 -/
+@[reducible]
+def specs.mutable_borrows.add_assign.pre
+  (x : Std.U32) (y : Std.U32) : RustM Bool := do
+  if x < 1000#u32
+  then ok (y < 1000#u32)
+  else ok false
+
+/-- [hax_tests::specs::mutable_borrows::add_assign::post]:
+    Source: 'src/specs/mutable_borrows.rs', lines 37:0-37:37 -/
+@[reducible]
+def specs.mutable_borrows.add_assign.post
+  (x : Std.U32) (y : Std.U32) (x_future : Std.U32) : RustM Bool := do
+  let i ← x + y
+  ok (x_future = i)
+
+def specs.mutable_borrows.add_assign.spec (x : Std.U32) (y : Std.U32) : Prop :=
+  (specs.mutable_borrows.add_assign.pre x y).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.mutable_borrows.add_assign x y
+  ⦃ ⇓ res => ⌜ (specs.mutable_borrows.add_assign.post x y res).holds ⌝
+  ⦄
+
+
 /-- [hax_tests::specs::generics::generic::pre]:
     Source: 'src/specs/generics.rs', lines 9:0-9:27 -/
 @[reducible]
@@ -311,8 +644,91 @@ def
   ⌜ (specs.generics.trait_clause.post ValInst t x res).holds ⌝ ⦄
 
 
+/-- [hax_tests::specs::generics::where_clause::pre]:
+    Source: 'src/specs/generics.rs', lines 33:0-33:29 -/
+@[reducible]
+def specs.generics.where_clause.pre
+  {T : Type _} (ValInst : specs.generics.Val T) (t : T) : RustM Bool := do
+  let i ← ValInst.value t
+  ok (i < 1000#u32)
+
+/-- [hax_tests::specs::generics::where_clause::post]:
+    Source: 'src/specs/generics.rs', lines 34:0-34:34 -/
+@[reducible]
+def specs.generics.where_clause.post
+  {T : Type _} (ValInst : specs.generics.Val T) (t : T) (result : Std.U32) :
+  RustM Bool
+  := do
+  ok (result < 1000#u32)
+
+def
+  specs.generics.where_clause.spec {T : Type _} (ValInst : specs.generics.Val
+                                  T) (t : T) : Prop :=
+  (specs.generics.where_clause.pre ValInst t).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.generics.where_clause ValInst t
+  ⦃ ⇓ res => ⌜ (specs.generics.where_clause.post ValInst t res).holds ⌝
+  ⦄
+
+
+/-- [hax_tests::specs::generics::assoc_type::pre]:
+    Source: 'src/specs/generics.rs', lines 61:0-61:29 -/
+@[reducible]
+def specs.generics.assoc_type.pre
+  {P : Type _} (ProducerPU32Inst : specs.generics.Producer P Std.U32) (p : P) :
+  RustM Bool
+  := do
+  let i ← ProducerPU32Inst.produce p
+  ok (i < 10#u32)
+
+/-- [hax_tests::specs::generics::assoc_type::post]:
+    Source: 'src/specs/generics.rs', lines 62:0-62:32 -/
+@[reducible]
+def specs.generics.assoc_type.post
+  {P : Type _} (ProducerPU32Inst : specs.generics.Producer P Std.U32) 
+  (p : P) (result : Std.U32) :
+  RustM Bool
+  := do
+  ok (result < 10#u32)
+
+def
+  specs.generics.assoc_type.spec {P : Type _} (ProducerPU32Inst :
+                                specs.generics.Producer P Std.U32) (p : P)
+  : Prop :=
+  (specs.generics.assoc_type.pre ProducerPU32Inst p).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.generics.assoc_type ProducerPU32Inst p
+  ⦃ ⇓ res =>
+  ⌜ (specs.generics.assoc_type.post ProducerPU32Inst p res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::generics::array_index::pre]:
+    Source: 'src/specs/generics.rs', lines 68:0-68:18 -/
+@[reducible]
+def specs.generics.array_index.pre
+  {N : Std.Usize} (x : Array Std.U32 N) (i : Std.Usize) : RustM Bool := do
+  ok (i < N)
+
+/-- [hax_tests::specs::generics::array_index::post]:
+    Source: 'src/specs/generics.rs', lines 69:0-69:35 -/
+@[reducible]
+def specs.generics.array_index.post
+  {N : Std.Usize} (x : Array Std.U32 N) (i : Std.Usize) (result : Std.U32) :
+  RustM Bool
+  := do
+  let i1 ← Array.index_usize x i
+  ok (result = i1)
+
+def specs.generics.array_index.spec {N : Std.Usize} (x : Array Std.U32 N)
+  (i : Std.Usize) : Prop :=
+  (specs.generics.array_index.pre x i).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.generics.array_index x i
+  ⦃ ⇓ res => ⌜ (specs.generics.array_index.post x i res).holds ⌝ ⦄
+
+
 /-- [hax_tests::specs::generics::nothing::post]:
-    Source: 'src/specs/generics.rs', lines 58:0-58:20 -/
+    Source: 'src/specs/generics.rs', lines 100:0-100:20 -/
 @[reducible]
 def specs.generics.nothing.post
   {T : Type _} (k : Std.Usize) (o : core.option.Option T) : RustM Bool := do
@@ -324,8 +740,21 @@ def specs.generics.nothing.spec (T : Type _) (k : Std.Usize) : Prop :=
   ⦃ ⇓ res => ⌜ (specs.generics.nothing.post k res).holds ⌝ ⦄
 
 
+/-- [hax_tests::specs::generics::nothing_no_args::post]:
+    Source: 'src/specs/generics.rs', lines 106:0-106:20 -/
+@[reducible]
+def specs.generics.nothing_no_args.post
+  {T : Type _} (o : core.option.Option T) : RustM Bool := do
+  ok true
+
+def specs.generics.nothing_no_args.spec (T : Type _) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.generics.nothing_no_args T
+  ⦃ ⇓ res => ⌜ (specs.generics.nothing_no_args.post res).holds ⌝ ⦄
+
+
 /-- [hax_tests::specs::generics::of_fst::post]:
-    Source: 'src/specs/generics.rs', lines 64:0-64:20 -/
+    Source: 'src/specs/generics.rs', lines 112:0-112:20 -/
 @[reducible]
 def specs.generics.of_fst.post
   {T : Type _} {N : Std.Usize} (t : T) (p : specs.generics.Pair T N) :
@@ -340,7 +769,7 @@ def specs.generics.of_fst.spec {T : Type _} (N : Std.Usize) (t : T) : Prop :=
 
 
 /-- [hax_tests::specs::generics::empty::post]:
-    Source: 'src/specs/generics.rs', lines 70:0-70:20 -/
+    Source: 'src/specs/generics.rs', lines 118:0-118:20 -/
 @[reducible]
 def specs.generics.empty.post
   {T : Type _} {N : Std.Usize} (k : Std.Usize)
@@ -430,15 +859,74 @@ def Tuple.Insts.Hax_testsSpecsArgumentsSize.len.spec (_ : Unit) : Prop :=
   ⌜ (Tuple.Insts.Hax_testsSpecsArgumentsSize.len.post () res).holds ⌝ ⦄
 
 
+/-- [hax_tests::specs::mutable_borrows::{hax_tests::specs::mutable_borrows::Counter}::bump::pre]:
+    Source: 'src/specs/mutable_borrows.rs', lines 49:4-49:34 -/
+@[reducible]
+def specs.mutable_borrows.Counter.bump.pre
+  (self_ : specs.mutable_borrows.Counter) : RustM Bool := do
+  ok (self_.count < 1000#u32)
+
+/-- [hax_tests::specs::mutable_borrows::{hax_tests::specs::mutable_borrows::Counter}::bump::post]:
+    Source: 'src/specs/mutable_borrows.rs', lines 50:4-50:56 -/
+@[reducible]
+def specs.mutable_borrows.Counter.bump.post
+  (self_ : specs.mutable_borrows.Counter)
+  (self__future : specs.mutable_borrows.Counter) :
+  RustM Bool
+  := do
+  let i ← self_.count + 1#u32
+  ok (self__future.count = i)
+
+def specs.mutable_borrows.Counter.bump.spec
+  (self : specs.mutable_borrows.Counter) : Prop :=
+  (specs.mutable_borrows.Counter.bump.pre self).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.mutable_borrows.Counter.bump self
+  ⦃ ⇓ res =>
+  ⌜ (specs.mutable_borrows.Counter.bump.post self res).holds ⌝ ⦄
+
+
+/-- [hax_tests::specs::generics::{hax_tests::specs::generics::Wrapper<T>}::inner_value::pre]:
+    Source: 'src/specs/generics.rs', lines 48:4-48:36 -/
+@[reducible]
+def specs.generics.Wrapper.inner_value.pre
+  {T : Type _} (ValInst : specs.generics.Val T)
+  (self_ : specs.generics.Wrapper T) :
+  RustM Bool
+  := do
+  let i ← ValInst.value self_
+  ok (i < 10#u32)
+
+/-- [hax_tests::specs::generics::{hax_tests::specs::generics::Wrapper<T>}::inner_value::post]:
+    Source: 'src/specs/generics.rs', lines 49:4-49:36 -/
+@[reducible]
+def specs.generics.Wrapper.inner_value.post
+  {T : Type _} (ValInst : specs.generics.Val T)
+  (self_ : specs.generics.Wrapper T) (result : Std.U32) :
+  RustM Bool
+  := do
+  ok (result < 10#u32)
+
+def
+  specs.generics.Wrapper.inner_value.spec {T : Type _} (ValInst :
+                                         specs.generics.Val T)
+  (self : specs.generics.Wrapper T) : Prop :=
+  (specs.generics.Wrapper.inner_value.pre ValInst self).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.generics.Wrapper.inner_value ValInst self
+  ⦃ ⇓ res =>
+  ⌜ (specs.generics.Wrapper.inner_value.post ValInst self res).holds ⌝ ⦄
+
+
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::build::pre]:
-    Source: 'src/specs/generics.rs', lines 40:4-40:24 -/
+    Source: 'src/specs/generics.rs', lines 82:4-82:24 -/
 @[reducible]
 def specs.generics.MyStruct.build.pre
   (N : Std.Usize) (k : Std.Usize) : RustM Bool := do
   ok (k < 100#usize)
 
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::build::post]:
-    Source: 'src/specs/generics.rs', lines 41:4-41:24 -/
+    Source: 'src/specs/generics.rs', lines 83:4-83:24 -/
 @[reducible]
 def specs.generics.MyStruct.build.post
   {N : Std.Usize} (k : Std.Usize) (ms : specs.generics.MyStruct N) :
@@ -455,7 +943,7 @@ def specs.generics.MyStruct.build.spec (N : Std.Usize) (k : Std.Usize)
 
 
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::get::post]:
-    Source: 'src/specs/generics.rs', lines 47:4-47:24 -/
+    Source: 'src/specs/generics.rs', lines 89:4-89:24 -/
 @[reducible]
 def specs.generics.MyStruct.get.post
   {N : Std.Usize} (self_ : specs.generics.MyStruct N) (i : Std.Usize) :

@@ -25,3 +25,30 @@ fn swap_and_add(x: &mut u32, y: &mut u32) -> u32 {
     *y = tmp_x;
     tmp_x + tmp_y
 }
+
+// A shared borrow, read in the postcondition
+#[ensures(|result| result == *x)]
+fn read_shared(x: &u32) -> u32 {
+    *x
+}
+
+// A shared borrow next to a mutable one
+#[requires(*x < 1000 && *y < 1000)]
+#[ensures(|_| *future(x) == *x + *y)]
+fn add_assign(x: &mut u32, y: &u32) {
+    *x += *y;
+}
+
+pub struct Counter {
+    pub count: u32,
+}
+
+#[hax_lib::attributes]
+impl Counter {
+    // `&mut self`, and `future(self)` in the postcondition
+    #[requires(self.count < 1000)]
+    #[ensures(|_| future(self).count == self.count + 1)]
+    pub fn bump(&mut self) {
+        self.count += 1;
+    }
+}
