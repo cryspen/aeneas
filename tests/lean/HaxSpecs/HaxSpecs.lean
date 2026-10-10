@@ -265,6 +265,36 @@ def supertraits.H.provided_h.default
   := do
   HInst.GInst.g self
 
+/-- [hax_specs::reserved_names::foo]:
+    Source: 'src/lib.rs', lines 255:4-257:5
+    Visibility: public -/
+def reserved_names.foo (x : Std.U32) : RustM Std.U32 := do
+  x + 1#u32
+
+/-- [hax_specs::reserved_names::foo::precondition]:
+    Source: 'src/lib.rs', lines 261:8-263:9
+    Visibility: public -/
+def reserved_names.foo.precondition (x : Std.U32) : RustM Bool := do
+  ok (x < 100#u32)
+
+/-- [hax_specs::reserved_names::foo::spec::lemma]:
+    Source: 'src/lib.rs', lines 266:12-266:29
+    Visibility: public -/
+def reserved_names.foo.spec.lemma : RustM Unit := do
+  ok ()
+
+/-- [hax_specs::reserved_names::proof]:
+    Source: 'src/lib.rs', lines 271:4-271:21
+    Visibility: public -/
+def reserved_names.proof : RustM Unit := do
+  ok ()
+
+/-- [hax_specs::reserved_names::bar::pre]:
+    Source: 'src/lib.rs', lines 274:8-274:23
+    Visibility: public -/
+def reserved_names.bar.pre : RustM Unit := do
+  ok ()
+
 
 /-- [hax_specs::basic::only_requires::pre]:
     Source: 'src/lib.rs', lines 5:4-5:24 -/
@@ -598,6 +628,26 @@ def unit_args.before_other.spec (_ : Unit) (y : Std.U32) : Prop :=
   ⦃ ⇓ res => ⌜ (unit_args.before_other.post () y res).holds ⌝ ⦄
 
 
+/-- [hax_specs::reserved_names::foo::pre]:
+    Source: 'src/lib.rs', lines 253:4-253:24 -/
+@[reducible]
+def reserved_names.foo.pre (x : Std.U32) : RustM Bool := do
+  ok (x < 100#u32)
+
+/-- [hax_specs::reserved_names::foo::post]:
+    Source: 'src/lib.rs', lines 254:4-254:40 -/
+@[reducible]
+def reserved_names.foo.post (x : Std.U32) (result : Std.U32) : RustM Bool := do
+  let i ← x + 1#u32
+  ok (result = i)
+
+def reserved_names.foo.spec (x : Std.U32) : Prop :=
+  (reserved_names.foo.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  reserved_names.foo x
+  ⦃ ⇓ res => ⌜ (reserved_names.foo.post x res).holds ⌝ ⦄
+
+
 /-- [hax_specs::const_generic_ty::{hax_specs::const_generic_ty::MyStruct<N>}::build::pre]:
     Source: 'src/lib.rs', lines 121:8-121:28 -/
 @[reducible]
@@ -642,13 +692,15 @@ def const_generic_ty.MyStruct.get.spec {N : Std.Usize}
 /-- [hax_specs::unit_args::{impl hax_specs::unit_args::Size for ()}::len::post]:
     Source: 'src/lib.rs', lines 185:8-185:28 -/
 @[reducible]
-def unit_args.SizeTuple.len.post (_ : Unit) (i : Std.Usize) : RustM Bool := do
+def Tuple.Insts.Hax_specsUnit_argsSize.len.post
+  (_ : Unit) (i : Std.Usize) : RustM Bool := do
   ok true
 
 def Tuple.Insts.Hax_specsUnit_argsSize.len.spec (_ : Unit) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   Tuple.Insts.Hax_specsUnit_argsSize.len ()
-  ⦃ ⇓ res => ⌜ (unit_args.SizeTuple.len.post () res).holds ⌝ ⦄
+  ⦃ ⇓ res =>
+  ⌜ (Tuple.Insts.Hax_specsUnit_argsSize.len.post () res).holds ⌝ ⦄
 
 
 /-- [hax_specs::supertraits::B::provided::pre]:
@@ -784,6 +836,9 @@ theorem unit_args.named.spec.proof (_ : Unit) : unit_args.named.spec ()
 
 theorem unit_args.before_other.spec.proof (_ : Unit) (y : Std.U32) :
   unit_args.before_other.spec () y
+  := by sorry
+
+theorem reserved_names.foo.spec.proof (x : Std.U32) : reserved_names.foo.spec x
   := by sorry
 
 theorem const_generic_ty.MyStruct.build.spec.proof (N : Std.Usize)

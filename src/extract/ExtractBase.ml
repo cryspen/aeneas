@@ -173,6 +173,8 @@ and id =
   | TraitConstId of TraitDeclId.id * assoc_const_id
       (** A trait associated constant *)
   | TraitParentClauseId of TraitDeclId.id * TraitClauseId.id
+  | SpecId of Spec.SpecId.id  (** A generated spec *)
+  | ProofObligationId of Spec.ProofId.id  (** A generated proof obligation *)
   | KeywordId
       (** Used for stored various strings like keywords, definitions which
           should always be in context, etc. and which can't be linked to one of
@@ -758,6 +760,8 @@ let id_to_string (span : Meta.span option) (id : id) (ctx : extraction_ctx) :
         Charon.GAstUtils.get_method_name ctx.crate trait_decl_id method_id
       in
       trait_decl_id_to_string trait_decl_id ^ ", method name: " ^ method_name
+  | SpecId id -> "spec_id: " ^ Spec.SpecId.to_string id
+  | ProofObligationId id -> "proof_obligation_id: " ^ Spec.ProofId.to_string id
 
 let lean_keywords_set : StringSet.t Lazy.t =
   lazy (StringSet.of_list LeanKeywords.lean_keywords)
@@ -2342,6 +2346,9 @@ let fun_source_is_trait_default (ctx : extraction_ctx) (src : fun_source) : bool
   | TraitDefaultSource -> true
   | _ -> false
 
+(** The name elem appended to the name of a default method *)
+let trait_default_method_suffix = "default"
+
 (** This helper factors out the logic to generate global decls and function
     names. The subtlety comes from trait implementations: if the declaration
     comes from a trait implementation, we want to prefix the name with the name
@@ -2431,7 +2438,8 @@ let ctx_compute_fun_global_name_no_suffix (item_meta : T.item_meta)
         else
           match src with
           | TraitDefaultSource ->
-              llbc_name @ [ PeIdent ("default", Disambiguator.zero) ]
+              llbc_name
+              @ [ PeIdent (trait_default_method_suffix, Disambiguator.zero) ]
           | _ -> llbc_name
       in
       [%ldebug

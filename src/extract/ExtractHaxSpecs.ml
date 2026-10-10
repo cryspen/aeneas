@@ -140,20 +140,94 @@ let emit_conditions ctx fmt ~pre ~post =
   Option.iter (emit_cond ctx fmt) pre;
   Option.iter (emit_cond ctx fmt) post
 
-(** Compute the [<fn>.spec] definition name for a hax-annotated function: the
-    formatted function name followed by the [.spec] suffix. The single source of
-    truth for the spec name — used by both the spec declaration ({!emit_spec})
-    and the proof obligation that references it ({!emit_obligation}). *)
-let compute_spec_name (def : Pure.fun_decl) (ctx : ExtractBase.extraction_ctx) :
-    string =
-  let fname =
-    ExtractBase.ctx_compute_fun_name_no_suffix def.item_meta def.src
-      ~is_trait_decl_field:false ctx
+(** {1 Names}
+
+    The contract of [<fn>] generates [<fn>.pre], [<fn>.post], [<fn>.spec] and
+    [<fn>.spec.proof]. *)
+
+(** The registered name of [parent] *)
+let registered_fun_name (ctx : ExtractBase.extraction_ctx)
+    (parent : Pure.fun_decl) : string =
+  ExtractBase.ctx_get_raw (Some parent.item_meta.span)
+    (FunId (FromLlbc (FunId (FRegular parent.def_id), parent.loop_id)))
+    ctx
+
+(** [<fn>.<suffix>]. The conditions of a default method
+    [<Trait>.<method>.default] are [<Trait>.<method>.pre] / [.post]: their
+    naming is left open for now. *)
+let cond_name (ctx : ExtractBase.extraction_ctx) (parent : Pure.fun_decl)
+    (parent_name : string) (suffix : string) : string =
+  let base =
+    if ExtractBase.fun_source_is_trait_default ctx parent.src then
+      let default_suffix = "." ^ ExtractBase.trait_default_method_suffix in
+      match Filename.chop_suffix_opt ~suffix:default_suffix parent_name with
+      | Some base -> base
+      | None -> [%internal_error] parent.item_meta.span
+    else parent_name
   in
-  let lp_suffix =
-    ExtractBase.default_fun_suffix def.num_loops def.loop_id def.loop_pos
+  base ^ "." ^ suffix
+
+let spec_name (parent_name : string) : string = parent_name ^ ".spec"
+
+let proof_name (parent_name : string) : string =
+  spec_name parent_name ^ ".proof"
+
+(** The names of the conditions, spec and proof of [parent] *)
+let generated_names ctx (parent : Pure.fun_decl) (parent_name : string)
+    ({ pre; post; _ } : HaxSpecs.function_spec) :
+    (Pure.fun_decl * string) list * string * string =
+  let cond suffix (f : Pure.fun_decl option) =
+    Option.map (fun f -> (f, cond_name ctx parent parent_name suffix)) f
   in
-  fname ^ lp_suffix ^ ".spec"
+  ( List.filter_map Fun.id [ cond "pre" pre; cond "post" post ],
+    spec_name parent_name,
+    proof_name parent_name )
+
+(** Lookup the function a spec is about *)
+let lookup_parent (ctx : ExtractBase.extraction_ctx) (fn : Pure.FunDeclId.id) :
+    Pure.fun_decl option =
+  Option.map
+    (fun (ft : TranslateCore.pure_fun_translation) -> ft.f)
+    (Pure.FunDeclId.Map.find_opt fn ctx.trans_funs)
+
+(** Register the names of the conditions and of the spec. Must be called after
+    registering the crate items. *)
+let register_spec_names (ctx : ExtractBase.extraction_ctx)
+    (spec_id : Spec.SpecId.id) (s : HaxSpecs.spec) : ExtractBase.extraction_ctx
+    =
+  match s with
+  | FunctionSpec fspec -> (
+      match lookup_parent ctx fspec.fn with
+      | None -> ctx
+      | Some parent ->
+          let span = parent.item_meta.span in
+          let conds, spec, _ =
+            generated_names ctx parent (registered_fun_name ctx parent) fspec
+          in
+          let ctx =
+            List.fold_left
+              (fun ctx ((f : Pure.fun_decl), name) ->
+                ExtractBase.ctx_add span
+                  (FunId (FromLlbc (FunId (FRegular f.def_id), None)))
+                  name ctx)
+              ctx conds
+          in
+          ExtractBase.ctx_add span (SpecId spec_id) spec ctx)
+
+(** Same as {!register_spec_names}, for a proof obligation *)
+let register_obligation_names (ctx : ExtractBase.extraction_ctx)
+    (proof_id : Spec.ProofId.id) (o : HaxSpecs.obligation) :
+    ExtractBase.extraction_ctx =
+  match o with
+  | FunctionContract { spec = fspec; _ } -> (
+      match lookup_parent ctx fspec.fn with
+      | None -> ctx
+      | Some parent ->
+          let _, _, proof =
+            generated_names ctx parent (registered_fun_name ctx parent) fspec
+          in
+          ExtractBase.ctx_add parent.item_meta.span (ProofObligationId proof_id)
+            proof ctx)
 
 (** Emits the spec statement — the body of [def foo.spec … : Prop :=] (the
     [theorem foo.spec.proof … := by sorry] wrapper is the obligation, emitted
@@ -219,7 +293,6 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
           (* Register the pre/post conditions in the (local) context *)
           let reg f_opt ctx =
             let some (f : Pure.fun_decl) =
-              let ctx = ctx_add_fun_decl f ctx in
               let trans : TranslateCore.pure_fun_translation =
                 { f; loops = []; bodies = [] }
               in
@@ -272,7 +345,8 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) opt_span =
               F.pp_print_string fmt qualif;
               F.pp_print_space fmt ()
           | None -> ());
-          F.pp_print_string fmt (compute_spec_name parent ctx);
+          F.pp_print_string fmt
+            (escape_name (spec_name (registered_fun_name ctx parent)));
           (* Generic + value binders via the standard param extractor. *)
           let space = ref false in
           let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in
@@ -312,9 +386,7 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
           let sg = parent.signature in
           let explicit = sg.explicit_info in
           let generics = PureUtils.generic_args_of_params sg.generics in
-          (* The canonical [<fn>.spec] name, from the shared {!compute_spec_name}
-           (same as the spec declaration). *)
-          let spec_name = compute_spec_name parent ctx in
+          let parent_name = registered_fun_name ctx parent in
 
           (* Open the parent's body binders *)
           let _, fresh_fvar_id = Pure.FVarId.fresh_stateful_generator () in
@@ -347,7 +419,7 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
           F.pp_open_hovbox fmt ctx.indent_incr;
           F.pp_print_string fmt "theorem";
           F.pp_print_space fmt ();
-          F.pp_print_string fmt (spec_name ^ ".proof");
+          F.pp_print_string fmt (escape_name (proof_name parent_name));
           (* Generic + value binders via the standard param extractor. *)
           let space = ref false in
           let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in
@@ -357,7 +429,8 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) opt_span =
           (* The statement of correctness, in its own box:
              [<fn>.spec <generics> <args>]. *)
           F.pp_open_hovbox fmt 0;
-          emit_app span ctx fmt explicit generics arg_texprs spec_name;
+          emit_app span ctx fmt explicit generics arg_texprs
+            (escape_name (spec_name parent_name));
           F.pp_close_box fmt ();
           F.pp_close_box fmt ();
           (* statement hovbox *)

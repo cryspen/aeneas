@@ -1761,6 +1761,9 @@ let extract_translated_crate (filename : string) (dest_dir : string)
       ctx trans_trait_impls
   in
 
+  (* Register the names generated for the specs (after the crate items) *)
+  let ctx = ExtractSpec.register_names ctx in
+
   let module_delimiter =
     match Config.backend () with
     | FStar -> "."

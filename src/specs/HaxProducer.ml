@@ -87,7 +87,9 @@ let produce (_ctx : TranslateCore.trans_ctx)
 
      A decoration fn is reused as a proper function: we rename it to
      [<parent>::<suffix>] and mark it [reducible], so the standard function
-     extractor prints it as [@[reducible] def <fn>.pre …] / [… .post …]. The
+     extractor prints it as [@[reducible] def <fn>.pre …] / [… .post …]. Its
+     [item_meta.name] is only informative: [ExtractHaxSpecs] derives the
+     extracted name from the parent's. The
      whole [Pure.fun_decl] is stashed in the spec (it is stripped from
      [crate.fun_decls] in pass 3, so it isn't also printed among the regular
      functions). *)
