@@ -243,40 +243,6 @@ theorem Tuple.Insts.Hax_testsSpecsArgumentsSize.len.spec.proof (_ : Unit) :
   unfold Tuple.Insts.Hax_testsSpecsArgumentsSize.len.spec Tuple.Insts.Hax_testsSpecsArgumentsSize.len
   hax_mvcgen
 
-theorem
-  specs.traits.B.provided.default.spec.proof {Self : Type} (BInst :
-                                           specs.traits.B Self) (self : Self) :
-  specs.traits.B.provided.default.spec BInst self
-  := by
-  unfold specs.traits.B.provided.default.spec specs.traits.B.provided.default
-  intro h
-  unfold specs.traits.B.provided.pre at h
-  cases hv : BInst.AInst.a self
-  · rw [hv] at h
-    hax_mvcgen [specs.traits.B.provided.post, hv]
-    simp
-  · rw [hv] at h
-    simp [Triple, WP.wp, PredTrans.apply, Functor.map] at h
-  · rw [hv] at h
-    simp [Triple, WP.wp, PredTrans.apply, Functor.map] at h
-
-theorem
-  specs.traits.C.provided_c.default.spec.proof {Self : Type} (CInst :
-                                             specs.traits.C Self) (self : Self)
-  : specs.traits.C.provided_c.default.spec CInst self
-  := by
-  unfold specs.traits.C.provided_c.default.spec specs.traits.C.provided_c.default
-  intro h
-  unfold specs.traits.C.provided_c.pre at h
-  cases hv : CInst.BInst.AInst.a self
-  · rw [hv] at h
-    hax_mvcgen [specs.traits.C.provided_c.post, hv]
-    simp
-  · rw [hv] at h
-    simp [Triple, WP.wp, PredTrans.apply, Functor.map] at h
-  · rw [hv] at h
-    simp [Triple, WP.wp, PredTrans.apply, Functor.map] at h
-
 theorem specs.contracts.implies_cond.spec.proof (x : Std.U32)
   (y : Std.U32) : specs.contracts.implies_cond.spec x y
   := by

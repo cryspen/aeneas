@@ -26,6 +26,15 @@ fn swap_and_add(x: &mut u32, y: &mut u32) -> u32 {
     tmp_x + tmp_y
 }
 
+// The result and the future value have different types: a wrong order
+// of the `post` inputs doesn't typecheck.
+#[requires(*x < 100)]
+#[ensures(|r| *future(x) == *x + 1 && r == 7)]
+fn incr_ret(x: &mut u8) -> u32 {
+    *x += 1;
+    7
+}
+
 // A shared borrow, read in the postcondition
 #[ensures(|result| result == *x)]
 fn read_shared(x: &u32) -> u32 {

@@ -45,6 +45,9 @@ theorem specs.contracts.both.spec.proof (x : Std.U32) :
 theorem specs.contracts.no_args.spec.proof : specs.contracts.no_args.spec
   := by sorry
 
+theorem specs.contracts.zero_ret.spec.proof : specs.contracts.zero_ret.spec
+  := by sorry
+
 theorem specs.contracts.returns_unit.spec.proof (x : Std.U32) :
   specs.contracts.returns_unit.spec x
   := by sorry
@@ -127,6 +130,10 @@ theorem specs.mutable_borrows.incr_i.spec.proof (x : Slice Std.U32)
 
 theorem specs.mutable_borrows.swap_and_add.spec.proof (x : Std.U32)
   (y : Std.U32) : specs.mutable_borrows.swap_and_add.spec x y
+  := by sorry
+
+theorem specs.mutable_borrows.incr_ret.spec.proof (x : Std.U8) :
+  specs.mutable_borrows.incr_ret.spec x
   := by sorry
 
 theorem specs.mutable_borrows.read_shared.spec.proof (x : Std.U32) :
@@ -215,15 +222,89 @@ theorem specs.generics.MyStruct.get.spec.proof {N : Std.Usize}
   := by sorry
 
 theorem
-  specs.traits.B.provided.default.spec.proof {Self : Type _} (BInst :
-                                            specs.traits.B Self) (self : Self)
-  : specs.traits.B.provided.default.spec BInst self
+  specs.traits.basic.g.spec.proof {T : Type _} (FooInst :
+                                 specs.traits.basic.Foo T) (x : T) :
+  specs.traits.basic.g.spec FooInst x
+  := by sorry
+
+theorem specs.traits.basic.h.spec.proof (x : Std.U64) :
+  specs.traits.basic.h.spec x
   := by sorry
 
 theorem
-  specs.traits.C.provided_c.default.spec.proof {Self : Type _} (CInst :
-                                              specs.traits.C Self)
-  (self : Self) : specs.traits.C.provided_c.default.spec CInst self
+  specs.traits.supertraits.via_b.spec.proof {T : Type _} (BInst :
+                                           specs.traits.supertraits.B T)
+  (x : T) : specs.traits.supertraits.via_b.spec BInst x
+  := by sorry
+
+theorem specs.traits.supertraits.via_u8.spec.proof (x : Std.U8) :
+  specs.traits.supertraits.via_u8.spec x
+  := by sorry
+
+theorem
+  specs.traits.diamond.via_b.spec.proof {T : Type _} (BInst :
+                                       specs.traits.diamond.B T) (x : T) :
+  specs.traits.diamond.via_b.spec BInst x
+  := by sorry
+
+theorem
+  specs.traits.diamond.diamond.spec.proof {T : Type _} (CInst :
+                                         specs.traits.diamond.C T) (x : T) :
+  specs.traits.diamond.diamond.spec CInst x
+  := by sorry
+
+theorem
+  specs.traits.generic_impl.k.spec.proof {T : Type _} {U : Type _} (FooInst :
+                                        specs.traits.generic_impl.Foo T)
+                                        (SubInst :
+                                        specs.traits.generic_impl.Sub U)
+  (x : T) (y : U) : specs.traits.generic_impl.k.spec FooInst SubInst x y
+  := by sorry
+
+theorem specs.traits.blanket_impl.show_generic.spec.proof {T : Type _} 
+  (x : T) : specs.traits.blanket_impl.show_generic.spec x
+  := by sorry
+
+theorem specs.traits.blanket_impl.show_u64.spec.proof (x : Std.U64) :
+  specs.traits.blanket_impl.show_u64.spec x
+  := by sorry
+
+theorem
+  specs.traits.assoc_type_bounds.first_bar.spec.proof {C : Type _}
+                                                     {Clause0_Item : Type _}
+                                                     (ContainerInst :
+                                                     specs.traits.assoc_type_bounds.Container
+                                                     C Clause0_Item) 
+  (c : C) : specs.traits.assoc_type_bounds.first_bar.spec ContainerInst c
+  := by sorry
+
+theorem
+  specs.traits.builtin_bound.dup.spec.proof {T : Type _} (corecloneCloneInst :
+                                           core.clone.Clone T) (x : T) :
+  specs.traits.builtin_bound.dup.spec corecloneCloneInst x
+  := by sorry
+
+theorem
+  specs.traits.trait_generics.use_conv.spec.proof {C : Type _} (ConvCU8Inst :
+                                                 specs.traits.trait_generics.Conv
+                                                 C Std.U8) (c : C) :
+  specs.traits.trait_generics.use_conv.spec ConvCU8Inst c
+  := by sorry
+
+theorem
+  specs.traits.default_methods.D.next.default.spec.proof {Self : Type _} (DInst
+                                                        :
+                                                        specs.traits.default_methods.D
+                                                        Self) (self : Self) :
+  specs.traits.default_methods.D.next.default.spec DInst self
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec.proof
+  (self : Std.U32) : U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec self
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.spec.proof
+  (self : Std.U32) : U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.spec self
   := by sorry
 
 end hax_tests

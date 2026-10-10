@@ -23,6 +23,14 @@ fn no_args() {
     ()
 }
 
+// No arguments, non-unit return (the `requires(true)` also covers a
+// precondition with no argument)
+#[requires(true)]
+#[ensures(|r| r == 0)]
+fn zero_ret() -> u32 {
+    0
+}
+
 // Unit return with a by-value argument
 #[requires(x < 10)]
 #[ensures(|_| true)]
