@@ -39,6 +39,38 @@ where
     t.value()
 }
 
+struct Wrapper<T>(T);
+
+// A trait clause of the `impl` block (rather than of the function), used in a
+// condition
+#[hax_lib::attributes]
+impl<T: Val> Wrapper<T> {
+    #[requires(self.0.value() < 10)]
+    #[ensures(|result| result < 10)]
+    fn inner_value(&self) -> u32 {
+        self.0.value()
+    }
+}
+
+trait Producer {
+    type Out;
+    fn produce(&self) -> Self::Out;
+}
+
+// A trait clause with an associated type constraint, used in a condition
+#[requires(p.produce() < 10)]
+#[ensures(|result| result < 10)]
+fn assoc_type<P: Producer<Out = u32>>(p: P) -> u32 {
+    p.produce()
+}
+
+// An array whose length is a const generic
+#[requires(i < N)]
+#[ensures(|result| result == x[i])]
+fn array_index<const N: usize>(x: [u32; N], i: usize) -> u32 {
+    x[i]
+}
+
 pub struct MyStruct<const N: usize> {
     pub cap: usize,
 }
@@ -64,11 +96,15 @@ pub struct Pair<T, const N: usize> {
     pub fst: T,
 }
 
-// A type parameter which only appears in the output type. (Note the dummy
-// argument: a condition on a function with no argument at all is dropped,
-// see `contracts::no_args`.)
+// A type parameter which only appears in the output type
 #[ensures(|_| true)]
 fn nothing<T>(k: usize) -> Option<T> {
+    None
+}
+
+// The same, without any argument
+#[ensures(|_| true)]
+fn nothing_no_args<T>() -> Option<T> {
     None
 }
 

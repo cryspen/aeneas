@@ -2,6 +2,7 @@
 -- [hax_tests]: type definitions
 import Aeneas
 import CoreModels
+import HaxTests.Extraction.TypesExternal
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
 open RustM ControlFlow Error
@@ -21,66 +22,67 @@ set_option maxRecDepth 2048
 
 namespace hax_tests
 
-/-- Trait declaration: [hax_tests::standalone::arguments::Size]
-    Source: 'src/standalone/arguments.rs', lines 5:0-7:1 -/
-structure standalone.arguments.Size (Self : Type) where
+/-- Trait declaration: [hax_tests::specs::arguments::Size]
+    Source: 'src/specs/arguments.rs', lines 5:0-7:1 -/
+structure specs.arguments.Size (Self : Type) where
   len : Self → RustM Std.Usize
 
-/-- Trait declaration: [hax_tests::standalone::generics::Val]
-    Source: 'src/standalone/generics.rs', lines 16:0-18:1 -/
-structure standalone.generics.Val (Self : Type) where
+/-- [hax_tests::specs::arguments::Point]
+    Source: 'src/specs/arguments.rs', lines 30:0-33:1
+    Visibility: public -/
+structure specs.arguments.Point where
+  x : Std.U32
+  y : Std.U32
+
+/-- [hax_tests::specs::arguments::Shape]
+    Source: 'src/specs/arguments.rs', lines 42:0-45:1
+    Visibility: public -/
+@[discriminant isize]
+inductive specs.arguments.Shape where
+| Dot : specs.arguments.Shape
+| Line : Std.U32 → specs.arguments.Shape
+
+/-- [hax_tests::specs::contracts::_#18::requires::closure]
+    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+@[reducible]
+def specs.contracts.__18.requires.closure := Std.U32
+
+/-- [hax_tests::specs::contracts::_#19::ensures::closure]
+    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+@[reducible]
+def specs.contracts.__19.ensures.closure := Std.U32
+
+/-- Trait declaration: [hax_tests::specs::generics::Val]
+    Source: 'src/specs/generics.rs', lines 16:0-18:1 -/
+structure specs.generics.Val (Self : Type) where
   value : Self → RustM Std.U32
 
-/-- [hax_tests::standalone::generics::MyStruct]
-    Source: 'src/standalone/generics.rs', lines 42:0-44:1
+/-- [hax_tests::specs::generics::Wrapper]
+    Source: 'src/specs/generics.rs', lines 42:0-42:21 -/
+@[reducible]
+def specs.generics.Wrapper (T : Type) := T
+
+/-- Trait declaration: [hax_tests::specs::generics::Producer]
+    Source: 'src/specs/generics.rs', lines 55:0-58:1 -/
+structure specs.generics.Producer (Self : Type) (Self_Out : Type) where
+  produce : Self → RustM Self_Out
+
+/-- [hax_tests::specs::generics::MyStruct]
+    Source: 'src/specs/generics.rs', lines 74:0-76:1
     Visibility: public -/
-structure standalone.generics.MyStruct (N : Std.Usize) where
+structure specs.generics.MyStruct (N : Std.Usize) where
   cap : Std.Usize
 
-/-- [hax_tests::standalone::generics::Pair]
-    Source: 'src/standalone/generics.rs', lines 63:0-65:1
+/-- [hax_tests::specs::generics::Pair]
+    Source: 'src/specs/generics.rs', lines 95:0-97:1
     Visibility: public -/
-structure standalone.generics.Pair (T : Type) (N : Std.Usize) where
+structure specs.generics.Pair (T : Type) (N : Std.Usize) where
   fst : T
 
-/-- Trait declaration: [hax_tests::standalone::traits::A]
-    Source: 'src/standalone/traits.rs', lines 3:0-5:1
+/-- [hax_tests::specs::mutable_borrows::Counter]
+    Source: 'src/specs/mutable_borrows.rs', lines 42:0-44:1
     Visibility: public -/
-structure standalone.traits.A (Self : Type) where
-  a : Self → RustM Std.Usize
-
-/-- Trait declaration: [hax_tests::standalone::traits::B]
-    Source: 'src/standalone/traits.rs', lines 8:0-16:1
-    Visibility: public -/
-structure standalone.traits.B (Self : Type) where
-  AInst : standalone.traits.A Self
-  b : Self → RustM Std.Usize
-  provided : Self → RustM Std.Usize
-
-/-- Trait declaration: [hax_tests::standalone::traits::C]
-    Source: 'src/standalone/traits.rs', lines 21:0-27:1
-    Visibility: public -/
-structure standalone.traits.C (Self : Type) where
-  BInst : standalone.traits.B Self
-  provided_c : Self → RustM Std.Usize
-
-/-- Trait declaration: [hax_tests::standalone::traits::G]
-    Source: 'src/standalone/traits.rs', lines 30:0-32:1
-    Visibility: public -/
-structure standalone.traits.G (Self : Type) (T : Type) where
-  g : Self → RustM T
-
-/-- Trait declaration: [hax_tests::standalone::traits::H]
-    Source: 'src/standalone/traits.rs', lines 36:0-40:1
-    Visibility: public -/
-structure standalone.traits.H (Self : Type) (T : Type) where
-  GInst : standalone.traits.G Self T
-  provided_h : Self → RustM T
-
-/-- Trait declaration: [hax_tests::standalone::traits::D]
-    Source: 'src/standalone/traits.rs', lines 46:0-50:1
-    Visibility: public -/
-structure standalone.traits.D (Self : Type) where
-  required : Self → Std.U32 → RustM Std.U32
+structure specs.mutable_borrows.Counter where
+  count : Std.U32
 
 end hax_tests

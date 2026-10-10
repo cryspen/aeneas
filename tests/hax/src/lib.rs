@@ -1,1 +1,1 @@
-mod standalone;
+mod specs;

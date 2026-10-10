@@ -1,5 +1,5 @@
-// Several functions take dummy arguments (see `generics::nothing`), and most
-// items are only there to be extracted.
+// Most items are only there to be extracted, and many functions ignore some of
+// their arguments.
 #![allow(dead_code, unused_variables)]
 
 // The shape of `requires`/`ensures` annotations.

@@ -38,3 +38,17 @@ fn read_shared(x: &u32) -> u32 {
 fn add_assign(x: &mut u32, y: &u32) {
     *x += *y;
 }
+
+pub struct Counter {
+    pub count: u32,
+}
+
+#[hax_lib::attributes]
+impl Counter {
+    // `&mut self`, and `future(self)` in the postcondition
+    #[requires(self.count < 1000)]
+    #[ensures(|_| future(self).count == self.count + 1)]
+    pub fn bump(&mut self) {
+        self.count += 1;
+    }
+}

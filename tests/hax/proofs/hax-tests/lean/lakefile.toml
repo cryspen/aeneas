@@ -2,7 +2,12 @@
 # the aeneas Lean library of this checkout and the hax Lean library of the hax
 # checkout that `.hax-lean` links to (set up by `make test-hax HAX_DIR=...`).
 name = "hax_tests"
-defaultTargets = ["HaxTests"]
+defaultTargets = ["HaxTestsChecks"]
+
+# The closures that aeneas extracts have names with `__` (e.g.
+# `__18.requires.closure`), which Mathlib's naming linter reports on every build.
+[leanOptions]
+weak.linter.style.nameCheck = false
 
 # Required before `hax`, so that this `aeneas` is the one hax's library builds
 # against too, instead of the revision it pins.
@@ -14,11 +19,16 @@ path = "../../../../../backends/lean"
 name = "hax"
 path = ".hax-lean"
 
-# Every module under `HaxTests`: the extraction, the template of the proof
-# obligations that aeneas generates (`Extraction/ProofObligations.lean`, with
-# `sorry`s), and the handwritten proofs copied from it
-# (`Verification/ProofObligations.lean`). A glob rather than `roots`: Lake only
-# builds the modules matched by the globs, or under a root that they match.
+# Every module under `HaxTests`, so that Lake can build any of them on demand (it
+# only builds the modules matched by the globs of a library, or under a root they
+# match). Not a default target: it includes the template of the proof
+# obligations (`Extraction/ProofObligations.lean`, with `sorry`s).
 [[lean_lib]]
 name = "HaxTests"
 globs = ["HaxTests.+"]
+
+# What `lake build` checks: the extracted specs, and the handwritten proofs of
+# their obligations (with everything they import).
+[[lean_lib]]
+name = "HaxTestsChecks"
+roots = ["HaxTests.Extraction.Specs", "HaxTests.Verification.ProofObligations"]
