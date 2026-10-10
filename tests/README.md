@@ -38,6 +38,33 @@ Ideally, any non-trivial change to Aeneas should have an accompanying test that 
 code. The goal of this test suite is to cover a large portion of what Aeneas can do, so we can work
 on it confidently.
 
+## hax tests
+
+`tests/hax/` is a crate (on `hax-lib` 0.4.2) that is extracted the way
+[hax](https://github.com/cryspen/hax) users extract them: through `cargo hax extract`, which runs
+the proof scenario `hax-tests` of `tests/hax/hax.toml` and drives charon and aeneas. hax is pointed
+at the binaries of this checkout (`bin/aeneas`, `charon/bin/charon`) by the same `hax.toml`. The
+extracted Lean code lives in `tests/hax/proofs/hax-tests/lean/` (Lean package `HaxTests`), next to
+the Lake project that builds it and the handwritten proofs, and is committed.
+
+These tests are not run by `make test`. Run them with a checkout of hax and the matching `cargo hax`
+on your `PATH`:
+
+```bash
+make test-hax HAX_DIR=../hax
+```
+
+This regenerates the outputs, with the crate using the `hax-lib` of `HAX_DIR`, then builds them
+with the Lake project `tests/hax/proofs/hax-tests/lean/lakefile.toml`, against the aeneas Lean
+library of this checkout and the hax Lean library of `HAX_DIR`. `HAX_DIR` itself is not modified (except for Lake's build
+directory). `make extract-hax` and `make verify-hax` run the two steps separately.
+
+In CI, the `hax-tests` job of `.github/workflows/hax-main.yml` runs them with hax `main`, or with
+the branch named by a `hax-branch: <branch>` line in the pull request description. It fails if the
+outputs differ from the committed ones, but it does not block merging. To try another branch
+locally, check it out in `HAX_DIR` and install its `cargo hax` (`./setup.sh` in `HAX_DIR`, or
+run inside `nix develop .#ci-examples` there, which provides it).
+
 ## Passing options to `Aeneas` and `Charon`
 
 The test runner supports setting several options for each test.
