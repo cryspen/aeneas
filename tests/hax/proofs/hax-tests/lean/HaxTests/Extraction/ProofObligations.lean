@@ -279,13 +279,6 @@ theorem
   specs.traits.trait_generics.use_conv.spec ConvCU8Inst c
   := by sorry
 
-theorem
-  specs.traits.default_methods.D.next.default.spec.proof {Self : Type} (DInst :
-                                                        specs.traits.default_methods.D
-                                                        Self) (self : Self) :
-  specs.traits.default_methods.D.next.default.spec DInst self
-  := by sorry
-
 theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec.proof
   (self : Std.U32) : U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec self
   := by sorry
