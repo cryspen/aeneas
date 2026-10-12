@@ -34,9 +34,8 @@ partial_fixpoint
 /-- [loops_rec::iter]:
     Source: 'tests/src/loops-rec.rs', lines 6:0-13:1
     Visibility: public -/
-@[reducible]
-def iter (max : Std.U32) : RustM Std.U32 := do
-  iter_loop max 0#u32
+@[reducible] def iter (max : Std.U32) : RustM Std.U32 := do
+               iter_loop max 0#u32
 
 /-- [loops_rec::sum]: loop 0:
     Source: 'tests/src/loops-rec.rs', lines 19:4-22:5
@@ -705,8 +704,7 @@ partial_fixpoint
 
 /-- [loops_rec::issue500_2::bar]:
     Source: 'tests/src/loops-rec.rs', lines 393:4-393:33 -/
-def issue500_2.bar
-  (_a : Array Bool 1#usize) : RustM (Array Bool 1#usize) := do
+def issue500_2.bar (_a : Array Bool 1#usize) : RustM (Array Bool 1#usize) := do
   ok _a
 
 /-- [loops_rec::issue500_2::A]

@@ -90,9 +90,7 @@ def i64_to_be_bytes (x : Std.I64) : RustM (Array Std.U8 8#usize) := do
 /-- [builtin::use_debug_clause]:
     Source: 'tests/src/builtin.rs', lines 57:0-57:49 -/
 def use_debug_clause
-  {T : Type _} (corefmtDebugInst : core.fmt.Debug T) (t : T) :
-  RustM Unit
-  := do
+  {T : Type _} (corefmtDebugInst : core.fmt.Debug T) (t : T) : RustM Unit := do
   ok ()
 
 end builtin

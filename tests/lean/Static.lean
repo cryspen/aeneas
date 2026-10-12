@@ -350,8 +350,7 @@ def call_outlives2 (x : Std.U32) : RustM (Std.U32 × Std.U32) := do
 
 /-- [static::outlives_mut]:
     Source: 'tests/src/static.rs', lines 208:0-210:1 -/
-def outlives_mut
-  (x : Std.U32) : RustM (Std.U32 × (Std.U32 → Std.U32)) := do
+def outlives_mut (x : Std.U32) : RustM (Std.U32 × (Std.U32 → Std.U32)) := do
   ok (x, fun x1 => x1)
 
 /-- [static::incr_outlives_mut]:
@@ -523,8 +522,7 @@ def loop_hidden_static_mut1 (x : Std.U32) (n : Std.U32) : RustM Std.U32 := do
 
 /-- [static::branch_hidden_static_mut]:
     Source: 'tests/src/static.rs', lines 303:0-306:1 -/
-def branch_hidden_static_mut
-  (s : StaticMut) (b : Bool) : RustM StaticMut := do
+def branch_hidden_static_mut (s : StaticMut) (b : Bool) : RustM StaticMut := do
   let (i, back) ←
     if b
     then
@@ -875,8 +873,7 @@ def copy_in_loop_static
 
 /-- [static::copy_in_branch_static]:
     Source: 'tests/src/static.rs', lines 514:0-527:1 -/
-def copy_in_branch_static
-  (o : Option Std.U32) (b : Bool) : RustM Std.U32 := do
+def copy_in_branch_static (o : Option Std.U32) (b : Bool) : RustM Std.U32 := do
   let acc ←
     if b
     then match o with

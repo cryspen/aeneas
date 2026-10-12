@@ -79,8 +79,7 @@ def make_tuple_struct_with_constructor
 
 /-- [issue_767_adt_constructor::make_enum_with_constructor]:
     Source: 'tests/src/issue-767-adt-constructor.rs', lines 16:0-18:1 -/
-def make_enum_with_constructor
-  (x : Option Std.U32) : RustM (Option Enum) := do
+def make_enum_with_constructor (x : Option Std.U32) : RustM (Option Enum) := do
   core.option.Option.map P.Insts.CoreOpsFunctionFnOnceTupleU32Enum x
     (Enum.Tuple.constructor)
 

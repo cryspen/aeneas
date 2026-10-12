@@ -45,9 +45,7 @@ def U32.Insts.From_toFromU32 : From Std.U32 Std.U32 := {
 /-- [from_to::{impl from_to::To for u32}::to]:
     Source: 'tests/src/from_to.rs', lines 20:4-22:5 -/
 def U32.Insts.From_toTo.to
-  {T : Type _} (FromTU32Inst : From T Std.U32) (self : Std.U32) :
-  RustM T
-  := do
+  {T : Type _} (FromTU32Inst : From T Std.U32) (self : Std.U32) : RustM T := do
   FromTU32Inst.«from» self
 
 /-- Trait implementation: [from_to::{impl from_to::To for u32}]

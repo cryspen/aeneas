@@ -23,9 +23,7 @@ namespace generic_unit_output
 /-- [generic_unit_output::set_and_return]:
     Source: 'tests/src/generic_unit_output.rs', lines 12:0-15:1 -/
 def set_and_return
-  {T : Type _} (r : Std.U32) (x : Std.U32) (t : T) :
-  RustM (T × Std.U32)
-  := do
+  {T : Type _} (r : Std.U32) (x : Std.U32) (t : T) : RustM (T × Std.U32) := do
   ok (t, x)
 
 /-- [generic_unit_output::call_with_unit]:

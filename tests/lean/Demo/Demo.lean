@@ -24,9 +24,7 @@ namespace demo
     Source: 'tests/src/demo.rs', lines 8:0-14:1
     Visibility: public -/
 def choose
-  {T : Type _} (b : Bool) (x : T) (y : T) :
-  RustM (T × (T → (T × T)))
-  := do
+  {T : Type _} (b : Bool) (x : T) (y : T) : RustM (T × (T → (T × T))) := do
   if b
   then let back := fun x1 => (x1, y)
        ok (x, back)
@@ -108,9 +106,7 @@ def list_nth1 {T : Type _} (l : CList T) (i : Std.U32) : RustM T := do
     Source: 'tests/src/demo.rs', lines 68:0-81:1
     Visibility: public -/
 def list_nth_mut
-  {T : Type _} (l : CList T) (i : Std.U32) :
-  RustM (T × (T → CList T))
-  := do
+  {T : Type _} (l : CList T) (i : Std.U32) : RustM (T × (T → CList T)) := do
   match l with
   | CList.CCons x tl =>
     if i = 0#u32
@@ -140,9 +136,7 @@ partial_fixpoint
     Source: 'tests/src/demo.rs', lines 91:0-96:1
     Visibility: public -/
 def list_tail
-  {T : Type _} (l : CList T) :
-  RustM ((CList T) × (CList T → CList T))
-  := do
+  {T : Type _} (l : CList T) : RustM ((CList T) × (CList T → CList T)) := do
   match l with
   | CList.CCons t tl =>
     let (c, list_tail_back) ← list_tail tl

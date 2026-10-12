@@ -114,9 +114,7 @@ def sum_loop0.body
     Visibility: public -/
 @[rust_loop]
 def sum_loop0
-  (m : Std.U32) (n : Std.U32) (s : Std.U32) (i : Std.U32) :
-  RustM Std.U32
-  := do
+  (m : Std.U32) (n : Std.U32) (s : Std.U32) (i : Std.U32) : RustM Std.U32 := do
   loop
     (fun (s1, i1) => sum_loop0.body m n s1 i1)
     (s, i)

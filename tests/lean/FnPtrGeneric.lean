@@ -76,8 +76,8 @@ def P.Insts.CoreOpsFunctionFnMutTupleU8U8 : core.ops.function.FnMut (Std.U8 →
 /-- Trait implementation: [fn_ptr_generic::{impl core::ops::function::Fn<(u8,), u8> for fn_ptr_generic::incr}]
     Source: 'tests/src/fn_ptr_generic.rs', lines 7:0-9:1 -/
 @[reducible]
-def P.Insts.CoreOpsFunctionFnTupleU8U8 : core.ops.function.Fn (Std.U8 →
-  RustM Std.U8) Std.U8 Std.U8 := {
+def P.Insts.CoreOpsFunctionFnTupleU8U8 : core.ops.function.Fn (Std.U8 → RustM
+  Std.U8) Std.U8 Std.U8 := {
   FnMutInst := P.Insts.CoreOpsFunctionFnMutTupleU8U8
   call := P.Insts.CoreOpsFunctionFnTupleU8U8.call
 }

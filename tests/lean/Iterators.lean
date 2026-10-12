@@ -197,8 +197,7 @@ def slice_iter_mut_while_early_return_loop0_loop0.body
 /-- [iterators::slice_iter_mut_while_early_return]: loop 1:
     Source: 'tests/src/iterators.rs', lines 29:8-29:18 -/
 @[rust_loop]
-def slice_iter_mut_while_early_return_loop0_loop0
-  (b : Bool) : RustM Unit := do
+def slice_iter_mut_while_early_return_loop0_loop0 (b : Bool) : RustM Unit := do
   loop
     (fun () => slice_iter_mut_while_early_return_loop0_loop0.body b)
     ()

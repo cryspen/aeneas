@@ -701,8 +701,8 @@ def sum_mut_slice
 def add_acc_loop.body
   (paSrc : Array Std.U32 256#usize) (peDst : Array Std.U32 256#usize)
   (i : Std.Usize) :
-  RustM (ControlFlow ((Array Std.U32 256#usize) × (Array Std.U32 256#usize)
-    × Std.Usize) ((Array Std.U32 256#usize) × (Array Std.U32 256#usize)))
+  RustM (ControlFlow ((Array Std.U32 256#usize) × (Array Std.U32 256#usize) ×
+    Std.Usize) ((Array Std.U32 256#usize) × (Array Std.U32 256#usize)))
   := do
   if i < 256#usize
   then

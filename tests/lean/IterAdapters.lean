@@ -225,9 +225,7 @@ def test_range_u16_loop.body
     Visibility: public -/
 @[rust_loop]
 def test_range_u16_loop
-  (iter : core.ops.range.Range Std.U16) (count : Std.U32) :
-  RustM Std.U32
-  := do
+  (iter : core.ops.range.Range Std.U16) (count : Std.U32) : RustM Std.U32 := do
   loop
     (fun (iter1, count1) => test_range_u16_loop.body iter1 count1)
     (iter, count)
@@ -262,9 +260,7 @@ def test_range_u32_loop.body
     Visibility: public -/
 @[rust_loop]
 def test_range_u32_loop
-  (iter : core.ops.range.Range Std.U32) (count : Std.U32) :
-  RustM Std.U32
-  := do
+  (iter : core.ops.range.Range Std.U32) (count : Std.U32) : RustM Std.U32 := do
   loop
     (fun (iter1, count1) => test_range_u32_loop.body iter1 count1)
     (iter, count)
@@ -299,9 +295,7 @@ def test_range_u64_loop.body
     Visibility: public -/
 @[rust_loop]
 def test_range_u64_loop
-  (iter : core.ops.range.Range Std.U64) (count : Std.U64) :
-  RustM Std.U64
-  := do
+  (iter : core.ops.range.Range Std.U64) (count : Std.U64) : RustM Std.U64 := do
   loop
     (fun (iter1, count1) => test_range_u64_loop.body iter1 count1)
     (iter, count)
@@ -322,8 +316,7 @@ def test_range_u64 : RustM Unit := do
 @[rust_loop_body]
 def test_range_usize_loop.body
   (iter : core.ops.range.Range Std.Usize) (count : Std.Usize) :
-  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize)
-    Std.Usize)
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × Std.Usize) Std.Usize)
   := do
   let (o, iter1) ←
     core.iter.range.IteratorRange.next core.iter.range.StepUsize iter

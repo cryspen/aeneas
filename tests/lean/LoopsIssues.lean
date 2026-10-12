@@ -122,8 +122,7 @@ def loop_array_len_write (b0 : Bool) (b1 : Bool) : RustM Unit := do
 /-- [loops_issues::read_global_loop]: loop body 0:
     Source: 'tests/src/loops-issues.rs', lines 48:4-48:14 -/
 @[rust_loop_body]
-def read_global_loop_loop.body
-  (b : Bool) : RustM (ControlFlow Unit Unit) := do
+def read_global_loop_loop.body (b : Bool) : RustM (ControlFlow Unit Unit) := do
   if b
   then ok (cont ())
   else ok (done ())
@@ -146,9 +145,7 @@ def read_global_loop (b : Bool) (n_rows : Std.Usize) : RustM Unit := do
     Source: 'tests/src/loops-issues.rs', lines 55:4-57:5 -/
 @[rust_loop_body]
 def mut_loop_len_loop.body
-  (b : Bool) (buf : Array Std.U8 4#usize) :
-  RustM (ControlFlow Unit Unit)
-  := do
+  (b : Bool) (buf : Array Std.U8 4#usize) : RustM (ControlFlow Unit Unit) := do
   let s ← lift (Array.to_slice buf)
   let i := Slice.len s
   massert ((¬ b) || (0#usize <= i))

@@ -31,8 +31,7 @@ structure BoolTrait (Self : Type _) where
     Source: 'tests/src/traits.rs', lines 8:4-10:5
     Visibility: public -/
 @[trait_default]
-def BoolTrait.ret_true.default
-  {Self : Type _} (self : Self) : RustM Bool := do
+def BoolTrait.ret_true.default {Self : Type _} (self : Self) : RustM Bool := do
   ok true
 
 /-- [traits::{impl traits::BoolTrait for bool}::get_bool]:
@@ -180,8 +179,7 @@ def h1 (x : Wrapper Std.U64) : RustM Std.U64 := do
 /-- [traits::h2]:
     Source: 'tests/src/traits.rs', lines 86:0-88:1
     Visibility: public -/
-def h2
-  {T : Type _} (ToU64Inst : ToU64 T) (x : Wrapper T) : RustM Std.U64 := do
+def h2 {T : Type _} (ToU64Inst : ToU64 T) (x : Wrapper T) : RustM Std.U64 := do
   Wrapper.Insts.TraitsToU64.to_u64 ToU64Inst x
 
 /-- Trait declaration: [traits::ToType]

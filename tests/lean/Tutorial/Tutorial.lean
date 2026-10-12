@@ -24,9 +24,7 @@ namespace tutorial
     Source: 'src/lib.rs', lines 1:0-7:1
     Visibility: public -/
 def choose
-  {T : Type _} (b : Bool) (x : T) (y : T) :
-  RustM (T × (T → (T × T)))
-  := do
+  {T : Type _} (b : Bool) (x : T) (y : T) : RustM (T × (T → (T × T))) := do
   if b
   then let back := fun x1 => (x1, y)
        ok (x, back)
@@ -87,9 +85,7 @@ partial_fixpoint
     Source: 'src/lib.rs', lines 50:0-63:1
     Visibility: public -/
 def list_nth_mut
-  {T : Type _} (l : CList T) (i : Std.U32) :
-  RustM (T × (T → CList T))
-  := do
+  {T : Type _} (l : CList T) (i : Std.U32) : RustM (T × (T → CList T)) := do
   match l with
   | CList.CCons x tl =>
     if i = 0#u32
@@ -195,9 +191,7 @@ def use_counter
     Visibility: public -/
 @[rust_loop]
 def list_nth_mut1_loop
-  {T : Type _} (l : CList T) (i : Std.U32) :
-  RustM (T × (T → CList T))
-  := do
+  {T : Type _} (l : CList T) (i : Std.U32) : RustM (T × (T → CList T)) := do
   match l with
   | CList.CCons x tl =>
     if i = 0#u32
@@ -216,9 +210,7 @@ partial_fixpoint
     Visibility: public -/
 @[reducible]
 def list_nth_mut1
-  {T : Type _} (l : CList T) (i : Std.U32) :
-  RustM (T × (T → CList T))
-  := do
+  {T : Type _} (l : CList T) (i : Std.U32) : RustM (T × (T → CList T)) := do
   list_nth_mut1_loop l i
 
 /-- [tutorial::list_tail]: loop 0:
@@ -239,9 +231,7 @@ partial_fixpoint
     Source: 'src/lib.rs', lines 134:0-139:1
     Visibility: public -/
 def list_tail
-  {T : Type _} (l : CList T) :
-  RustM ((CList T) × (CList T → CList T))
-  := do
+  {T : Type _} (l : CList T) : RustM ((CList T) × (CList T → CList T)) := do
   let back ← list_tail_loop l
   ok (CList.CNil, back)
 

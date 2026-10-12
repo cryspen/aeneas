@@ -26,8 +26,7 @@ namespace drop
 def fill_loop.body
   {T : Type _} (corecloneCloneInst : core.clone.Clone T) (value : T)
   (iter : core.ops.range.Range Std.Usize) (s : Slice T) :
-  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice T)) (Slice
-    T))
+  RustM (ControlFlow ((core.ops.range.Range Std.Usize) × (Slice T)) (Slice T))
   := do
   let (o, iter1) ←
     core.iter.range.IteratorRange.next core.iter.range.StepUsize iter

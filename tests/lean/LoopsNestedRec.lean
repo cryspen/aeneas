@@ -68,9 +68,7 @@ partial_fixpoint
     Visibility: public -/
 @[rust_loop]
 def sum_loop0
-  (m : Std.U32) (n : Std.U32) (s : Std.U32) (i : Std.U32) :
-  RustM Std.U32
-  := do
+  (m : Std.U32) (n : Std.U32) (s : Std.U32) (i : Std.U32) : RustM Std.U32 := do
   if i < m
   then
     let s1 ← sum_loop0_loop0 n s 0#u32

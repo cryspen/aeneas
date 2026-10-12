@@ -38,8 +38,7 @@ def u32_compare (x : Std.U32) (y : Std.U32) : RustM Ordering := do
 /-- [order::u64_partial_cmp]:
     Source: 'tests/src/order.rs', lines 15:0-17:1
     Visibility: public -/
-def u64_partial_cmp
-  (x : Std.U64) (y : Std.U64) : RustM (Option Ordering) := do
+def u64_partial_cmp (x : Std.U64) (y : Std.U64) : RustM (Option Ordering) := do
   ok (core.cmp.impls.PartialOrdU64.partial_cmp x y)
 
 /-- [order::Wrap]

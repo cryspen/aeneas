@@ -312,8 +312,7 @@ def test_bool_then_false : RustM Unit := do
 
 /-- [options::ok_if_even]:
     Source: 'tests/src/options.rs', lines 80:0-86:1 -/
-def ok_if_even
-  (x : Std.U32) : RustM (core.result.Result Std.U32 Std.U32) := do
+def ok_if_even (x : Std.U32) : RustM (core.result.Result Std.U32 Std.U32) := do
   let i ← x % 2#u32
   if i = 0#u32
   then ok (core.result.Result.Ok x)

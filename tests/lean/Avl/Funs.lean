@@ -232,9 +232,7 @@ partial_fixpoint
     Visibility: public -/
 @[reducible]
 def Tree.find
-  {T : Type _} (OrdInst : Ord T) (self : Tree T) (value : T) :
-  RustM Bool
-  := do
+  {T : Type _} (OrdInst : Ord T) (self : Tree T) (value : T) : RustM Bool := do
   Tree.find_loop OrdInst value self.root
 
 /-- [avl::{avl::Tree<T>}::insert]:

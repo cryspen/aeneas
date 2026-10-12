@@ -318,8 +318,8 @@ def iter_list_while_loop0_loop0 (b : Bool) : RustM Unit := do
 @[rust_loop_body]
 def iter_list_while_loop0.body
   {T : Type _} (b : Bool) (l : List T) (back : List T → List T) :
-  RustM (ControlFlow ((List T) × (List T → List T)) ((List T) × (List T
-    → List T)))
+  RustM (ControlFlow ((List T) × (List T → List T)) ((List T) × (List T →
+    List T)))
   := do
   let (o, l1, next1_back) ← next1 l
   match o with

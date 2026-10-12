@@ -218,8 +218,7 @@ def basic.only_requires.spec (x : Std.U32) : Prop :=
 /-- [hax_specs::basic::only_ensures::post]:
     Source: 'src/lib.rs', lines 10:4-10:36 -/
 @[reducible]
-def basic.only_ensures.post
-  (x : Std.U32) (result : Std.U32) : RustM Bool := do
+def basic.only_ensures.post (x : Std.U32) (result : Std.U32) : RustM Bool := do
   ok (result = x)
 
 def basic.only_ensures.spec (x : Std.U32) : Prop :=
