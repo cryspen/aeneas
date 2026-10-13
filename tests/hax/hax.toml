@@ -1,0 +1,16 @@
+# The Lean project around the extraction is
+# `proofs/hax-tests/lean/lakefile.toml`, which builds against the Lean library
+# of this checkout: hax must not generate one of its own.
+project-files = false
+
+# Points `cargo hax` at the aeneas and charon of this checkout (built with
+# `make build-dev` and `make setup-charon`) instead of the versions hax pins.
+[tools]
+aeneas = { path = "../../bin/aeneas" }
+charon = { path = "../../charon/bin/charon" }
+
+# Run by `scripts/test-hax.sh`, with `cargo hax extract`. The scenario name
+# gives the Lean package name, `HaxTests`, and the output directory,
+# `proofs/hax-tests/lean`.
+[scenario.hax-tests]
+backend = "lean"

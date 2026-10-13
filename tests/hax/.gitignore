@@ -1,0 +1,12 @@
+# Only build artifacts and machine-specific files: links to the hax checkout,
+# and the dependency versions it resolves to. The Lean project under `proofs/`
+# (extracted code, handwritten proofs, lakefile) is committed, so that CI
+# catches regressions in the extraction.
+/Cargo.lock
+/target/
+/.cargo/
+/proofs/*/lean/.hax-lean
+/proofs/*/lean/lake-manifest.json
+/proofs/*/lean/.lake/
+/proofs/*/lean/llbc/
+/proofs/*/lean/aeneas-error.log
