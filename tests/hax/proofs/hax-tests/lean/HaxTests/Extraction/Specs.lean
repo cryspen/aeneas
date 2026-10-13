@@ -28,6 +28,16 @@ noncomputable section
 namespace hax_tests
 
 
+/-- [hax_tests::specs::traits::assoc_type_bounds::Bar::bar::pre]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 11:4-11:25 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.Bar.bar.pre
+  {Self_ : Type} (BarInst : specs.traits.assoc_type_bounds.Bar Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::assoc_type_bounds::Bar::bar::post]:
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 8:0-8:22 -/
 @[reducible]
@@ -38,6 +48,17 @@ def specs.traits.assoc_type_bounds.Bar.bar.post
   := do
   ok (res < 10#u32)
 
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::Container::first::pre]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 19:4-19:34 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.Container.first.pre
+  {Self_ : Type} {Clause0_Item : Type} (ContainerInst :
+  specs.traits.assoc_type_bounds.Container Self_ Clause0_Item) (self_ : Self_)
+  :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::assoc_type_bounds::Container::first::post]:
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 14:0-14:22 -/
@@ -51,6 +72,15 @@ def specs.traits.assoc_type_bounds.Container.first.post
   let i ← ContainerInst.BarInst.bar item
   ok (i < 10#u32)
 
+
+/-- [hax_tests::specs::traits::basic::Foo::f1::pre]:
+    Source: 'src/specs/traits/basic.rs', lines 9:4-9:25 -/
+@[reducible]
+def specs.traits.basic.Foo.f1.pre
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::basic::Foo::f1::post]:
     Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
@@ -81,6 +111,15 @@ def specs.traits.basic.Foo.f2.post
   := do
   ok (res <= 10#u64)
 
+/-- [hax_tests::specs::traits::basic::Foo::make::pre]:
+    Source: 'src/specs/traits/basic.rs', lines 16:4-16:28 -/
+@[reducible]
+def specs.traits.basic.Foo.make.pre
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (x : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::basic::Foo::make::post]:
     Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
 @[reducible]
@@ -90,6 +129,13 @@ def specs.traits.basic.Foo.make.post
   RustM Bool
   := do
   FooInst.f1 res
+
+/-- [hax_tests::specs::traits::basic::Foo::zero::pre]:
+    Source: 'src/specs/traits/basic.rs', lines 19:4-19:22 -/
+@[reducible]
+def specs.traits.basic.Foo.zero.pre
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) : RustM Bool := do
+  ok true
 
 /-- [hax_tests::specs::traits::basic::Foo::zero::post]:
     Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
@@ -101,6 +147,16 @@ def specs.traits.basic.Foo.zero.post
   FooInst.f1 res
 
 
+/-- [hax_tests::specs::traits::blanket_impl::Show::show::pre]:
+    Source: 'src/specs/traits/blanket_impl.rs', lines 12:4-12:26 -/
+@[reducible]
+def specs.traits.blanket_impl.Show.show.pre
+  {Self_ : Type} (ShowInst : specs.traits.blanket_impl.Show Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::blanket_impl::Show::show::post]:
     Source: 'src/specs/traits/blanket_impl.rs', lines 9:0-9:22 -/
 @[reducible]
@@ -111,6 +167,16 @@ def specs.traits.blanket_impl.Show.show.post
   := do
   ok (res <= 20#u64)
 
+
+/-- [hax_tests::specs::traits::builtin_bound::Dup::dup::pre]:
+    Source: 'src/specs/traits/builtin_bound.rs', lines 19:4-19:34 -/
+@[reducible]
+def specs.traits.builtin_bound.Dup.dup.pre
+  {Self_ : Type} (corecloneCloneInst : core.clone.Clone Self_) (DupInst :
+  specs.traits.builtin_bound.Dup Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::builtin_bound::Dup::dup::post]:
     Source: 'src/specs/traits/builtin_bound.rs', lines 16:0-16:22 -/
@@ -147,6 +213,15 @@ def specs.traits.default_methods.D.next.post
   ok (res > i)
 
 
+/-- [hax_tests::specs::traits::diamond::A::a::pre]:
+    Source: 'src/specs/traits/diamond.rs', lines 8:4-8:25 -/
+@[reducible]
+def specs.traits.diamond.A.a.pre
+  {Self_ : Type} (AInst : specs.traits.diamond.A Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::diamond::A::a::post]:
     Source: 'src/specs/traits/diamond.rs', lines 5:0-5:22 -/
 @[reducible]
@@ -159,6 +234,17 @@ def specs.traits.diamond.A.a.post
   then ok (res <= 100#usize)
   else ok false
 
+
+/-- [hax_tests::specs::traits::diamond::C::c::pre]:
+    Source: 'src/specs/traits/diamond.rs', lines 18:4-18:25 -/
+@[reducible]
+def specs.traits.diamond.C.c.pre
+  {Self_ : Type} (AInst : specs.traits.diamond.A Self_) (BInst :
+  specs.traits.diamond.B Self_) (CInst : specs.traits.diamond.C Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::diamond::C::c::post]:
     Source: 'src/specs/traits/diamond.rs', lines 15:0-15:22 -/
@@ -173,6 +259,16 @@ def specs.traits.diamond.C.c.post
   ok (res = i)
 
 
+/-- [hax_tests::specs::traits::generic_impl::Foo::f::pre]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 11:4-11:23 -/
+@[reducible]
+def specs.traits.generic_impl.Foo.f.pre
+  {Self_ : Type} (FooInst : specs.traits.generic_impl.Foo Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::generic_impl::Foo::f::post]:
     Source: 'src/specs/traits/generic_impl.rs', lines 8:0-8:22 -/
 @[reducible]
@@ -183,6 +279,16 @@ def specs.traits.generic_impl.Foo.f.post
   := do
   ok (res <= 10#u64)
 
+
+/-- [hax_tests::specs::traits::generic_impl::Sub::s::pre]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 17:4-17:23 -/
+@[reducible]
+def specs.traits.generic_impl.Sub.s.pre
+  {Self_ : Type} (FooInst : specs.traits.generic_impl.Foo Self_) (SubInst :
+  specs.traits.generic_impl.Sub Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::generic_impl::Sub::s::post]:
     Source: 'src/specs/traits/generic_impl.rs', lines 14:0-14:22 -/
@@ -196,6 +302,15 @@ def specs.traits.generic_impl.Sub.s.post
   ok (res = i)
 
 
+/-- [hax_tests::specs::traits::impl_contract::G::g::pre]:
+    Source: 'src/specs/traits/impl_contract.rs', lines 24:4-24:23 -/
+@[reducible]
+def specs.traits.impl_contract.G.g.pre
+  {Self_ : Type} (GInst : specs.traits.impl_contract.G Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::impl_contract::G::g::post]:
     Source: 'src/specs/traits/impl_contract.rs', lines 21:0-21:22 -/
 @[reducible]
@@ -206,6 +321,16 @@ def specs.traits.impl_contract.G.g.post
   := do
   ok (res > 0#u32)
 
+
+/-- [hax_tests::specs::traits::method_generics::Bar::bar::pre]:
+    Source: 'src/specs/traits/method_generics.rs', lines 8:4-8:25 -/
+@[reducible]
+def specs.traits.method_generics.Bar.bar.pre
+  {Self_ : Type} (BarInst : specs.traits.method_generics.Bar Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::method_generics::Bar::bar::post]:
     Source: 'src/specs/traits/method_generics.rs', lines 5:0-5:22 -/
@@ -272,6 +397,16 @@ def specs.traits.minimal.Foo.h.pre
   := do
   ok (x > 0#u32)
 
+/-- [hax_tests::specs::traits::minimal::Foo::h::post]:
+    Source: 'src/specs/traits/minimal.rs', lines 15:4-15:31 -/
+@[reducible]
+def specs.traits.minimal.Foo.h.post
+  {Self_ : Type} (FooInst : specs.traits.minimal.Foo Self_) (self_ : Self_)
+  (x : Std.U32) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
 
 /-- [hax_tests::specs::traits::mut_self::Counter::incr::pre]:
     Source: 'src/specs/traits/mut_self.rs', lines 5:0-5:22 -/
@@ -297,6 +432,15 @@ def specs.traits.mut_self.Counter.incr.post
   let i2 ← i1 + 1#u32
   ok (i = i2)
 
+
+/-- [hax_tests::specs::traits::supertraits::A::a::pre]:
+    Source: 'src/specs/traits/supertraits.rs', lines 9:4-9:25 -/
+@[reducible]
+def specs.traits.supertraits.A.a.pre
+  {Self_ : Type} (AInst : specs.traits.supertraits.A Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::supertraits::A::a::post]:
     Source: 'src/specs/traits/supertraits.rs', lines 6:0-6:22 -/
@@ -332,6 +476,16 @@ def specs.traits.supertraits.B.b.post
   ok (res > i)
 
 
+/-- [hax_tests::specs::traits::supertraits::Cc::c::pre]:
+    Source: 'src/specs/traits/supertraits.rs', lines 22:4-22:25 -/
+@[reducible]
+def specs.traits.supertraits.Cc.c.pre
+  {Self_ : Type} (BInst : specs.traits.supertraits.B Self_) (CcInst :
+  specs.traits.supertraits.Cc Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::supertraits::Cc::c::post]:
     Source: 'src/specs/traits/supertraits.rs', lines 19:0-19:22 -/
 @[reducible]
@@ -344,6 +498,139 @@ def specs.traits.supertraits.Cc.c.post
   ok (res > i)
 
 
+/-- [hax_tests::specs::traits::synthesized::Gen::pick::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 11:4-11:30 -/
+@[reducible]
+def specs.traits.synthesized.Gen.pick.pre
+  {Self_ : Type} (U : Type) (GenInst : specs.traits.synthesized.Gen Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::pick::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.pick.post
+  {Self_ : Type} {U : Type} (GenInst : specs.traits.synthesized.Gen Self_)
+  (o : core.option.Option U) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::id::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.id.pre
+  {Self_ : Type} {U : Type} (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) (u : U) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::id::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 15:4-15:31 -/
+@[reducible]
+def specs.traits.synthesized.Gen.id.post
+  {Self_ : Type} {U : Type} (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) (u : U) (res : U) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::add::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.add.pre
+  {Self_ : Type} (GenInst : specs.traits.synthesized.Gen Self_) (self_ : Self_)
+  (x : Std.U32) :
+  RustM Bool
+  := do
+  ok (x < 100#u32)
+
+/-- [hax_tests::specs::traits::synthesized::Gen::add::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 19:4-19:37 -/
+@[reducible]
+def specs.traits.synthesized.Gen.add.post
+  {Self_ : Type} (GenInst : specs.traits.synthesized.Gen Self_) (self_ : Self_)
+  (x : Std.U32) (res : (Std.U32 × Self_)) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::arr::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.arr.pre
+  {Self_ : Type} (N : Std.Usize) (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::arr::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 23:4-23:46 -/
+@[reducible]
+def specs.traits.synthesized.Gen.arr.post
+  {Self_ : Type} {N : Std.Usize} (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) (res : Array Std.U32 N) :
+  RustM Bool
+  := do
+  ok true
+
+
+/-- [hax_tests::specs::traits::synthesized::Tg::get::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 27:0-27:22 -/
+@[reducible]
+def specs.traits.synthesized.Tg.get.pre
+  {Self_ : Type} {T : Type} (TgInst : specs.traits.synthesized.Tg Self_ T)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Tg::get::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 30:4-30:23 -/
+@[reducible]
+def specs.traits.synthesized.Tg.get.post
+  {Self_ : Type} {T : Type} (TgInst : specs.traits.synthesized.Tg Self_ T)
+  (self_ : Self_) (res : T) :
+  RustM Bool
+  := do
+  ok true
+
+
+/-- [hax_tests::specs::traits::synthesized::Assoc::item::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 35:0-35:22 -/
+@[reducible]
+def specs.traits.synthesized.Assoc.item.pre
+  {Self_ : Type} {Clause0_Item : Type} (AssocInst :
+  specs.traits.synthesized.Assoc Self_ Clause0_Item) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Assoc::item::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 40:4-40:33 -/
+@[reducible]
+def specs.traits.synthesized.Assoc.item.post
+  {Self_ : Type} {Clause0_Item : Type} (AssocInst :
+  specs.traits.synthesized.Assoc Self_ Clause0_Item) (self_ : Self_)
+  (res : Clause0_Item) :
+  RustM Bool
+  := do
+  ok true
+
+
+/-- [hax_tests::specs::traits::trait_generics::Conv::conv::pre]:
+    Source: 'src/specs/traits/trait_generics.rs', lines 8:4-8:32 -/
+@[reducible]
+def specs.traits.trait_generics.Conv.conv.pre
+  {Self_ : Type} {T : Type} (ConvInst : specs.traits.trait_generics.Conv Self_
+  T) (self_ : Self_) (t : T) :
+  RustM Bool
+  := do
+  ok true
+
 /-- [hax_tests::specs::traits::trait_generics::Conv::conv::post]:
     Source: 'src/specs/traits/trait_generics.rs', lines 5:0-5:22 -/
 @[reducible]
@@ -354,6 +641,16 @@ def specs.traits.trait_generics.Conv.conv.post
   := do
   ok (res < 10#u32)
 
+
+/-- [hax_tests::specs::traits::unannotated_sub::A::a::pre]:
+    Source: 'src/specs/traits/unannotated_sub.rs', lines 9:4-9:23 -/
+@[reducible]
+def specs.traits.unannotated_sub.A.a.pre
+  {Self_ : Type} (AInst : specs.traits.unannotated_sub.A Self_) (self_ : Self_)
+  :
+  RustM Bool
+  := do
+  ok true
 
 /-- [hax_tests::specs::traits::unannotated_sub::A::a::post]:
     Source: 'src/specs/traits/unannotated_sub.rs', lines 6:0-6:22 -/

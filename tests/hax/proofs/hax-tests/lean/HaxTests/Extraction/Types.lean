@@ -237,6 +237,24 @@ structure specs.traits.supertraits.Cc (Self : Type) where
   BInst : specs.traits.supertraits.B Self
   c : Self → RustM Std.Usize
 
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Gen]
+    Source: 'src/specs/traits/synthesized.rs', lines 8:0-24:1 -/
+structure specs.traits.synthesized.Gen (Self : Type) where
+  pick : forall (U : Type), RustM (core.option.Option U)
+  id : forall {U : Type}, Self → U → RustM U
+  add : Self → Std.U32 → RustM (Std.U32 × Self)
+  arr : forall (N : Std.Usize), Self → RustM (Array Std.U32 N)
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Tg]
+    Source: 'src/specs/traits/synthesized.rs', lines 28:0-31:1 -/
+structure specs.traits.synthesized.Tg (Self : Type) (T : Type) where
+  get : Self → RustM T
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Assoc]
+    Source: 'src/specs/traits/synthesized.rs', lines 36:0-41:1 -/
+structure specs.traits.synthesized.Assoc (Self : Type) (Self_Item : Type) where
+  item : Self → RustM Self_Item
+
 /-- Trait declaration: [hax_tests::specs::traits::trait_generics::Conv]
     Source: 'src/specs/traits/trait_generics.rs', lines 6:0-9:1 -/
 structure specs.traits.trait_generics.Conv (Self : Type) (T : Type) where

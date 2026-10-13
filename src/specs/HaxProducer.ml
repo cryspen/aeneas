@@ -45,13 +45,13 @@ type assoc = {
 let empty_assoc parent = { parent; requires_uid = None; ensures_uid = None }
 
 (** Update an accumulator with one [AssociatedItem]. Per design we accept at
-    most one of each role per fn: extras are logged and ignored. *)
+    most one of each role per item: extras are logged and ignored. *)
 let update_assoc (ctx : TranslateCore.trans_ctx) (role : hax_role)
     (uid : string) (a : assoc) : assoc =
   let warn_extra side =
     [%lwarning
-      Printf.sprintf "hax-specs: multiple #[%s] on fn `%s`; ignoring extras"
-        side (parent_name ctx a.parent)]
+      Printf.sprintf "hax-specs: multiple #[%s] on `%s`; ignoring extras" side
+        (parent_name ctx a.parent)]
   in
   match role with
   | Requires -> (
@@ -155,7 +155,7 @@ let produce (ctx : TranslateCore.trans_ctx)
     | None ->
         [%lwarning
           Printf.sprintf
-            "hax-specs: fn `%s` references unknown decoration uid %s; skipping \
+            "hax-specs: `%s` references unknown decoration uid %s; skipping \
              that side"
             (parent_name ctx parent) uid];
         None
@@ -183,6 +183,108 @@ let produce (ctx : TranslateCore.trans_ctx)
       Option.bind a.ensures_uid
         (lookup_dec a.parent ~suffix:"post" ~is_post:true) )
   in
+  (* The conditions of the trait methods that hax has no annotation for are
+     synthesized as [ok true]. They get fresh ids, after those of the crate. *)
+  let _, fresh_fun_id =
+    Pure.FunDeclId.mk_stateful_generator
+      (match Pure.FunDeclId.Map.max_binding_opt ctx.crate.fun_decls with
+      | None -> Pure.FunDeclId.generator_zero
+      | Some (id, _) -> Pure.FunDeclId.generator_from_incr_id id)
+  in
+  (* The condition [<m>.<suffix>] with the given [inputs] and body [ok true].
+     The rest is taken from the other condition [dec]. *)
+  let synthesize_cond (m : Pure.trait_method) (suffix : string)
+      (dec : Pure.fun_decl) (inputs : Pure.tpat list) : Pure.fun_decl =
+    let span = m.item_meta.span in
+    let sg = dec.signature in
+    let input_tys = List.map (fun (p : Pure.tpat) -> p.ty) inputs in
+    let explicit_info = PureUtils.compute_explicit_info sg.generics input_tys in
+    let signature =
+      {
+        sg with
+        inputs = input_tys;
+        explicit_info;
+        known_from_trait_refs =
+          PureUtils.compute_known_info explicit_info sg.generics;
+      }
+    in
+    let body : Pure.fun_body =
+      { inputs; body = PureUtils.mk_result_ok_texpr span PureUtils.mk_true }
+    in
+    rename_decoration (Method m) suffix
+      {
+        dec with
+        def_id = fresh_fun_id ();
+        item_meta =
+          {
+            dec.item_meta with
+            span;
+            attr_info = { dec.item_meta.attr_info with attributes = [] };
+          };
+        signature;
+        body = Some body;
+      }
+  in
+  (* The inputs of a condition *)
+  let cond_inputs (m : Pure.trait_method) (dec : Pure.fun_decl) : Pure.tpat list
+      =
+    match dec.body with
+    | Some b -> b.inputs
+    | None ->
+        [%craise] m.item_meta.span
+          ("hax-specs: cannot synthesize the missing condition of `"
+         ^ parent_name ctx (Method m) ^ "`: the other one has no body")
+  in
+  (* The output type of the method [m] of [d], in the generics of its
+     condition [dec]. The type parameters of the decoration fns are those of
+     the trait then those of the method, as in the flattened signature of the
+     method. *)
+  let method_output_ty (d : Pure.trait_decl) (m : Pure.trait_method)
+      (dec : Pure.fun_decl) : Pure.ty =
+    let span = m.item_meta.span in
+    let name = parent_name ctx (Method m) in
+    let llbc_decl = Pure.TraitDeclId.Map.find d.def_id ctx.crate.trait_decls in
+    let sg =
+      (SymbolicToPureTypes.translate_flat_trait_method_sigs ctx llbc_decl
+         m.method_id
+         (Pure.TraitMethodId.Map.find m.method_id llbc_decl.methods))
+        .sg
+    in
+    let params = sg.generics in
+    let args = PureUtils.generic_args_of_params dec.signature.generics in
+    [%cassert] span
+      (List.length params.types = List.length args.types
+      && List.length params.const_generics = List.length args.const_generics)
+      ("Internal error: the generics of the conditions of `" ^ name
+     ^ "` don't match those of the trait and the method");
+    let unsupported () =
+      [%craise] span
+        ("hax-specs: cannot synthesize the postcondition of `" ^ name
+       ^ "`: trait instances in its output type are not supported yet")
+    in
+    let subst : PureUtils.subst =
+      {
+        ty_subst = PureUtils.make_type_subst params.types args.types;
+        cg_subst =
+          PureUtils.make_const_generic_subst params.const_generics
+            args.const_generics;
+        tr_subst = (fun _ -> unsupported ());
+        tr_self = Self (* Unused: see [visit_Self] *);
+      }
+    in
+    let visitor =
+      object
+        inherit [_] PureUtils.subst_visitor
+        method! visit_Self _ = unsupported ()
+      end
+    in
+    let output =
+      if sg.fwd_info.effect_info.can_fail then
+        PureUtils.unwrap_result_ty span sg.output
+      else sg.output
+    in
+    visitor#visit_ty subst output
+  in
   (* The contracts of the local traits, in the order of the declaration groups
      (parents first). Every local trait gets one, even without annotated
      methods. *)
@@ -190,7 +292,8 @@ let produce (ctx : TranslateCore.trans_ctx)
     Pure.TraitDeclId.Map.of_list
       (List.map (fun (d : Pure.trait_decl) -> (d.def_id, d)) crate.trait_decls)
   in
-  let method_spec (m : Pure.trait_method) : HaxSpecs.method_spec option =
+  let method_spec (d : Pure.trait_decl) (m : Pure.trait_method) :
+      HaxSpecs.method_spec option =
     let a =
       List.fold_left
         (fun a attr ->
@@ -199,9 +302,44 @@ let produce (ctx : TranslateCore.trans_ctx)
           | _ -> a)
         (empty_assoc (Method m)) m.item_meta.attr_info.attributes
     in
+    let spec pre post : HaxSpecs.method_spec option =
+      Some { method_id = m.method_id; pre = Some pre; post = Some post }
+    in
+    let warn_drop reason =
+      [%warn] m.item_meta.span
+        ("hax-specs: dropping the contract of trait method `"
+       ^ parent_name ctx (Method m) ^ "`: " ^ reason);
+      None
+    in
+    (* Only the conditions without annotation are synthesized: if an annotated
+       one was dropped (see [lookup_dec]), so is the whole contract of [m] *)
+    let dropped uid cond = Option.is_some uid && Option.is_none cond in
     match lookup_conds a with
-    | None, None -> None
-    | pre, post -> Some { method_id = m.method_id; pre; post }
+    | pre, _ when dropped a.requires_uid pre ->
+        warn_drop "its #[requires] is invalid"
+    | _, post when dropped a.ensures_uid post ->
+        warn_drop "its #[ensures] is invalid"
+    | pre, post -> (
+        (* A failure to synthesize a condition only drops the contract of [m] *)
+        try
+          match (pre, post) with
+          | None, None -> None
+          | Some pre, Some post -> spec pre post
+          | None, Some post ->
+              (* The inputs of [post] but the result *)
+              let inputs =
+                fst (Collections.List.pop_last (cond_inputs m post))
+              in
+              spec (synthesize_cond m "pre" post inputs) post
+          | Some pre, None ->
+              let ty = method_output_ty d m pre in
+              let res : Pure.tpat =
+                { pat = PBound ({ basename = Some "res"; ty }, None); ty }
+              in
+              let inputs = cond_inputs m pre @ [ res ] in
+              spec pre (synthesize_cond m "post" pre inputs)
+        with Errors.CFailure _ ->
+          warn_drop "a missing condition could not be synthesized")
   in
   let local_trait_decls =
     List.concat_map
@@ -220,7 +358,7 @@ let produce (ctx : TranslateCore.trans_ctx)
   let trait_specs =
     List.map
       (fun (d : Pure.trait_decl) : Spec.spec ->
-        let methods = List.filter_map method_spec d.methods in
+        let methods = List.filter_map (method_spec d) d.methods in
         {
           id = fresh_spec_id ();
           span = Some d.item_meta.span;
@@ -263,7 +401,8 @@ let produce (ctx : TranslateCore.trans_ctx)
   (* Pass 3: strip the decoration fns from [crate.fun_decls]. Those that are
      not consumed are reported: as a warning when no translated item refers to
      them, in the log otherwise (unsupported role such as [decreases], extra
-     condition, argument count mismatch) *)
+     condition, argument count mismatch, valid condition of a trait method
+     whose contract was dropped) *)
   let referenced =
     Collections.StringSet.of_list
       (List.concat_map
@@ -304,7 +443,10 @@ let produce (ctx : TranslateCore.trans_ctx)
                   dec.name reason
               in
               if Collections.StringSet.mem uid referenced then
-                [%lwarning msg "unsupported or invalid annotation"]
+                [%lwarning
+                  msg
+                    "unsupported or invalid annotation, or part of a dropped \
+                     contract"]
               else
                 [%warn] dec.item_meta.span
                   (msg "it is attached to no translated item")
