@@ -1624,7 +1624,8 @@ def specs.generics.trait_clause.post
 
 def
   specs.generics.trait_clause.spec {T : Type _} (ValInst : specs.generics.Val
-                                  T) (t : T) (x : Std.U32) : Prop :=
+                                  T) (t : T) (x : Std.U32)
+  (ValInstLawful : specs.generics.Val.Lawful T ValInst) : Prop :=
   (specs.generics.trait_clause.pre ValInst t x).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.trait_clause ValInst t x
@@ -1650,7 +1651,8 @@ def specs.generics.where_clause.post
 
 def
   specs.generics.where_clause.spec {T : Type _} (ValInst : specs.generics.Val
-                                  T) (t : T) : Prop :=
+                                  T) (t : T)
+  (ValInstLawful : specs.generics.Val.Lawful T ValInst) : Prop :=
   (specs.generics.where_clause.pre ValInst t).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.where_clause ValInst t
@@ -1680,7 +1682,8 @@ def specs.generics.assoc_type.post
 def
   specs.generics.assoc_type.spec {P : Type _} (ProducerPU32Inst :
                                 specs.generics.Producer P Std.U32) (p : P)
-  : Prop :=
+  (ProducerPU32InstLawful : specs.generics.Producer.Lawful P Std.U32
+  ProducerPU32Inst) : Prop :=
   (specs.generics.assoc_type.pre ProducerPU32Inst p).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.assoc_type ProducerPU32Inst p
@@ -1885,7 +1888,8 @@ def specs.generics.Wrapper.inner_value.post
 def
   specs.generics.Wrapper.inner_value.spec {T : Type _} (ValInst :
                                          specs.generics.Val T)
-  (self : specs.generics.Wrapper T) : Prop :=
+  (self : specs.generics.Wrapper T)
+  (ValInstLawful : specs.generics.Val.Lawful T ValInst) : Prop :=
   (specs.generics.Wrapper.inner_value.pre ValInst self).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.Wrapper.inner_value ValInst self
@@ -1940,7 +1944,7 @@ def specs.traits.basic.g.post
   ok (res <= 10#u64)
 
 def specs.traits.basic.g.spec {T : Type _} (FooInst : specs.traits.basic.Foo T)
-  (x : T) : Prop :=
+  (x : T) (FooInstLawful : specs.traits.basic.Foo.Lawful T FooInst) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.basic.g FooInst x
   ⦃ ⇓ res => ⌜ (specs.traits.basic.g.post FooInst x res).holds ⌝ ⦄
@@ -1979,7 +1983,7 @@ def specs.traits.supertraits.via_b.post
 def
   specs.traits.supertraits.via_b.spec {T : Type _} (BInst :
                                      specs.traits.supertraits.B T) (x : T)
-  : Prop :=
+  (BInstLawful : specs.traits.supertraits.B.Lawful T BInst) : Prop :=
   (specs.traits.supertraits.via_b.pre BInst x).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.supertraits.via_b BInst x
@@ -2019,7 +2023,8 @@ def specs.traits.diamond.via_b.post
 
 def
   specs.traits.diamond.via_b.spec {T : Type _} (BInst : specs.traits.diamond.B
-                                 T) (x : T) : Prop :=
+                                 T) (x : T)
+  (BInstLawful : specs.traits.diamond.B.Lawful T BInst) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.diamond.via_b BInst x
   ⦃ ⇓ res =>
@@ -2036,7 +2041,8 @@ def specs.traits.diamond.diamond.post
 
 def
   specs.traits.diamond.diamond.spec {T : Type _} (CInst :
-                                   specs.traits.diamond.C T) (x : T) : Prop :=
+                                   specs.traits.diamond.C T) (x : T)
+  (CInstLawful : specs.traits.diamond.C.Lawful T CInst) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.diamond.diamond CInst x
   ⦃ ⇓ res =>
@@ -2056,7 +2062,8 @@ def
   specs.traits.generic_impl.k.spec {T : Type _} {U : Type _} (FooInst :
                                   specs.traits.generic_impl.Foo T) (SubInst :
                                   specs.traits.generic_impl.Sub U) (x : T)
-  (y : U) : Prop :=
+  (y : U) (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst)
+  (SubInstLawful : specs.traits.generic_impl.Sub.Lawful U SubInst) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.generic_impl.k FooInst SubInst x y
   ⦃ ⇓ res =>
@@ -2104,7 +2111,8 @@ def
                                                Type _} (ContainerInst :
                                                specs.traits.assoc_type_bounds.Container
                                                C Clause0_Item) (c : C)
-  : Prop :=
+  (ContainerInstLawful : specs.traits.assoc_type_bounds.Container.Lawful C
+  Clause0_Item ContainerInst) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.assoc_type_bounds.first_bar ContainerInst c
   ⦃ ⇓ res =>
@@ -2123,7 +2131,9 @@ def specs.traits.builtin_bound.dup.post
 
 def
   specs.traits.builtin_bound.dup.spec {T : Type _} (corecloneCloneInst :
-                                     core.clone.Clone T) (x : T) : Prop :=
+                                     core.clone.Clone T) (x : T)
+  (corecloneCloneInstLawful : core.clone.Clone.Lawful T corecloneCloneInst)
+  : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.builtin_bound.dup corecloneCloneInst x
   ⦃ ⇓ res =>
@@ -2142,11 +2152,32 @@ def specs.traits.trait_generics.use_conv.post
 def
   specs.traits.trait_generics.use_conv.spec {C : Type _} (ConvCU8Inst :
                                            specs.traits.trait_generics.Conv C
-                                           Std.U8) (c : C) : Prop :=
+                                           Std.U8) (c : C)
+  (ConvCU8InstLawful : specs.traits.trait_generics.Conv.Lawful C Std.U8
+  ConvCU8Inst) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.traits.trait_generics.use_conv ConvCU8Inst c
   ⦃ ⇓ res =>
     ⌜ (specs.traits.trait_generics.use_conv.post ConvCU8Inst c res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::naming::lawful_binder::f::post]:
+    Source: 'src/specs/naming.rs', lines 42:4-42:36 -/
+@[reducible]
+def specs.naming.lawful_binder.f.post
+  {T : Type _} (QuxInst : specs.naming.Qux T) (QuxInstLawful : T) (x : Std.U32)
+  (result : Std.U32) :
+  RustM Bool
+  := do
+  ok (result = x)
+
+def
+  specs.naming.lawful_binder.f.spec {T : Type _} (QuxInst : specs.naming.Qux T)
+  (QuxInstLawful1 : T) (x : Std.U32)
+  (QuxInstLawful : specs.naming.Qux.Lawful T QuxInst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.naming.lawful_binder.f QuxInst QuxInstLawful1 x
+  ⦃ ⇓ res =>
+    ⌜ (specs.naming.lawful_binder.f.post QuxInst QuxInstLawful1 x res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::traits::impl_contract::{impl hax_tests::specs::traits::impl_contract::Foo for u32}::f::pre]:
     Source: 'src/specs/traits/impl_contract.rs', lines 14:4-14:28 -/

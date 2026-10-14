@@ -31,3 +31,16 @@ pub mod bar {
 pub trait Qux {
     fn lawful(&self) -> u32;
 }
+
+// No clash: an argument named like the Lawful binder `QuxInstLawful` of the
+// trait clause `QuxInst` becomes `QuxInstLawful1` in the spec.
+pub mod lawful_binder {
+    #![allow(non_snake_case)]
+    use super::Qux;
+    use hax_lib::*;
+
+    #[ensures(|result| result == x)]
+    pub fn f<T: Qux>(QuxInstLawful: T, x: u32) -> u32 {
+        x
+    }
+}

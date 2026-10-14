@@ -269,6 +269,10 @@ let proof_name (parent_name : string) : string =
 let lawful_name (trait_name : string) : string =
   ExtractBuiltin.flatten_name [ trait_name; "Lawful" ]
 
+(** [<clause>Lawful]: the name of the Lawful binder (or parent field) of the
+    clause [clause_name] *)
+let lawful_binder_name (clause_name : string) : string = clause_name ^ "Lawful"
+
 (** The names of the conditions [pre] and [post] of [parent_name] *)
 let cond_names (parent_name : string) ~(pre : Pure.fun_decl option)
     ~(post : Pure.fun_decl option) : (Pure.fun_decl * string) list =
@@ -550,7 +554,7 @@ let emit_lawful_clause_binders span (ctx : ExtractBase.extraction_ctx) fmt
       emit_binder fmt name (fun () ->
           ExtractTypes.extract_trait_clause_type span ctx fmt
             Pure.TypeDeclId.Set.empty c);
-      emit_binder fmt (name ^ "Lawful") (fun () ->
+      emit_binder fmt (lawful_binder_name name) (fun () ->
           emit_lawful_type span ctx fmt tr))
     clauses args.trait_refs
 
@@ -606,7 +610,7 @@ let emit_lawful_structure (ctx : ExtractBase.extraction_ctx) fmt
           ctx
       in
       Extract.extract_trait_decl_item ctx fmt
-        (escape_name (name ^ "Lawful"))
+        (escape_name (lawful_binder_name name))
         (fun () ->
           F.pp_print_space fmt ();
           emit_lawful_type span ctx fmt (parent_ref d self_ref c)))
@@ -630,7 +634,7 @@ let emit_lawful_structure (ctx : ExtractBase.extraction_ctx) fmt
       in
       (* The names of the Lawful binders of the clauses *)
       let ctx =
-        ctx_reserve_names (List.map (fun n -> n ^ "Lawful") clause_names) ctx
+        ctx_reserve_names (List.map lawful_binder_name clause_names) ctx
       in
       let ctx = add_conditions ctx ~pre ~post in
       let _, fresh_fvar_id = Pure.FVarId.fresh_stateful_generator () in
@@ -682,6 +686,32 @@ let emit_lawful_structure (ctx : ExtractBase.extraction_ctx) fmt
     methods;
   F.pp_close_box fmt ()
 
+(** Emit the binders of the function [f]: its generic and value parameters, then
+    the Lawful binders of its trait clauses. Return the context with the
+    parameters registered, and the names of the Lawful binders. *)
+let emit_fun_binders (ctx : ExtractBase.extraction_ctx) fmt (f : Pure.fun_decl)
+    =
+  let open ExtractBase in
+  let span = f.item_meta.span in
+  let sg = f.signature in
+  (* Reserve the Lawful names, so that no parameter takes them. The clause
+     names are those [extract_fun_parameters] computes: they end with [Inst]
+     (and an index), so the reserved names cannot change them. *)
+  let _, _, _, clause_names =
+    ctx_add_generic_params span f.item_meta.name Item sg.llbc_generics
+      sg.generics ctx
+  in
+  let lawful_names = List.map lawful_binder_name clause_names in
+  let ctx = ctx_reserve_names lawful_names ctx in
+  let space = ref false in
+  let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt f in
+  List.iter2
+    (fun name tr ->
+      emit_binder fmt name (fun () -> emit_lawful_type span ctx fmt tr))
+    lawful_names (PureUtils.generic_args_of_params sg.generics).trait_refs;
+  ExtractTypes.insert_req_space fmt space;
+  (ctx, lawful_names)
+
 (** Emit one [Spec.spec] entry *)
 let emit_spec ctx fmt (s : HaxSpecs.spec) =
   let open ExtractBase in
@@ -731,10 +761,7 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) =
           | None -> ());
           F.pp_print_string fmt
             (escape_name (spec_name (registered_fun_name ctx parent)));
-          (* Generic + value binders via the standard param extractor. *)
-          let space = ref false in
-          let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in
-          ExtractTypes.insert_req_space fmt space;
+          let ctx, _ = emit_fun_binders ctx fmt parent in
           F.pp_print_string fmt ": Prop :=";
           F.pp_close_box fmt ();
 
@@ -767,9 +794,10 @@ let emit_spec ctx fmt (s : HaxSpecs.spec) =
 (** Emit one [HaxSpecs.obligation] entry as the proof obligation that discharges
     a spec's statement of correctness:
     {[
-      theorem foo.spec.proof args : foo.spec args := by sorry
+      theorem foo.spec.proof args lawfuls : foo.spec args lawfuls := by sorry
     ]}
-    No attribute is emitted: registering the obligation with [mvcgen] (via
+    where [lawfuls] are the Lawful binders of the trait clauses of [foo]. No
+    attribute is emitted: registering the obligation with [mvcgen] (via
     [@[spec]]) is left to the user, who decides which specs to feed it. *)
 let emit_obligation ctx fmt (o : HaxSpecs.obligation) =
   let open ExtractBase in
@@ -817,17 +845,19 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) =
           F.pp_print_string fmt "theorem";
           F.pp_print_space fmt ();
           F.pp_print_string fmt (escape_name (proof_name parent_name));
-          (* Generic + value binders via the standard param extractor. *)
-          let space = ref false in
-          let _, ctx, _ = Extract.extract_fun_parameters space ctx fmt parent in
-          ExtractTypes.insert_req_space fmt space;
+          let ctx, lawful_names = emit_fun_binders ctx fmt parent in
           F.pp_print_string fmt ":";
           F.pp_print_space fmt ();
           (* The statement of correctness, in its own box:
-             [<fn>.spec <generics> <args>]. *)
+             [<fn>.spec <generics> <args> <lawful args>]. *)
           F.pp_open_hovbox fmt 0;
           emit_app span ctx fmt explicit generics arg_texprs
             (escape_name (spec_name parent_name));
+          List.iter
+            (fun name ->
+              F.pp_print_space fmt ();
+              F.pp_print_string fmt name)
+            lawful_names;
           F.pp_close_box fmt ();
           F.pp_close_box fmt ();
           (* statement hovbox *)
