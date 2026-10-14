@@ -139,7 +139,8 @@ let () =
       ( "-specs",
         Arg.Symbol (spec_config_options, set_spec_config),
         " Gather and emit specs from the given source. Available: "
-        ^ String.concat ", " spec_config_options );
+        ^ String.concat ", " spec_config_options
+        ^ " (hax requires -core-models-lib)" );
       ( "-emit-json",
         Arg.Set emit_json,
         " Emit a translation.json file alongside the Lean files (Lean only)" );
@@ -498,6 +499,8 @@ let () =
     fail_with_error "The -emit-json option is valid only for the Lean backend";
   if Option.is_some !opt_spec_config && not (backend () = Lean) then
     fail_with_error "The -specs option is valid only for the Lean backend";
+  if spec_config_is_hax () && not !core_models_lib then
+    fail_with_error "The -specs hax option requires the -core-models-lib option";
 
   check_arg_implies !diagnose_detailed "-diagnose-detailed"
     !diagnose_micro_passes "-diagnose-micro-passes";

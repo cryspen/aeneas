@@ -14,3 +14,6 @@ charon = { path = "../../charon/bin/charon" }
 # `proofs/hax-tests/lean`.
 [scenario.hax-tests]
 backend = "lean"
+# Imports the stubs of the core `Lawful` structures the generated specs refer
+# to, until the CoreModels library provides them, into every generated file.
+aeneas-args = ["-extra-includes", "HaxTests.Assumptions.MissingCore"]

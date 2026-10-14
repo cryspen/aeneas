@@ -25,3 +25,37 @@ pub fn proof() {}
 pub mod bar {
     pub fn pre() {}
 }
+
+// No clash: the check against `Qux.Lawful` is case-sensitive, so the field
+// `Qux.lawful` is fine.
+pub trait Qux {
+    fn lawful(&self) -> u32;
+}
+
+// No clash: an argument named like the Lawful binder `QuxInstLawful` of the
+// trait clause `QuxInst` becomes `QuxInstLawful1` in the spec.
+pub mod lawful_binder {
+    #![allow(non_snake_case)]
+    use super::Qux;
+    use hax_lib::*;
+
+    #[ensures(|result| result == x)]
+    pub fn f<T: Qux>(QuxInstLawful: T, x: u32) -> u32 {
+        x
+    }
+}
+
+// No clash: a type parameter named like the Lawful binder `QuxInstLawful` of
+// the impl clause `QuxInst` becomes `QuxInstLawful1` in the impl theorem
+// `….Lawful` (but not in the impl definition).
+pub mod lawful_impl_binder {
+    use super::Qux;
+
+    pub struct Wrap<T>(T);
+
+    impl<QuxInstLawful: Qux> Qux for Wrap<QuxInstLawful> {
+        fn lawful(&self) -> u32 {
+            self.0.lawful()
+        }
+    }
+}

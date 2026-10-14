@@ -3,6 +3,7 @@
 import Aeneas
 import CoreModels
 import HaxTests.Extraction.TypesExternal
+import HaxTests.Assumptions.MissingCore
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
 open RustM ControlFlow Error
@@ -42,15 +43,15 @@ inductive specs.arguments.Shape where
 | Dot : specs.arguments.Shape
 | Line : Std.U32 → specs.arguments.Shape
 
-/-- [hax_tests::specs::contracts::_#18::requires::closure]
-    Source: 'src/specs/contracts.rs', lines 85:18-85:50 -/
+/-- [hax_tests::specs::contracts::_#20::requires::closure]
+    Source: 'src/specs/contracts.rs', lines 93:18-93:50 -/
 @[reducible]
-def specs.contracts.__18.requires.closure := Std.U32
+def specs.contracts.__20.requires.closure := Std.U32
 
-/-- [hax_tests::specs::contracts::_#19::ensures::closure]
-    Source: 'src/specs/contracts.rs', lines 86:26-86:46 -/
+/-- [hax_tests::specs::contracts::_#21::ensures::closure]
+    Source: 'src/specs/contracts.rs', lines 94:26-94:46 -/
 @[reducible]
-def specs.contracts.__19.ensures.closure := Std.U32
+def specs.contracts.__21.ensures.closure := Std.U32
 
 /-- Trait declaration: [hax_tests::specs::generics::Val]
     Source: 'src/specs/generics.rs', lines 16:0-18:1 -/
@@ -80,9 +81,207 @@ structure specs.generics.Pair (T : Type) (N : Std.Usize) where
   fst : T
 
 /-- [hax_tests::specs::mutable_borrows::Counter]
-    Source: 'src/specs/mutable_borrows.rs', lines 42:0-44:1
+    Source: 'src/specs/mutable_borrows.rs', lines 51:0-53:1
     Visibility: public -/
 structure specs.mutable_borrows.Counter where
   count : Std.U32
+
+/-- Trait declaration: [hax_tests::specs::naming::Qux]
+    Source: 'src/specs/naming.rs', lines 31:0-33:1
+    Visibility: public -/
+structure specs.naming.Qux (Self : Type) where
+  lawful : Self → RustM Std.U32
+
+/-- [hax_tests::specs::naming::lawful_impl_binder::Wrap]
+    Source: 'src/specs/naming.rs', lines 54:4-54:26
+    Visibility: public -/
+@[reducible]
+def specs.naming.lawful_impl_binder.Wrap (T : Type) := T
+
+/-- Trait declaration: [hax_tests::specs::traits::assoc_type_bounds::Bar]
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 9:0-12:1 -/
+structure specs.traits.assoc_type_bounds.Bar (Self : Type) where
+  bar : Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::assoc_type_bounds::Container]
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 15:0-20:1 -/
+structure specs.traits.assoc_type_bounds.Container (Self : Type) (Self_Item :
+  Type) where
+  BarInst : specs.traits.assoc_type_bounds.Bar Self_Item
+  first : Self → RustM Self_Item
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::One]
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 22:0-24:1 -/
+structure specs.traits.assoc_type_bounds.One where
+  x : Std.U32
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::Box1]
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 40:0-40:18 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.Box1 (T : Type) := T
+
+/-- Trait declaration: [hax_tests::specs::traits::basic::Foo]
+    Source: 'src/specs/traits/basic.rs', lines 7:0-20:1 -/
+structure specs.traits.basic.Foo (Self : Type) where
+  f1 : Self → RustM Bool
+  f2 : Self → RustM Std.U64
+  make : Std.U32 → RustM Self
+  zero : RustM Self
+
+/-- Trait declaration: [hax_tests::specs::traits::blanket_impl::Show]
+    Source: 'src/specs/traits/blanket_impl.rs', lines 10:0-13:1 -/
+structure specs.traits.blanket_impl.Show (Self : Type) where
+  «show» : Self → RustM Std.U64
+
+/-- Trait declaration: [hax_tests::specs::traits::blanket_impl::Tag]
+    Source: 'src/specs/traits/blanket_impl.rs', lines 33:0-33:18 -/
+structure specs.traits.blanket_impl.Tag (Self : Type) where
+  ShowInst : specs.traits.blanket_impl.Show Self
+
+/-- Trait declaration: [hax_tests::specs::traits::builtin_bound::Dup]
+    Source: 'src/specs/traits/builtin_bound.rs', lines 17:0-20:1 -/
+structure specs.traits.builtin_bound.Dup (Self : Type) where
+  corecloneCloneInst : core.clone.Clone Self
+  dup : Self → RustM (Self × Self)
+
+/-- [hax_tests::specs::traits::builtin_bound::One]
+    Source: 'src/specs/traits/builtin_bound.rs', lines 29:0-29:11 -/
+@[reducible]
+def specs.traits.builtin_bound.One := Unit
+
+/-- [hax_tests::specs::traits::builtin_bound::W]
+    Source: 'src/specs/traits/builtin_bound.rs', lines 44:0-46:1 -/
+structure specs.traits.builtin_bound.W (T : Type) where
+  x : T
+
+/-- Trait declaration: [hax_tests::specs::traits::default_methods::D]
+    Source: 'src/specs/traits/default_methods.rs', lines 7:0-15:1 -/
+structure specs.traits.default_methods.D (Self : Type) where
+  base : Self → RustM Std.U32
+  next : Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::diamond::A]
+    Source: 'src/specs/traits/diamond.rs', lines 6:0-9:1 -/
+structure specs.traits.diamond.A (Self : Type) where
+  a : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_tests::specs::traits::diamond::B]
+    Source: 'src/specs/traits/diamond.rs', lines 11:0-13:1 -/
+structure specs.traits.diamond.B (Self : Type) where
+  AInst : specs.traits.diamond.A Self
+  b : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_tests::specs::traits::diamond::C]
+    Source: 'src/specs/traits/diamond.rs', lines 16:0-19:1 -/
+structure specs.traits.diamond.C (Self : Type) where
+  AInst : specs.traits.diamond.A Self
+  BInst : specs.traits.diamond.B Self
+  c : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_tests::specs::traits::generic_impl::Foo]
+    Source: 'src/specs/traits/generic_impl.rs', lines 9:0-12:1 -/
+structure specs.traits.generic_impl.Foo (Self : Type) where
+  f : Self → RustM Std.U64
+
+/-- Trait declaration: [hax_tests::specs::traits::generic_impl::Sub]
+    Source: 'src/specs/traits/generic_impl.rs', lines 15:0-18:1 -/
+structure specs.traits.generic_impl.Sub (Self : Type) where
+  FooInst : specs.traits.generic_impl.Foo Self
+  s : Self → RustM Std.U64
+
+/-- [hax_tests::specs::traits::generic_impl::Wrapper]
+    Source: 'src/specs/traits/generic_impl.rs', lines 20:0-22:1 -/
+structure specs.traits.generic_impl.Wrapper (T : Type) where
+  inner : T
+
+/-- [hax_tests::specs::traits::generic_impl::Single]
+    Source: 'src/specs/traits/generic_impl.rs', lines 48:0-48:20 -/
+@[reducible]
+def specs.traits.generic_impl.Single (T : Type) := T
+
+/-- Trait declaration: [hax_tests::specs::traits::impl_contract::Foo]
+    Source: 'src/specs/traits/impl_contract.rs', lines 8:0-10:1 -/
+structure specs.traits.impl_contract.Foo (Self : Type) where
+  f : Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::impl_contract::G]
+    Source: 'src/specs/traits/impl_contract.rs', lines 22:0-25:1 -/
+structure specs.traits.impl_contract.G (Self : Type) where
+  g : Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::method_generics::Bar]
+    Source: 'src/specs/traits/method_generics.rs', lines 6:0-9:1 -/
+structure specs.traits.method_generics.Bar (Self : Type) where
+  bar : Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::method_generics::Foo]
+    Source: 'src/specs/traits/method_generics.rs', lines 12:0-16:1 -/
+structure specs.traits.method_generics.Foo (Self : Type) where
+  f : forall {U : Type} (BarInst : specs.traits.method_generics.Bar U), Self
+    → U → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::minimal::Foo]
+    Source: 'src/specs/traits/minimal.rs', lines 7:0-16:1 -/
+structure specs.traits.minimal.Foo (Self : Type) where
+  f : Self → Std.U32 → RustM Std.U32
+  g : Self → RustM Std.U32
+  h : Self → Std.U32 → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::mut_self::Counter]
+    Source: 'src/specs/traits/mut_self.rs', lines 6:0-12:1 -/
+structure specs.traits.mut_self.Counter (Self : Type) where
+  get : Self → RustM Std.U32
+  incr : Self → RustM Self
+
+/-- Trait declaration: [hax_tests::specs::traits::supertraits::A]
+    Source: 'src/specs/traits/supertraits.rs', lines 7:0-10:1 -/
+structure specs.traits.supertraits.A (Self : Type) where
+  a : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_tests::specs::traits::supertraits::B]
+    Source: 'src/specs/traits/supertraits.rs', lines 13:0-17:1 -/
+structure specs.traits.supertraits.B (Self : Type) where
+  AInst : specs.traits.supertraits.A Self
+  b : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_tests::specs::traits::supertraits::Cc]
+    Source: 'src/specs/traits/supertraits.rs', lines 20:0-23:1 -/
+structure specs.traits.supertraits.Cc (Self : Type) where
+  BInst : specs.traits.supertraits.B Self
+  c : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Gen]
+    Source: 'src/specs/traits/synthesized.rs', lines 8:0-24:1 -/
+structure specs.traits.synthesized.Gen (Self : Type) where
+  pick : forall (U : Type), RustM (core.option.Option U)
+  id : forall {U : Type}, Self → U → RustM U
+  add : Self → Std.U32 → RustM (Std.U32 × Self)
+  arr : forall (N : Std.Usize), Self → RustM (Array Std.U32 N)
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Tg]
+    Source: 'src/specs/traits/synthesized.rs', lines 28:0-31:1 -/
+structure specs.traits.synthesized.Tg (Self : Type) (T : Type) where
+  get : Self → RustM T
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Assoc]
+    Source: 'src/specs/traits/synthesized.rs', lines 36:0-41:1 -/
+structure specs.traits.synthesized.Assoc (Self : Type) (Self_Item : Type) where
+  item : Self → RustM Self_Item
+
+/-- Trait declaration: [hax_tests::specs::traits::trait_generics::Conv]
+    Source: 'src/specs/traits/trait_generics.rs', lines 6:0-9:1 -/
+structure specs.traits.trait_generics.Conv (Self : Type) (T : Type) where
+  conv : Self → T → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::unannotated_sub::A]
+    Source: 'src/specs/traits/unannotated_sub.rs', lines 7:0-10:1 -/
+structure specs.traits.unannotated_sub.A (Self : Type) where
+  a : Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::unannotated_sub::B]
+    Source: 'src/specs/traits/unannotated_sub.rs', lines 12:0-14:1 -/
+structure specs.traits.unannotated_sub.B (Self : Type) where
+  AInst : specs.traits.unannotated_sub.A Self
+  b : Self → RustM Std.U32
 
 end hax_tests

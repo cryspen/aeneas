@@ -5,6 +5,7 @@ import CoreModels
 import Hax
 import HaxTests.Extraction.Types
 import HaxTests.Extraction.Funs
+import HaxTests.Assumptions.MissingCore
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
 open RustM ControlFlow Error
@@ -27,6 +28,979 @@ noncomputable section
 
 namespace hax_tests
 
+/-- Lawful structure of trait: [hax_tests::specs::arguments::Size]
+    Source: 'src/specs/arguments.rs', lines 5:0-7:1 -/
+structure specs.arguments.Size.Lawful (Self : Type) (SizeInst :
+  specs.arguments.Size Self) : Prop
+
+/-- Lawful structure of trait: [hax_tests::specs::generics::Val]
+    Source: 'src/specs/generics.rs', lines 16:0-18:1 -/
+structure specs.generics.Val.Lawful (Self : Type) (ValInst : specs.generics.Val
+  Self) : Prop
+
+/-- Lawful structure of trait: [hax_tests::specs::generics::Producer]
+    Source: 'src/specs/generics.rs', lines 55:0-58:1 -/
+structure specs.generics.Producer.Lawful (Self : Type) (Self_Out : Type)
+  (ProducerInst : specs.generics.Producer Self Self_Out) : Prop
+
+/-- Lawful structure of trait: [hax_tests::specs::naming::Qux]
+    Source: 'src/specs/naming.rs', lines 31:0-33:1 -/
+structure specs.naming.Qux.Lawful (Self : Type) (QuxInst : specs.naming.Qux
+  Self) : Prop
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::Bar::bar::pre]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 11:4-11:25 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.Bar.bar.pre
+  {Self_ : Type} (BarInst : specs.traits.assoc_type_bounds.Bar Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::Bar::bar::post]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 8:0-8:22 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.Bar.bar.post
+  {Self_ : Type} (BarInst : specs.traits.assoc_type_bounds.Bar Self_)
+  (self_ : Self_) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res < 10#u32)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::assoc_type_bounds::Bar]
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 9:0-12:1 -/
+structure specs.traits.assoc_type_bounds.Bar.Lawful (Self : Type) (BarInst :
+  specs.traits.assoc_type_bounds.Bar Self) : Prop where
+  bar_spec (self_ : Self) :
+    (specs.traits.assoc_type_bounds.Bar.bar.pre BarInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    BarInst.bar self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.assoc_type_bounds.Bar.bar.post BarInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::Container::first::pre]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 19:4-19:34 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.Container.first.pre
+  {Self_ : Type} {Clause0_Item : Type} (ContainerInst :
+  specs.traits.assoc_type_bounds.Container Self_ Clause0_Item) (self_ : Self_)
+  :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::Container::first::post]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 14:0-14:22 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.Container.first.post
+  {Self_ : Type} {Clause0_Item : Type} (ContainerInst :
+  specs.traits.assoc_type_bounds.Container Self_ Clause0_Item) (self_ : Self_)
+  (item : Clause0_Item) :
+  RustM Bool
+  := do
+  let i ← ContainerInst.BarInst.bar item
+  ok (i < 10#u32)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::assoc_type_bounds::Container]
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 15:0-20:1 -/
+structure specs.traits.assoc_type_bounds.Container.Lawful (Self : Type)
+  (Self_Item : Type) (ContainerInst : specs.traits.assoc_type_bounds.Container
+  Self Self_Item) : Prop where
+  BarInstLawful : specs.traits.assoc_type_bounds.Bar.Lawful Self_Item
+    ContainerInst.BarInst
+  first_spec (self_ : Self) :
+    (specs.traits.assoc_type_bounds.Container.first.pre ContainerInst
+    self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    ContainerInst.first self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.assoc_type_bounds.Container.first.post ContainerInst
+          self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::basic::Foo::f1::pre]:
+    Source: 'src/specs/traits/basic.rs', lines 9:4-9:25 -/
+@[reducible]
+def specs.traits.basic.Foo.f1.pre
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::basic::Foo::f1::post]:
+    Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.basic.Foo.f1.post
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (self_ : Self_)
+  (b : Bool) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::basic::Foo::f2::pre]:
+    Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.basic.Foo.f2.pre
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  FooInst.f1 self_
+
+/-- [hax_tests::specs::traits::basic::Foo::f2::post]:
+    Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.basic.Foo.f2.post
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (self_ : Self_)
+  (res : Std.U64) :
+  RustM Bool
+  := do
+  ok (res <= 10#u64)
+
+/-- [hax_tests::specs::traits::basic::Foo::make::pre]:
+    Source: 'src/specs/traits/basic.rs', lines 16:4-16:28 -/
+@[reducible]
+def specs.traits.basic.Foo.make.pre
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (x : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::basic::Foo::make::post]:
+    Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.basic.Foo.make.post
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (x : Std.U32)
+  (res : Self_) :
+  RustM Bool
+  := do
+  FooInst.f1 res
+
+/-- [hax_tests::specs::traits::basic::Foo::zero::pre]:
+    Source: 'src/specs/traits/basic.rs', lines 19:4-19:22 -/
+@[reducible]
+def specs.traits.basic.Foo.zero.pre
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) : RustM Bool := do
+  ok true
+
+/-- [hax_tests::specs::traits::basic::Foo::zero::post]:
+    Source: 'src/specs/traits/basic.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.basic.Foo.zero.post
+  {Self_ : Type} (FooInst : specs.traits.basic.Foo Self_) (res : Self_) :
+  RustM Bool
+  := do
+  FooInst.f1 res
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::basic::Foo]
+    Source: 'src/specs/traits/basic.rs', lines 7:0-20:1 -/
+structure specs.traits.basic.Foo.Lawful (Self : Type) (FooInst :
+  specs.traits.basic.Foo Self) : Prop where
+  f1_spec (self_ : Self) :
+    (specs.traits.basic.Foo.f1.pre FooInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.f1 self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.basic.Foo.f1.post FooInst self_ res).holds ⌝ ⦄
+  f2_spec (self_ : Self) :
+    (specs.traits.basic.Foo.f2.pre FooInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.f2 self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.basic.Foo.f2.post FooInst self_ res).holds ⌝ ⦄
+  make_spec (x : Std.U32) :
+    (specs.traits.basic.Foo.make.pre FooInst x).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.make x
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.basic.Foo.make.post FooInst x res).holds ⌝ ⦄
+  zero_spec :
+    (specs.traits.basic.Foo.zero.pre FooInst).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.zero
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.basic.Foo.zero.post FooInst res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::blanket_impl::Show::show::pre]:
+    Source: 'src/specs/traits/blanket_impl.rs', lines 12:4-12:26 -/
+@[reducible]
+def specs.traits.blanket_impl.Show.show.pre
+  {Self_ : Type} (ShowInst : specs.traits.blanket_impl.Show Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::blanket_impl::Show::show::post]:
+    Source: 'src/specs/traits/blanket_impl.rs', lines 9:0-9:22 -/
+@[reducible]
+def specs.traits.blanket_impl.Show.show.post
+  {Self_ : Type} (ShowInst : specs.traits.blanket_impl.Show Self_)
+  (self_ : Self_) (res : Std.U64) :
+  RustM Bool
+  := do
+  ok (res <= 20#u64)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::blanket_impl::Show]
+    Source: 'src/specs/traits/blanket_impl.rs', lines 10:0-13:1 -/
+structure specs.traits.blanket_impl.Show.Lawful (Self : Type) (ShowInst :
+  specs.traits.blanket_impl.Show Self) : Prop where
+  show_spec (self_ : Self) :
+    (specs.traits.blanket_impl.Show.show.pre ShowInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    ShowInst.«show» self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.blanket_impl.Show.show.post ShowInst self_ res).holds ⌝ ⦄
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::blanket_impl::Tag]
+    Source: 'src/specs/traits/blanket_impl.rs', lines 33:0-33:18 -/
+structure specs.traits.blanket_impl.Tag.Lawful (Self : Type) (TagInst :
+  specs.traits.blanket_impl.Tag Self) : Prop where
+  ShowInstLawful : specs.traits.blanket_impl.Show.Lawful Self TagInst.ShowInst
+
+/-- [hax_tests::specs::traits::builtin_bound::Dup::dup::pre]:
+    Source: 'src/specs/traits/builtin_bound.rs', lines 19:4-19:34 -/
+@[reducible]
+def specs.traits.builtin_bound.Dup.dup.pre
+  {Self_ : Type} (corecloneCloneInst : core.clone.Clone Self_) (DupInst :
+  specs.traits.builtin_bound.Dup Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::builtin_bound::Dup::dup::post]:
+    Source: 'src/specs/traits/builtin_bound.rs', lines 16:0-16:22 -/
+@[reducible]
+def specs.traits.builtin_bound.Dup.dup.post
+  {Self_ : Type} (corecloneCloneInst : core.clone.Clone Self_) (DupInst :
+  specs.traits.builtin_bound.Dup Self_) (self_ : Self_) (p : (Self_ × Self_))
+  :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::builtin_bound::Dup]
+    Source: 'src/specs/traits/builtin_bound.rs', lines 17:0-20:1 -/
+structure specs.traits.builtin_bound.Dup.Lawful (Self : Type) (DupInst :
+  specs.traits.builtin_bound.Dup Self) : Prop where
+  corecloneCloneInstLawful : core.clone.Clone.Lawful Self
+    DupInst.corecloneCloneInst
+  dup_spec (self_ : Self) :
+    (specs.traits.builtin_bound.Dup.dup.pre DupInst.corecloneCloneInst DupInst
+    self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    DupInst.dup self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.builtin_bound.Dup.dup.post DupInst.corecloneCloneInst
+          DupInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::default_methods::D::next::pre]:
+    Source: 'src/specs/traits/default_methods.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.default_methods.D.next.pre
+  {Self_ : Type} (DInst : specs.traits.default_methods.D Self_) (self_ : Self_)
+  :
+  RustM Bool
+  := do
+  let i ← DInst.base self_
+  ok (i < 100#u32)
+
+/-- [hax_tests::specs::traits::default_methods::D::next::post]:
+    Source: 'src/specs/traits/default_methods.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.default_methods.D.next.post
+  {Self_ : Type} (DInst : specs.traits.default_methods.D Self_) (self_ : Self_)
+  (res : Std.U32) :
+  RustM Bool
+  := do
+  let i ← DInst.base self_
+  ok (res > i)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::default_methods::D]
+    Source: 'src/specs/traits/default_methods.rs', lines 7:0-15:1 -/
+structure specs.traits.default_methods.D.Lawful (Self : Type) (DInst :
+  specs.traits.default_methods.D Self) : Prop where
+  next_spec (self_ : Self) :
+    (specs.traits.default_methods.D.next.pre DInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    DInst.next self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.default_methods.D.next.post DInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::diamond::A::a::pre]:
+    Source: 'src/specs/traits/diamond.rs', lines 8:4-8:25 -/
+@[reducible]
+def specs.traits.diamond.A.a.pre
+  {Self_ : Type} (AInst : specs.traits.diamond.A Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::diamond::A::a::post]:
+    Source: 'src/specs/traits/diamond.rs', lines 5:0-5:22 -/
+@[reducible]
+def specs.traits.diamond.A.a.post
+  {Self_ : Type} (AInst : specs.traits.diamond.A Self_) (self_ : Self_)
+  (res : Std.Usize) :
+  RustM Bool
+  := do
+  if res >= 1#usize
+  then ok (res <= 100#usize)
+  else ok false
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::diamond::A]
+    Source: 'src/specs/traits/diamond.rs', lines 6:0-9:1 -/
+structure specs.traits.diamond.A.Lawful (Self : Type) (AInst :
+  specs.traits.diamond.A Self) : Prop where
+  a_spec (self_ : Self) :
+    (specs.traits.diamond.A.a.pre AInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    AInst.a self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.diamond.A.a.post AInst self_ res).holds ⌝ ⦄
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::diamond::B]
+    Source: 'src/specs/traits/diamond.rs', lines 11:0-13:1 -/
+structure specs.traits.diamond.B.Lawful (Self : Type) (BInst :
+  specs.traits.diamond.B Self) : Prop where
+  AInstLawful : specs.traits.diamond.A.Lawful Self BInst.AInst
+
+/-- [hax_tests::specs::traits::diamond::C::c::pre]:
+    Source: 'src/specs/traits/diamond.rs', lines 18:4-18:25 -/
+@[reducible]
+def specs.traits.diamond.C.c.pre
+  {Self_ : Type} (AInst : specs.traits.diamond.A Self_) (BInst :
+  specs.traits.diamond.B Self_) (CInst : specs.traits.diamond.C Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::diamond::C::c::post]:
+    Source: 'src/specs/traits/diamond.rs', lines 15:0-15:22 -/
+@[reducible]
+def specs.traits.diamond.C.c.post
+  {Self_ : Type} (AInst : specs.traits.diamond.A Self_) (BInst :
+  specs.traits.diamond.B Self_) (CInst : specs.traits.diamond.C Self_)
+  (self_ : Self_) (res : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← AInst.a self_
+  ok (res = i)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::diamond::C]
+    Source: 'src/specs/traits/diamond.rs', lines 16:0-19:1 -/
+structure specs.traits.diamond.C.Lawful (Self : Type) (CInst :
+  specs.traits.diamond.C Self) : Prop where
+  AInstLawful : specs.traits.diamond.A.Lawful Self CInst.AInst
+  BInstLawful : specs.traits.diamond.B.Lawful Self CInst.BInst
+  c_spec (self_ : Self) :
+    (specs.traits.diamond.C.c.pre CInst.AInst CInst.BInst CInst self_).holds
+    →
+    ⦃ ⌜ True ⌝ ⦄
+    CInst.c self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.diamond.C.c.post CInst.AInst CInst.BInst CInst self_
+          res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::generic_impl::Foo::f::pre]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 11:4-11:23 -/
+@[reducible]
+def specs.traits.generic_impl.Foo.f.pre
+  {Self_ : Type} (FooInst : specs.traits.generic_impl.Foo Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::generic_impl::Foo::f::post]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 8:0-8:22 -/
+@[reducible]
+def specs.traits.generic_impl.Foo.f.post
+  {Self_ : Type} (FooInst : specs.traits.generic_impl.Foo Self_)
+  (self_ : Self_) (res : Std.U64) :
+  RustM Bool
+  := do
+  ok (res <= 10#u64)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::generic_impl::Foo]
+    Source: 'src/specs/traits/generic_impl.rs', lines 9:0-12:1 -/
+structure specs.traits.generic_impl.Foo.Lawful (Self : Type) (FooInst :
+  specs.traits.generic_impl.Foo Self) : Prop where
+  f_spec (self_ : Self) :
+    (specs.traits.generic_impl.Foo.f.pre FooInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.f self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.generic_impl.Foo.f.post FooInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::generic_impl::Sub::s::pre]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 17:4-17:23 -/
+@[reducible]
+def specs.traits.generic_impl.Sub.s.pre
+  {Self_ : Type} (FooInst : specs.traits.generic_impl.Foo Self_) (SubInst :
+  specs.traits.generic_impl.Sub Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::generic_impl::Sub::s::post]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 14:0-14:22 -/
+@[reducible]
+def specs.traits.generic_impl.Sub.s.post
+  {Self_ : Type} (FooInst : specs.traits.generic_impl.Foo Self_) (SubInst :
+  specs.traits.generic_impl.Sub Self_) (self_ : Self_) (res : Std.U64) :
+  RustM Bool
+  := do
+  let i ← FooInst.f self_
+  ok (res = i)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::generic_impl::Sub]
+    Source: 'src/specs/traits/generic_impl.rs', lines 15:0-18:1 -/
+structure specs.traits.generic_impl.Sub.Lawful (Self : Type) (SubInst :
+  specs.traits.generic_impl.Sub Self) : Prop where
+  FooInstLawful : specs.traits.generic_impl.Foo.Lawful Self SubInst.FooInst
+  s_spec (self_ : Self) :
+    (specs.traits.generic_impl.Sub.s.pre SubInst.FooInst SubInst self_).holds
+    →
+    ⦃ ⌜ True ⌝ ⦄
+    SubInst.s self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.generic_impl.Sub.s.post SubInst.FooInst SubInst self_
+          res).holds ⌝ ⦄
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::impl_contract::Foo]
+    Source: 'src/specs/traits/impl_contract.rs', lines 8:0-10:1 -/
+structure specs.traits.impl_contract.Foo.Lawful (Self : Type) (FooInst :
+  specs.traits.impl_contract.Foo Self) : Prop
+
+/-- [hax_tests::specs::traits::impl_contract::G::g::pre]:
+    Source: 'src/specs/traits/impl_contract.rs', lines 24:4-24:23 -/
+@[reducible]
+def specs.traits.impl_contract.G.g.pre
+  {Self_ : Type} (GInst : specs.traits.impl_contract.G Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::impl_contract::G::g::post]:
+    Source: 'src/specs/traits/impl_contract.rs', lines 21:0-21:22 -/
+@[reducible]
+def specs.traits.impl_contract.G.g.post
+  {Self_ : Type} (GInst : specs.traits.impl_contract.G Self_) (self_ : Self_)
+  (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res > 0#u32)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::impl_contract::G]
+    Source: 'src/specs/traits/impl_contract.rs', lines 22:0-25:1 -/
+structure specs.traits.impl_contract.G.Lawful (Self : Type) (GInst :
+  specs.traits.impl_contract.G Self) : Prop where
+  g_spec (self_ : Self) :
+    (specs.traits.impl_contract.G.g.pre GInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    GInst.g self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.impl_contract.G.g.post GInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::method_generics::Bar::bar::pre]:
+    Source: 'src/specs/traits/method_generics.rs', lines 8:4-8:25 -/
+@[reducible]
+def specs.traits.method_generics.Bar.bar.pre
+  {Self_ : Type} (BarInst : specs.traits.method_generics.Bar Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::method_generics::Bar::bar::post]:
+    Source: 'src/specs/traits/method_generics.rs', lines 5:0-5:22 -/
+@[reducible]
+def specs.traits.method_generics.Bar.bar.post
+  {Self_ : Type} (BarInst : specs.traits.method_generics.Bar Self_)
+  (self_ : Self_) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res < 10#u32)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::method_generics::Bar]
+    Source: 'src/specs/traits/method_generics.rs', lines 6:0-9:1 -/
+structure specs.traits.method_generics.Bar.Lawful (Self : Type) (BarInst :
+  specs.traits.method_generics.Bar Self) : Prop where
+  bar_spec (self_ : Self) :
+    (specs.traits.method_generics.Bar.bar.pre BarInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    BarInst.bar self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.method_generics.Bar.bar.post BarInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::method_generics::Foo::f::pre]:
+    Source: 'src/specs/traits/method_generics.rs', lines 11:0-11:22 -/
+@[reducible]
+def specs.traits.method_generics.Foo.f.pre
+  {Self_ : Type} {U : Type} (BarInst : specs.traits.method_generics.Bar U)
+  (FooInst : specs.traits.method_generics.Foo Self_) (self_ : Self_) 
+  (u : U) :
+  RustM Bool
+  := do
+  let i ← BarInst.bar u
+  ok (i < 5#u32)
+
+/-- [hax_tests::specs::traits::method_generics::Foo::f::post]:
+    Source: 'src/specs/traits/method_generics.rs', lines 11:0-11:22 -/
+@[reducible]
+def specs.traits.method_generics.Foo.f.post
+  {Self_ : Type} {U : Type} (BarInst : specs.traits.method_generics.Bar U)
+  (FooInst : specs.traits.method_generics.Foo Self_) (self_ : Self_) 
+  (u : U) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res < 5#u32)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::method_generics::Foo]
+    Source: 'src/specs/traits/method_generics.rs', lines 12:0-16:1 -/
+structure specs.traits.method_generics.Foo.Lawful (Self : Type) (FooInst :
+  specs.traits.method_generics.Foo Self) : Prop where
+  f_spec {U : Type} (BarInst : specs.traits.method_generics.Bar U)
+    (BarInstLawful : specs.traits.method_generics.Bar.Lawful U BarInst)
+    (self_ : Self) (u : U) :
+    (specs.traits.method_generics.Foo.f.pre BarInst FooInst self_ u).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.f BarInst self_ u
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.method_generics.Foo.f.post BarInst FooInst self_ u
+          res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::minimal::Foo::f::pre]:
+    Source: 'src/specs/traits/minimal.rs', lines 6:0-6:13 -/
+@[reducible]
+def specs.traits.minimal.Foo.f.pre
+  {Self_ : Type} (FooInst : specs.traits.minimal.Foo Self_) (self_ : Self_)
+  (x : Std.U32) :
+  RustM Bool
+  := do
+  ok (x < 100#u32)
+
+/-- [hax_tests::specs::traits::minimal::Foo::f::post]:
+    Source: 'src/specs/traits/minimal.rs', lines 6:0-6:13 -/
+@[reducible]
+def specs.traits.minimal.Foo.f.post
+  {Self_ : Type} (FooInst : specs.traits.minimal.Foo Self_) (self_ : Self_)
+  (x : Std.U32) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res > x)
+
+/-- [hax_tests::specs::traits::minimal::Foo::h::pre]:
+    Source: 'src/specs/traits/minimal.rs', lines 6:0-6:13 -/
+@[reducible]
+def specs.traits.minimal.Foo.h.pre
+  {Self_ : Type} (FooInst : specs.traits.minimal.Foo Self_) (self_ : Self_)
+  (x : Std.U32) :
+  RustM Bool
+  := do
+  ok (x > 0#u32)
+
+/-- [hax_tests::specs::traits::minimal::Foo::h::post]:
+    Source: 'src/specs/traits/minimal.rs', lines 15:4-15:31 -/
+@[reducible]
+def specs.traits.minimal.Foo.h.post
+  {Self_ : Type} (FooInst : specs.traits.minimal.Foo Self_) (self_ : Self_)
+  (x : Std.U32) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::minimal::Foo]
+    Source: 'src/specs/traits/minimal.rs', lines 7:0-16:1 -/
+structure specs.traits.minimal.Foo.Lawful (Self : Type) (FooInst :
+  specs.traits.minimal.Foo Self) : Prop where
+  f_spec (self_ : Self) (x : Std.U32) :
+    (specs.traits.minimal.Foo.f.pre FooInst self_ x).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.f self_ x
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.minimal.Foo.f.post FooInst self_ x res).holds ⌝ ⦄
+  h_spec (self_ : Self) (x : Std.U32) :
+    (specs.traits.minimal.Foo.h.pre FooInst self_ x).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    FooInst.h self_ x
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.minimal.Foo.h.post FooInst self_ x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::mut_self::Counter::incr::pre]:
+    Source: 'src/specs/traits/mut_self.rs', lines 5:0-5:22 -/
+@[reducible]
+def specs.traits.mut_self.Counter.incr.pre
+  {Self_ : Type} (CounterInst : specs.traits.mut_self.Counter Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  let i ← CounterInst.get self_
+  ok (i < 100#u32)
+
+/-- [hax_tests::specs::traits::mut_self::Counter::incr::post]:
+    Source: 'src/specs/traits/mut_self.rs', lines 5:0-5:22 -/
+@[reducible]
+def specs.traits.mut_self.Counter.incr.post
+  {Self_ : Type} (CounterInst : specs.traits.mut_self.Counter Self_)
+  (self_ : Self_) (self__future : Self_) :
+  RustM Bool
+  := do
+  let i ← CounterInst.get self__future
+  let i1 ← CounterInst.get self_
+  let i2 ← i1 + 1#u32
+  ok (i = i2)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::mut_self::Counter]
+    Source: 'src/specs/traits/mut_self.rs', lines 6:0-12:1 -/
+structure specs.traits.mut_self.Counter.Lawful (Self : Type) (CounterInst :
+  specs.traits.mut_self.Counter Self) : Prop where
+  incr_spec (self_ : Self) :
+    (specs.traits.mut_self.Counter.incr.pre CounterInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    CounterInst.incr self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.mut_self.Counter.incr.post CounterInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::supertraits::A::a::pre]:
+    Source: 'src/specs/traits/supertraits.rs', lines 9:4-9:25 -/
+@[reducible]
+def specs.traits.supertraits.A.a.pre
+  {Self_ : Type} (AInst : specs.traits.supertraits.A Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::supertraits::A::a::post]:
+    Source: 'src/specs/traits/supertraits.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.supertraits.A.a.post
+  {Self_ : Type} (AInst : specs.traits.supertraits.A Self_) (self_ : Self_)
+  (res : Std.Usize) :
+  RustM Bool
+  := do
+  ok (res >= 1#usize)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::supertraits::A]
+    Source: 'src/specs/traits/supertraits.rs', lines 7:0-10:1 -/
+structure specs.traits.supertraits.A.Lawful (Self : Type) (AInst :
+  specs.traits.supertraits.A Self) : Prop where
+  a_spec (self_ : Self) :
+    (specs.traits.supertraits.A.a.pre AInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    AInst.a self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.supertraits.A.a.post AInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::supertraits::B::b::pre]:
+    Source: 'src/specs/traits/supertraits.rs', lines 12:0-12:22 -/
+@[reducible]
+def specs.traits.supertraits.B.b.pre
+  {Self_ : Type} (AInst : specs.traits.supertraits.A Self_) (BInst :
+  specs.traits.supertraits.B Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  let i ← AInst.a self_
+  ok (i < 100#usize)
+
+/-- [hax_tests::specs::traits::supertraits::B::b::post]:
+    Source: 'src/specs/traits/supertraits.rs', lines 12:0-12:22 -/
+@[reducible]
+def specs.traits.supertraits.B.b.post
+  {Self_ : Type} (AInst : specs.traits.supertraits.A Self_) (BInst :
+  specs.traits.supertraits.B Self_) (self_ : Self_) (res : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← AInst.a self_
+  ok (res > i)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::supertraits::B]
+    Source: 'src/specs/traits/supertraits.rs', lines 13:0-17:1 -/
+structure specs.traits.supertraits.B.Lawful (Self : Type) (BInst :
+  specs.traits.supertraits.B Self) : Prop where
+  AInstLawful : specs.traits.supertraits.A.Lawful Self BInst.AInst
+  b_spec (self_ : Self) :
+    (specs.traits.supertraits.B.b.pre BInst.AInst BInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    BInst.b self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.supertraits.B.b.post BInst.AInst BInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::supertraits::Cc::c::pre]:
+    Source: 'src/specs/traits/supertraits.rs', lines 22:4-22:25 -/
+@[reducible]
+def specs.traits.supertraits.Cc.c.pre
+  {Self_ : Type} (BInst : specs.traits.supertraits.B Self_) (CcInst :
+  specs.traits.supertraits.Cc Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::supertraits::Cc::c::post]:
+    Source: 'src/specs/traits/supertraits.rs', lines 19:0-19:22 -/
+@[reducible]
+def specs.traits.supertraits.Cc.c.post
+  {Self_ : Type} (BInst : specs.traits.supertraits.B Self_) (CcInst :
+  specs.traits.supertraits.Cc Self_) (self_ : Self_) (res : Std.Usize) :
+  RustM Bool
+  := do
+  let i ← BInst.AInst.a self_
+  ok (res > i)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::supertraits::Cc]
+    Source: 'src/specs/traits/supertraits.rs', lines 20:0-23:1 -/
+structure specs.traits.supertraits.Cc.Lawful (Self : Type) (CcInst :
+  specs.traits.supertraits.Cc Self) : Prop where
+  BInstLawful : specs.traits.supertraits.B.Lawful Self CcInst.BInst
+  c_spec (self_ : Self) :
+    (specs.traits.supertraits.Cc.c.pre CcInst.BInst CcInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    CcInst.c self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.supertraits.Cc.c.post CcInst.BInst CcInst self_
+          res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::synthesized::Gen::pick::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 11:4-11:30 -/
+@[reducible]
+def specs.traits.synthesized.Gen.pick.pre
+  {Self_ : Type} (U : Type) (GenInst : specs.traits.synthesized.Gen Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::pick::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.pick.post
+  {Self_ : Type} {U : Type} (GenInst : specs.traits.synthesized.Gen Self_)
+  (o : core.option.Option U) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::id::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.id.pre
+  {Self_ : Type} {U : Type} (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) (u : U) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::id::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 15:4-15:31 -/
+@[reducible]
+def specs.traits.synthesized.Gen.id.post
+  {Self_ : Type} {U : Type} (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) (u : U) (res : U) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::add::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.add.pre
+  {Self_ : Type} (GenInst : specs.traits.synthesized.Gen Self_) (self_ : Self_)
+  (x : Std.U32) :
+  RustM Bool
+  := do
+  ok (x < 100#u32)
+
+/-- [hax_tests::specs::traits::synthesized::Gen::add::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 19:4-19:37 -/
+@[reducible]
+def specs.traits.synthesized.Gen.add.post
+  {Self_ : Type} (GenInst : specs.traits.synthesized.Gen Self_) (self_ : Self_)
+  (x : Std.U32) (res : (Std.U32 × Self_)) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::arr::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 7:0-7:22 -/
+@[reducible]
+def specs.traits.synthesized.Gen.arr.pre
+  {Self_ : Type} (N : Std.Usize) (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Gen::arr::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 23:4-23:46 -/
+@[reducible]
+def specs.traits.synthesized.Gen.arr.post
+  {Self_ : Type} {N : Std.Usize} (GenInst : specs.traits.synthesized.Gen Self_)
+  (self_ : Self_) (res : Array Std.U32 N) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Gen]
+    Source: 'src/specs/traits/synthesized.rs', lines 8:0-24:1 -/
+structure specs.traits.synthesized.Gen.Lawful (Self : Type) (GenInst :
+  specs.traits.synthesized.Gen Self) : Prop where
+  pick_spec (U : Type) :
+    (specs.traits.synthesized.Gen.pick.pre U GenInst).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    GenInst.pick U
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Gen.pick.post GenInst res).holds ⌝ ⦄
+  id_spec {U : Type} (self_ : Self) (u : U) :
+    (specs.traits.synthesized.Gen.id.pre GenInst self_ u).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    GenInst.id self_ u
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Gen.id.post GenInst self_ u res).holds ⌝ ⦄
+  add_spec (self_ : Self) (x : Std.U32) :
+    (specs.traits.synthesized.Gen.add.pre GenInst self_ x).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    GenInst.add self_ x
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Gen.add.post GenInst self_ x res).holds ⌝ ⦄
+  arr_spec (N : Std.Usize) (self_ : Self) :
+    (specs.traits.synthesized.Gen.arr.pre N GenInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    GenInst.arr N self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Gen.arr.post GenInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::synthesized::Tg::get::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 27:0-27:22 -/
+@[reducible]
+def specs.traits.synthesized.Tg.get.pre
+  {Self_ : Type} {T : Type} (TgInst : specs.traits.synthesized.Tg Self_ T)
+  (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Tg::get::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 30:4-30:23 -/
+@[reducible]
+def specs.traits.synthesized.Tg.get.post
+  {Self_ : Type} {T : Type} (TgInst : specs.traits.synthesized.Tg Self_ T)
+  (self_ : Self_) (res : T) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Tg]
+    Source: 'src/specs/traits/synthesized.rs', lines 28:0-31:1 -/
+structure specs.traits.synthesized.Tg.Lawful (Self : Type) (T : Type) (TgInst :
+  specs.traits.synthesized.Tg Self T) : Prop where
+  get_spec (self_ : Self) :
+    (specs.traits.synthesized.Tg.get.pre TgInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    TgInst.get self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Tg.get.post TgInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::synthesized::Assoc::item::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 35:0-35:22 -/
+@[reducible]
+def specs.traits.synthesized.Assoc.item.pre
+  {Self_ : Type} {Clause0_Item : Type} (AssocInst :
+  specs.traits.synthesized.Assoc Self_ Clause0_Item) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Assoc::item::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 40:4-40:33 -/
+@[reducible]
+def specs.traits.synthesized.Assoc.item.post
+  {Self_ : Type} {Clause0_Item : Type} (AssocInst :
+  specs.traits.synthesized.Assoc Self_ Clause0_Item) (self_ : Self_)
+  (res : Clause0_Item) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Assoc]
+    Source: 'src/specs/traits/synthesized.rs', lines 36:0-41:1 -/
+structure specs.traits.synthesized.Assoc.Lawful (Self : Type) (Self_Item :
+  Type) (AssocInst : specs.traits.synthesized.Assoc Self Self_Item) : Prop
+  where
+  item_spec (self_ : Self) :
+    (specs.traits.synthesized.Assoc.item.pre AssocInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    AssocInst.item self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Assoc.item.post AssocInst self_ res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::trait_generics::Conv::conv::pre]:
+    Source: 'src/specs/traits/trait_generics.rs', lines 8:4-8:32 -/
+@[reducible]
+def specs.traits.trait_generics.Conv.conv.pre
+  {Self_ : Type} {T : Type} (ConvInst : specs.traits.trait_generics.Conv Self_
+  T) (self_ : Self_) (t : T) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::trait_generics::Conv::conv::post]:
+    Source: 'src/specs/traits/trait_generics.rs', lines 5:0-5:22 -/
+@[reducible]
+def specs.traits.trait_generics.Conv.conv.post
+  {Self_ : Type} {T : Type} (ConvInst : specs.traits.trait_generics.Conv Self_
+  T) (self_ : Self_) (t : T) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res < 10#u32)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::trait_generics::Conv]
+    Source: 'src/specs/traits/trait_generics.rs', lines 6:0-9:1 -/
+structure specs.traits.trait_generics.Conv.Lawful (Self : Type) (T : Type)
+  (ConvInst : specs.traits.trait_generics.Conv Self T) : Prop where
+  conv_spec (self_ : Self) (t : T) :
+    (specs.traits.trait_generics.Conv.conv.pre ConvInst self_ t).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    ConvInst.conv self_ t
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.trait_generics.Conv.conv.post ConvInst self_ t
+          res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::unannotated_sub::A::a::pre]:
+    Source: 'src/specs/traits/unannotated_sub.rs', lines 9:4-9:23 -/
+@[reducible]
+def specs.traits.unannotated_sub.A.a.pre
+  {Self_ : Type} (AInst : specs.traits.unannotated_sub.A Self_) (self_ : Self_)
+  :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::unannotated_sub::A::a::post]:
+    Source: 'src/specs/traits/unannotated_sub.rs', lines 6:0-6:22 -/
+@[reducible]
+def specs.traits.unannotated_sub.A.a.post
+  {Self_ : Type} (AInst : specs.traits.unannotated_sub.A Self_) (self_ : Self_)
+  (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res > 0#u32)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::unannotated_sub::A]
+    Source: 'src/specs/traits/unannotated_sub.rs', lines 7:0-10:1 -/
+structure specs.traits.unannotated_sub.A.Lawful (Self : Type) (AInst :
+  specs.traits.unannotated_sub.A Self) : Prop where
+  a_spec (self_ : Self) :
+    (specs.traits.unannotated_sub.A.a.pre AInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    AInst.a self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.unannotated_sub.A.a.post AInst self_ res).holds ⌝ ⦄
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::unannotated_sub::B]
+    Source: 'src/specs/traits/unannotated_sub.rs', lines 12:0-14:1 -/
+structure specs.traits.unannotated_sub.B.Lawful (Self : Type) (BInst :
+  specs.traits.unannotated_sub.B Self) : Prop where
+  AInstLawful : specs.traits.unannotated_sub.A.Lawful Self BInst.AInst
 
 /-- [hax_tests::specs::contracts::only_requires::pre]:
     Source: 'src/specs/contracts.rs', lines 3:0-3:20 -/
@@ -40,7 +1014,6 @@ def specs.contracts.only_requires.spec (x : Std.U32) : Prop :=
   specs.contracts.only_requires x
   ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::only_ensures::post]:
     Source: 'src/specs/contracts.rs', lines 8:0-8:32 -/
 @[reducible]
@@ -52,7 +1025,6 @@ def specs.contracts.only_ensures.spec (x : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.contracts.only_ensures x
   ⦃ ⇓ res => ⌜ (specs.contracts.only_ensures.post x res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::contracts::both::pre]:
     Source: 'src/specs/contracts.rs', lines 13:0-13:19 -/
@@ -73,7 +1045,6 @@ def specs.contracts.both.spec (x : Std.U32) : Prop :=
   specs.contracts.both x
   ⦃ ⇓ res => ⌜ (specs.contracts.both.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::returns_unit::pre]:
     Source: 'src/specs/contracts.rs', lines 20:0-20:19 -/
 @[reducible]
@@ -93,7 +1064,6 @@ def specs.contracts.returns_unit.spec (x : Std.U32) : Prop :=
   specs.contracts.returns_unit x
   ⦃ ⇓ res => ⌜ (specs.contracts.returns_unit.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::no_args::post]:
     Source: 'src/specs/contracts.rs', lines 25:0-25:20 -/
 @[reducible]
@@ -105,9 +1075,25 @@ def specs.contracts.no_args.spec : Prop :=
   specs.contracts.no_args
   ⦃ ⇓ res => ⌜ (specs.contracts.no_args.post res).holds ⌝ ⦄
 
+/-- [hax_tests::specs::contracts::zero_ret::pre]:
+    Source: 'src/specs/contracts.rs', lines 33:0-33:17 -/
+@[reducible] def specs.contracts.zero_ret.pre : RustM Bool := do
+               ok true
+
+/-- [hax_tests::specs::contracts::zero_ret::post]:
+    Source: 'src/specs/contracts.rs', lines 34:0-34:22 -/
+@[reducible]
+def specs.contracts.zero_ret.post (r : Std.U32) : RustM Bool := do
+  ok (r = 0#u32)
+
+def specs.contracts.zero_ret.spec : Prop :=
+  (specs.contracts.zero_ret.pre).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.contracts.zero_ret
+  ⦃ ⇓ res => ⌜ (specs.contracts.zero_ret.post res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::contracts::block_in_requires::pre]:
-    Source: 'src/specs/contracts.rs', lines 32:0-32:42 -/
+    Source: 'src/specs/contracts.rs', lines 40:0-40:42 -/
 @[reducible]
 def specs.contracts.block_in_requires.pre (x : Std.U32) : RustM Bool := do
   ok (x > 10#u32)
@@ -118,9 +1104,8 @@ def specs.contracts.block_in_requires.spec (x : Std.U32) : Prop :=
   specs.contracts.block_in_requires x
   ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::returns_pair::post]:
-    Source: 'src/specs/contracts.rs', lines 38:0-38:37 -/
+    Source: 'src/specs/contracts.rs', lines 46:0-46:37 -/
 @[reducible]
 def specs.contracts.returns_pair.post
   (x : Std.U32) (p : (Std.U32 × Std.U32)) : RustM Bool := do
@@ -134,9 +1119,8 @@ def specs.contracts.returns_pair.spec (x : Std.U32) : Prop :=
   specs.contracts.returns_pair x
   ⦃ ⇓ res => ⌜ (specs.contracts.returns_pair.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::returns_option::post]:
-    Source: 'src/specs/contracts.rs', lines 44:0-44:70 -/
+    Source: 'src/specs/contracts.rs', lines 52:0-52:70 -/
 @[reducible]
 def specs.contracts.returns_option.post
   (x : Std.U32) (result : core.option.Option Std.U32) : RustM Bool := do
@@ -149,15 +1133,14 @@ def specs.contracts.returns_option.spec (x : Std.U32) : Prop :=
   specs.contracts.returns_option x
   ⦃ ⇓ res => ⌜ (specs.contracts.returns_option.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::returns_result::pre]:
-    Source: 'src/specs/contracts.rs', lines 50:0-50:20 -/
+    Source: 'src/specs/contracts.rs', lines 58:0-58:20 -/
 @[reducible]
 def specs.contracts.returns_result.pre (x : Std.U32) : RustM Bool := do
   ok (x < 100#u32)
 
 /-- [hax_tests::specs::contracts::returns_result::post]:
-    Source: 'src/specs/contracts.rs', lines 51:0-51:74 -/
+    Source: 'src/specs/contracts.rs', lines 59:0-59:74 -/
 @[reducible]
 def specs.contracts.returns_result.post
   (x : Std.U32) (result : core.result.Result Std.U32 Unit) : RustM Bool := do
@@ -172,16 +1155,15 @@ def specs.contracts.returns_result.spec (x : Std.U32) : Prop :=
   specs.contracts.returns_result x
   ⦃ ⇓ res => ⌜ (specs.contracts.returns_result.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::may_panic::pre]:
-    Source: 'src/specs/contracts.rs', lines 57:0-57:19 -/
+    Source: 'src/specs/contracts.rs', lines 65:0-65:19 -/
 @[reducible]
 def specs.contracts.may_panic.pre
   (x : Std.U32) (y : Std.U32) : RustM Bool := do
   ok (y != 0#u32)
 
 /-- [hax_tests::specs::contracts::may_panic::post]:
-    Source: 'src/specs/contracts.rs', lines 58:0-58:32 -/
+    Source: 'src/specs/contracts.rs', lines 66:0-66:32 -/
 @[reducible]
 def specs.contracts.may_panic.post
   (x : Std.U32) (y : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -193,15 +1175,14 @@ def specs.contracts.may_panic.spec (x : Std.U32) (y : Std.U32) : Prop :=
   specs.contracts.may_panic x y
   ⦃ ⇓ res => ⌜ (specs.contracts.may_panic.post x y res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::explicit_panic::pre]:
-    Source: 'src/specs/contracts.rs', lines 64:0-64:19 -/
+    Source: 'src/specs/contracts.rs', lines 72:0-72:19 -/
 @[reducible]
 def specs.contracts.explicit_panic.pre (x : Std.U32) : RustM Bool := do
   ok (x < 10#u32)
 
 /-- [hax_tests::specs::contracts::explicit_panic::post]:
-    Source: 'src/specs/contracts.rs', lines 65:0-65:32 -/
+    Source: 'src/specs/contracts.rs', lines 73:0-73:32 -/
 @[reducible]
 def specs.contracts.explicit_panic.post
   (x : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -213,9 +1194,8 @@ def specs.contracts.explicit_panic.spec (x : Std.U32) : Prop :=
   specs.contracts.explicit_panic x
   ⦃ ⇓ res => ⌜ (specs.contracts.explicit_panic.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::implies_cond::pre]:
-    Source: 'src/specs/contracts.rs', lines 74:0-74:37 -/
+    Source: 'src/specs/contracts.rs', lines 82:0-82:37 -/
 @[reducible]
 def specs.contracts.implies_cond.pre
   (x : Std.U32) (y : Std.U32) : RustM hax_lib.prop.Prop := do
@@ -224,7 +1204,7 @@ def specs.contracts.implies_cond.pre
     hax_lib.prop.Prop.Insts.CoreConvertFromBool) (x >= 10#u32) (y = 0#u32)
 
 /-- [hax_tests::specs::contracts::implies_cond::post]:
-    Source: 'src/specs/contracts.rs', lines 75:0-75:50 -/
+    Source: 'src/specs/contracts.rs', lines 83:0-83:50 -/
 @[reducible]
 def specs.contracts.implies_cond.post
   (x : Std.U32) (y : Std.U32) (result : Std.U32) :
@@ -240,24 +1220,23 @@ def specs.contracts.implies_cond.spec (x : Std.U32) (y : Std.U32) : Prop :=
   specs.contracts.implies_cond x y
   ⦃ ⇓ res => ⌜ (specs.contracts.implies_cond.post x y res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::quantifiers::pre]:
-    Source: 'src/specs/contracts.rs', lines 85:0-85:53 -/
+    Source: 'src/specs/contracts.rs', lines 93:0-93:53 -/
 @[reducible]
 def specs.contracts.quantifiers.pre
   (x : Std.U32) : RustM hax_lib.prop.Prop := do
   hax_lib.prop.forall (core.convert.Into.Blanket (core.convert.From.Blanket
     hax_lib.prop.Prop))
-    specs.contracts.__18.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop x
+    specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop x
 
 /-- [hax_tests::specs::contracts::quantifiers::post]:
-    Source: 'src/specs/contracts.rs', lines 86:0-86:49 -/
+    Source: 'src/specs/contracts.rs', lines 94:0-94:49 -/
 @[reducible]
 def specs.contracts.quantifiers.post
   (x : Std.U32) (result : Std.U32) : RustM hax_lib.prop.Prop := do
   hax_lib.prop.exists (core.convert.Into.Blanket
     hax_lib.prop.Prop.Insts.CoreConvertFromBool)
-    specs.contracts.__19.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool
+    specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool
     result
 
 def specs.contracts.quantifiers.spec (x : Std.U32) : Prop :=
@@ -266,9 +1245,8 @@ def specs.contracts.quantifiers.spec (x : Std.U32) : Prop :=
   specs.contracts.quantifiers x
   ⦃ ⇓ res => ⌜ (specs.contracts.quantifiers.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::int_bounds::pre]:
-    Source: 'src/specs/contracts.rs', lines 93:0-93:57 -/
+    Source: 'src/specs/contracts.rs', lines 101:0-101:57 -/
 @[reducible]
 def specs.contracts.int_bounds.pre
   (x : Std.U32) (y : Std.U32) : RustM Bool := do
@@ -280,7 +1258,7 @@ def specs.contracts.int_bounds.pre
     i3
 
 /-- [hax_tests::specs::contracts::int_bounds::post]:
-    Source: 'src/specs/contracts.rs', lines 94:0-94:63 -/
+    Source: 'src/specs/contracts.rs', lines 102:0-102:63 -/
 @[reducible]
 def specs.contracts.int_bounds.post
   (x : Std.U32) (y : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -296,15 +1274,14 @@ def specs.contracts.int_bounds.spec (x : Std.U32) (y : Std.U32) : Prop :=
   specs.contracts.int_bounds x y
   ⦃ ⇓ res => ⌜ (specs.contracts.int_bounds.post x y res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::helper_in_requires::pre]:
-    Source: 'src/specs/contracts.rs', lines 104:0-104:24 -/
+    Source: 'src/specs/contracts.rs', lines 112:0-112:24 -/
 @[reducible]
 def specs.contracts.helper_in_requires.pre (x : Std.U32) : RustM Bool := do
   specs.contracts.is_small x
 
 /-- [hax_tests::specs::contracts::helper_in_requires::post]:
-    Source: 'src/specs/contracts.rs', lines 105:0-105:36 -/
+    Source: 'src/specs/contracts.rs', lines 113:0-113:36 -/
 @[reducible]
 def specs.contracts.helper_in_requires.post
   (x : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -315,18 +1292,17 @@ def specs.contracts.helper_in_requires.spec (x : Std.U32) : Prop :=
   (specs.contracts.helper_in_requires.pre x).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.contracts.helper_in_requires x
-  ⦃ ⇓ res => ⌜ (specs.contracts.helper_in_requires.post x res).holds ⌝
-  ⦄
-
+  ⦃ ⇓ res =>
+    ⌜ (specs.contracts.helper_in_requires.post x res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::contracts::calls_contracted::pre]:
-    Source: 'src/specs/contracts.rs', lines 111:0-111:19 -/
+    Source: 'src/specs/contracts.rs', lines 119:0-119:19 -/
 @[reducible]
 def specs.contracts.calls_contracted.pre (x : Std.U32) : RustM Bool := do
   ok (x < 10#u32)
 
 /-- [hax_tests::specs::contracts::calls_contracted::post]:
-    Source: 'src/specs/contracts.rs', lines 112:0-112:42 -/
+    Source: 'src/specs/contracts.rs', lines 120:0-120:42 -/
 @[reducible]
 def specs.contracts.calls_contracted.post
   (x : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -338,18 +1314,17 @@ def specs.contracts.calls_contracted.spec (x : Std.U32) : Prop :=
   (specs.contracts.calls_contracted.pre x).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.contracts.calls_contracted x
-  ⦃ ⇓ res => ⌜ (specs.contracts.calls_contracted.post x res).holds ⌝
-  ⦄
-
+  ⦃ ⇓ res =>
+    ⌜ (specs.contracts.calls_contracted.post x res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::contracts::recursive::pre]:
-    Source: 'src/specs/contracts.rs', lines 118:0-118:20 -/
+    Source: 'src/specs/contracts.rs', lines 126:0-126:20 -/
 @[reducible]
 def specs.contracts.recursive.pre (n : Std.U32) : RustM Bool := do
   ok (n < 100#u32)
 
 /-- [hax_tests::specs::contracts::recursive::post]:
-    Source: 'src/specs/contracts.rs', lines 119:0-119:32 -/
+    Source: 'src/specs/contracts.rs', lines 127:0-127:32 -/
 @[reducible]
 def specs.contracts.recursive.post
   (n : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -361,15 +1336,14 @@ def specs.contracts.recursive.spec (n : Std.U32) : Prop :=
   specs.contracts.recursive n
   ⦃ ⇓ res => ⌜ (specs.contracts.recursive.post n res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::contracts::with_loop::pre]:
-    Source: 'src/specs/contracts.rs', lines 130:0-130:20 -/
+    Source: 'src/specs/contracts.rs', lines 138:0-138:20 -/
 @[reducible]
 def specs.contracts.with_loop.pre (n : Std.U32) : RustM Bool := do
   ok (n < 100#u32)
 
 /-- [hax_tests::specs::contracts::with_loop::post]:
-    Source: 'src/specs/contracts.rs', lines 131:0-131:32 -/
+    Source: 'src/specs/contracts.rs', lines 139:0-139:32 -/
 @[reducible]
 def specs.contracts.with_loop.post
   (n : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -380,7 +1354,6 @@ def specs.contracts.with_loop.spec (n : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.contracts.with_loop n
   ⦃ ⇓ res => ⌜ (specs.contracts.with_loop.post n res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::arguments::named::post]:
     Source: 'src/specs/arguments.rs', lines 18:0-18:32 -/
@@ -393,7 +1366,6 @@ def specs.arguments.named.spec (_ : Unit) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.arguments.named ()
   ⦃ ⇓ res => ⌜ (specs.arguments.named.post () res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::arguments::before_other::pre]:
     Source: 'src/specs/arguments.rs', lines 24:0-24:20 -/
@@ -414,7 +1386,6 @@ def specs.arguments.before_other.spec (_ : Unit) (y : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.arguments.before_other () y
   ⦃ ⇓ res => ⌜ (specs.arguments.before_other.post () y res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::arguments::sum_fields::pre]:
     Source: 'src/specs/arguments.rs', lines 36:0-36:35 -/
@@ -439,7 +1410,6 @@ def specs.arguments.sum_fields.spec (p : specs.arguments.Point) : Prop :=
   specs.arguments.sum_fields p
   ⦃ ⇓ res => ⌜ (specs.arguments.sum_fields.post p res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::arguments::shape_len::pre]:
     Source: 'src/specs/arguments.rs', lines 48:0-48:70 -/
 @[reducible]
@@ -462,7 +1432,6 @@ def specs.arguments.shape_len.spec (s : specs.arguments.Shape) : Prop :=
   specs.arguments.shape_len s
   ⦃ ⇓ res => ⌜ (specs.arguments.shape_len.post s res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::mutable_borrows::incr::pre]:
     Source: 'src/specs/mutable_borrows.rs', lines 3:0-3:22 -/
 @[reducible]
@@ -482,7 +1451,6 @@ def specs.mutable_borrows.incr.spec (x : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.mutable_borrows.incr x
   ⦃ ⇓ res => ⌜ (specs.mutable_borrows.incr.post x res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::mutable_borrows::incr_i::pre]:
     Source: 'src/specs/mutable_borrows.rs', lines 9:0-9:43 -/
@@ -514,7 +1482,6 @@ def specs.mutable_borrows.incr_i.spec (x : Slice Std.U32) (i : Std.Usize)
   specs.mutable_borrows.incr_i x i
   ⦃ ⇓ res => ⌜ (specs.mutable_borrows.incr_i.post x i res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::mutable_borrows::swap_and_add::pre]:
     Source: 'src/specs/mutable_borrows.rs', lines 17:0-17:35 -/
 @[reducible]
@@ -545,11 +1512,33 @@ def specs.mutable_borrows.swap_and_add.spec (x : Std.U32) (y : Std.U32)
   ⦃ ⌜ True ⌝ ⦄
   specs.mutable_borrows.swap_and_add x y
   ⦃ ⇓ res =>
-  ⌜ (specs.mutable_borrows.swap_and_add.post x y res).holds ⌝ ⦄
+    ⌜ (specs.mutable_borrows.swap_and_add.post x y res).holds ⌝ ⦄
 
+/-- [hax_tests::specs::mutable_borrows::incr_ret::pre]:
+    Source: 'src/specs/mutable_borrows.rs', lines 31:0-31:21 -/
+@[reducible]
+def specs.mutable_borrows.incr_ret.pre (x : Std.U8) : RustM Bool := do
+  ok (x < 100#u8)
+
+/-- [hax_tests::specs::mutable_borrows::incr_ret::post]:
+    Source: 'src/specs/mutable_borrows.rs', lines 32:0-32:46 -/
+@[reducible]
+def specs.mutable_borrows.incr_ret.post
+  (x : Std.U8) (p : (Std.U32 × Std.U8)) : RustM Bool := do
+  let (r, x_future) := p
+  let i ← x + 1#u8
+  if x_future = i
+  then ok (r = 7#u32)
+  else ok false
+
+def specs.mutable_borrows.incr_ret.spec (x : Std.U8) : Prop :=
+  (specs.mutable_borrows.incr_ret.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.mutable_borrows.incr_ret x
+  ⦃ ⇓ res => ⌜ (specs.mutable_borrows.incr_ret.post x res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::mutable_borrows::read_shared::post]:
-    Source: 'src/specs/mutable_borrows.rs', lines 30:0-30:33 -/
+    Source: 'src/specs/mutable_borrows.rs', lines 39:0-39:33 -/
 @[reducible]
 def specs.mutable_borrows.read_shared.post
   (x : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -558,12 +1547,11 @@ def specs.mutable_borrows.read_shared.post
 def specs.mutable_borrows.read_shared.spec (x : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.mutable_borrows.read_shared x
-  ⦃ ⇓ res => ⌜ (specs.mutable_borrows.read_shared.post x res).holds ⌝
-  ⦄
-
+  ⦃ ⇓ res =>
+    ⌜ (specs.mutable_borrows.read_shared.post x res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::mutable_borrows::add_assign::pre]:
-    Source: 'src/specs/mutable_borrows.rs', lines 36:0-36:35 -/
+    Source: 'src/specs/mutable_borrows.rs', lines 45:0-45:35 -/
 @[reducible]
 def specs.mutable_borrows.add_assign.pre
   (x : Std.U32) (y : Std.U32) : RustM Bool := do
@@ -572,7 +1560,7 @@ def specs.mutable_borrows.add_assign.pre
   else ok false
 
 /-- [hax_tests::specs::mutable_borrows::add_assign::post]:
-    Source: 'src/specs/mutable_borrows.rs', lines 37:0-37:37 -/
+    Source: 'src/specs/mutable_borrows.rs', lines 46:0-46:37 -/
 @[reducible]
 def specs.mutable_borrows.add_assign.post
   (x : Std.U32) (y : Std.U32) (x_future : Std.U32) : RustM Bool := do
@@ -583,9 +1571,8 @@ def specs.mutable_borrows.add_assign.spec (x : Std.U32) (y : Std.U32) : Prop :=
   (specs.mutable_borrows.add_assign.pre x y).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.mutable_borrows.add_assign x y
-  ⦃ ⇓ res => ⌜ (specs.mutable_borrows.add_assign.post x y res).holds ⌝
-  ⦄
-
+  ⦃ ⇓ res =>
+    ⌜ (specs.mutable_borrows.add_assign.post x y res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::generics::generic::pre]:
     Source: 'src/specs/generics.rs', lines 9:0-9:27 -/
@@ -607,7 +1594,6 @@ def specs.generics.generic.spec (N : Std.U32) (x : Std.U32) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.generic N x
   ⦃ ⇓ res => ⌜ (specs.generics.generic.post N x res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::generics::trait_clause::pre]:
     Source: 'src/specs/generics.rs', lines 26:0-26:41 -/
@@ -633,13 +1619,13 @@ def specs.generics.trait_clause.post
 
 def
   specs.generics.trait_clause.spec {T : Type} (ValInst : specs.generics.Val T)
-  (t : T) (x : Std.U32) : Prop :=
+  (t : T) (x : Std.U32) (ValInstLawful : specs.generics.Val.Lawful T ValInst)
+  : Prop :=
   (specs.generics.trait_clause.pre ValInst t x).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.trait_clause ValInst t x
   ⦃ ⇓ res =>
-  ⌜ (specs.generics.trait_clause.post ValInst t x res).holds ⌝ ⦄
-
+    ⌜ (specs.generics.trait_clause.post ValInst t x res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::generics::where_clause::pre]:
     Source: 'src/specs/generics.rs', lines 33:0-33:29 -/
@@ -660,13 +1646,12 @@ def specs.generics.where_clause.post
 
 def
   specs.generics.where_clause.spec {T : Type} (ValInst : specs.generics.Val T)
-  (t : T) : Prop :=
+  (t : T) (ValInstLawful : specs.generics.Val.Lawful T ValInst) : Prop :=
   (specs.generics.where_clause.pre ValInst t).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.where_clause ValInst t
-  ⦃ ⇓ res => ⌜ (specs.generics.where_clause.post ValInst t res).holds ⌝
-  ⦄
-
+  ⦃ ⇓ res =>
+    ⌜ (specs.generics.where_clause.post ValInst t res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::generics::assoc_type::pre]:
     Source: 'src/specs/generics.rs', lines 61:0-61:29 -/
@@ -691,13 +1676,13 @@ def specs.generics.assoc_type.post
 def
   specs.generics.assoc_type.spec {P : Type} (ProducerPU32Inst :
                                 specs.generics.Producer P Std.U32) (p : P)
-  : Prop :=
+  (ProducerPU32InstLawful : specs.generics.Producer.Lawful P Std.U32
+  ProducerPU32Inst) : Prop :=
   (specs.generics.assoc_type.pre ProducerPU32Inst p).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.assoc_type ProducerPU32Inst p
   ⦃ ⇓ res =>
-  ⌜ (specs.generics.assoc_type.post ProducerPU32Inst p res).holds ⌝ ⦄
-
+    ⌜ (specs.generics.assoc_type.post ProducerPU32Inst p res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::generics::array_index::pre]:
     Source: 'src/specs/generics.rs', lines 68:0-68:18 -/
@@ -723,7 +1708,6 @@ def specs.generics.array_index.spec {N : Std.Usize} (x : Array Std.U32 N)
   specs.generics.array_index x i
   ⦃ ⇓ res => ⌜ (specs.generics.array_index.post x i res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::generics::nothing::post]:
     Source: 'src/specs/generics.rs', lines 100:0-100:20 -/
 @[reducible]
@@ -736,7 +1720,6 @@ def specs.generics.nothing.spec (T : Type) (k : Std.Usize) : Prop :=
   specs.generics.nothing T k
   ⦃ ⇓ res => ⌜ (specs.generics.nothing.post k res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::generics::nothing_no_args::post]:
     Source: 'src/specs/generics.rs', lines 106:0-106:20 -/
 @[reducible]
@@ -748,7 +1731,6 @@ def specs.generics.nothing_no_args.spec (T : Type) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.nothing_no_args T
   ⦃ ⇓ res => ⌜ (specs.generics.nothing_no_args.post res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::generics::of_fst::post]:
     Source: 'src/specs/generics.rs', lines 112:0-112:20 -/
@@ -763,7 +1745,6 @@ def specs.generics.of_fst.spec {T : Type} (N : Std.Usize) (t : T) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.of_fst N t
   ⦃ ⇓ res => ⌜ (specs.generics.of_fst.post t res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::generics::empty::post]:
     Source: 'src/specs/generics.rs', lines 118:0-118:20 -/
@@ -780,7 +1761,6 @@ def specs.generics.empty.spec (T : Type) (N : Std.Usize) (k : Std.Usize)
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.empty T N k
   ⦃ ⇓ res => ⌜ (specs.generics.empty.post k res).holds ⌝ ⦄
-
 
 /-- [hax_tests::specs::naming::foo::pre]:
     Source: 'src/specs/naming.rs', lines 5:0-5:20 -/
@@ -801,7 +1781,6 @@ def specs.naming.foo.spec (x : Std.U32) : Prop :=
   specs.naming.foo x
   ⦃ ⇓ res => ⌜ (specs.naming.foo.post x res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::arguments::{impl hax_tests::specs::arguments::Size for ()}::len::post]:
     Source: 'src/specs/arguments.rs', lines 12:4-12:24 -/
 @[reducible]
@@ -813,18 +1792,17 @@ def Tuple.Insts.Hax_testsSpecsArgumentsSize.len.spec (_ : Unit) : Prop :=
   ⦃ ⌜ True ⌝ ⦄
   Tuple.Insts.Hax_testsSpecsArgumentsSize.len ()
   ⦃ ⇓ res =>
-  ⌜ (Tuple.Insts.Hax_testsSpecsArgumentsSize.len.post () res).holds ⌝ ⦄
-
+    ⌜ (Tuple.Insts.Hax_testsSpecsArgumentsSize.len.post () res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::mutable_borrows::{hax_tests::specs::mutable_borrows::Counter}::bump::pre]:
-    Source: 'src/specs/mutable_borrows.rs', lines 49:4-49:34 -/
+    Source: 'src/specs/mutable_borrows.rs', lines 58:4-58:34 -/
 @[reducible]
 def specs.mutable_borrows.Counter.bump.pre
   (self_ : specs.mutable_borrows.Counter) : RustM Bool := do
   ok (self_.count < 1000#u32)
 
 /-- [hax_tests::specs::mutable_borrows::{hax_tests::specs::mutable_borrows::Counter}::bump::post]:
-    Source: 'src/specs/mutable_borrows.rs', lines 50:4-50:56 -/
+    Source: 'src/specs/mutable_borrows.rs', lines 59:4-59:56 -/
 @[reducible]
 def specs.mutable_borrows.Counter.bump.post
   (self_ : specs.mutable_borrows.Counter)
@@ -840,8 +1818,7 @@ def specs.mutable_borrows.Counter.bump.spec
   ⦃ ⌜ True ⌝ ⦄
   specs.mutable_borrows.Counter.bump self
   ⦃ ⇓ res =>
-  ⌜ (specs.mutable_borrows.Counter.bump.post self res).holds ⌝ ⦄
-
+    ⌜ (specs.mutable_borrows.Counter.bump.post self res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::Wrapper<T>}::inner_value::pre]:
     Source: 'src/specs/generics.rs', lines 48:4-48:36 -/
@@ -867,13 +1844,13 @@ def specs.generics.Wrapper.inner_value.post
 def
   specs.generics.Wrapper.inner_value.spec {T : Type} (ValInst :
                                          specs.generics.Val T)
-  (self : specs.generics.Wrapper T) : Prop :=
+  (self : specs.generics.Wrapper T)
+  (ValInstLawful : specs.generics.Val.Lawful T ValInst) : Prop :=
   (specs.generics.Wrapper.inner_value.pre ValInst self).holds →
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.Wrapper.inner_value ValInst self
   ⦃ ⇓ res =>
-  ⌜ (specs.generics.Wrapper.inner_value.post ValInst self res).holds ⌝ ⦄
-
+    ⌜ (specs.generics.Wrapper.inner_value.post ValInst self res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::build::pre]:
     Source: 'src/specs/generics.rs', lines 82:4-82:24 -/
@@ -898,7 +1875,6 @@ def specs.generics.MyStruct.build.spec (N : Std.Usize) (k : Std.Usize)
   specs.generics.MyStruct.build N k
   ⦃ ⇓ res => ⌜ (specs.generics.MyStruct.build.post k res).holds ⌝ ⦄
 
-
 /-- [hax_tests::specs::generics::{hax_tests::specs::generics::MyStruct<N>}::get::post]:
     Source: 'src/specs/generics.rs', lines 89:4-89:24 -/
 @[reducible]
@@ -913,5 +1889,290 @@ def specs.generics.MyStruct.get.spec {N : Std.Usize}
   ⦃ ⌜ True ⌝ ⦄
   specs.generics.MyStruct.get self
   ⦃ ⇓ res => ⌜ (specs.generics.MyStruct.get.post self res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::basic::g::post]:
+    Source: 'src/specs/traits/basic.rs', lines 58:0-58:27 -/
+@[reducible]
+def specs.traits.basic.g.post
+  {T : Type} (FooInst : specs.traits.basic.Foo T) (x : T) (res : Std.U64) :
+  RustM Bool
+  := do
+  ok (res <= 10#u64)
+
+def specs.traits.basic.g.spec {T : Type} (FooInst : specs.traits.basic.Foo T)
+  (x : T) (FooInstLawful : specs.traits.basic.Foo.Lawful T FooInst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.basic.g FooInst x
+  ⦃ ⇓ res => ⌜ (specs.traits.basic.g.post FooInst x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::basic::h::post]:
+    Source: 'src/specs/traits/basic.rs', lines 68:0-68:27 -/
+@[reducible]
+def specs.traits.basic.h.post (x : Std.U64) (res : Std.U64) : RustM Bool := do
+  ok (res <= 10#u64)
+
+def specs.traits.basic.h.spec (x : Std.U64) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.basic.h x
+  ⦃ ⇓ res => ⌜ (specs.traits.basic.h.post x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::supertraits::via_b::pre]:
+    Source: 'src/specs/traits/supertraits.rs', lines 46:0-46:24 -/
+@[reducible]
+def specs.traits.supertraits.via_b.pre
+  {T : Type} (BInst : specs.traits.supertraits.B T) (x : T) : RustM Bool := do
+  let i ← BInst.AInst.a x
+  ok (i < 100#usize)
+
+/-- [hax_tests::specs::traits::supertraits::via_b::post]:
+    Source: 'src/specs/traits/supertraits.rs', lines 47:0-47:26 -/
+@[reducible]
+def specs.traits.supertraits.via_b.post
+  {T : Type} (BInst : specs.traits.supertraits.B T) (x : T) (res : Std.Usize) :
+  RustM Bool
+  := do
+  ok (res >= 1#usize)
+
+def
+  specs.traits.supertraits.via_b.spec {T : Type} (BInst :
+                                     specs.traits.supertraits.B T) (x : T)
+  (BInstLawful : specs.traits.supertraits.B.Lawful T BInst) : Prop :=
+  (specs.traits.supertraits.via_b.pre BInst x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.supertraits.via_b BInst x
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.supertraits.via_b.post BInst x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::supertraits::via_u8::pre]:
+    Source: 'src/specs/traits/supertraits.rs', lines 54:0-54:24 -/
+@[reducible]
+def specs.traits.supertraits.via_u8.pre (x : Std.U8) : RustM Bool := do
+  let i ← U8.Insts.Hax_testsSpecsTraitsSupertraitsA.a x
+  ok (i < 100#usize)
+
+/-- [hax_tests::specs::traits::supertraits::via_u8::post]:
+    Source: 'src/specs/traits/supertraits.rs', lines 55:0-55:26 -/
+@[reducible]
+def specs.traits.supertraits.via_u8.post
+  (x : Std.U8) (res : Std.Usize) : RustM Bool := do
+  ok (res >= 1#usize)
+
+def specs.traits.supertraits.via_u8.spec (x : Std.U8) : Prop :=
+  (specs.traits.supertraits.via_u8.pre x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.supertraits.via_u8 x
+  ⦃ ⇓ res => ⌜ (specs.traits.supertraits.via_u8.post x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::diamond::via_b::post]:
+    Source: 'src/specs/traits/diamond.rs', lines 39:0-39:40 -/
+@[reducible]
+def specs.traits.diamond.via_b.post
+  {T : Type} (BInst : specs.traits.diamond.B T) (x : T) (res : Std.Usize) :
+  RustM Bool
+  := do
+  if res >= 1#usize
+  then ok (res <= 100#usize)
+  else ok false
+
+def
+  specs.traits.diamond.via_b.spec {T : Type} (BInst : specs.traits.diamond.B T)
+  (x : T) (BInstLawful : specs.traits.diamond.B.Lawful T BInst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.diamond.via_b BInst x
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.diamond.via_b.post BInst x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::diamond::diamond::post]:
+    Source: 'src/specs/traits/diamond.rs', lines 46:0-46:26 -/
+@[reducible]
+def specs.traits.diamond.diamond.post
+  {T : Type} (CInst : specs.traits.diamond.C T) (x : T) (res : Std.Usize) :
+  RustM Bool
+  := do
+  ok (res >= 2#usize)
+
+def
+  specs.traits.diamond.diamond.spec {T : Type} (CInst : specs.traits.diamond.C
+                                   T) (x : T)
+  (CInstLawful : specs.traits.diamond.C.Lawful T CInst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.diamond.diamond CInst x
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.diamond.diamond.post CInst x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::generic_impl::k::post]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 62:0-62:27 -/
+@[reducible]
+def specs.traits.generic_impl.k.post
+  {T : Type} {U : Type} (FooInst : specs.traits.generic_impl.Foo T) (SubInst :
+  specs.traits.generic_impl.Sub U) (x : T) (y : U) (res : Std.U64) :
+  RustM Bool
+  := do
+  ok (res <= 20#u64)
+
+def
+  specs.traits.generic_impl.k.spec {T : Type} {U : Type} (FooInst :
+                                  specs.traits.generic_impl.Foo T) (SubInst :
+                                  specs.traits.generic_impl.Sub U) (x : T)
+  (y : U) (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst)
+  (SubInstLawful : specs.traits.generic_impl.Sub.Lawful U SubInst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.generic_impl.k FooInst SubInst x y
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.generic_impl.k.post FooInst SubInst x y res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::blanket_impl::show_generic::post]:
+    Source: 'src/specs/traits/blanket_impl.rs', lines 22:0-22:27 -/
+@[reducible]
+def specs.traits.blanket_impl.show_generic.post
+  {T : Type} (x : T) (res : Std.U64) : RustM Bool := do
+  ok (res <= 20#u64)
+
+def specs.traits.blanket_impl.show_generic.spec {T : Type} (x : T) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.blanket_impl.show_generic x
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.blanket_impl.show_generic.post x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::blanket_impl::show_u64::post]:
+    Source: 'src/specs/traits/blanket_impl.rs', lines 28:0-28:27 -/
+@[reducible]
+def specs.traits.blanket_impl.show_u64.post
+  (x : Std.U64) (res : Std.U64) : RustM Bool := do
+  ok (res <= 20#u64)
+
+def specs.traits.blanket_impl.show_u64.spec (x : Std.U64) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.blanket_impl.show_u64 x
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.blanket_impl.show_u64.post x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::assoc_type_bounds::first_bar::post]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 50:0-50:26 -/
+@[reducible]
+def specs.traits.assoc_type_bounds.first_bar.post
+  {C : Type} {Clause0_Item : Type} (ContainerInst :
+  specs.traits.assoc_type_bounds.Container C Clause0_Item) (c : C)
+  (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res < 10#u32)
+
+def
+  specs.traits.assoc_type_bounds.first_bar.spec {C : Type} {Clause0_Item :
+                                               Type} (ContainerInst :
+                                               specs.traits.assoc_type_bounds.Container
+                                               C Clause0_Item) (c : C)
+  (ContainerInstLawful : specs.traits.assoc_type_bounds.Container.Lawful C
+  Clause0_Item ContainerInst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.assoc_type_bounds.first_bar ContainerInst c
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.assoc_type_bounds.first_bar.post ContainerInst c
+        res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::builtin_bound::dup::post]:
+    Source: 'src/specs/traits/builtin_bound.rs', lines 11:0-11:20 -/
+@[reducible]
+def specs.traits.builtin_bound.dup.post
+  {T : Type} (corecloneCloneInst : core.clone.Clone T) (x : T) (p : (T × T)) :
+  RustM Bool
+  := do
+  ok true
+
+def
+  specs.traits.builtin_bound.dup.spec {T : Type} (corecloneCloneInst :
+                                     core.clone.Clone T) (x : T)
+  (corecloneCloneInstLawful : core.clone.Clone.Lawful T corecloneCloneInst)
+  : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.builtin_bound.dup corecloneCloneInst x
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.builtin_bound.dup.post corecloneCloneInst x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::trait_generics::use_conv::post]:
+    Source: 'src/specs/traits/trait_generics.rs', lines 17:0-17:26 -/
+@[reducible]
+def specs.traits.trait_generics.use_conv.post
+  {C : Type} (ConvCU8Inst : specs.traits.trait_generics.Conv C Std.U8) 
+  (c : C) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok (res < 10#u32)
+
+def
+  specs.traits.trait_generics.use_conv.spec {C : Type} (ConvCU8Inst :
+                                           specs.traits.trait_generics.Conv C
+                                           Std.U8) (c : C)
+  (ConvCU8InstLawful : specs.traits.trait_generics.Conv.Lawful C Std.U8
+  ConvCU8Inst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.trait_generics.use_conv ConvCU8Inst c
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.trait_generics.use_conv.post ConvCU8Inst c res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::naming::lawful_binder::f::post]:
+    Source: 'src/specs/naming.rs', lines 42:4-42:36 -/
+@[reducible]
+def specs.naming.lawful_binder.f.post
+  {T : Type} (QuxInst : specs.naming.Qux T) (QuxInstLawful : T) (x : Std.U32)
+  (result : Std.U32) :
+  RustM Bool
+  := do
+  ok (result = x)
+
+def specs.naming.lawful_binder.f.spec {T : Type} (QuxInst : specs.naming.Qux T)
+  (QuxInstLawful1 : T) (x : Std.U32)
+  (QuxInstLawful : specs.naming.Qux.Lawful T QuxInst) : Prop :=
+  ⦃ ⌜ True ⌝ ⦄
+  specs.naming.lawful_binder.f QuxInst QuxInstLawful1 x
+  ⦃ ⇓ res =>
+    ⌜ (specs.naming.lawful_binder.f.post QuxInst QuxInstLawful1 x res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::impl_contract::{impl hax_tests::specs::traits::impl_contract::Foo for u32}::f::pre]:
+    Source: 'src/specs/traits/impl_contract.rs', lines 14:4-14:28 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.pre
+  (self_ : Std.U32) : RustM Bool := do
+  ok (self_ < 100#u32)
+
+/-- [hax_tests::specs::traits::impl_contract::{impl hax_tests::specs::traits::impl_contract::Foo for u32}::f::post]:
+    Source: 'src/specs/traits/impl_contract.rs', lines 15:4-15:38 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.post
+  (self_ : Std.U32) (res : Std.U32) : RustM Bool := do
+  let i ← self_ + 1#u32
+  ok (res = i)
+
+def U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec (self : Std.U32)
+  : Prop :=
+  (U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.pre self).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f self
+  ⦃ ⇓ res =>
+    ⌜ (U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.post self res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::impl_contract::{impl hax_tests::specs::traits::impl_contract::G for u32}::g::pre]:
+    Source: 'src/specs/traits/impl_contract.rs', lines 29:4-29:27 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.pre
+  (self_ : Std.U32) : RustM Bool := do
+  ok (self_ < 10#u32)
+
+/-- [hax_tests::specs::traits::impl_contract::{impl hax_tests::specs::traits::impl_contract::G for u32}::g::post]:
+    Source: 'src/specs/traits/impl_contract.rs', lines 30:4-30:38 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.post
+  (self_ : Std.U32) (res : Std.U32) : RustM Bool := do
+  let i ← self_ + 1#u32
+  ok (res = i)
+
+def U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.spec (self : Std.U32)
+  : Prop :=
+  (U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.pre self).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g self
+  ⦃ ⇓ res =>
+    ⌜ (U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.post self res).holds ⌝ ⦄
 
 end hax_tests

@@ -6,6 +6,19 @@ import HaxTests.Extraction.Types
 import HaxTests.Extraction.Funs
 import HaxTests.Extraction.Specs
 import HaxTests.Verification.Lemmas
+import HaxTests.Verification.Traits.AssocTypeBounds
+import HaxTests.Verification.Traits.Basic
+import HaxTests.Verification.Traits.BlanketImpl
+import HaxTests.Verification.Traits.BuiltinBound
+import HaxTests.Verification.Traits.DefaultMethods
+import HaxTests.Verification.Traits.Diamond
+import HaxTests.Verification.Traits.GenericImpl
+import HaxTests.Verification.Traits.ImplContract
+import HaxTests.Verification.Traits.MethodGenerics
+import HaxTests.Verification.Traits.MutSelf
+import HaxTests.Verification.Traits.Supertraits
+import HaxTests.Verification.Traits.TraitGenerics
+import HaxTests.Verification.Traits.UnannotatedSub
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
 open RustM ControlFlow Error
@@ -31,6 +44,73 @@ register_closure_specs hax_tests
 
 namespace hax_tests
 
+/- Lawfulness of the impls of the non-trait test modules. Their `Lawful`
+structures have no field: the traits have no annotated method, and the
+`Fn*` stubs of `Assumptions/MissingCore.lean` are empty. -/
+
+theorem Tuple.Insts.Hax_testsSpecsArgumentsSize.Lawful :
+  specs.arguments.Size.Lawful Unit Tuple.Insts.Hax_testsSpecsArgumentsSize
+  := ⟨⟩
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop.Lawful
+  :
+  core.ops.function.FnOnce.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop
+  := ⟨⟩
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop.Lawful
+  :
+  core.ops.function.FnMut.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop
+  := ⟨⟩
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop.Lawful
+  :
+  core.ops.function.Fn.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop
+  := ⟨⟩
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.Lawful
+  :
+  core.ops.function.FnOnce.Lawful specs.contracts.__21.ensures.closure Std.U32
+  Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
+  := ⟨⟩
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool.Lawful
+  :
+  core.ops.function.FnMut.Lawful specs.contracts.__21.ensures.closure Std.U32
+  Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool
+  := ⟨⟩
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool.Lawful
+  :
+  core.ops.function.Fn.Lawful specs.contracts.__21.ensures.closure Std.U32 Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool
+  := ⟨⟩
+
+theorem U32.Insts.Hax_testsSpecsGenericsVal.Lawful :
+  specs.generics.Val.Lawful Std.U32 U32.Insts.Hax_testsSpecsGenericsVal
+  := ⟨⟩
+
+theorem
+  specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux.Lawful
+  {QuxInstLawful1 : Type} (QuxInst : specs.naming.Qux QuxInstLawful1)
+  (QuxInstLawful : specs.naming.Qux.Lawful QuxInstLawful1 QuxInst) :
+  specs.naming.Qux.Lawful (specs.naming.lawful_impl_binder.Wrap QuxInstLawful1)
+  (specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux QuxInst)
+  := ⟨⟩
+
 theorem specs.contracts.only_requires.spec.proof (x : Std.U32) :
   specs.contracts.only_requires.spec x
   := by
@@ -52,6 +132,11 @@ theorem specs.contracts.both.spec.proof (x : Std.U32) : specs.contracts.both.spe
 
 theorem specs.contracts.no_args.spec.proof : specs.contracts.no_args.spec := by
   unfold specs.contracts.no_args.spec specs.contracts.no_args
+  hax_mvcgen
+
+theorem specs.contracts.zero_ret.spec.proof : specs.contracts.zero_ret.spec
+  := by
+  unfold specs.contracts.zero_ret.spec specs.contracts.zero_ret
   hax_mvcgen
 
 theorem specs.contracts.returns_unit.spec.proof (x : Std.U32) : specs.contracts.returns_unit.spec x
@@ -112,7 +197,8 @@ theorem specs.generics.generic.spec.proof (N : Std.U32) (x : Std.U32) :
 
 theorem specs.generics.trait_clause.spec.proof {T : Type} (ValInst :
                                              specs.generics.Val T)
-  (t : T) (x : Std.U32) : specs.generics.trait_clause.spec ValInst t x := by
+  (t : T) (x : Std.U32) (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.trait_clause.spec ValInst t x ValInstLawful := by
   unfold specs.generics.trait_clause.spec specs.generics.trait_clause specs.generics.trait_clause.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros
@@ -123,7 +209,8 @@ theorem specs.generics.trait_clause.spec.proof {T : Type} (ValInst :
 
 theorem specs.generics.where_clause.spec.proof {T : Type} (ValInst :
                                              specs.generics.Val T)
-  (t : T) : specs.generics.where_clause.spec ValInst t := by
+  (t : T) (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.where_clause.spec ValInst t ValInstLawful := by
   unfold specs.generics.where_clause.spec specs.generics.where_clause specs.generics.where_clause.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros
@@ -165,6 +252,15 @@ theorem specs.mutable_borrows.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32
   · simp; scalar_tac
   · scalar_tac
   · scalar_tac
+
+theorem specs.mutable_borrows.incr_ret.spec.proof (x : Std.U8) :
+  specs.mutable_borrows.incr_ret.spec x
+  := by
+  unfold specs.mutable_borrows.incr_ret.spec specs.mutable_borrows.incr_ret
+  hax_mvcgen
+  · agrind
+  · agrind
+  · agrind
 
 theorem specs.mutable_borrows.read_shared.spec.proof (x : Std.U32) :
   specs.mutable_borrows.read_shared.spec x
@@ -219,6 +315,14 @@ theorem specs.naming.foo.spec.proof (x : Std.U32) : specs.naming.foo.spec x
   · simp; scalar_tac
   · scalar_tac
   · scalar_tac
+
+theorem specs.naming.lawful_binder.f.spec.proof {T : Type} (QuxInst : specs.naming.Qux T)
+  (QuxInstLawful1 : T) (x : Std.U32) (QuxInstLawful : specs.naming.Qux.Lawful T QuxInst) :
+  specs.naming.lawful_binder.f.spec QuxInst QuxInstLawful1 x QuxInstLawful
+  := by
+  unfold specs.naming.lawful_binder.f.spec specs.naming.lawful_binder.f
+  hax_mvcgen [specs.naming.lawful_binder.f.post]
+  simp
 
 theorem specs.generics.MyStruct.build.spec.proof (N : Std.Usize)
   (k : Std.Usize) : specs.generics.MyStruct.build.spec N k
@@ -375,8 +479,9 @@ theorem specs.arguments.shape_len.spec.proof
 
 theorem specs.generics.assoc_type.spec.proof {P : Type} (ProducerPU32Inst :
                                            specs.generics.Producer P
-                                           Std.U32) (p : P) :
-  specs.generics.assoc_type.spec ProducerPU32Inst p := by
+                                           Std.U32) (p : P)
+  (ProducerPU32InstLawful : specs.generics.Producer.Lawful P Std.U32 ProducerPU32Inst) :
+  specs.generics.assoc_type.spec ProducerPU32Inst p ProducerPU32InstLawful := by
   unfold specs.generics.assoc_type.spec specs.generics.assoc_type specs.generics.assoc_type.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros
@@ -409,8 +514,8 @@ theorem specs.mutable_borrows.Counter.bump.spec.proof (self : specs.mutable_borr
 
 theorem specs.generics.Wrapper.inner_value.spec.proof {T : Type} (ValInst :
                                                     specs.generics.Val T)
-  (self : specs.generics.Wrapper T) :
-  specs.generics.Wrapper.inner_value.spec ValInst self := by
+  (self : specs.generics.Wrapper T) (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.Wrapper.inner_value.spec ValInst self ValInstLawful := by
   unfold specs.generics.Wrapper.inner_value.spec specs.generics.Wrapper.inner_value specs.generics.Wrapper.inner_value.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros

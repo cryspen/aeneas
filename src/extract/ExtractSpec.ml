@@ -7,12 +7,12 @@ module F = Format
 (** Emit one [Spec.spec] entry. *)
 let emit_spec ctx fmt (s : Spec.spec) =
   match s.kind with
-  | HaxSpec hs -> ExtractHaxSpecs.emit_spec ctx fmt hs s.span
+  | HaxSpec hs -> ExtractHaxSpecs.emit_spec ctx fmt hs
 
 (** Emit one [Spec.proof_obligation] entry. *)
 let emit_proof_obligation ctx fmt (o : Spec.proof_obligation) =
   match o.kind with
-  | HaxProof ho -> ExtractHaxSpecs.emit_obligation ctx fmt ho o.span
+  | HaxProof ho -> ExtractHaxSpecs.emit_obligation ctx fmt ho
 
 (** Register the names generated for the specs and proof obligations. Must be
     called after registering the crate items: clashes are reported as errors. *)
@@ -22,7 +22,7 @@ let register_names (ctx : ExtractBase.extraction_ctx) :
     List.fold_left
       (fun ctx (s : Spec.spec) ->
         match s.kind with
-        | HaxSpec hs -> ExtractHaxSpecs.register_spec_names ctx s.id hs)
+        | HaxSpec hs -> ExtractHaxSpecs.register_spec_names ctx s.id hs s.span)
       ctx ctx.specs
   in
   List.fold_left
