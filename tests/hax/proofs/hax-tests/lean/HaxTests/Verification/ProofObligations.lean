@@ -112,7 +112,8 @@ theorem specs.generics.generic.spec.proof (N : Std.U32) (x : Std.U32) :
 
 theorem specs.generics.trait_clause.spec.proof {T : Type} (ValInst :
                                              specs.generics.Val T)
-  (t : T) (x : Std.U32) : specs.generics.trait_clause.spec ValInst t x := by
+  (t : T) (x : Std.U32) (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.trait_clause.spec ValInst t x ValInstLawful := by
   unfold specs.generics.trait_clause.spec specs.generics.trait_clause specs.generics.trait_clause.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros
@@ -123,7 +124,8 @@ theorem specs.generics.trait_clause.spec.proof {T : Type} (ValInst :
 
 theorem specs.generics.where_clause.spec.proof {T : Type} (ValInst :
                                              specs.generics.Val T)
-  (t : T) : specs.generics.where_clause.spec ValInst t := by
+  (t : T) (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.where_clause.spec ValInst t ValInstLawful := by
   unfold specs.generics.where_clause.spec specs.generics.where_clause specs.generics.where_clause.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros
@@ -219,6 +221,14 @@ theorem specs.naming.foo.spec.proof (x : Std.U32) : specs.naming.foo.spec x
   · simp; scalar_tac
   · scalar_tac
   · scalar_tac
+
+theorem specs.naming.lawful_binder.f.spec.proof {T : Type} (QuxInst : specs.naming.Qux T)
+  (QuxInstLawful1 : T) (x : Std.U32) (QuxInstLawful : specs.naming.Qux.Lawful T QuxInst) :
+  specs.naming.lawful_binder.f.spec QuxInst QuxInstLawful1 x QuxInstLawful
+  := by
+  unfold specs.naming.lawful_binder.f.spec specs.naming.lawful_binder.f
+  hax_mvcgen [specs.naming.lawful_binder.f.post]
+  simp
 
 theorem specs.generics.MyStruct.build.spec.proof (N : Std.Usize)
   (k : Std.Usize) : specs.generics.MyStruct.build.spec N k
@@ -375,8 +385,9 @@ theorem specs.arguments.shape_len.spec.proof
 
 theorem specs.generics.assoc_type.spec.proof {P : Type} (ProducerPU32Inst :
                                            specs.generics.Producer P
-                                           Std.U32) (p : P) :
-  specs.generics.assoc_type.spec ProducerPU32Inst p := by
+                                           Std.U32) (p : P)
+  (ProducerPU32InstLawful : specs.generics.Producer.Lawful P Std.U32 ProducerPU32Inst) :
+  specs.generics.assoc_type.spec ProducerPU32Inst p ProducerPU32InstLawful := by
   unfold specs.generics.assoc_type.spec specs.generics.assoc_type specs.generics.assoc_type.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros
@@ -409,8 +420,8 @@ theorem specs.mutable_borrows.Counter.bump.spec.proof (self : specs.mutable_borr
 
 theorem specs.generics.Wrapper.inner_value.spec.proof {T : Type} (ValInst :
                                                     specs.generics.Val T)
-  (self : specs.generics.Wrapper T) :
-  specs.generics.Wrapper.inner_value.spec ValInst self := by
+  (self : specs.generics.Wrapper T) (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.Wrapper.inner_value.spec ValInst self ValInstLawful := by
   unfold specs.generics.Wrapper.inner_value.spec specs.generics.Wrapper.inner_value specs.generics.Wrapper.inner_value.pre
   simp only [bind_assoc_eq, bind_tc_ok, RustM.holds_bind_iff, forall_exists_index, and_imp]
   intros

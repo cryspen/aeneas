@@ -525,6 +525,15 @@ def specs.naming.proof : RustM Unit := do
 def specs.naming.bar.pre : RustM Unit := do
   ok ()
 
+/-- [hax_tests::specs::naming::lawful_binder::f]:
+    Source: 'src/specs/naming.rs', lines 43:4-45:5
+    Visibility: public -/
+def specs.naming.lawful_binder.f
+  {T : Type} (QuxInst : specs.naming.Qux T) (QuxInstLawful : T) (x : Std.U32) :
+  RustM Std.U32
+  := do
+  ok x
+
 /-- [hax_tests::specs::traits::assoc_type_bounds::{impl hax_tests::specs::traits::assoc_type_bounds::Bar for u32}::bar]:
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 27:4-29:5 -/
 def U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar.bar

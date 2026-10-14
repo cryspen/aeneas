@@ -149,19 +149,24 @@ theorem specs.generics.generic.spec.proof (N : Std.U32) (x : Std.U32) :
 theorem
   specs.generics.trait_clause.spec.proof {T : Type} (ValInst :
                                         specs.generics.Val T) (t : T)
-  (x : Std.U32) : specs.generics.trait_clause.spec ValInst t x
+  (x : Std.U32) (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.trait_clause.spec ValInst t x ValInstLawful
   := by sorry
 
 theorem
   specs.generics.where_clause.spec.proof {T : Type} (ValInst :
-                                        specs.generics.Val T) (t : T) :
-  specs.generics.where_clause.spec ValInst t
+                                        specs.generics.Val T) (t : T)
+  (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.where_clause.spec ValInst t ValInstLawful
   := by sorry
 
 theorem
   specs.generics.assoc_type.spec.proof {P : Type} (ProducerPU32Inst :
                                       specs.generics.Producer P Std.U32)
-  (p : P) : specs.generics.assoc_type.spec ProducerPU32Inst p
+  (p : P)
+  (ProducerPU32InstLawful : specs.generics.Producer.Lawful P Std.U32
+  ProducerPU32Inst) :
+  specs.generics.assoc_type.spec ProducerPU32Inst p ProducerPU32InstLawful
   := by sorry
 
 theorem specs.generics.array_index.spec.proof {N : Std.Usize}
@@ -199,8 +204,9 @@ theorem specs.mutable_borrows.Counter.bump.spec.proof
 theorem
   specs.generics.Wrapper.inner_value.spec.proof {T : Type} (ValInst :
                                                specs.generics.Val T)
-  (self : specs.generics.Wrapper T) :
-  specs.generics.Wrapper.inner_value.spec ValInst self
+  (self : specs.generics.Wrapper T)
+  (ValInstLawful : specs.generics.Val.Lawful T ValInst) :
+  specs.generics.Wrapper.inner_value.spec ValInst self ValInstLawful
   := by sorry
 
 theorem specs.generics.MyStruct.build.spec.proof (N : Std.Usize)
@@ -213,8 +219,9 @@ theorem specs.generics.MyStruct.get.spec.proof {N : Std.Usize}
 
 theorem
   specs.traits.basic.g.spec.proof {T : Type} (FooInst : specs.traits.basic.Foo
-                                 T) (x : T) :
-  specs.traits.basic.g.spec FooInst x
+                                 T) (x : T)
+  (FooInstLawful : specs.traits.basic.Foo.Lawful T FooInst) :
+  specs.traits.basic.g.spec FooInst x FooInstLawful
   := by sorry
 
 theorem specs.traits.basic.h.spec.proof (x : Std.U64) :
@@ -224,7 +231,8 @@ theorem specs.traits.basic.h.spec.proof (x : Std.U64) :
 theorem
   specs.traits.supertraits.via_b.spec.proof {T : Type} (BInst :
                                            specs.traits.supertraits.B T)
-  (x : T) : specs.traits.supertraits.via_b.spec BInst x
+  (x : T) (BInstLawful : specs.traits.supertraits.B.Lawful T BInst) :
+  specs.traits.supertraits.via_b.spec BInst x BInstLawful
   := by sorry
 
 theorem specs.traits.supertraits.via_u8.spec.proof (x : Std.U8) :
@@ -233,14 +241,16 @@ theorem specs.traits.supertraits.via_u8.spec.proof (x : Std.U8) :
 
 theorem
   specs.traits.diamond.via_b.spec.proof {T : Type} (BInst :
-                                       specs.traits.diamond.B T) (x : T) :
-  specs.traits.diamond.via_b.spec BInst x
+                                       specs.traits.diamond.B T) (x : T)
+  (BInstLawful : specs.traits.diamond.B.Lawful T BInst) :
+  specs.traits.diamond.via_b.spec BInst x BInstLawful
   := by sorry
 
 theorem
   specs.traits.diamond.diamond.spec.proof {T : Type} (CInst :
-                                         specs.traits.diamond.C T) (x : T) :
-  specs.traits.diamond.diamond.spec CInst x
+                                         specs.traits.diamond.C T) (x : T)
+  (CInstLawful : specs.traits.diamond.C.Lawful T CInst) :
+  specs.traits.diamond.diamond.spec CInst x CInstLawful
   := by sorry
 
 theorem
@@ -248,7 +258,11 @@ theorem
                                         specs.traits.generic_impl.Foo T)
                                         (SubInst :
                                         specs.traits.generic_impl.Sub U)
-  (x : T) (y : U) : specs.traits.generic_impl.k.spec FooInst SubInst x y
+  (x : T) (y : U)
+  (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst)
+  (SubInstLawful : specs.traits.generic_impl.Sub.Lawful U SubInst) :
+  specs.traits.generic_impl.k.spec FooInst SubInst x y FooInstLawful
+  SubInstLawful
   := by sorry
 
 theorem specs.traits.blanket_impl.show_generic.spec.proof {T : Type} 
@@ -264,20 +278,36 @@ theorem
                                                      : Type} (ContainerInst :
                                                      specs.traits.assoc_type_bounds.Container
                                                      C Clause0_Item) 
-  (c : C) : specs.traits.assoc_type_bounds.first_bar.spec ContainerInst c
+  (c : C)
+  (ContainerInstLawful : specs.traits.assoc_type_bounds.Container.Lawful C
+  Clause0_Item ContainerInst) :
+  specs.traits.assoc_type_bounds.first_bar.spec ContainerInst c
+  ContainerInstLawful
   := by sorry
 
 theorem
   specs.traits.builtin_bound.dup.spec.proof {T : Type} (corecloneCloneInst :
-                                           core.clone.Clone T) (x : T) :
+                                           core.clone.Clone T) (x : T)
+  (corecloneCloneInstLawful : core.clone.Clone.Lawful T corecloneCloneInst) :
   specs.traits.builtin_bound.dup.spec corecloneCloneInst x
+  corecloneCloneInstLawful
   := by sorry
 
 theorem
   specs.traits.trait_generics.use_conv.spec.proof {C : Type} (ConvCU8Inst :
                                                  specs.traits.trait_generics.Conv
-                                                 C Std.U8) (c : C) :
-  specs.traits.trait_generics.use_conv.spec ConvCU8Inst c
+                                                 C Std.U8) (c : C)
+  (ConvCU8InstLawful : specs.traits.trait_generics.Conv.Lawful C Std.U8
+  ConvCU8Inst) :
+  specs.traits.trait_generics.use_conv.spec ConvCU8Inst c ConvCU8InstLawful
+  := by sorry
+
+theorem
+  specs.naming.lawful_binder.f.spec.proof {T : Type} (QuxInst :
+                                         specs.naming.Qux T)
+  (QuxInstLawful1 : T) (x : Std.U32)
+  (QuxInstLawful : specs.naming.Qux.Lawful T QuxInst) :
+  specs.naming.lawful_binder.f.spec QuxInst QuxInstLawful1 x QuxInstLawful
   := by sorry
 
 theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec.proof
