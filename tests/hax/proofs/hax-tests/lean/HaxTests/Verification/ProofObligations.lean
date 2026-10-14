@@ -6,6 +6,19 @@ import HaxTests.Extraction.Types
 import HaxTests.Extraction.Funs
 import HaxTests.Extraction.Specs
 import HaxTests.Verification.Lemmas
+import HaxTests.Verification.Traits.AssocTypeBounds
+import HaxTests.Verification.Traits.Basic
+import HaxTests.Verification.Traits.BlanketImpl
+import HaxTests.Verification.Traits.BuiltinBound
+import HaxTests.Verification.Traits.DefaultMethods
+import HaxTests.Verification.Traits.Diamond
+import HaxTests.Verification.Traits.GenericImpl
+import HaxTests.Verification.Traits.ImplContract
+import HaxTests.Verification.Traits.MethodGenerics
+import HaxTests.Verification.Traits.MutSelf
+import HaxTests.Verification.Traits.Supertraits
+import HaxTests.Verification.Traits.TraitGenerics
+import HaxTests.Verification.Traits.UnannotatedSub
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
 open RustM ControlFlow Error
@@ -31,6 +44,73 @@ register_closure_specs hax_tests
 
 namespace hax_tests
 
+/- Lawfulness of the impls of the non-trait test modules. Their `Lawful`
+structures have no field: the traits have no annotated method, and the
+`Fn*` stubs of `Assumptions/MissingCore.lean` are empty. -/
+
+theorem Tuple.Insts.Hax_testsSpecsArgumentsSize.Lawful :
+  specs.arguments.Size.Lawful Unit Tuple.Insts.Hax_testsSpecsArgumentsSize
+  := ⟨⟩
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop.Lawful
+  :
+  core.ops.function.FnOnce.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop
+  := ⟨⟩
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop.Lawful
+  :
+  core.ops.function.FnMut.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop
+  := ⟨⟩
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop.Lawful
+  :
+  core.ops.function.Fn.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop
+  := ⟨⟩
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.Lawful
+  :
+  core.ops.function.FnOnce.Lawful specs.contracts.__21.ensures.closure Std.U32
+  Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
+  := ⟨⟩
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool.Lawful
+  :
+  core.ops.function.FnMut.Lawful specs.contracts.__21.ensures.closure Std.U32
+  Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool
+  := ⟨⟩
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool.Lawful
+  :
+  core.ops.function.Fn.Lawful specs.contracts.__21.ensures.closure Std.U32 Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool
+  := ⟨⟩
+
+theorem U32.Insts.Hax_testsSpecsGenericsVal.Lawful :
+  specs.generics.Val.Lawful Std.U32 U32.Insts.Hax_testsSpecsGenericsVal
+  := ⟨⟩
+
+theorem
+  specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux.Lawful
+  {QuxInstLawful1 : Type} (QuxInst : specs.naming.Qux QuxInstLawful1)
+  (QuxInstLawful : specs.naming.Qux.Lawful QuxInstLawful1 QuxInst) :
+  specs.naming.Qux.Lawful (specs.naming.lawful_impl_binder.Wrap QuxInstLawful1)
+  (specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux QuxInst)
+  := ⟨⟩
+
 theorem specs.contracts.only_requires.spec.proof (x : Std.U32) :
   specs.contracts.only_requires.spec x
   := by
@@ -52,6 +132,11 @@ theorem specs.contracts.both.spec.proof (x : Std.U32) : specs.contracts.both.spe
 
 theorem specs.contracts.no_args.spec.proof : specs.contracts.no_args.spec := by
   unfold specs.contracts.no_args.spec specs.contracts.no_args
+  hax_mvcgen
+
+theorem specs.contracts.zero_ret.spec.proof : specs.contracts.zero_ret.spec
+  := by
+  unfold specs.contracts.zero_ret.spec specs.contracts.zero_ret
   hax_mvcgen
 
 theorem specs.contracts.returns_unit.spec.proof (x : Std.U32) : specs.contracts.returns_unit.spec x
@@ -167,6 +252,15 @@ theorem specs.mutable_borrows.swap_and_add.spec.proof (x : Std.U32) (y : Std.U32
   · simp; scalar_tac
   · scalar_tac
   · scalar_tac
+
+theorem specs.mutable_borrows.incr_ret.spec.proof (x : Std.U8) :
+  specs.mutable_borrows.incr_ret.spec x
+  := by
+  unfold specs.mutable_borrows.incr_ret.spec specs.mutable_borrows.incr_ret
+  hax_mvcgen
+  · agrind
+  · agrind
+  · agrind
 
 theorem specs.mutable_borrows.read_shared.spec.proof (x : Std.U32) :
   specs.mutable_borrows.read_shared.spec x

@@ -45,6 +45,33 @@ theorem Aeneas.Std.RustM.holds_bind_iff {α : Type} {m : RustM α} {f : α → R
   · rintro ⟨_, rfl, _⟩
     simpa
 
+/-- A `RustM Bool` contract leg (the `.pre`/`.post` defs of trait methods) used
+as a `RustM Prop` is coerced as `do let a ← x; pure (a = true)`, whose simp normal
+form is `(· = true) <$> x`; nothing in Aeneas/Hax simplifies its `.holds`. It holds
+iff the leg evaluates to `ok true`. -/
+@[simp] theorem Aeneas.Std.RustM.holds_bool (x : RustM Bool) :
+    ((fun a => a = true) <$> x : RustM Prop).holds ↔ x = ok true := by
+  cases x
+  · simp [RustM.holds, Triple, WP.wp, PredTrans.apply, Functor.map, pure]
+  · simp [RustM.holds, Triple, WP.wp, PredTrans.apply, Functor.map]
+  · simp [RustM.holds, Triple, WP.wp, PredTrans.apply, Functor.map]
+
+/-- `(pure p).holds` is `p` (nothing in Aeneas/Hax simplifies it). Not `@[simp]`:
+as a simp lemma it changes what `simp_all` does to the hypotheses of existing
+proofs (e.g. `specs.generics.trait_clause.spec.proof` loses its precondition);
+pass it explicitly, `simp [RustM.holds_pure]`. -/
+theorem Aeneas.Std.RustM.holds_pure (p : Prop) : (pure p : RustM Prop).holds ↔ p := by
+  simp [RustM.holds, Triple, WP.wp, PredTrans.apply, pure]
+
+/- Bridges between Aeneas specs and `Std.Do` triples, already in Aeneas
+(`Aeneas/Std/WP.lean`), to use rather than restating them:
+- `Aeneas.Std.WP.spec_to_mvcgen`: an Aeneas `spec` (`m ⦃ r => P r ⦄`, the
+  `step`/`step*` world) gives `⦃ ⌜ True ⌝ ⦄ m ⦃ ⇓ r => ⌜ P r ⌝ ⦄`, the shape of
+  the `Lawful` fields;
+- `Aeneas.Std.WP.triple_iff_exists_ok`: such a total-correctness triple is
+  `∃ a, m = .ok a ∧ P a`; the `Lawful` fields do not state `m = ok res`, this
+  recovers it on the consuming side. -/
+
 open Lean Elab Command in
 /-- `register_closure_specs ns` marks `@[spec]` the `call`/`call_mut`/`call_once`
 methods of every closure extracted under the namespace `ns`, so that `hax_mvcgen`
