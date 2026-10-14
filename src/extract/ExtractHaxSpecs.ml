@@ -316,6 +316,35 @@ let warn_untranslated (ctx : ExtractBase.extraction_ctx) opt_span
        "hax-specs: dropping the contract of %s `%s`: the %s was not translated"
        kind name kind)
 
+(** Report a clash between [<X>.Lawful] and the projection of a field of the
+    trait structure [d] (parent clause, associated item or method) named
+    [Lawful]: field names are registered without collision checks (see
+    {!ExtractBase.allow_collisions}). *)
+let check_lawful_field_clash span (ctx : ExtractBase.extraction_ctx)
+    (spec_id : Spec.SpecId.id) (d : Pure.trait_decl) : unit =
+  let open ExtractBase in
+  let get id = ctx_get_raw (Some span) id ctx in
+  let trait_name = get (TraitDeclId d.def_id) in
+  let lawful = lawful_name trait_name in
+  let fields =
+    List.map
+      (fun (c : Pure.trait_param) ->
+        TraitParentClauseId (d.def_id, c.clause_id))
+      d.parent_clauses
+    @ List.map (fun (id, _, _) -> TraitConstId (d.def_id, id)) d.consts
+    @ List.map (fun (id, _) -> TraitTypeId (d.def_id, id)) d.types
+    @ List.map
+        (fun (m : Pure.trait_method) -> TraitMethodId (d.def_id, m.method_id))
+        d.methods
+  in
+  List.iter
+    (fun id ->
+      if ExtractBuiltin.flatten_name [ trait_name; get id ] = lawful then
+        report_name_collision
+          (fun id -> id_to_string (Some span) id ctx)
+          (id, Some span) (SpecId spec_id) (Some span) lawful)
+    fields
+
 (** Register the names of the conditions and of the spec. Must be called after
     registering the crate items. Warns about the specs of untranslated items:
     {!emit_spec} skips them. *)
@@ -356,6 +385,7 @@ let register_spec_names (ctx : ExtractBase.extraction_ctx)
           let span = d.item_meta.span in
           let get id = ExtractBase.ctx_get_raw (Some span) id ctx in
           let trait_name = get (TraitDeclId trait_decl) in
+          check_lawful_field_clash span ctx spec_id d;
           let ctx =
             ExtractBase.ctx_add span (SpecId spec_id) (lawful_name trait_name)
               ctx

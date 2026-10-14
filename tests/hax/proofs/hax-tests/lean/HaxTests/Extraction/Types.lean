@@ -86,6 +86,12 @@ structure specs.generics.Pair (T : Type) (N : Std.Usize) where
 structure specs.mutable_borrows.Counter where
   count : Std.U32
 
+/-- Trait declaration: [hax_tests::specs::naming::Qux]
+    Source: 'src/specs/naming.rs', lines 31:0-33:1
+    Visibility: public -/
+structure specs.naming.Qux (Self : Type) where
+  lawful : Self → RustM Std.U32
+
 /-- Trait declaration: [hax_tests::specs::traits::assoc_type_bounds::Bar]
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 9:0-12:1 -/
 structure specs.traits.assoc_type_bounds.Bar (Self : Type) where

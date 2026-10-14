@@ -1,7 +1,7 @@
-// Impl-level contracts. On an unannotated trait (`Foo`): not supported
-// yet, it emits a warning but still a standalone spec. On an annotated
+// Impl-level contracts: checked as standalone specs only, with a warning.
+// On an unannotated trait (`Foo`): only the standalone spec. On an annotated
 // trait method (`G::g`): the trait-level contract gives the Lawful field,
-// the impl-level one the warning and the standalone spec.
+// the impl-level one the warning and the independent standalone spec.
 
 use hax_lib::*;
 

@@ -376,6 +376,17 @@ let produce (ctx : TranslateCore.trans_ctx)
       [%ltrace
         Printf.sprintf "hax-specs:   fn=%s pre=%s post=%s"
           (parent_name ctx a.parent) (shape pre) (shape post)];
+      (* The contract of a trait impl method is checked against its body by its
+         own spec, the trait-level one by the Lawful obligation of the impl:
+         nothing relates them *)
+      (match a.parent with
+      | Fun { src = TraitImplFun _; _ } ->
+          [%lwarning
+            Printf.sprintf
+              "hax-specs: the contract of `%s` is checked as a standalone spec \
+               only; it is independent of the trait-level contract"
+              (parent_name ctx a.parent)]
+      | _ -> ());
       let span = Some (parent_span a.parent) in
       (* One [function_spec] payload, shared between the spec and the proof
          obligation that discharges it. *)

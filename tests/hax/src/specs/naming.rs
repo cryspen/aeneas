@@ -25,3 +25,9 @@ pub fn proof() {}
 pub mod bar {
     pub fn pre() {}
 }
+
+// No clash: the check against `Qux.Lawful` is case-sensitive, so the field
+// `Qux.lawful` is fine.
+pub trait Qux {
+    fn lawful(&self) -> u32;
+}
