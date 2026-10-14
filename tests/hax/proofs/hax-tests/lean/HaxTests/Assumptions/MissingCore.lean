@@ -27,4 +27,20 @@ structure core.default.Default.Lawful (Self : Type)
 structure core.marker.Copy.Lawful (Self : Type)
   (CopyInst : core.marker.Copy Self) : Prop where
 
+-- The closure traits, implemented by the closures of hax decorations. The
+-- parent fields (`FnOnceInstLawful`, `FnMutInstLawful`) are omitted like that
+-- of `Copy.Lawful`.
+structure core.ops.function.FnOnce.Lawful (Self : Type) (Args : Type)
+  (Self_Output : Type)
+  (FnOnceInst : core.ops.function.FnOnce Self Args Self_Output) : Prop where
+
+structure core.ops.function.FnMut.Lawful (Self : Type) (Args : Type)
+  (Self_Clause0_Output : Type)
+  (FnMutInst : core.ops.function.FnMut Self Args Self_Clause0_Output) :
+  Prop where
+
+structure core.ops.function.Fn.Lawful (Self : Type) (Args : Type)
+  (Self_Clause0_Output : Type)
+  (FnInst : core.ops.function.Fn Self Args Self_Clause0_Output) : Prop where
+
 end CoreModels

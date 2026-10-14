@@ -366,6 +366,50 @@ let produce (ctx : TranslateCore.trans_ctx)
         })
       local_trait_decls
   in
+  (* The Lawful obligations of the local trait impls, in the order of the
+     declaration groups (dependencies first), with the contract of the
+     implemented trait if it is local *)
+  let trait_impls =
+    Pure.TraitImplId.Map.of_list
+      (List.map (fun (i : Pure.trait_impl) -> (i.def_id, i)) crate.trait_impls)
+  in
+  let trait_spec (id : Pure.TraitDeclId.id) : HaxSpecs.trait_spec option =
+    List.find_map
+      (fun (s : Spec.spec) ->
+        match s with
+        | { kind = HaxSpec (TraitSpec ts); _ } when ts.trait_decl = id ->
+            Some ts
+        | _ -> None)
+      trait_specs
+  in
+  let impl_obligations =
+    List.concat_map
+      (fun (g : LlbcAst.declaration_group) ->
+        match g with
+        | TraitImplGroup g ->
+            List.filter_map
+              (fun id ->
+                match Pure.TraitImplId.Map.find_opt id trait_impls with
+                | Some (i : Pure.trait_impl) when i.item_meta.is_local ->
+                    Some
+                      ({
+                         id = fresh_proof_id ();
+                         span = Some i.item_meta.span;
+                         kind =
+                           HaxProof
+                             (ImplLawful
+                                {
+                                  impl = i.def_id;
+                                  spec = trait_spec i.impl_trait.trait_decl_id;
+                                  proof = Admitted;
+                                });
+                       }
+                        : Spec.proof_obligation)
+                | _ -> None)
+              (Charon.GAstUtils.g_declaration_group_to_list g)
+        | _ -> [])
+      (Option.get ctx.crate.declarations)
+  in
 
   (* Build the spec (statement of correctness) and the proof obligation that
      discharges it, for one parent fn's accumulated [AssociatedItem]s. *)
@@ -476,12 +520,15 @@ let produce (ctx : TranslateCore.trans_ctx)
 
   [%linfo
     Printf.sprintf
-      "hax-specs: produced %d TraitSpec and %d FunctionSpec entries"
-      (List.length trait_specs) (List.length new_specs)];
+      "hax-specs: produced %d TraitSpec, %d FunctionSpec and %d ImplLawful \
+       entries"
+      (List.length trait_specs) (List.length new_specs)
+      (List.length impl_obligations)];
 
   {
     crate with
     fun_decls = new_fun_decls;
     specs = crate.specs @ trait_specs @ new_specs;
-    proof_obligations = crate.proof_obligations @ new_obligations;
+    proof_obligations =
+      crate.proof_obligations @ impl_obligations @ new_obligations;
   }

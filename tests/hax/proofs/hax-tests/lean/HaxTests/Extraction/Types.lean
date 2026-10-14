@@ -92,6 +92,12 @@ structure specs.mutable_borrows.Counter where
 structure specs.naming.Qux (Self : Type) where
   lawful : Self → RustM Std.U32
 
+/-- [hax_tests::specs::naming::lawful_impl_binder::Wrap]
+    Source: 'src/specs/naming.rs', lines 54:4-54:26
+    Visibility: public -/
+@[reducible]
+def specs.naming.lawful_impl_binder.Wrap (T : Type) := T
+
 /-- Trait declaration: [hax_tests::specs::traits::assoc_type_bounds::Bar]
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 9:0-12:1 -/
 structure specs.traits.assoc_type_bounds.Bar (Self : Type) where

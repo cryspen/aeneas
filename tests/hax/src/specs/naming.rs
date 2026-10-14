@@ -44,3 +44,18 @@ pub mod lawful_binder {
         x
     }
 }
+
+// No clash: a type parameter named like the Lawful binder `QuxInstLawful` of
+// the impl clause `QuxInst` becomes `QuxInstLawful1` in the impl theorem
+// `….Lawful` (but not in the impl definition).
+pub mod lawful_impl_binder {
+    use super::Qux;
+
+    pub struct Wrap<T>(T);
+
+    impl<QuxInstLawful: Qux> Qux for Wrap<QuxInstLawful> {
+        fn lawful(&self) -> u32 {
+            self.0.lawful()
+        }
+    }
+}

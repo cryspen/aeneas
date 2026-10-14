@@ -534,6 +534,27 @@ def specs.naming.lawful_binder.f
   := do
   ok x
 
+/-- [hax_tests::specs::naming::lawful_impl_binder::{impl hax_tests::specs::naming::Qux for hax_tests::specs::naming::lawful_impl_binder::Wrap<QuxInstLawful>}::lawful]:
+    Source: 'src/specs/naming.rs', lines 57:8-59:9
+    Visibility: public -/
+def specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux.lawful
+  {QuxInstLawful : Type} (QuxInst : specs.naming.Qux QuxInstLawful)
+  (self : specs.naming.lawful_impl_binder.Wrap QuxInstLawful) :
+  RustM Std.U32
+  := do
+  QuxInst.lawful self
+
+/-- Trait implementation: [hax_tests::specs::naming::lawful_impl_binder::{impl hax_tests::specs::naming::Qux for hax_tests::specs::naming::lawful_impl_binder::Wrap<QuxInstLawful>}]
+    Source: 'src/specs/naming.rs', lines 56:4-60:5 -/
+@[reducible]
+def specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux
+  {QuxInstLawful : Type} (QuxInst : specs.naming.Qux QuxInstLawful) :
+  specs.naming.Qux (specs.naming.lawful_impl_binder.Wrap QuxInstLawful) := {
+  lawful :=
+    specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux.lawful
+    QuxInst
+}
+
 /-- [hax_tests::specs::traits::assoc_type_bounds::{impl hax_tests::specs::traits::assoc_type_bounds::Bar for u32}::bar]:
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 27:4-29:5 -/
 def U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar.bar

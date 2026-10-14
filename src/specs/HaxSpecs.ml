@@ -44,8 +44,7 @@ and obligation =
       impl : Pure.TraitImplId.id;
       spec : trait_spec option;
           (** The contract of the implemented trait. [None] for a non-local
-              trait: its [Lawful] fields are only known on the Lean side, so the
-              obligation gets no field skeleton. *)
+              trait. *)
       proof : proof;
     }
       (** [<impl>.Lawful : X.Lawful … <impl>]: the impl satisfies the contract

@@ -28,6 +28,276 @@ noncomputable section
 
 namespace hax_tests
 
+theorem Tuple.Insts.Hax_testsSpecsArgumentsSize.Lawful :
+  specs.arguments.Size.Lawful Unit Tuple.Insts.Hax_testsSpecsArgumentsSize
+  := by sorry
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop.Lawful
+  :
+  core.ops.function.FnOnce.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnOnceTupleU32Prop
+  := by sorry
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop.Lawful
+  :
+  core.ops.function.FnMut.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnMutTupleU32Prop
+  := by sorry
+
+theorem
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop.Lawful
+  :
+  core.ops.function.Fn.Lawful specs.contracts.__20.requires.closure Std.U32
+  hax_lib.prop.Prop
+  specs.contracts.__20.requires.closure.Insts.CoreOpsFunctionFnTupleU32Prop
+  := by sorry
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool.Lawful
+  :
+  core.ops.function.FnOnce.Lawful specs.contracts.__21.ensures.closure Std.U32
+  Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnOnceTupleU32Bool
+  := by sorry
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool.Lawful
+  :
+  core.ops.function.FnMut.Lawful specs.contracts.__21.ensures.closure Std.U32
+  Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnMutTupleU32Bool
+  := by sorry
+
+theorem
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool.Lawful
+  :
+  core.ops.function.Fn.Lawful specs.contracts.__21.ensures.closure Std.U32 Bool
+  specs.contracts.__21.ensures.closure.Insts.CoreOpsFunctionFnTupleU32Bool
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsGenericsVal.Lawful :
+  specs.generics.Val.Lawful Std.U32 U32.Insts.Hax_testsSpecsGenericsVal
+  := by sorry
+
+theorem
+  specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux.Lawful
+  {QuxInstLawful1 : Type} (QuxInst : specs.naming.Qux QuxInstLawful1)
+  (QuxInstLawful : specs.naming.Qux.Lawful QuxInstLawful1 QuxInst) :
+  specs.naming.Qux.Lawful (specs.naming.lawful_impl_binder.Wrap QuxInstLawful1)
+  (specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux QuxInst)
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar.Lawful :
+  specs.traits.assoc_type_bounds.Bar.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar
+  := by sorry
+
+theorem
+  specs.traits.assoc_type_bounds.One.Insts.Hax_testsSpecsTraitsAssoc_type_boundsContainerU32.Lawful
+  :
+  specs.traits.assoc_type_bounds.Container.Lawful
+  specs.traits.assoc_type_bounds.One Std.U32
+  specs.traits.assoc_type_bounds.One.Insts.Hax_testsSpecsTraitsAssoc_type_boundsContainerU32
+  := by sorry
+
+theorem
+  specs.traits.assoc_type_bounds.Box1.Insts.Hax_testsSpecsTraitsAssoc_type_boundsContainer.Lawful
+  {T : Type} (BarInst1 : specs.traits.assoc_type_bounds.Bar T)
+  (coremarkerCopyInst : core.marker.Copy T)
+  (BarInst1Lawful : specs.traits.assoc_type_bounds.Bar.Lawful T BarInst1)
+  (coremarkerCopyInstLawful : core.marker.Copy.Lawful T coremarkerCopyInst) :
+  specs.traits.assoc_type_bounds.Container.Lawful
+  (specs.traits.assoc_type_bounds.Box1 T) T
+  (specs.traits.assoc_type_bounds.Box1.Insts.Hax_testsSpecsTraitsAssoc_type_boundsContainer
+  BarInst1 coremarkerCopyInst)
+  := by sorry
+
+theorem U64.Insts.Hax_testsSpecsTraitsBasicFoo.Lawful :
+  specs.traits.basic.Foo.Lawful Std.U64 U64.Insts.Hax_testsSpecsTraitsBasicFoo
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsBasicFoo.Lawful :
+  specs.traits.basic.Foo.Lawful Std.U32 U32.Insts.Hax_testsSpecsTraitsBasicFoo
+  := by sorry
+
+theorem specs.traits.blanket_impl.Show.Blanket.Lawful (T : Type) :
+  specs.traits.blanket_impl.Show.Lawful T
+  (specs.traits.blanket_impl.Show.Blanket T)
+  := by sorry
+
+theorem specs.traits.blanket_impl.Tag.Blanket.Lawful {T : Type} (ShowInst1 :
+  specs.traits.blanket_impl.Show T)
+  (ShowInst1Lawful : specs.traits.blanket_impl.Show.Lawful T ShowInst1) :
+  specs.traits.blanket_impl.Tag.Lawful T (specs.traits.blanket_impl.Tag.Blanket
+  ShowInst1)
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsBuiltin_boundDup.Lawful :
+  specs.traits.builtin_bound.Dup.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsBuiltin_boundDup
+  := by sorry
+
+theorem specs.traits.builtin_bound.One.Insts.CoreCloneClone.Lawful :
+  core.clone.Clone.Lawful specs.traits.builtin_bound.One
+  specs.traits.builtin_bound.One.Insts.CoreCloneClone
+  := by sorry
+
+theorem specs.traits.builtin_bound.One.Insts.CoreDefaultDefault.Lawful :
+  core.default.Default.Lawful specs.traits.builtin_bound.One
+  specs.traits.builtin_bound.One.Insts.CoreDefaultDefault
+  := by sorry
+
+theorem
+  specs.traits.builtin_bound.One.Insts.Hax_testsSpecsTraitsBuiltin_boundDup.Lawful
+  :
+  specs.traits.builtin_bound.Dup.Lawful specs.traits.builtin_bound.One
+  specs.traits.builtin_bound.One.Insts.Hax_testsSpecsTraitsBuiltin_boundDup
+  := by sorry
+
+theorem specs.traits.builtin_bound.W.Insts.CoreCloneClone.Lawful {T : Type}
+  (corecloneCloneInst : core.clone.Clone T)
+  (corecloneCloneInstLawful : core.clone.Clone.Lawful T corecloneCloneInst) :
+  core.clone.Clone.Lawful (specs.traits.builtin_bound.W T)
+  (specs.traits.builtin_bound.W.Insts.CoreCloneClone corecloneCloneInst)
+  := by sorry
+
+theorem
+  specs.traits.builtin_bound.WU32.Insts.Hax_testsSpecsTraitsBuiltin_boundDup.Lawful
+  :
+  specs.traits.builtin_bound.Dup.Lawful (specs.traits.builtin_bound.W Std.U32)
+  specs.traits.builtin_bound.WU32.Insts.Hax_testsSpecsTraitsBuiltin_boundDup
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsDefault_methodsD.Lawful :
+  specs.traits.default_methods.D.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsDefault_methodsD
+  := by sorry
+
+theorem U64.Insts.Hax_testsSpecsTraitsDefault_methodsD.Lawful :
+  specs.traits.default_methods.D.Lawful Std.U64
+  U64.Insts.Hax_testsSpecsTraitsDefault_methodsD
+  := by sorry
+
+theorem U8.Insts.Hax_testsSpecsTraitsDiamondA.Lawful :
+  specs.traits.diamond.A.Lawful Std.U8 U8.Insts.Hax_testsSpecsTraitsDiamondA
+  := by sorry
+
+theorem U8.Insts.Hax_testsSpecsTraitsDiamondB.Lawful :
+  specs.traits.diamond.B.Lawful Std.U8 U8.Insts.Hax_testsSpecsTraitsDiamondB
+  := by sorry
+
+theorem U8.Insts.Hax_testsSpecsTraitsDiamondC.Lawful :
+  specs.traits.diamond.C.Lawful Std.U8 U8.Insts.Hax_testsSpecsTraitsDiamondC
+  := by sorry
+
+theorem U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo.Lawful :
+  specs.traits.generic_impl.Foo.Lawful Std.U64
+  U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo
+  := by sorry
+
+theorem
+  specs.traits.generic_impl.Wrapper.Insts.Hax_testsSpecsTraitsGeneric_implFoo.Lawful
+  {T : Type} (FooInst : specs.traits.generic_impl.Foo T)
+  (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst) :
+  specs.traits.generic_impl.Foo.Lawful (specs.traits.generic_impl.Wrapper T)
+  (specs.traits.generic_impl.Wrapper.Insts.Hax_testsSpecsTraitsGeneric_implFoo
+  FooInst)
+  := by sorry
+
+theorem
+  specs.traits.generic_impl.Wrapper.Insts.Hax_testsSpecsTraitsGeneric_implSub.Lawful
+  {T : Type} (SubInst : specs.traits.generic_impl.Sub T)
+  (SubInstLawful : specs.traits.generic_impl.Sub.Lawful T SubInst) :
+  specs.traits.generic_impl.Sub.Lawful (specs.traits.generic_impl.Wrapper T)
+  (specs.traits.generic_impl.Wrapper.Insts.Hax_testsSpecsTraitsGeneric_implSub
+  SubInst)
+  := by sorry
+
+theorem Pair.Insts.Hax_testsSpecsTraitsGeneric_implFoo.Lawful {T : Type} {U :
+  Type} (FooInst : specs.traits.generic_impl.Foo T) (FooInst1 :
+  specs.traits.generic_impl.Foo U)
+  (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst)
+  (FooInst1Lawful : specs.traits.generic_impl.Foo.Lawful U FooInst1) :
+  specs.traits.generic_impl.Foo.Lawful (T × U)
+  (Pair.Insts.Hax_testsSpecsTraitsGeneric_implFoo FooInst FooInst1)
+  := by sorry
+
+theorem
+  specs.traits.generic_impl.Single.Insts.Hax_testsSpecsTraitsGeneric_implFoo.Lawful
+  {T : Type} (FooInst : specs.traits.generic_impl.Foo T)
+  (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst) :
+  specs.traits.generic_impl.Foo.Lawful (specs.traits.generic_impl.Single T)
+  (specs.traits.generic_impl.Single.Insts.Hax_testsSpecsTraitsGeneric_implFoo
+  FooInst)
+  := by sorry
+
+theorem
+  specs.traits.generic_impl.SingleU64.Insts.Hax_testsSpecsTraitsGeneric_implSub.Lawful
+  :
+  specs.traits.generic_impl.Sub.Lawful (specs.traits.generic_impl.Single
+  Std.U64)
+  specs.traits.generic_impl.SingleU64.Insts.Hax_testsSpecsTraitsGeneric_implSub
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.Lawful :
+  specs.traits.impl_contract.Foo.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractG.Lawful :
+  specs.traits.impl_contract.G.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsImpl_contractG
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsMethod_genericsBar.Lawful :
+  specs.traits.method_generics.Bar.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsMethod_genericsBar
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsMethod_genericsFoo.Lawful :
+  specs.traits.method_generics.Foo.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsMethod_genericsFoo
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsMut_selfCounter.Lawful :
+  specs.traits.mut_self.Counter.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsMut_selfCounter
+  := by sorry
+
+theorem U8.Insts.Hax_testsSpecsTraitsSupertraitsA.Lawful :
+  specs.traits.supertraits.A.Lawful Std.U8
+  U8.Insts.Hax_testsSpecsTraitsSupertraitsA
+  := by sorry
+
+theorem U8.Insts.Hax_testsSpecsTraitsSupertraitsB.Lawful :
+  specs.traits.supertraits.B.Lawful Std.U8
+  U8.Insts.Hax_testsSpecsTraitsSupertraitsB
+  := by sorry
+
+theorem U8.Insts.Hax_testsSpecsTraitsSupertraitsCc.Lawful :
+  specs.traits.supertraits.Cc.Lawful Std.U8
+  U8.Insts.Hax_testsSpecsTraitsSupertraitsCc
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU8.Lawful :
+  specs.traits.trait_generics.Conv.Lawful Std.U32 Std.U8
+  U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU8
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsUnannotated_subA.Lawful :
+  specs.traits.unannotated_sub.A.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsUnannotated_subA
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsUnannotated_subB.Lawful :
+  specs.traits.unannotated_sub.B.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsUnannotated_subB
+  := by sorry
+
 theorem specs.contracts.only_requires.spec.proof (x : Std.U32) :
   specs.contracts.only_requires.spec x
   := by sorry
