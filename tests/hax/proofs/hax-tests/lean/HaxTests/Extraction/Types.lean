@@ -3,6 +3,7 @@
 import Aeneas
 import CoreModels
 import HaxTests.Extraction.TypesExternal
+import HaxTests.Assumptions.MissingCore
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
 open RustM ControlFlow Error
