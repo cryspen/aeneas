@@ -46,6 +46,11 @@ structure specs.generics.Val.Lawful (Self : Type _) (ValInst :
 structure specs.generics.Producer.Lawful (Self : Type _) (Self_Out : Type _)
   (ProducerInst : specs.generics.Producer Self Self_Out) : Prop
 
+/-- Lawful structure of trait: [hax_tests::specs::naming::Qux]
+    Source: 'src/specs/naming.rs', lines 31:0-33:1 -/
+structure specs.naming.Qux.Lawful (Self : Type _) (QuxInst : specs.naming.Qux
+  Self) : Prop
+
 /-- [hax_tests::specs::traits::assoc_type_bounds::Bar::bar::pre]:
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 11:4-11:25 -/
 @[reducible]
