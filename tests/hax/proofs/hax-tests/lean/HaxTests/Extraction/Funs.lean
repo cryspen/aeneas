@@ -5,6 +5,7 @@ public import Aeneas
 public import CoreModels
 public import HaxTests.Extraction.Types
 public import HaxTests.Extraction.FunsExternal
+public import HaxTests.Assumptions.MissingCore
 @[expose] public section
 open CoreModels Aeneas
 open Aeneas.Std hiding namespace core alloc
