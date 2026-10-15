@@ -1,24 +1,30 @@
-import Aeneas.Std.Scalar.Core
-import Aeneas.Std.Scalar.Misc
-import Aeneas.Std.Scalar.Elab
-import Aeneas.Tactic.Solver.ScalarTac
-import Mathlib.Data.BitVec
+module
+public import Aeneas.Std.Scalar.Core
+public import Aeneas.Std.Scalar.Misc
+public import Aeneas.Std.Scalar.Elab
+public import Aeneas.Tactic.Solver.ScalarTac
+public import Mathlib.Data.BitVec
+public section
 
 namespace Aeneas.Std
 
-open Result Error Arith
+open RustM Error Arith WP
 
 /-!
 # Negation: Definitions
 -/
-def IScalar.neg {ty : IScalarTy} (x : IScalar ty) : Result (IScalar ty) := IScalar.tryMk ty (- x.val)
+def IScalar.neg {ty : IScalarTy} (x : IScalar ty) : RustM (IScalar ty) := IScalar.tryMk ty (- x.val)
 
 @[step]
-theorem IScalar.neg_step {ty} (x: IScalar ty) (h: x ≠ IScalar.min ty): IScalar.neg x ⦃ r => r = -x.val ⦄ := by
-  simp [neg]
-  have h := tryMk_eq ty (-x.val)
+theorem IScalar.neg_step {ty} (x: IScalar ty) :
+    partialSpec (IScalar.neg x)
+      (fun r => r = -x.val)
+      (fun | .panic => (x : Int) = IScalar.min ty | _ => False)
+      False := by
+  simp only [neg, tryMk, RustM.ofOption]
+  have h := tryMkOpt_eq ty (-x.val)
   simp [inBounds] at h
-  split at h <;> simp_all
+  cases hopt : tryMkOpt ty (-x.val) <;> simp_all [partialSpec]
   have := IScalar.hBounds x
   simp [IScalar.min] at *
   grind
@@ -56,12 +62,15 @@ prefix:75  "-."   => HNeg.hNeg
 -/
 attribute [match_pattern] HNeg.hNeg
 
-instance {ty} : HNeg (IScalar ty) (Result (IScalar ty)) where hNeg x := IScalar.neg x
+instance {ty} : HNeg (IScalar ty) (RustM (IScalar ty)) where hNeg x := IScalar.neg x
 
 @[step]
-theorem HNeg.hNeg.step {ty} (x: IScalar ty) (h: x ≠ IScalar.min ty): HNeg.hNeg x ⦃ r => r = -x.val ⦄ := by
-  simp [HNeg.hNeg]
-  apply IScalar.neg_step
-  grind
+theorem HNeg.hNeg.step {ty} (x: IScalar ty) :
+    partialSpec (HNeg.hNeg x : RustM (IScalar ty))
+      (fun r => r = -x.val)
+      (fun | .panic => (x : Int) = IScalar.min ty | _ => False)
+      False := by
+  show partialSpec (IScalar.neg x) _ _ _
+  exact IScalar.neg_step x
 
 end Aeneas.Std

@@ -1,17 +1,20 @@
-import Aeneas.Std.Core.Ops
-import Aeneas.Std.Core.Result
+module
+public import Aeneas.Std.Core.Ops
+public import Aeneas.Std.Core.Result
+
+public section
 
 namespace Aeneas.Std
 
-open Result
+open RustM
 
 /-- Pure model of `Result::map_err`: leaves `Ok` untouched and maps the payload
     of `Err` through `fnOnce`. -/
-@[rust_fun "core::result::{core::result::Result<@T, @E>}::map_err"]
+@[expose, rust_fun "core::result::{core::result::Result<@T, @E>}::map_err"]
 def core.result.Result.map_err
   {T E F O : Type} (fnOnce : core.ops.function.FnOnce O E F)
   (x : core.result.Result T E) (f : O) :
-  Std.Result (core.result.Result T F) :=
+  Std.RustM (core.result.Result T F) :=
   match x with
   | .Ok value => ok (.Ok value)
   | .Err error => do

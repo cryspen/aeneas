@@ -109,10 +109,10 @@ let initialize_type_decl_info (span : Meta.span option) (crate : crate)
      have any more custom treatment than this, and these types can be modeled
      suitably in the backend libraries, rather than special-casing for them all the
      way. *)
-  let get_builtin_info () : Pure.builtin_type_info option =
-    let open ExtractBuiltin in
-    NameMatcherMap.find_opt name_matcher_ctx def.item_meta.name
-      (builtin_types_map ())
+  let get_external_info () : Pure.external_type_info option =
+    let open ExternalNames in
+    ExtractName.NameMatcherMap.find_opt name_matcher_ctx def.item_meta.name
+      (external_types_map ())
   in
   let name_to_string () =
     let env = Charon.Print.crate_to_fmt_env crate in
@@ -124,8 +124,8 @@ let initialize_type_decl_info (span : Meta.span option) (crate : crate)
   let mut_regions =
     match def.kind with
     | Opaque -> (
-        (* Try to lookup the builtin information, if there is *)
-        match get_builtin_info () with
+        (* Try to lookup the external information, if there is *)
+        match get_external_info () with
         | Some info ->
             (* *)
             let len = List.length def.generics.regions in
@@ -142,7 +142,7 @@ let initialize_type_decl_info (span : Meta.span option) (crate : crate)
                   Type: " ^ name_to_string ());
               RegionId.Set.empty)
         | None ->
-            (* No builtin information: use Charon's per-region [mutability] analysis *)
+            (* No external information: use Charon's per-region [mutability] analysis *)
             let has_unknown_regions = ref false in
             let mut_regions =
               RegionId.Set.of_list
@@ -284,7 +284,7 @@ let analyze_full_ty (span : Meta.span option) (updated : bool ref)
   let rec analyze (span : Meta.span option) (expl_info : expl_info)
       (ty_info : partial_type_info) (ty : ty) : partial_type_info =
     match ty with
-    | TLiteral _ | TNever | TDynTrait _ -> ty_info
+    | TScalar _ | TNever | TDynTrait _ -> ty_info
     | TTraitType (tref, _, _) ->
         (* TODO: normalize the trait types.
            For now we only emit a warning because it makes some tests fail. *)
@@ -358,7 +358,7 @@ let analyze_full_ty (span : Meta.span option) (updated : bool ref)
     | TRawPtr (rty, _) ->
         (* TODO: not sure what to do here *)
         analyze span expl_info ty_info rty
-    | TArray (ty, _) | TSlice ty ->
+    | TArray (ty, _, _) | TSlice (ty, _) ->
         (* Nothing to update: just explore the type parameters *)
         analyze span expl_info ty_info ty
     | TAdt { generics; builtin = Some (TTuple | TBox | TStr); _ } ->
@@ -803,7 +803,7 @@ let compute_outlive_proj_ty (span : Meta.span option)
             | Some (TTuple | TBox | TStr) -> super#visit_ty outer ty
           end
         | TArray _ | TSlice _ -> super#visit_ty outer ty
-        | TVar _ | TLiteral _ | TNever -> ()
+        | TVar _ | TScalar _ | TNever -> ()
         | TRef (r, ref_ty, _) ->
             self#visit_region outer r;
             let outer = r :: outer in

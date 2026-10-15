@@ -26,6 +26,45 @@ let set_backend (b : string) : unit =
          belonging to the proper set *)
       raise (Failure "Unexpected")
 
+(** {1 Specs config} *)
+
+type spec_source = Hax
+type spec_backend = Mvcgen | Step
+type spec_config = spec_source * spec_backend
+
+let spec_config_options = [ "hax"; "hax-step" ]
+
+(** Utility to compute a spec source from an input parameter *)
+let spec_config_of_string (s : string) : spec_config option =
+  match s with
+  | "hax" | "Hax" -> Some (Hax, Mvcgen)
+  | "hax-step" | "Hax-Step" -> Some (Hax, Step)
+  | _ -> None
+
+(** The spec source requested via [-specs] *)
+let opt_spec_config : spec_config option ref = ref None
+
+let set_spec_config (s : string) : unit =
+  match spec_config_of_string s with
+  | Some s -> opt_spec_config := Some s
+  | None ->
+      (* We shouldn't get there: the string should have been checked as
+         belonging to the proper set *)
+      raise (Failure "Unexpected")
+
+(** Returns [true] if the config for specs is enabled. *)
+let spec_config_enabled () = Option.is_some !opt_spec_config
+
+(** Returns [true] if the saved config for specs uses Hax annotations as a
+    source *)
+let spec_config_is_hax () =
+  match !opt_spec_config with
+  | Some (Hax, _) -> true
+  | _ -> false
+
+(** The spec backend selected via [-specs], if specs are enabled. *)
+let spec_backend () : spec_backend option = Option.map snd !opt_spec_config
+
 (** Specify the namespace of the extract code.
 
     For instance, if the crate name is [foo] the namespace used for the
@@ -46,6 +85,20 @@ let subdir : string option ref = ref None
 
 let set_subdir (s : string) : unit = subdir := Some s
 
+(** Additional modules to include at the top of every generated file.
+
+    Those are treated exactly like the includes we generate ourselves (e.g., the
+    include of [Types] inside [Funs]): [import] for Lean, [include] for F*, etc.
+*)
+let extra_includes : string list ref = ref []
+
+(** Add a comma-separated list of modules to {!extra_includes}. *)
+let add_extra_includes (includes : string) : unit =
+  let includes =
+    List.filter (fun s -> s <> "") (String.split_on_char ',' includes)
+  in
+  extra_includes := !extra_includes @ includes
+
 (** If [true], we do not generate code and simply borrow-check the program
     instead. This allows us to relax some sanity checks which are present in the
     symbolic execution only to make sure we will be able to generate the pure
@@ -60,7 +113,7 @@ let borrow_check = ref false
 (** Get the target backend
 
     If there is no backend (we are borrow-checking) we default to Lean - it
-    happens when looking up the builtin information: we use Lean as it has the
+    happens when looking up the external information: we use Lean as it has the
     most complete library.
 
     TODO: turn borrow-checking into a backend. *)
@@ -231,6 +284,19 @@ let lean_gen_lakefile = ref false
 (** Only for Lean: emit a translation.json file alongside the Lean files. *)
 let emit_json = ref false
 
+(** JSON files listing external names (i.e., definitions which we do not
+    extract, and which we map to models in the backend), given through the
+    [-external-names] option.
+
+    In command-line order: later files take precedence over earlier ones, and
+    over the entries we ship. *)
+let external_names_files : string list ref = ref []
+
+(** Add a file to {!external_names_files}. We append, so that the list stays in
+    command-line order. *)
+let add_external_names_file (file : string) : unit =
+  external_names_files := !external_names_files @ [ file ]
+
 (** If true, treat the unit functions (function taking no inputs and returning
     no outputs) as unit tests: evaluate them with the interpreter and check that
     they don't panic. *)
@@ -254,6 +320,10 @@ let extract_decreases_clauses = ref false
     We initialize it to [true], then deactivate it depending on the CL options
     given by the user. *)
 let extract_template_decreases_clauses = ref true
+
+(** Whether to emit Lean output using the module system. Defaults to [true].
+    Pass `-use-lean-modules false` to emit non-module Lean files. *)
+let use_lean_modules = ref true
 
 (** {1 Micro passes} *)
 
@@ -600,6 +670,16 @@ let method_names_in_impl_namespace = ref false
 (** *)
 let all_computable = ref false
 
+(** When extracting a trait impl, filter out the methods which are absent from
+    the model of the trait declaration (its builtin info).
+
+    Trait declarations which have no model are not affected: all their methods
+    are extracted. This is useful for the traits of the standard library, whose
+    models often list only a subset of the methods of the original Rust trait.
+    Without this option, the extracted impls may contain fields which do not
+    exist in the model, leading to code which does not typecheck. *)
+let filter_trait_impl_methods = ref false
+
 (** Do not attempt to extract loops to recursive functions *)
 let no_recursive_loops = ref false
 
@@ -614,3 +694,14 @@ let max_recdepth = ref 2048
 (** If [false], evaluate [drop(p)] as [p := bottom]. Otherwise, evaluate it as a
     no-op (which means that we do not borrow-check the drops). *)
 let drop_as_no_op = ref true
+
+(** For Lean only: disable the Rust core library overrides defined in
+    [ExtractBuiltinLean.ml].
+
+    With this flag, references to items such as [core::clone::Clone<[T; N]>] are
+    extracted using the standard name-mangling scheme rather than the hand-tuned
+    names like [core.array.CloneArray.clone], and the associated shape overrides
+    ([keep_params], [can_fail], etc.) are ignored. This is useful when
+    extracting against a separate Lean library that mirrors the Rust core API
+    under the standard names. *)
+let core_models_lib = ref false

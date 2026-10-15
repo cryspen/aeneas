@@ -1,10 +1,12 @@
-import Aeneas.Std.Scalar.Core
-import Aeneas.Tactic.Solver.ScalarTac
-import Mathlib.Data.BitVec
+module
+public meta import Aeneas.Std.Scalar.Core
+public import Aeneas.Tactic.Solver.ScalarTac
+public import Mathlib.Data.BitVec
+public section
 
 namespace Aeneas.Std
 
-open Result Error Arith
+open RustM Error Arith
 
 
 /-!
@@ -14,7 +16,7 @@ The reference semantics are here: https://doc.rust-lang.org/reference/expression
 -/
 
 /-- When casting between unsigned integers, we truncate or **zero**-extend the integer. -/
-@[step_pure_def]
+@[expose, step_pure_def]
 def UScalar.cast {src_ty : UScalarTy} (tgt_ty : UScalarTy) (x : UScalar src_ty) : UScalar tgt_ty :=
   -- This truncates the integer if the numBits is smaller
   ⟨ x.bv.zeroExtend tgt_ty.numBits ⟩
@@ -23,13 +25,13 @@ def UScalar.cast {src_ty : UScalarTy} (tgt_ty : UScalarTy) (x : UScalar src_ty) 
 
    When casting from an unsigned integer to a signed integer, we truncate or **zero**-extend.
 -/
-@[step_pure_def]
+@[expose, step_pure_def]
 def UScalar.hcast {src_ty : UScalarTy} (tgt_ty : IScalarTy) (x : UScalar src_ty) : IScalar tgt_ty :=
   -- This truncates the integer if the numBits is smaller
   ⟨ x.bv.zeroExtend tgt_ty.numBits ⟩
 
 /-- When casting between signed integers, we truncate or **sign**-extend. -/
-@[step_pure_def]
+@[expose, step_pure_def]
 def IScalar.cast {src_ty : IScalarTy} (tgt_ty : IScalarTy) (x : IScalar src_ty) : IScalar tgt_ty :=
   ⟨ x.bv.signExtend tgt_ty.numBits ⟩
 
@@ -37,7 +39,7 @@ def IScalar.cast {src_ty : IScalarTy} (tgt_ty : IScalarTy) (x : IScalar src_ty) 
 
    When casting from a signed integer to a unsigned integer, we truncate or **sign**-extend.
 -/
-@[step_pure_def]
+@[expose, step_pure_def]
 def IScalar.hcast {src_ty : IScalarTy} (tgt_ty : UScalarTy) (x : IScalar src_ty) : UScalar tgt_ty :=
   ⟨ x.bv.signExtend tgt_ty.numBits ⟩
 
@@ -71,33 +73,33 @@ section
   local macro:max x:term:max noWs "u16" : term => `(U16.ofNat $x (by decide))
 
   /- Cast between integers of same size -/
-  #assert IScalar.hcast _ 42i8    = 42u8       -- assert_eq!(42i8 as u8, 42u8);
-  #assert IScalar.hcast _ (-1)i8  = 255u8      -- assert_eq!(-1i8 as u8, 255u8);
-  #assert UScalar.hcast _ 255u8   = (-1)i8     -- assert_eq!(255u8 as i8, -1i8);
-  #assert IScalar.hcast _ (-1)i16 = 65535u16   -- assert_eq!(-1i16 as u16, 65535u16);
+  #guard IScalar.hcast _ 42i8    = 42u8       -- assert_eq!(42i8 as u8, 42u8);
+  #guard IScalar.hcast _ (-1)i8  = 255u8      -- assert_eq!(-1i8 as u8, 255u8);
+  #guard UScalar.hcast _ 255u8   = (-1)i8     -- assert_eq!(255u8 as i8, -1i8);
+  #guard IScalar.hcast _ (-1)i16 = 65535u16   -- assert_eq!(-1i16 as u16, 65535u16);
 
   /- Cast from larger integer to smaller integer -/
-  #assert UScalar.cast _ 42u16 = 42u8         -- assert_eq!(42u16 as u8, 42u8);
-  #assert UScalar.cast _ 1234u16 = 210u8      -- assert_eq!(1234u16 as u8, 210u8);
-  #assert UScalar.cast _ 0xabcdu16 = 0xcdu8   -- assert_eq!(0xabcdu16 as u8, 0xcdu8);
+  #guard UScalar.cast _ 42u16 = 42u8         -- assert_eq!(42u16 as u8, 42u8);
+  #guard UScalar.cast _ 1234u16 = 210u8      -- assert_eq!(1234u16 as u8, 210u8);
+  #guard UScalar.cast _ 0xabcdu16 = 0xcdu8   -- assert_eq!(0xabcdu16 as u8, 0xcdu8);
 
-  #assert IScalar.cast _ (-42)i16 = (-42)i8   -- assert_eq!(-42i16 as i8, -42i8);
-  #assert UScalar.hcast _ 1234u16 = (-46)i8   -- assert_eq!(1234u16 as i8, -46i8);
-  #assert IScalar.cast _ 0xabcdi32 = (-51)i8  -- assert_eq!(0xabcdi32 as i8, -51i8);
+  #guard IScalar.cast _ (-42)i16 = (-42)i8   -- assert_eq!(-42i16 as i8, -42i8);
+  #guard UScalar.hcast _ 1234u16 = (-46)i8   -- assert_eq!(1234u16 as i8, -46i8);
+  #guard IScalar.cast _ 0xabcdi32 = (-51)i8  -- assert_eq!(0xabcdi32 as i8, -51i8);
 
   /- Cast from a smaller integer to a larger integer -/
-  #assert IScalar.cast _ 42i8 = 42i16 -- assert_eq!(42i8 as i16, 42i16);
-  #assert IScalar.cast _ (-17)i8 = (-17)i16 -- assert_eq!(-17i8 as i16, -17i16);
-  #assert UScalar.cast _ 0b1000_1010u8 = 0b0000_0000_1000_1010u16 -- assert_eq!(0b1000_1010u8 as u16, 0b0000_0000_1000_1010u16, "Zero-extend");
-  #assert IScalar.cast _ 0b0000_1010i8 = 0b0000_0000_0000_1010i16 -- assert_eq!(0b0000_1010i8 as i16, 0b0000_0000_0000_1010i16, "Sign-extend 0");
-  #assert (IScalar.cast .I16 (UScalar.hcast .I8 0b1000_1010u8)) = UScalar.hcast .I16 0b1111_1111_1000_1010u16 -- assert_eq!(0b1000_1010u8 as i8 as i16, 0b1111_1111_1000_1010u16 as i16, "Sign-extend 1");
+  #guard IScalar.cast _ 42i8 = 42i16 -- assert_eq!(42i8 as i16, 42i16);
+  #guard IScalar.cast _ (-17)i8 = (-17)i16 -- assert_eq!(-17i8 as i16, -17i16);
+  #guard UScalar.cast _ 0b1000_1010u8 = 0b0000_0000_1000_1010u16 -- assert_eq!(0b1000_1010u8 as u16, 0b0000_0000_1000_1010u16, "Zero-extend");
+  #guard IScalar.cast _ 0b0000_1010i8 = 0b0000_0000_0000_1010i16 -- assert_eq!(0b0000_1010i8 as i16, 0b0000_0000_0000_1010i16, "Sign-extend 0");
+  #guard (IScalar.cast .I16 (UScalar.hcast .I8 0b1000_1010u8)) = UScalar.hcast .I16 0b1111_1111_1000_1010u16 -- assert_eq!(0b1000_1010u8 as i8 as i16, 0b1111_1111_1000_1010u16 as i16, "Sign-extend 1");
 
 end
 
-def UScalar.cast_fromBool (ty : UScalarTy) (x : Bool) : UScalar ty :=
+@[expose] def UScalar.cast_fromBool (ty : UScalarTy) (x : Bool) : UScalar ty :=
   if x then ⟨ 1#ty.numBits ⟩ else ⟨ 0#ty.numBits ⟩
 
-def IScalar.cast_fromBool (ty : IScalarTy) (x : Bool) : IScalar ty :=
+@[expose] def IScalar.cast_fromBool (ty : IScalarTy) (x : Bool) : IScalar ty :=
   if x then ⟨ 1#ty.numBits ⟩ else ⟨ 0#ty.numBits ⟩
 
 /-!
@@ -114,7 +116,7 @@ theorem UScalar.cast_inBounds_spec {src_ty : UScalarTy}
   apply Nat.mod_eq_of_lt; omega
 
 /-- This theorem allows us not to use bit-vectors when reasoning about casts, if there are no overflows -/
-def UScalar.hcast_inBounds_spec {src_ty : UScalarTy}
+@[expose] def UScalar.hcast_inBounds_spec {src_ty : UScalarTy}
   (tgt_ty : IScalarTy) (x : UScalar src_ty)
   (h : x.val ≤ IScalar.max tgt_ty) :
   lift (UScalar.hcast tgt_ty x) ⦃ y => y.val = x.val ⦄ := by
@@ -128,7 +130,7 @@ def UScalar.hcast_inBounds_spec {src_ty : UScalarTy}
   . scalar_tac
 
 /-- This theorem allows us not to use bit-vectors when reasoning about casts, if there are no overflows -/
-def IScalar.cast_inBounds_spec {src_ty : IScalarTy}
+@[expose] def IScalar.cast_inBounds_spec {src_ty : IScalarTy}
   (tgt_ty : IScalarTy) (x : IScalar src_ty) (h : IScalar.min tgt_ty ≤ x.val ∧ x.val ≤ IScalar.max tgt_ty) :
   lift (IScalar.cast tgt_ty x) ⦃ y => y.val = x.val ⦄
   := by
@@ -141,7 +143,7 @@ def IScalar.cast_inBounds_spec {src_ty : IScalarTy}
   . scalar_tac
 
 /-- This theorem allows us not to use bit-vectors when reasoning about casts, if there are no overflows -/
-def IScalar.hcast_inBounds_spec {src_ty : IScalarTy}
+@[expose] def IScalar.hcast_inBounds_spec {src_ty : IScalarTy}
   (tgt_ty : UScalarTy) (x : IScalar src_ty) (h : 0 ≤ x.val ∧ x.val ≤ UScalar.max tgt_ty) :
   lift (IScalar.hcast tgt_ty x) ⦃ y => y.val = x.val ⦄ := by
   simp only [lift, hcast, BitVec.signExtend, bv_toInt_eq, WP.spec_ok]

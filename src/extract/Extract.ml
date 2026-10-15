@@ -23,15 +23,209 @@ let generic_args_to_string (ctx : extraction_ctx) =
 let texpr_to_string (ctx : extraction_ctx) =
   PrintPure.texpr_to_string (extraction_ctx_to_fmt_env ctx) false "" "  "
 
+(** The crates that the core models library provides. *)
+let core_models_crates = [ "core"; "alloc"; "std" ]
+
+(** Whether the allocator filter should be registered for an item.
+
+    Under [-core-models-lib], this filter is supposed to remove type parameters
+    and trait clauses left dangling by Charon's [hide_allocator] pass. The
+    filter can cause signature mismatches between function declarations and
+    function calls, so we activate it only for the crates that the core models
+    library provides. *)
+let should_register_allocator_filter (item_meta : Types.item_meta) : bool =
+  !Config.core_models_lib && (not item_meta.is_local)
+  &&
+  match item_meta.name with
+  | Types.PeIdent (crate, _) :: _ -> List.mem crate core_models_crates
+  | _ -> false
+
+(** Under [-core-models-lib], detect type parameters and trait clauses left
+    dangling by Charon's [hide_allocator] pass (which strips the [A] parameter
+    from [Vec], [Box], etc. and removes the [core::alloc::Allocator] trait
+    declaration but leaves the function-level [A] and [A: Clone]-style clauses
+    in place).
+
+    A type parameter is dropped iff it is unused in the function's inputs,
+    output, and predicates. A trait clause is dropped iff every type variable it
+    references is itself being dropped (i.e., it is "orphan" — only constraining
+    dropped parameters). The "used" set is saturated through trait clauses so
+    that a parameter pulled in by a kept clause is itself kept.
+
+    [scan]: caller-supplied closure that gets invoked with a visitor and may
+    visit any extra structures (e.g. a trait_impl's [impl_trait] /
+    [parent_trait_refs]) so their type variables also count as used. Pass a
+    no-op closure when there is nothing extra to scan.
+
+    [extra_trait_decl_refs] / [extra_trait_refs]: caller-supplied additional
+    things to scan for used type variables. Trait impls in particular have no
+    function-style inputs; instead, the type variables they bind appear in
+    [impl_trait] and the parent trait refs, which the caller passes here.
+
+    Returns [None] if nothing needs filtering. *)
+let compute_allocator_filter
+    ?(extra_trait_decl_refs : Pure.trait_decl_ref list = [])
+    ?(extra_trait_refs : Pure.trait_ref list = [])
+    ?(type_args_filter : Pure.type_decl_id -> bool list option = fun _ -> None)
+    (generics : Pure.generic_params) (inputs : Pure.ty list)
+    (output : Pure.ty option) (preds : Pure.predicates) :
+    (bool list * bool list) option =
+  let type_params = generics.types in
+  let trait_clauses = generics.trait_clauses in
+  if type_params = [] then None
+  else
+    (* When visiting a type application of an ADT whose own allocator parameter
+       is being filtered (e.g. [IntoIter T A] -> [IntoIter T]), we must not count
+       the type variables that only appear in the dropped argument positions as
+       "used". Otherwise an allocator parameter that only shows up in, say, the
+       output type [IntoIter<T, A>] would be wrongly kept. *)
+    let visit_filtered_ty_args (self : _) (env : unit) (type_id : Pure.type_id)
+        (generics : Pure.generic_args) : bool =
+      match type_id with
+      | TAdtId id -> (
+          match type_args_filter id with
+          | Some keep when List.length keep = List.length generics.types ->
+              List.iter2
+                (fun b ty -> if b then self#visit_ty env ty)
+                keep generics.types;
+              List.iter (self#visit_const_generic env) generics.const_generics;
+              List.iter (self#visit_trait_ref env) generics.trait_refs;
+              true
+          | _ -> false)
+      | _ -> false
+    in
+    let used = ref Pure.TypeVarId.Set.empty in
+    let body_visitor =
+      object (self)
+        inherit [_] Pure.iter_type_decl as super
+
+        method! visit_ty env t =
+          match t with
+          | Pure.TAdt (type_id, generics)
+            when visit_filtered_ty_args self env type_id generics -> ()
+          | _ -> super#visit_ty env t
+
+        method! visit_type_var_id _ id = used := Pure.TypeVarId.Set.add id !used
+      end
+    in
+    List.iter (body_visitor#visit_ty ()) inputs;
+    (match output with
+    | Some o -> body_visitor#visit_ty () o
+    | None -> ());
+    body_visitor#visit_predicates () preds;
+    List.iter (body_visitor#visit_trait_decl_ref ()) extra_trait_decl_refs;
+    List.iter (body_visitor#visit_trait_ref ()) extra_trait_refs;
+    let clause_tvars (c : Pure.trait_param) : Pure.TypeVarId.Set.t =
+      let s = ref Pure.TypeVarId.Set.empty in
+      let v =
+        object (self)
+          inherit [_] Pure.iter_type_decl as super
+
+          method! visit_ty env t =
+            match t with
+            | Pure.TAdt (type_id, generics)
+              when visit_filtered_ty_args self env type_id generics -> ()
+            | _ -> super#visit_ty env t
+
+          method! visit_type_var_id _ id = s := Pure.TypeVarId.Set.add id !s
+        end
+      in
+      v#visit_trait_param () c;
+      !s
+    in
+    let rec saturate () =
+      let changed = ref false in
+      List.iter
+        (fun (c : Pure.trait_param) ->
+          let tvars = clause_tvars c in
+          if
+            Pure.TypeVarId.Set.exists
+              (fun id -> Pure.TypeVarId.Set.mem id !used)
+              tvars
+          then
+            Pure.TypeVarId.Set.iter
+              (fun id ->
+                if not (Pure.TypeVarId.Set.mem id !used) then begin
+                  used := Pure.TypeVarId.Set.add id !used;
+                  changed := true
+                end)
+              tvars)
+        trait_clauses;
+      if !changed then saturate ()
+    in
+    saturate ();
+    let unused_set =
+      List.fold_left
+        (fun acc (p : Pure.type_param) ->
+          if Pure.TypeVarId.Set.mem p.index !used then acc
+          else Pure.TypeVarId.Set.add p.index acc)
+        Pure.TypeVarId.Set.empty type_params
+    in
+    let is_orphan_clause (c : Pure.trait_param) : bool =
+      let tvars = clause_tvars c in
+      (not (Pure.TypeVarId.Set.is_empty tvars))
+      && Pure.TypeVarId.Set.for_all
+           (fun id -> Pure.TypeVarId.Set.mem id unused_set)
+           tvars
+    in
+    let any_orphan = List.exists is_orphan_clause trait_clauses in
+    let any_unused = not (Pure.TypeVarId.Set.is_empty unused_set) in
+    if (not any_orphan) && not any_unused then None
+    else
+      let keep_params =
+        List.map
+          (fun (p : Pure.type_param) ->
+            not (Pure.TypeVarId.Set.mem p.index unused_set))
+          type_params
+      in
+      let keep_trait_clauses =
+        List.map (fun c -> not (is_orphan_clause c)) trait_clauses
+      in
+      Some (keep_params, keep_trait_clauses)
+
 (** Compute the names for all the pure functions generated from a rust function.
 *)
 let extract_fun_decl_register_names (ctx : extraction_ctx)
     (has_decreases_clause : fun_decl -> bool) (def : pure_fun_translation) :
     extraction_ctx =
-  (* Use the builtin names if necessary *)
-  match def.f.builtin_info with
+  let maybe_register_allocator_filter (ctx : extraction_ctx) : extraction_ctx =
+    if not (should_register_allocator_filter def.f.item_meta) then ctx
+    else
+      let sg = def.f.signature in
+      let type_args_filter id =
+        TypeDeclId.Map.find_opt id ctx.types_filter_type_args_map
+      in
+      match
+        compute_allocator_filter ~type_args_filter sg.generics sg.inputs
+          (Some sg.output) sg.preds
+      with
+      | None -> ctx
+      | Some (keep_params, keep_trait_clauses) ->
+          let ctx =
+            if FunDeclId.Map.mem def.f.def_id ctx.funs_filter_type_args_map then
+              ctx
+            else
+              {
+                ctx with
+                funs_filter_type_args_map =
+                  FunDeclId.Map.add def.f.def_id keep_params
+                    ctx.funs_filter_type_args_map;
+              }
+          in
+          if FunDeclId.Map.mem def.f.def_id ctx.funs_filter_trait_clauses_map
+          then ctx
+          else
+            {
+              ctx with
+              funs_filter_trait_clauses_map =
+                FunDeclId.Map.add def.f.def_id keep_trait_clauses
+                  ctx.funs_filter_trait_clauses_map;
+            }
+  in
+  (* Use the external names if necessary *)
+  match def.f.external_info with
   | Some info ->
-      (* Builtin function: register the filtering information, if there is *)
+      (* External function: register the filtering information, if there is *)
       let ctx =
         match info.keep_params with
         | Some keep ->
@@ -54,11 +248,13 @@ let extract_fun_decl_register_names (ctx : extraction_ctx)
             }
         | _ -> ctx
       in
+      let ctx = maybe_register_allocator_filter ctx in
       let f = def.f in
-      let fun_id = (Pure.FunId (FRegular f.def_id), f.loop_id) in
+      let fun_id = (Pure.FunId f.def_id, f.loop_id) in
       ctx_add f.item_meta.span (FunId (FromLlbc fun_id)) info.extract_name ctx
   | None ->
-      (* Not builtin *)
+      (* Not external *)
+      let ctx = maybe_register_allocator_filter ctx in
       (* Register the decrease clauses, if necessary *)
       let register_decreases ctx def =
         if has_decreases_clause def then
@@ -269,7 +465,7 @@ let extract_global (span : Meta.span) (ctx : extraction_ctx) (fmt : F.formatter)
   F.pp_close_box fmt ()
 
 (* Filter the generics of a function if it is builtin *)
-let fun_builtin_filter_types_trait_clauses (ty_to_string : 'a -> string)
+let fun_external_filter_types_trait_clauses (ty_to_string : 'a -> string)
     (clause_to_string : 'b -> string) (id : FunDeclId.id) (types : 'a list)
     (explicit : explicit_info option) (clauses : 'b list) (ctx : extraction_ctx)
     : ('a list * explicit_info option * 'b list, string) Result.result =
@@ -282,7 +478,7 @@ let fun_builtin_filter_types_trait_clauses (ty_to_string : 'a -> string)
     match FunDeclId.Map.find_opt id ctx.funs_filter_trait_clauses_map with
     | None -> Result.Ok clauses
     | Some filter ->
-        if List.length filter <> List.length types then (
+        if List.length filter <> List.length clauses then (
           let decl =
             [%silent_unwrap_opt_span] None (ctx_lookup_fun_decl_info ctx id)
           in
@@ -336,6 +532,16 @@ let fun_builtin_filter_types_trait_clauses (ty_to_string : 'a -> string)
   | Result.Ok clauses, Result.Ok (types, explicit) ->
       Result.Ok (types, explicit, clauses)
   | Result.Error msg, _ | _, Result.Error msg -> Result.Error msg
+
+(** Emit a boxed delimiter: [<l> <inner> <r>] inside an [hovbox] *)
+let emit_delim ?(add_spaces = true) fmt l k r : unit =
+  F.pp_open_hovbox fmt 0;
+  F.pp_print_string fmt l;
+  if add_spaces then F.pp_print_space fmt ();
+  k ();
+  if add_spaces then F.pp_print_space fmt ();
+  F.pp_print_string fmt r;
+  F.pp_close_box fmt ()
 
 (** [inside]: see {!extract_ty}. [with_type]: do we also generate a type
     annotation? This is necessary for backends like Coq when we write lambdas
@@ -870,7 +1076,7 @@ and extract_array_or_slice (span : Meta.span) (ctx : extraction_ctx)
     (* Print the parameters *)
     F.pp_print_space fmt ();
     extract_const_generic span ctx fmt ~inside:true
-      (CgValue (VScalar (UnsignedScalar (Usize, Z.of_int (List.length args)))));
+      (CgValue (VScalar (UnsignedInteger (Usize, Z.of_int (List.length args)))));
     F.pp_print_space fmt ();
     F.pp_print_string fmt "[";
     (* Close the box for `Array.mk T N [` *)
@@ -999,7 +1205,7 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
       let explicit =
         try
           match fun_id with
-          | FromLlbc (FunId (FRegular fun_decl_id), lp_id) -> begin
+          | FromLlbc (FunId fun_decl_id, lp_id) -> begin
               (* Lookup the function to retrieve the signature information *)
               let trans_fun =
                 [%silent_unwrap] span (ctx_lookup_fun_decl_info ctx fun_decl_id)
@@ -1027,17 +1233,17 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
               let explicit = meth.signature.explicit_info in
               Some (adjust_explicit_info explicit true generics)
             end
-          | FromLlbc (FunId (FBuiltin aid), _) ->
-              Some
-                (Builtin.BuiltinFunIdMap.find aid ctx.builtin_sigs)
-                  .explicit_info
-          | Pure (UpdateAtIndex Array) ->
+          | Pure
+              (UpdateAtIndex Array | IndexAtIndex Array | IndexMutAtIndex Array)
+            ->
               Some
                 {
                   explicit_types = [ Implicit ];
                   explicit_const_generics = [ Implicit ];
                 }
-          | Pure (UpdateAtIndex Slice) ->
+          | Pure
+              (UpdateAtIndex Slice | IndexAtIndex Slice | IndexMutAtIndex Slice)
+            ->
               Some
                 { explicit_types = [ Implicit ]; explicit_const_generics = [] }
           | Pure Discriminant ->
@@ -1066,8 +1272,8 @@ and extract_function_call (span : Meta.span) (ctx : extraction_ctx)
       *)
       let types_explicit_traits =
         match fun_id with
-        | FromLlbc (FunId (FRegular id), _) ->
-            fun_builtin_filter_types_trait_clauses (ty_to_string ctx)
+        | FromLlbc (FunId id, _) ->
+            fun_external_filter_types_trait_clauses (ty_to_string ctx)
               (trait_ref_to_string ctx) id generics.types explicit
               generics.trait_refs ctx
         | _ -> Result.Ok (generics.types, explicit, generics.trait_refs)
@@ -2697,37 +2903,39 @@ let extract_global_decl (ctx : extraction_ctx) (fmt : F.formatter)
   | Some global -> extract_global_decl_aux ctx fmt global body interface
   | None -> ()
 
+(** The name a trait declaration is known by *)
+let external_trait_decl_name (ctx : extraction_ctx) (trait_decl : trait_decl)
+    (external_info : Pure.external_trait_decl_info option) : string =
+  match external_info with
+  | Some info -> info.extract_name
+  | None -> ctx_compute_trait_decl_name ctx trait_decl
+
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_register_parent_clause_names (ctx : extraction_ctx)
     (trait_decl : trait_decl)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
-  (* Compute the clause names *)
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
+  (* The external information supplies names, not shapes: we compute the ones it
+     leaves out, and match the clauses by position. *)
+  let given =
+    match external_info with
+    | None -> []
+    | Some info -> info.parent_clauses
+  in
+  let decl_name = external_trait_decl_name ctx trait_decl external_info in
   let clause_names =
-    match builtin_info with
-    | None ->
-        List.map
-          (fun (c : trait_param) ->
-            let name = ctx_compute_trait_parent_clause_name ctx trait_decl c in
-            (* Add a prefix if necessary *)
-            let name =
-              if !record_fields_short_names then name
-              else ctx_compute_trait_decl_name ctx trait_decl ^ name
-            in
-            (c.clause_id, name))
-          trait_decl.parent_clauses
-    | Some info ->
-        [%cassert] trait_decl.item_meta.span
-          (List.length trait_decl.parent_clauses
-          = List.length info.parent_clauses)
-          ("Invalid builtin information for trait decl: "
-          ^ name_to_string ctx trait_decl.item_meta.name
-          ^ "; expected "
-          ^ string_of_int (List.length trait_decl.parent_clauses)
-          ^ " parent clauses, found "
-          ^ string_of_int (List.length info.parent_clauses));
-        List.map
-          (fun (c, name) -> (c.clause_id, name))
-          (List.combine trait_decl.parent_clauses info.parent_clauses)
+    List.mapi
+      (fun i (c : trait_param) ->
+        let name =
+          match List.nth_opt given i with
+          | Some name -> name
+          | None ->
+              let name =
+                ctx_compute_trait_parent_clause_name ctx trait_decl c
+              in
+              if !record_fields_short_names then name else decl_name ^ name
+        in
+        (c.clause_id, name))
+      trait_decl.parent_clauses
   in
   (* Register the names *)
   List.fold_left
@@ -2740,28 +2948,29 @@ let extract_trait_decl_register_parent_clause_names (ctx : extraction_ctx)
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_register_constant_names (ctx : extraction_ctx)
     (trait_decl : trait_decl)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
   let consts = trait_decl.consts in
   (* Compute the names *)
   let constant_names =
-    match builtin_info with
-    | None ->
-        List.map
-          (fun (const_id, item_name, _) ->
-            let name = ctx_compute_trait_const_name ctx trait_decl item_name in
-            (* Add a prefix if necessary *)
-            let name =
-              if !record_fields_short_names then name
-              else ctx_compute_trait_decl_name ctx trait_decl ^ name
-            in
-            (const_id, name))
-          consts
-    | Some info ->
-        let const_map = StringMap.of_list info.consts in
-        List.map
-          (fun (const_id, item_name, _) ->
-            (const_id, StringMap.find item_name const_map))
-          consts
+    let given =
+      match external_info with
+      | None -> StringMap.empty
+      | Some info -> StringMap.of_list info.consts
+    in
+    let decl_name = external_trait_decl_name ctx trait_decl external_info in
+    List.map
+      (fun (const_id, item_name, _) ->
+        let name =
+          match StringMap.find_opt item_name given with
+          | Some name -> name
+          | None ->
+              let name =
+                ctx_compute_trait_const_name ctx trait_decl item_name
+              in
+              if !record_fields_short_names then name else decl_name ^ name
+        in
+        (const_id, name))
+      consts
   in
   (* Register the names *)
   List.fold_left
@@ -2774,39 +2983,30 @@ let extract_trait_decl_register_constant_names (ctx : extraction_ctx)
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_type_names (ctx : extraction_ctx)
     (trait_decl : trait_decl)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
   let types = trait_decl.types in
   (* Compute the names *)
   let type_names =
-    match builtin_info with
-    | None ->
-        let compute_type_name (item_name : string) : string =
-          let type_name =
-            ctx_compute_trait_type_name ctx trait_decl item_name
-          in
-          if !record_fields_short_names then type_name
-          else ctx_compute_trait_decl_name ctx trait_decl ^ type_name
+    let given =
+      match external_info with
+      | None -> StringMap.empty
+      | Some info -> StringMap.of_list info.types
+    in
+    let decl_name = external_trait_decl_name ctx trait_decl external_info in
+    List.map
+      (fun (type_id, item_name) ->
+        let type_name =
+          match StringMap.find_opt item_name given with
+          | Some type_name -> type_name
+          | None ->
+              let type_name =
+                ctx_compute_trait_type_name ctx trait_decl item_name
+              in
+              if !record_fields_short_names then type_name
+              else decl_name ^ type_name
         in
-        List.map
-          (fun (type_id, item_name) ->
-            (* Type name *)
-            let type_name = compute_type_name item_name in
-            (type_id, type_name))
-          types
-    | Some info ->
-        let type_map = StringMap.of_list info.types in
-        List.map
-          (fun (type_id, item_name) ->
-            match StringMap.find_opt item_name type_map with
-            | Some type_name -> (type_id, type_name)
-            | None ->
-                [%craise] trait_decl.item_meta.span
-                  ("Unexpected error: could not find the information for the \
-                    trait associated type '" ^ item_name
-                 ^ "' for trait declaration '"
-                  ^ name_to_string ctx trait_decl.item_meta.name
-                  ^ "'"))
-          types
+        (type_id, type_name))
+      types
   in
   (* Register the names *)
   List.fold_left
@@ -2819,7 +3019,7 @@ let extract_trait_decl_type_names (ctx : extraction_ctx)
 (** Similar to {!extract_trait_decl_register_names} *)
 let extract_trait_decl_method_names (ctx : extraction_ctx)
     (trait_decl : trait_decl) (_trait_decl_name : string)
-    (builtin_info : Pure.builtin_trait_decl_info option) : extraction_ctx =
+    (external_info : Pure.external_trait_decl_info option) : extraction_ctx =
   [%ltrace trait_decl.name];
   let methods = trait_decl.methods in
   (* Small helper *)
@@ -2842,46 +3042,32 @@ let extract_trait_decl_method_names (ctx : extraction_ctx)
     (* Add a prefix if necessary *)
     let name =
       if !record_fields_short_names then name
-      else ctx_compute_trait_decl_name ctx trait_decl ^ "_" ^ name
+      else external_trait_decl_name ctx trait_decl external_info ^ "_" ^ name
     in
     (None, name)
   in
   (* Compute the names *)
   let method_names =
-    match builtin_info with
-    | None ->
-        (* Not a builtin function *)
-        List.map
-          (fun meth ->
-            let default_id, fun_name = compute_item_name meth in
+    let given =
+      match external_info with
+      | None -> StringMap.empty
+      | Some info -> StringMap.of_list info.methods
+    in
+    List.map
+      (fun meth ->
+        (* Having a default comes from the LLBC either way. *)
+        let default_id =
+          Option.map
+            (fun (default : fun_decl_ref) -> default.fun_id)
+            meth.default.binder_value
+        in
+        match StringMap.find_opt meth.item_name given with
+        | Some (info : Pure.external_fun_info) ->
+            (meth.method_id, default_id, info.extract_name)
+        | None ->
+            let _, fun_name = compute_item_name meth in
             (meth.method_id, default_id, fun_name))
-          methods
-    | Some info ->
-        (* This is a builtin *)
-        let funs_map = StringMap.of_list info.methods in
-        List.map
-          (fun meth ->
-            match StringMap.find_opt meth.item_name funs_map with
-            | None ->
-                [%warn] trait_decl.item_meta.span
-                  ("When retrieving the builtin information for trait decl '"
-                 ^ trait_decl.name
-                 ^ "', could not find the information for item '"
-                 ^ meth.item_name ^ "'. The model defined in the "
-                 ^ Config.backend_name ()
-                 ^ " library seems to be missing the corresponding field.");
-                (* Use the LLBC definition to compute the name *)
-                let default_id, fun_name = compute_item_name meth in
-                (meth.method_id, default_id, fun_name)
-            | Some info ->
-                let fun_name = info.extract_name in
-                let default_id =
-                  Option.map
-                    (fun (default : fun_decl_ref) -> default.fun_id)
-                    meth.default.binder_value
-                in
-                (meth.method_id, default_id, fun_name))
-          methods
+      methods
   in
   (* Register the names *)
   List.fold_left
@@ -2903,7 +3089,7 @@ let extract_trait_decl_register_names (ctx : extraction_ctx)
     (trait_decl : trait_decl) : extraction_ctx =
   let ctx, trait_name =
     let trait_name, trait_constructor =
-      match trait_decl.builtin_info with
+      match trait_decl.external_info with
       | None ->
           ( ctx_compute_trait_decl_name ctx trait_decl,
             ctx_compute_trait_decl_constructor ctx trait_decl )
@@ -2919,20 +3105,20 @@ let extract_trait_decl_register_names (ctx : extraction_ctx)
     in
     (ctx, trait_name)
   in
-  let builtin_info = trait_decl.builtin_info in
+  let external_info = trait_decl.external_info in
   (* Parent clauses *)
   let ctx =
-    extract_trait_decl_register_parent_clause_names ctx trait_decl builtin_info
+    extract_trait_decl_register_parent_clause_names ctx trait_decl external_info
   in
   (* Constants *)
   let ctx =
-    extract_trait_decl_register_constant_names ctx trait_decl builtin_info
+    extract_trait_decl_register_constant_names ctx trait_decl external_info
   in
   (* Types *)
-  let ctx = extract_trait_decl_type_names ctx trait_decl builtin_info in
+  let ctx = extract_trait_decl_type_names ctx trait_decl external_info in
   (* Required methods *)
   let ctx =
-    extract_trait_decl_method_names ctx trait_decl trait_name builtin_info
+    extract_trait_decl_method_names ctx trait_decl trait_name external_info
   in
   ctx
 
@@ -2941,13 +3127,13 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
     (trait_impl : trait_impl) : extraction_ctx =
   [%ldebug
     "trait_impl.impl_trait" ^ trait_decl_ref_to_string ctx trait_impl.impl_trait];
-  (* Register some builtin information (if necessary) *)
-  let ctx, builtin_info =
-    match trait_impl.builtin_info with
+  (* Register some external information (if necessary) *)
+  let ctx, external_info =
+    match trait_impl.external_info with
     | None -> (ctx, None)
-    | Some builtin_info ->
+    | Some external_info ->
         let ctx =
-          match builtin_info.keep_params with
+          match external_info.keep_params with
           | None -> ctx
           | Some filter ->
               {
@@ -2958,7 +3144,7 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
               }
         in
         let ctx =
-          match builtin_info.keep_trait_clauses with
+          match external_info.keep_trait_clauses with
           | None -> ctx
           | Some filter ->
               {
@@ -2968,14 +3154,60 @@ let extract_trait_impl_register_names (ctx : extraction_ctx)
                     ctx.trait_impls_filter_trait_clauses_map;
               }
         in
-        (ctx, Some builtin_info)
+        (ctx, Some external_info)
+  in
+  (* Under [-core-models-lib], drop dangling allocator-shaped type params and
+     orphan trait clauses (same heuristic as for functions). Trait impls have
+     no "inputs"; the type variables they bind show up in [impl_trait], its
+     parent trait refs, the associated types it implements, and so on. We
+     pass all of those as extra scan context so they don't get wrongly
+     classified as unused. *)
+  let ctx =
+    if not (should_register_allocator_filter trait_impl.item_meta) then ctx
+    else
+      let assoc_tys = List.map (fun (_, _, ty) -> ty) trait_impl.types in
+      let type_args_filter id =
+        TypeDeclId.Map.find_opt id ctx.types_filter_type_args_map
+      in
+      match
+        compute_allocator_filter
+          ~extra_trait_decl_refs:[ trait_impl.impl_trait ]
+          ~extra_trait_refs:trait_impl.parent_trait_refs ~type_args_filter
+          trait_impl.generics assoc_tys None trait_impl.preds
+      with
+      | None -> ctx
+      | Some (keep_params, keep_trait_clauses) ->
+          let ctx =
+            if
+              TraitImplId.Map.mem trait_impl.def_id
+                ctx.trait_impls_filter_type_args_map
+            then ctx
+            else
+              {
+                ctx with
+                trait_impls_filter_type_args_map =
+                  TraitImplId.Map.add trait_impl.def_id keep_params
+                    ctx.trait_impls_filter_type_args_map;
+              }
+          in
+          if
+            TraitImplId.Map.mem trait_impl.def_id
+              ctx.trait_impls_filter_trait_clauses_map
+          then ctx
+          else
+            {
+              ctx with
+              trait_impls_filter_trait_clauses_map =
+                TraitImplId.Map.add trait_impl.def_id keep_trait_clauses
+                  ctx.trait_impls_filter_trait_clauses_map;
+            }
   in
 
   (* Everything is taken care of by {!extract_trait_decl_register_names} *but*
      the name of the implementation itself *)
   (* Compute the name *)
   let name =
-    match builtin_info with
+    match external_info with
     | None -> ctx_compute_trait_impl_name ctx trait_impl
     | Some info -> info.extract_name
   in
@@ -3652,10 +3884,30 @@ let extract_trait_impl (ctx : extraction_ctx) (fmt : F.formatter)
         extract_trait_impl_item ctx fmt item_name ty)
       (List.combine trait_decl.implied_clauses impl.parent_trait_refs);
 
-    (* The methods *)
+    (* The methods.
+
+       If the [filter_trait_impl_methods] option is on, we skip the methods
+       which are absent from the model of the trait declaration. *)
+    let keep_method : string -> bool =
+      if not !filter_trait_impl_methods then fun _ -> true
+      else
+        let pure_trait_decl =
+          [%unwrap_with_span] span
+            (TraitDeclId.Map.find_opt trait_decl_id ctx.trans_trait_decls)
+            "Could not lookup the translated trait declaration"
+        in
+        match pure_trait_decl.external_info with
+        | None -> fun _ -> true
+        | Some info ->
+            let method_names =
+              Collections.StringSet.of_list (List.map fst info.methods)
+            in
+            fun item_name -> Collections.StringSet.mem item_name method_names
+    in
     List.iter
-      (fun (method_id, _name, bound_fn) ->
-        extract_trait_impl_method_items ctx fmt impl method_id bound_fn)
+      (fun (method_id, name, bound_fn) ->
+        if keep_method name then
+          extract_trait_impl_method_items ctx fmt impl method_id bound_fn)
       impl.methods;
 
     (* Close the outer boxes for the definition, as well as the brackets *)
@@ -3749,7 +4001,7 @@ let extract_unit_test_if_marked (ctx : extraction_ctx) (fmt : F.formatter)
             F.pp_print_space fmt ());
           F.pp_print_string fmt ")%return."
       | Lean ->
-          F.pp_print_string fmt "#assert";
+          F.pp_print_string fmt "#guard";
           F.pp_print_space fmt ();
           F.pp_print_string fmt "(";
           let fun_name =
@@ -3759,14 +4011,9 @@ let extract_unit_test_if_marked (ctx : extraction_ctx) (fmt : F.formatter)
           if sg.inputs <> [] then (
             F.pp_print_space fmt ();
             F.pp_print_string fmt "()");
+          F.pp_print_string fmt ").reducesTo";
           F.pp_print_space fmt ();
-          F.pp_print_string fmt "==";
-          F.pp_print_space fmt ();
-          let success =
-            ctx_get_variant def.item_meta.span (TBuiltin TResult) result_ok_id
-              ctx
-          in
-          F.pp_print_string fmt (success ^ " ())")
+          F.pp_print_string fmt "()"
       | HOL4 ->
           F.pp_print_string fmt "val _ = assert_ok (";
           F.pp_print_string fmt "“";

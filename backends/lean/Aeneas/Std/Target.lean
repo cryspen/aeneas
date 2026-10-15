@@ -1,11 +1,14 @@
-import Aeneas.Std.Scalar
-import Aeneas.Std.Slice
-import Aeneas.Std.StringDef
+module
+public import Aeneas.Std.Scalar
+public import Aeneas.Std.Slice
+public import Aeneas.Std.StringDef
 
 /-! # Compilation Target and Target Features
 
     Models of the compilation target and of the target features which are
     available on the machine executing the code. -/
+
+public section
 
 namespace Aeneas.Std
 
@@ -13,7 +16,7 @@ namespace Aeneas.Std
 
     Used by multi-target dispatch: nothing meaningful can be deduced from
     its output. -/
-axiom get_target : Result Str
+axiom get_target : RustM Str
 
 @[step]
 axiom get_target.spec : get_target ⦃ fun _ => True ⦄

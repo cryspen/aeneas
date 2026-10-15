@@ -1,10 +1,13 @@
-import Lean
-import AeneasMeta.Utils
-import Aeneas.Std.Primitives
-import AeneasMeta.Extensions
-import Aeneas.Tactic.Step.Trace
-import Aeneas.Std.WP
-import AeneasMeta.OptionConfig
+module
+public import Lean
+public import AeneasMeta.Utils
+public import Aeneas.Std.Primitives
+public import AeneasMeta.Extensions
+public import Aeneas.Tactic.Step.Trace
+public import Aeneas.Tactic.Step.SpecInfo
+public import AeneasMeta.OptionConfig
+public import Mathlib.Order.Defs.LinearOrder
+public section
 
 namespace Aeneas
 
@@ -12,19 +15,6 @@ namespace Step
 
 open Lean Elab Term Meta
 open Utils Extensions
-
-/-!
-# Attribute: `step_simps`
--/
-
-/-- The `step_simps` simp attribute. -/
-initialize stepSimpExt : SimpExtension ←
-  registerSimpAttr `step_simps "\
-    The `step_simps` attribute registers simp lemmas to be used by `step`
-    to simplify the goal before looking up lemmas. If often happens that some
-    monadic function calls, if given some specific parameters (in particuler,
-    specific trait instances), can be simplified to far simpler functions: this
-    is the main purpose of this attribute."
 
 /-!
 # Attribute: `step_pre_simps`
@@ -208,7 +198,7 @@ section Methods
      Given type `α₀ × ... × αₙ`, introduce fresh variables
      `x₀ : α₀, ..., xₙ : αₙ` and call the continuation with those.
   -/
-  def withFreshTupleFieldFVars [Inhabited a] (basename : Name) (ty : Expr) (k : Array Expr → m a) : m a := do
+  meta def withFreshTupleFieldFVars [Inhabited a] (basename : Name) (ty : Expr) (k : Array Expr → m a) : m a := do
     let tys := destProdsType ty
     let tys := List.map (fun (ty, i) => (Name.num basename i, fun _ => pure ty)) (List.zipIdx tys)
     withLocalDeclsD ⟨ tys ⟩ k
@@ -221,7 +211,7 @@ end Methods
   ∀ x1 ... xn, H1 → ... Hn → spec (f x1 ... xn) P
   ```
 -/
-def getStepSpecFunArgsExpr (ty : Expr) :
+meta def getStepSpecFunArgsExpr (ty : Expr) :
   MetaM (Expr × SpecInfo) := do
   let ty := ty.consumeMData
   unless ← isProp ty do
@@ -240,6 +230,8 @@ def getStepSpecFunArgsExpr (ty : Expr) :
   then pure (args[info.program_index]!, info) -- this is `f x1 ... xn`
   else throwError "Expected to be a `spec (f x1 ... xn) P`, got {ty₂}"
 
+meta section
+
 deriving instance Ord for Lean.Name
 structure Rules where
   /--
@@ -252,13 +244,14 @@ structure Rules where
      come out of scope) on the side -/
   deactivated : Std.HashSet Name
 deriving Inhabited
+end
 
-def Rules.empty : Rules := ⟨ Std.TreeMap.empty, Std.HashSet.emptyWithCapacity ⟩
+meta def Rules.empty : Rules := ⟨ Std.TreeMap.empty, Std.HashSet.emptyWithCapacity ⟩
 
-def Extension := SimpleScopedEnvExtension ((Name × DiscrTreeKey) × Name) Rules
+@[expose] def Extension := SimpleScopedEnvExtension ((Name × DiscrTreeKey) × Name) Rules
 deriving Inhabited
 
-def Rules.insert (r : Rules) (kv : (Name × Array DiscrTree.Key) × Name) : Rules :=
+meta def Rules.insert (r : Rules) (kv : (Name × Array DiscrTree.Key) × Name) : Rules :=
   let ((specName, prog), thm) := kv
   { rules :=
     r.rules.insert specName ((match r.rules.get? specName with
@@ -268,10 +261,10 @@ def Rules.insert (r : Rules) (kv : (Name × Array DiscrTree.Key) × Name) : Rule
     ,
     deactivated := r.deactivated.erase kv.snd }
 
-def Rules.erase (r : Rules) (k : Name) : Rules :=
+meta def Rules.erase (r : Rules) (k : Name) : Rules :=
   { r with deactivated := r.deactivated.insert k }
 
-def mkExtension (name : Name := by exact decl_name%) :
+meta def mkExtension (name : Name := by exact decl_name%) :
   IO Extension :=
   registerSimpleScopedEnvExtension {
     name        := name,
@@ -285,73 +278,341 @@ structure StepSpecAttr where
   ext  : Extension
   deriving Inhabited
 
-private def generateMvcgenSpec (toMvcgenThm : Name) (stx : Syntax) (attrKind : AttributeKind)
-    (thDecl : AsyncConstantInfo) : MetaM Unit := do
+/-! ## Register a spec for the `step` tactic -/
+
+/-- Register a theorem using `spec` with `step`. -/
+private meta def saveStepSpecFromThm (ext : Extension) (attrKind : AttributeKind)
+    (thName : Name) (ty : Expr) : MetaM Unit := do
+  let (fExpr, info) ← getStepSpecFunArgsExpr ty
+  trace[Step] "Registering spec theorem for expr: {fExpr}"
+  -- Convert the function expression to a discrimination tree key
+  let fKey ← DiscrTree.mkPath fExpr
+  -- TODO: use info.name to use a different discrimination tree here!
+  ScopedEnvExtension.add ext ((info.spec_name, fKey), thName) attrKind
+  trace[Step] "Saved the entry"
+
+section
+open Aeneas.Std
+
+/-! ## Convert a `partialSpec` theorem into a theorem for the `step` tactic
+
+The `step` tactic cannot directly handle spec lemmas that use the `partialSpec` predicate.
+So, when the `@[step]` attribute is applied to `partialSpec` theorems, we need to convert
+the statement about `partialSpec` into a statement about `spec`. We use the following mechanisms
+to do that:
+
+- A `partialSpec` theorem may use match-syntax of the form
+  `fun | .panic => ↑x + ↑y > UScalar.max ty | _ => False`
+  to distinguish different kinds of `Error`s.
+  We canoncialize this syntax into an expression like
+  `fun e => e = panic ∧ ↑x + ↑y > UScalar.max ty`.
+
+- We apply the lemma `spec_of_partialSpec` to replace the `partialSpec` statement with an
+  corresponding statement using the `spec` predicate
+
+- We use the simplifier with a restricted simp set to make the preconditions of the `spec` theorem
+  look nicer. For instance, we rewrite `¬a ≤ b` into `b < a`.
+-/
+
+/-- For `simplifyStepHypotheses`: rewrites `∀ e, ¬ (e = c ∧ P)` to `¬ P`. -/
+theorem step_fail_failEq_iff {c : Aeneas.Std.Error} {P : Prop} :
+    (∀ e, ¬ (e = c ∧ P)) ↔ ¬ P :=
+  ⟨fun h hP => h c ⟨rfl, hP⟩, fun h _ h' => h h'.2⟩
+
+/-- For `simplifyStepHypotheses`: rewrites `∀ _ : Error, P` to `P`. -/
+theorem step_fail_remove_forall_iff {P : Prop} :
+    (∀ _ : Aeneas.Std.Error, P) ↔ P :=
+  ⟨fun h => h Error.panic, fun h _ => h⟩
+
+/-- For `simplifyStepHypotheses`: rewrites `∀ e, ¬ False` to `True`. -/
+theorem step_fail_False_iff :
+    (∀ (_ : Aeneas.Std.Error), ¬ False) ↔ True :=
+  ⟨fun _ => trivial, fun _ _ h => h⟩
+
+end
+
+/-- Build a `Simp.Context` containing exactly the given lemmas (no default simp set,
+    no simprocs). The resulting `simp` call is equivalent to `simp only [lemmas...]`. -/
+private meta def mkSimpOnlyContext (lemmas : Array Name) : MetaM Simp.Context := do
+  let mut simpThms : SimpTheorems := {}
+  for thmName in lemmas do
+    simpThms ← simpThms.addConst thmName (post := false) (inv := false)
+  Simp.mkContext
+    (config := { failIfUnchanged := false })
+    (simpTheorems := #[simpThms])
+    (congrTheorems := ← getSimpCongrTheorems)
+
+/-- Recursively split a metavariable whose target is `P ∧ Q` into separate goals
+    for each conjunct. Returns the list of leaf mvars. -/
+private meta partial def splitAndGoals (mvarId : MVarId) : MetaM (Array MVarId) := do
+  let target ← instantiateMVars (← mvarId.getType)
+  if !target.isAppOfArity ``And 2 then
+    return #[mvarId]
+  let baseTag ← mvarId.getTag
+  Prod.snd <$> go baseTag mvarId 0 #[]
+where
+  go (baseTag : Name) (mvarId : MVarId) (idx : Nat) (acc : Array MVarId) :
+      MetaM (Nat × Array MVarId) := do
+    let target ← instantiateMVars (← mvarId.getType)
+    match target.app2? ``And with
+    | some (p, q) =>
+      let m₁ ← mkFreshExprSyntheticOpaqueMVar p
+      let m₂ ← mkFreshExprSyntheticOpaqueMVar q
+      mvarId.assign (← mkAppM ``And.intro #[m₁, m₂])
+      let (idx, acc) ← go baseTag m₁.mvarId! idx acc
+      go baseTag m₂.mvarId! idx acc
+    | none =>
+      if !baseTag.isAnonymous then
+        mvarId.setTag (baseTag.appendIndexAfter (idx + 1))
+      return (idx + 1, acc.push mvarId)
+
+/-- Simp lemmas shared by `simplifyStepHypotheses` and `simplifyMvcgenHypotheses` -/
+private meta def commonSimpLemmas : Array Name :=
+  #[``gt_iff_lt, ``ge_iff_le, ``not_or, ``not_lt, ``not_le, ``or_imp, ``imp_true_iff, ``not_true,
+    ``true_implies, ``forall_and, ``true_and, ``and_true]
+
+/-- To bring a match on `Error` into canonical form, the following lemma is helpful.
+It's used in `canonicalizeFailPostcond` below.  -/
+theorem error_pred_eq_disj (p : Aeneas.Std.Error → Prop) :
+    p = fun e =>
+      (e = .panic ∧ p .panic) ∨
+      (e = .undef ∧ p .undef) := by
+  funext e; cases e <;> simp
+
+/-- If the failure postcondition `p_fail` of `partialSpec` is written as a `match`
+    of the shape `fun | Cᵢ => Pᵢ | … | _ => False`, return a proof of the
+    same `partialSpec` but with `p_fail` replaced by the equivalent disjunction
+    `fun e => (e = C₁ ∧ p_fail C₁) ∨ … ∨ (e = Cₖ ∧ p_fail Cₖ)`.
+
+    Returns `thApp` unchanged if `p_fail` is not such a `match`. -/
+private meta def canonicalizeFailPostcond (thApp : Expr) : MetaM Expr := do
+  try
+    let ty ← instantiateMVars (← inferType thApp)
+    let fn := ty.getAppFn
+    unless fn.isConstOf ``Aeneas.Std.WP.partialSpec do return thApp
+    let args := ty.getAppArgs
+    unless args.size == 5 do return thApp
+    let p_fail := args[3]!
+    let isMatch ← withLocalDeclD `e (.const ``Aeneas.Std.Error []) fun e =>
+      return (← matchMatcherApp? (p_fail.beta #[e]).headBeta).isSome
+    unless isMatch do return thApp
+    -- `heq : p_fail = fun e => ⋁ᵢ (e = Cᵢ ∧ p_fail Cᵢ)`; transport `thApp` across it along the
+    -- motive `fun pf => partialSpec x p_ok pf p_div`.
+    let heq ← mkAppM ``error_pred_eq_disj #[p_fail]
+    let motive ← withLocalDeclD `pf (← inferType p_fail) fun pf =>
+      mkLambdaFVars #[pf] (mkAppN fn (args.set! 3 pf))
+    mkEqMP (← mkCongrArg motive heq) thApp
+  catch _ => return thApp
+
+/-- Try to simplify the arguments produced by `spec_of_partialSpec` -/
+private meta def simplifyStepHypotheses (mvarFail mvarDiv : Expr) : MetaM Unit := do
+  let simpCtx ← mkSimpOnlyContext (#[
+      ``step_fail_failEq_iff, ``step_fail_remove_forall_iff,
+      ``step_fail_False_iff, ``not_false_iff] ++ commonSimpLemmas)
+  let simplify (mv : Expr) (name : String) : MetaM Unit := do
+    trace[Step] "simplifyStepHypotheses: {name} type: {← inferType mv}"
+    try
+      let (mvarId?, _) ← simpTarget mv.mvarId! simpCtx (simprocs := {})
+      if let some mvarId := mvarId? then
+        discard <| splitAndGoals mvarId
+    catch e => trace[Step] "simplifyStepHypotheses: simp on {name} failed: {e.toMessageData}"
+  simplify mvarFail "hFail"
+  simplify mvarDiv "hDiv"
+
+/-- Register a theorem using `partialSpec` with `step`. This function generates a auxiliary lemma
+using `spec` instead of `partialSpec` and registers that one with `step`, so that the `step`
+tactic will only ever see `spec`. -/
+private meta def saveStepPartialSpecFromThm (ext : Extension) (attrKind : AttributeKind) (stx : Syntax)
+    (thDecl : AsyncConstantInfo) (ty : Expr) : MetaM Unit := do
+  trace[Step] "saveStepPartialSpecFromThm: {thDecl.name}"
+  let sig := thDecl.sig.get
+  let levelParams := sig.levelParams
+  let (newName, newTy) ← forallTelescope ty fun fvars _ => do
+    let thConst := Lean.mkConst thDecl.name (levelParams.map Level.param)
+    let thApp ← canonicalizeFailPostcond (mkAppN thConst fvars)
+    let bridge ← mkAppM ``Aeneas.Std.WP.spec_of_partialSpec #[thApp]
+    let (extraMVars, _, _) ← forallMetaTelescope (← inferType bridge)
+    unless extraMVars.size = 2 do
+      throwError "spec_of_partialSpec: expected 2 extra arguments, got {extraMVars.size}"
+    simplifyStepHypotheses extraMVars[0]! extraMVars[1]!
+    let proof := mkAppN bridge extraMVars
+    let { expr := proofAbstracted, .. } ← abstractMVars proof
+    let proofTerm ← mkLambdaFVars fvars proofAbstracted
+    let thmTy ← inferType proofTerm
+    let name := Name.str thDecl.name "step_spec"
+    let auxDecl : TheoremVal := {
+      name
+      levelParams
+      type  := thmTy
+      value := proofTerm
+    }
+    addDecl (.thmDecl auxDecl)
+    addDeclarationRangesFromSyntax name stx
+    pure (name, thmTy)
+  saveStepSpecFromThm ext attrKind newName newTy
+
+/-! ## Convert a `spec` theorem into a spec theorem for `mvcgen`
+
+The `mvcgen` tactic cannot process spec theorems that use the `spec` predicate. Instead, `mvcgen`
+expects the `Triple` predicate. We use the `spec_to_mvcgen` lemma to convert a statement about
+`spec` into a statement about `Triple`.
+-/
+
+private meta def saveMvcgenDecl (attrKind : AttributeKind) (stx : Syntax)
+    (originalThDecl : AsyncConstantInfo) (thmTy proofTerm : Expr) : MetaM Unit := do
+  let mvcgenSpecName := Name.str originalThDecl.name "mvcgen_spec"
+  let auxDecl : TheoremVal := {
+    name        := mvcgenSpecName
+    levelParams := originalThDecl.sig.get.levelParams
+    type        := thmTy
+    value       := proofTerm
+  }
+  addDecl (.thmDecl auxDecl)
+  addDeclarationRangesFromSyntax mvcgenSpecName stx
+  -- Register with @[spec] so mvcgen can find it
+  Lean.Attribute.add mvcgenSpecName `spec .missing attrKind
+  trace[Step] "Registered {mvcgenSpecName} as `@[spec]`."
+
+/-- Register a theorem using `spec` with `mvcgen`. -/
+private meta def saveMvcgenSpecFromThm (stx : Syntax) (attrKind : AttributeKind)
+    (thDecl : AsyncConstantInfo) (ty : Expr) : MetaM Unit := do
+  trace[Step] "saveMvcgenSpecFromThm: {thDecl.name}"
+  let (_, info) ← getStepSpecFunArgsExpr ty
+  let some to_mvcgen := info.to_mvcgen
+    | trace[Step] "No `to_mvcgen` conversion function found: {thDecl.name}"
+      return
   let sig := thDecl.sig.get
   let thName := thDecl.name
   forallTelescope sig.type fun fvars _ => do
-    -- Apply the original theorem to all fvars to get: spec (f args) Q
     let thConst := Lean.mkConst thName (sig.levelParams.map .param)
     let thApp := mkAppN thConst fvars
-    -- Wrap with spec_to_mvcgen to produce: Triple (f args) ⌜True⌝ post⟨...⟩
-    let proof ← mkAppM toMvcgenThm #[thApp]
+    -- Wrap with spec_to_mvcgen to produce a statement about `Triple`.
+    let proof ← mkAppM to_mvcgen #[thApp]
     let innerTy ← inferType proof
-    -- Re-introduce all fvars as binders
     let proofTerm ← mkLambdaFVars fvars proof
     let thmTy ← mkForallFVars fvars innerTy
-    let mvcgenSpecName := Name.str thName "mvcgen_spec"
-    let auxDecl : TheoremVal := {
-      name        := mvcgenSpecName
-      levelParams := sig.levelParams
-      type        := thmTy
-      value       := proofTerm
-    }
-    addDecl (.thmDecl auxDecl)
-    addDeclarationRangesFromSyntax mvcgenSpecName stx
-    -- Register with @[spec] so mvcgen can find it
-    Lean.Attribute.add mvcgenSpecName `spec .missing attrKind
+    saveMvcgenDecl attrKind stx thDecl thmTy proofTerm
 
-private def saveStepSpecFromThm (ext : Extension) (attrKind : AttributeKind) (stx : Syntax)
+/-! ## Convert a `partialSpec` theorem into a spec theorem for `mvcgen`
+
+The `mvcgen` tactic cannot process spec theorems that use the `partialSpec` predicate either.
+We convert a `partialSpec` theorem into a `Triple` theorem for `mvcgen` as follows:
+
+- A `partialSpec` theorem may use match-syntax of the form
+  `fun | .panic => ↑x + ↑y > UScalar.max ty | _ => False`
+  to distinguish different kinds of `Error`s.
+  We canoncialize this syntax into an expression like
+  `fun e => e = panic ∧ ↑x + ↑y > UScalar.max ty`.
+
+- We apply the lemma `partialSpec_to_mvcgen` to replace the `partialSpec` statement with an
+  corresponding statement using the `Triple` predicate
+
+- We use the simplifier with a restricted simp set to make the preconditions of the `spec` theorem
+  look nicer. For instance, we rewrite `¬a ≤ b` into `b < a`.
+-/
+section
+open Aeneas.Std WP RustM
+
+theorem mvcgen_fail_failEq_iff {α : Type u} {Q : Std.Do.PostCond α postShape}
+    {c : Error} {P : Prop} :
+    (∀ e, (e = c ∧ P) → PostCond.fail Q e) ↔ (P → PostCond.fail Q c) :=
+  ⟨fun h hP => h c ⟨rfl, hP⟩, fun h _ ⟨he, hP⟩ => he ▸ h hP⟩
+
+theorem mvcgen_fail_False_iff {α : Type u} {Q : Std.Do.PostCond α postShape} :
+    (∀ e, False → PostCond.fail Q e) ↔ True :=
+  ⟨fun _ => trivial, fun _ _ h => h.elim⟩
+
+theorem mvcgen_uncurry' {α β} {p : α → β → Prop} {q : α × β → Prop} :
+    (∀ (r : α × β), uncurry' p r → q r) ↔ (∀ (r₁ : α) (r₂ : β), p r₁ r₂ → q (r₁, r₂)) := by simp
+
+end
+
+/-- Try to simplify the arguments produced by `partialSpec_to_mvcgen`. -/
+private meta def simplifyMvcgenHypotheses (mvarOk mvarFail mvarDiv : Expr) : MetaM Unit := do
+  let simpCtx ← mkSimpOnlyContext (#[
+      ``mvcgen_fail_failEq_iff, ``mvcgen_fail_False_iff,
+      ``mvcgen_uncurry', ``false_imp_iff, ``and_imp, ``forall_eq] ++ commonSimpLemmas)
+  let simplify (mv : Expr) (name : String) : MetaM Unit := do
+    trace[Step] "simplifyMvcgenHypotheses: {name} type: {← inferType mv}"
+    try
+      let (mvarId?, _) ← simpTarget mv.mvarId! simpCtx (simprocs := {})
+      if let some mvarId := mvarId? then
+        discard <| splitAndGoals mvarId
+    catch e => trace[Step] "simplifyMvcgenHypotheses: simp on {name} failed: {e.toMessageData}"
+  simplify mvarOk "hOk"
+  simplify mvarFail "hFail"
+  simplify mvarDiv "hDiv"
+
+/-- Register a theorem using `partialSpec` with `mvcgen`. -/
+private meta def saveMvcgenPartialSpecFromThm (stx : Syntax) (attrKind : AttributeKind)
+    (thDecl : AsyncConstantInfo) : MetaM Unit := do
+  trace[Step] "saveMvcgenPartialSpecFromThm: {thDecl.name}"
+  let sig := thDecl.sig.get
+  let thName := thDecl.name
+  forallTelescope sig.type fun fvars _ => do
+    let thConst := Lean.mkConst thName (sig.levelParams.map .param)
+    let thApp ← canonicalizeFailPostcond (mkAppN thConst fvars)
+    let bridge ← mkAppOptM ``Aeneas.Std.WP.partialSpec_to_mvcgen
+      #[none, none, none, none, none, some thApp]
+    let (extraMVars, _, _) ← forallMetaTelescope (← inferType bridge)
+    unless extraMVars.size = 4 do
+      throwError "partialSpec_to_mvcgen: expected 4 extra arguments, got {extraMVars.size}"
+    simplifyMvcgenHypotheses extraMVars[1]! extraMVars[2]! extraMVars[3]!
+    let proof := mkAppN bridge extraMVars
+    let { expr := proofAbstracted, .. } ← abstractMVars proof
+    let proofTerm ← mkLambdaFVars fvars proofAbstracted
+    let thmTy ← inferType proofTerm
+    saveMvcgenDecl attrKind stx thDecl thmTy proofTerm
+
+/-! ## Applying the @[step] attribute
+
+When the `@[step]` attribute is attached to a lemma, we register this lemma both with the `step`
+tactic and with the `mvcgen` tactic. Depending whether the lemma uses the `partialSpec` predicate
+or one of the `step`-internal predicates `spec` and `dspec`, we need to apply different
+preprocessing before registering the lemmas.
+-/
+
+/-- Check whether a theorem is a `partialSpec` -/
+meta def isPartialSpec (ty : Expr) : MetaM Bool := do
+  let ty := ty.consumeMData
+  let (_, _, ty₂) ← forallMetaTelescope ty
+  let (spec?, args) := ty₂.consumeMData.withApp (fun f args => (f, args))
+  pure (spec?.isConstOf ``Std.WP.partialSpec ∧ args.size = 5)
+
+/-- Register a theorem (either `spec` or `partialSpec`) with `step` and `mvcgen`. -/
+private meta def applyStepAttr (ext : Extension) (attrKind : AttributeKind) (stx : Syntax)
     (thName : Name) : AttrM Unit := do
-  -- Lookup the theorem
-  let env ← getEnv
   -- Ignore some auxiliary definitions (see the comments for attrIgnoreMutRec)
   attrIgnoreAuxDef thName (pure ()) do
     trace[Step] "Registering `step` theorem for {thName}"
-    let some thDecl := env.findAsync? thName
-      | throwError "Could not find theorem {thName}"
-    let type := thDecl.sig.get.type
-    let (fKey, info) ← MetaM.run' (do
+    MetaM.run' do
+      let env ← getEnv
+      let some thDecl := env.findAsync? thName
+        | throwError "Could not find theorem {thName}"
+      let type := thDecl.sig.get.type
       trace[Step] "Theorem: {type}"
-      -- Normalize to eliminate the let-bindings
       let ty ← normalizeLetBindings type
       trace[Step] "Theorem after normalization (to eliminate the let bindings): {ty}"
-      let (fExpr, info) ← getStepSpecFunArgsExpr ty
-      trace[Step] "Registering spec theorem for expr: {fExpr}"
-      -- Convert the function expression to a discrimination tree key
-      pure (← DiscrTree.mkPath fExpr, info))
-    -- Save the entry
-    -- TODO: use info.name to use a different discrimination tree here!
-    ScopedEnvExtension.add ext ((info.spec_name, fKey), thName) attrKind
-    trace[Step] "Saved the entry"
-    -- Also generate a corresponding mvcgen (@[spec]) lemma
-    try
-      trace[Step] "Registering with mvcgen"
-      if let .some thm := info.to_mvcgen then
-        MetaM.run' (generateMvcgenSpec thm stx attrKind thDecl)
-    catch e =>
-      logWarning m!"Could not generate mvcgen spec for {thName}: {e.toMessageData}"
-    pure ()
+      if ← isPartialSpec ty then
+        try saveStepPartialSpecFromThm ext attrKind stx thDecl ty
+        catch e => logWarning m!"Could not generate step spec for {thName}: {e.toMessageData}"
+        try saveMvcgenPartialSpecFromThm stx attrKind thDecl
+        catch e => logWarning m!"Could not generate mvcgen spec for {thName}: {e.toMessageData}"
+      else
+        try saveStepSpecFromThm ext attrKind thName ty
+        catch e => logWarning m!"Could not save step spec for {thName}: {e.toMessageData}"
+        try saveMvcgenSpecFromThm stx attrKind thDecl ty
+        catch e => logWarning m!"Could not generate mvcgen spec for {thName}: {e.toMessageData}"
 
-/- Initiliaze the `step` attribute. -/
-initialize stepAttr : StepSpecAttr ← do
+/-- Initialize the `step` attribute. -/
+meta initialize stepAttr : StepSpecAttr ← do
   let ext ← mkExtension `stepMap
   let attrImpl : AttributeImpl := {
     name := `step
     descr := "Adds theorems to the `step` database"
     add := fun thName stx attrKind => do
       Attribute.Builtin.ensureNoArgs stx
-      saveStepSpecFromThm ext attrKind stx thName
+      applyStepAttr ext attrKind stx thName
     erase := fun thName => do
       let s := ext.getState (← getEnv)
       let s := s.erase thName
@@ -360,7 +621,7 @@ initialize stepAttr : StepSpecAttr ← do
   registerBuiltinAttribute attrImpl
   pure { attr := attrImpl, ext := ext }
 
-def StepSpecAttr.find? (s : StepSpecAttr) (name : Name) (e : Expr) : MetaM (Array Name) := do
+meta def StepSpecAttr.find? (s : StepSpecAttr) (name : Name) (e : Expr) : MetaM (Array Name) := do
   let env ← getEnv
   let state := s.ext.getState env
   let specState := specAttr.getState env
@@ -371,10 +632,10 @@ def StepSpecAttr.find? (s : StepSpecAttr) (name : Name) (e : Expr) : MetaM (Arra
   let rules ← dtree.getMatch e
   pure (rules.filter (fun th => th ∉ state.deactivated))
 
-def StepSpecAttr.getState (s : StepSpecAttr) : MetaM Rules := do
+meta def StepSpecAttr.getState (s : StepSpecAttr) : MetaM Rules := do
   pure (s.ext.getState (← getEnv))
 
-def showStoredStepThms : MetaM Unit := do
+meta def showStoredStepThms : MetaM Unit := do
   let st ← stepAttr.getState
   -- TODO: how can we iterate over (at least) the values stored in the tree?
   --let s := st.toList.foldl (fun s (f, th) => f!"{s}\n{f} → {th}") f!""
@@ -389,7 +650,7 @@ namespace Test
   /-!
   Making some tests here as models to guide the automation generation of proof terms when lifting theorems in `step_pure`
   -/
-  open Std Result
+  open Std RustM
   def pos_pair : Int × Int := (0, 1)
 
   theorem pos_pair_is_pos :
@@ -447,7 +708,7 @@ theorem spec_lift {α : Type} (x : α) (P : α → Prop) (h : P x) :
   simp [Std.lift]
   apply h
 
-def reduceProdProjs (e : Expr) : MetaM Expr := do
+meta def reduceProdProjs (e : Expr) : MetaM Expr := do
   let pre (e : Expr) : MetaM TransformStep := do
     trace[Utils] "Attempting to reduce: {e}"
     match ← reduceProj? e with
@@ -513,7 +774,7 @@ end Test
 
     Note that the pattern is optional: if the user doesn't provide it, we completely decompose
 -/
-def liftThmType (thmTy : Expr) (pat : Option Syntax)
+meta def liftThmType (thmTy : Expr) (pat : Option Syntax)
   /- `mkPat` generates the pattern to use to guide the replacement.
 
   For instance: `∃ x y, foo a = (x, y)`
@@ -582,13 +843,13 @@ def liftThmType (thmTy : Expr) (pat : Option Syntax)
   pure thmTy
 
 
-def liftThmReplaceInTy (thm0 pat npat : Expr) (_ : Array Expr) : MetaM Expr := do
+meta def liftThmReplaceInTy (thm0 pat npat : Expr) (_ : Array Expr) : MetaM Expr := do
   let thm ← mapVisit (fun _ e => do if e == pat then pure npat else pure e) thm0
   /- Reduce a bit the expression, but in a controlled manner, to make it cleaner -/
   let thm ← normalizeLetBindings thm
   reduceProdProjs thm
 
-def liftThm (stx : Syntax) (name : Name) (pat : Option (TSyntax `term))
+meta def liftThm (stx : Syntax) (name : Name) (pat : Option (TSyntax `term))
   (mkPat : Array Expr → Expr → MetaM Expr := fun _ _ => failure)
   (mkPred := liftThmReplaceInTy)
   (suffix : String := "step_spec")
@@ -694,7 +955,7 @@ syntax (name := step_pure) "step_pure" term : attr
 section
   variable {m : Type → Type} [Monad m] [MonadOptions m] [MonadTrace m] [AddMessageContext m] [MonadError m]
 
-  partial def parseCommaSeparated (isTuple : Bool) (stx : Syntax) (acc : Array Syntax := #[]) :
+  meta partial def parseCommaSeparated (isTuple : Bool) (stx : Syntax) (acc : Array Syntax := #[]) :
     m (Array Syntax) := do
     trace[StepElab] "parsing comma separated: {stx} with acc: {acc}"
     -- TODO: check if ident
@@ -750,7 +1011,7 @@ section
     return the list of identifiers appearing inside the pattern.
 
   Remark: I tried implementing something simpler based on pattern matching but couldn't get it to work. -/
-  partial def getStepPurePatternIdents (stx : Syntax) : m (Array Ident) := do
+  meta partial def getStepPurePatternIdents (stx : Syntax) : m (Array Ident) := do
     trace[StepElab] "syntax: {stx}"
     -- Check if this is an identifier
     match stx with
@@ -807,7 +1068,7 @@ end
 open Elab Term Attribute in
 /-- We desugar patterns of the shape `foo = (x, y, z)` to `∃ x y z, foo = (x, y, z)` in order to bind
     the variables introduced in the right-hand side, allowing us to elaborate the patterns. -/
-def elabStepPureAttribute (stx : Syntax) : AttrM (TSyntax `term) :=
+meta def elabStepPureAttribute (stx : Syntax) : AttrM (TSyntax `term) :=
   withRef stx do
     match stx with
     | `(attr| step_pure $x = $pat) => do
@@ -868,7 +1129,7 @@ structure StepPureSpecAttr where
    If we don't put an equality in the pattern, `step_pure` will introduce one variable
    per field in the type of the pattern, if it is a tuple.
  -/
-initialize stepPureAttribute : StepPureSpecAttr ← do
+meta initialize stepPureAttribute : StepPureSpecAttr ← do
   let attrImpl : AttributeImpl := {
     name := `step_pure
     descr := "Adds lifted version of pure theorems to the `step_pure` database"
@@ -882,7 +1143,7 @@ initialize stepPureAttribute : StepPureSpecAttr ← do
         -- Introduce the lifted theorem
         let liftedThmName ← MetaM.run' (liftThm stx thName pat)
         -- Save the lifted theorem to the `step` database
-        saveStepSpecFromThm stepAttr.ext attrKind stx liftedThmName
+        applyStepAttr stepAttr.ext attrKind stx liftedThmName
   }
   registerBuiltinAttribute attrImpl
   pure { attr := attrImpl }
@@ -909,7 +1170,7 @@ syntax (name := step_pure_def) "step_pure_def" (term)? : attr
 
 /-- We desugar patterns of the shape `foo = (x, y, z)` to `∃ x y z, foo = (x, y, z)` in order to bind
     the variables introduced in the right-hand side, allowing us to elaborate the patterns. -/
-def elabStepPureDefPattern (stx : Syntax) : AttrM (TSyntax `term) :=
+meta def elabStepPureDefPattern (stx : Syntax) : AttrM (TSyntax `term) :=
   withRef stx do
     match stx with
     | `(term| $x = $pat)
@@ -932,7 +1193,7 @@ structure StepPureDefSpecAttr where
 theorem specLiftDef {α} (x : α) : Std.WP.spec (Std.lift x) (fun y => y = x) := by
   simp only [Std.lift, Std.WP.spec_ok]
 
-def mkStepPureDefThm (stx : Syntax) (pat : Option (TSyntax `term)) (n : Name)
+meta def mkStepPureDefThm (stx : Syntax) (pat : Option (TSyntax `term)) (n : Name)
   (suffix : String := "step_spec") : MetaM Name := do
   -- Regular case
   let mkPat (fvars : Array Expr) (ty : Expr) : MetaM Expr := do
@@ -987,7 +1248,7 @@ info: Aeneas.Step.Test.wrapping_add.step_spec (x y : U8) : Std.lift (wrapping_ad
   #check wrapping_add.step_spec
 end Test
 
-def elabStepPureDefAttribute (stx : Syntax) : AttrM (Option (TSyntax `term)) :=
+meta def elabStepPureDefAttribute (stx : Syntax) : AttrM (Option (TSyntax `term)) :=
   withRef stx do
     match stx with
     | `(attr| step_pure_def $x = $pat)
@@ -1008,7 +1269,7 @@ def elabStepPureDefAttribute (stx : Syntax) : AttrM (Option (TSyntax `term)) :=
 
 /- The `step_pure_def` attribute, which automatically generates
    step lemmas for pure definitions. -/
-initialize stepPureDefAttribute : StepPureDefSpecAttr ← do
+meta initialize stepPureDefAttribute : StepPureDefSpecAttr ← do
   let attrImpl : AttributeImpl := {
     name := `step_pure_def
     descr := "Automatically generate `step` theorems for pure definitions"
@@ -1023,7 +1284,7 @@ initialize stepPureDefAttribute : StepPureDefSpecAttr ← do
         -- Introduce the lifted theorem
         let thmName ← MetaM.run' (mkStepPureDefThm stx pat declName)
         -- Save the lifted theorem to the `step` database
-        saveStepSpecFromThm stepAttr.ext attrKind stx thmName
+        applyStepAttr stepAttr.ext attrKind stx thmName
   }
   registerBuiltinAttribute attrImpl
   pure { attr := attrImpl }
@@ -1031,7 +1292,7 @@ initialize stepPureDefAttribute : StepPureDefSpecAttr ← do
 open Tactic
 
 /-! # Logging Utils -/
-def traceGoalWithNode (msg : String) : TacticM Unit := Utils.traceGoalWithNode `Step msg
+meta def traceGoalWithNode (msg : String) : TacticM Unit := Utils.traceGoalWithNode `Step msg
 
 end Step
 

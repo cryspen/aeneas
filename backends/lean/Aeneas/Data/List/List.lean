@@ -1,15 +1,17 @@
 /- Complementary functions and lemmas for the `List` type -/
+module
 
-import Mathlib.Data.List.GetD
-import Aeneas.Tactic.Solver.ScalarTac
-import AeneasMeta.Utils
-import Aeneas.Tactic.Simp.SimpLemmas
-import Aeneas.Data.Nat
-import Aeneas.Tactic.Simp.SimpLists.Init
-import Aeneas.Std.Primitives
-import Aeneas.Tactic.Simp.SimpLists.SimpLists
-import Aeneas.Tactic.Simp.SimpScalar.SimpScalar
-import Aeneas.Tactic.Solver.Grind.Init
+public import Mathlib.Data.List.GetD
+public import Aeneas.Tactic.Solver.ScalarTac
+public import AeneasMeta.Utils
+public import Aeneas.Tactic.Simp.SimpLemmas
+public import Aeneas.Data.Nat
+public import Aeneas.Tactic.Simp.SimpLists.Init
+public import Aeneas.Std.Primitives
+public import Aeneas.Tactic.Simp.SimpLists.SimpLists
+public import Aeneas.Tactic.Simp.SimpScalar.SimpScalar
+public import Aeneas.Tactic.Solver.Grind.Init
+public section
 
 namespace List -- We do not use the `Aeneas` namespace on purpose
 
@@ -63,6 +65,7 @@ theorem getElem_cons_nzero {α} (hd : α) (tl : List α) (i : Nat)
   | zero => scalar_tac
   | succ n => simp
 
+@[expose]
 def slice (start end_ : Nat) (ls : List α) : List α :=
   (ls.drop start).take (end_ - start)
 
@@ -570,7 +573,7 @@ theorem eq_iff_forall_eq_getElem! {α} [Inhabited α] (l0 l1 : List α) :
       simp only [hi, getElem?_length_le, none_eq_getElem?_iff]
       simp only [← h0, hi]
 
-theorem mapM_Result_length {α : Type w} {β : Type u} {f : α → Std.Result β} {l : List α} {l' : List β}
+theorem mapM_RustM_length {α : Type w} {β : Type u} {f : α → Std.RustM β} {l : List α} {l' : List β}
   (h : List.mapM f l = .ok l') :
   l'.length = l.length := by
   have hind (l : List α) (l' acc : List β) (h : List.mapM.loop f l acc = .ok l') : l'.length = l.length + acc.length
@@ -587,9 +590,9 @@ theorem mapM_Result_length {α : Type w} {β : Type u} {f : α → Std.Result β
   have := hind l l' [] h
   simp [this]
 
-theorem mapM_Result_ok {α β} {l : List α} {l' : List β} {f : α → Std.Result β}
+theorem mapM_RustM_ok {α β} {l : List α} {l' : List β} {f : α → Std.RustM β}
     (hok : l.mapM f = .ok l') :
-    ∀ i (hi : i < l.length), f l[i] = .ok (l'[i]'(by have := List.mapM_Result_length hok; omega)) := by
+    ∀ i (hi : i < l.length), f l[i] = .ok (l'[i]'(by have := List.mapM_RustM_length hok; omega)) := by
   induction l generalizing l' with
   | nil => intro i hi; contradiction
   | cons a t ih =>
@@ -612,14 +615,14 @@ theorem splitAt_length {α : Type u}  (n : Nat)  (l : List α) :
 section -- setSlice!
   attribute [-simp] getElem!_eq_getElem?_getD
 
-  def setSlice! {α} (s : List α) (i : ℕ) (s' : List α) : List α :=
+  @[expose] def setSlice! {α} (s : List α) (i : ℕ) (s' : List α) : List α :=
     let s0 := List.take i s
     let n := min s'.length (s.length - i)
     let s1 := List.take n s'
     let s2 := List.drop (i + n) s
     s0 ++ s1 ++ s2
 
-  @[simp, simp_lists_safe, scalar_tac_simps, grind =]
+  @[simp, simp_lists_safe, scalar_tac_simps, grind =, agrind =]
   theorem length_setSlice! {α} (s : List α) (i : ℕ) (s' : List α) :
     (s.setSlice! i s').length = s.length := by
     simp only [setSlice!, append_assoc, length_append, length_take, inf_le_left, inf_of_le_left,

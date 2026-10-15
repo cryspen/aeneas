@@ -1,0 +1,177 @@
+module
+import Aeneas.Std.Scalar
+import Aeneas.Tactic.Step
+
+/-!
+# Tests: `@[step]` accepts `partialSpec` lemmas
+
+For a theorem using `partialSpec`, marking it with `@[step]` should register it for `step*` and
+for `mvcgen`.
+-/
+
+namespace Aeneas.Step.SpecPartialTests
+
+open Aeneas Aeneas.Std RustM Std.Do WP
+
+set_option mvcgen.warning false
+
+/- ## Mock division: panics when dividing by zero, but does not specify `Error`. -/
+
+opaque myDiv (x y : U32) : RustM U32
+
+@[step]
+axiom myDiv_partialSpec (x y : U32) :
+  partialSpec (myDiv x y)
+    (fun z => z.val = x.val / y.val)
+    (fun _ => y.val = 0)
+    False
+
+/-- step* -/
+example (x y : U32) (h : y.val ≠ 0) :
+    spec (myDiv x y) (fun z => z.val = x.val / y.val) := by
+  step*
+
+/-- mvcgen: total correctness -/
+example (x y : U32) (h : y.val ≠ 0) :
+    ⦃ ⌜ True ⌝ ⦄ (myDiv x y) ⦃ ⇓ z => ⌜ z.val = x.val / y.val ⌝ ⦄ := by
+  mvcgen
+
+/-- mvcgen: partial correctness -/
+example (x y : U32) :
+    ⦃ ⌜ True ⌝ ⦄ (myDiv x y) ⦃ ⇓? z => ⌜ z.val = x.val / y.val ⌝ ⦄ := by
+  mvcgen
+
+/--
+info: Aeneas.Step.SpecPartialTests.myDiv_partialSpec.step_spec (x y : U32) (h_fail : ¬↑y = 0) :
+  myDiv x y ⦃ z => ↑z = ↑x / ↑y ⦄
+-/
+#guard_msgs in
+#check myDiv_partialSpec.step_spec
+
+/--
+info: Aeneas.Step.SpecPartialTests.myDiv_partialSpec.mvcgen_spec (x y : U32) (Q : PostCond U32 postShape)
+  (h_ok : ∀ (r : U32), ↑r = ↑x / ↑y → PostCond.ok Q r) (h_fail : ∀ (e : Error), ↑y = 0 → PostCond.fail Q e) :
+  ⦃⌜True⌝⦄ myDiv x y ⦃Q⦄
+-/
+#guard_msgs in
+#check myDiv_partialSpec.mvcgen_spec
+
+/- ## Mock addition: panics on overflow, specifies `Error.panic` -/
+
+opaque myAdd (x y : U32) : RustM U32
+
+@[step]
+axiom myAdd_partialSpec (x y : U32) :
+  partialSpec (myAdd x y)
+    (fun z => z.val = x.val + y.val)
+    (fun | .panic => x.val + y.val > U32.max | _ => False)
+    False
+
+-- Pushing `¬` through `>` should produce `≤`.
+/--
+info: Aeneas.Step.SpecPartialTests.myAdd_partialSpec.step_spec (x y : U32) (h_fail : ↑x + ↑y ≤ U32.max) :
+  myAdd x y ⦃ z => ↑z = ↑x + ↑y ⦄
+-/
+#guard_msgs in
+#check myAdd_partialSpec.step_spec
+
+/--
+info: Aeneas.Step.SpecPartialTests.myAdd_partialSpec.mvcgen_spec (x y : U32) (Q : PostCond U32 postShape)
+  (h_ok : ∀ (r : U32), ↑r = ↑x + ↑y → PostCond.ok Q r) (h_fail : U32.max < ↑x + ↑y → PostCond.fail Q Error.panic) :
+  ⦃⌜True⌝⦄ myAdd x y ⦃Q⦄
+-/
+#guard_msgs in
+#check myAdd_partialSpec.mvcgen_spec
+
+
+/- ## Mock signed add: panics on over- and underflow -/
+
+opaque myAddSigned (x y : I32) : RustM I32
+
+@[step]
+axiom myAddSigned_partialSpec (x y : I32) :
+  partialSpec (myAddSigned x y)
+    (fun z => z.val = x.val + y.val)
+    (fun | .panic => (x.val + y.val > I32.max ∨ x.val + y.val < I32.min) | _ => False)
+    False
+
+/--
+info: Aeneas.Step.SpecPartialTests.myAddSigned_partialSpec.step_spec (x y : I32) (h_fail_1 : ↑x + ↑y ≤ I32.max)
+  (h_fail_2 : I32.min ≤ ↑x + ↑y) : myAddSigned x y ⦃ z => ↑z = ↑x + ↑y ⦄
+-/
+#guard_msgs in
+#check myAddSigned_partialSpec.step_spec
+
+/--
+info: Aeneas.Step.SpecPartialTests.myAddSigned_partialSpec.mvcgen_spec (x y : I32) (Q : PostCond I32 postShape)
+  (h_ok : ∀ (r : I32), ↑r = ↑x + ↑y → PostCond.ok Q r) (h_fail_1 : I32.max < ↑x + ↑y → PostCond.fail Q Error.panic)
+  (h_fail_2 : ↑x + ↑y < I32.min → PostCond.fail Q Error.panic) : ⦃⌜True⌝⦄ myAddSigned x y ⦃Q⦄
+-/
+#guard_msgs in
+#check myAddSigned_partialSpec.mvcgen_spec
+
+
+/- ## Mock infinte loop: always diverges -/
+
+opaque infiniteLoop : RustM Unit
+
+@[step]
+axiom infiniteLoop_partialSpec :
+  partialSpec infiniteLoop
+    (fun _ => False)
+    (fun _ => False)
+    True
+
+/--
+info: Aeneas.Step.SpecPartialTests.infiniteLoop_partialSpec.step_spec (h_div : False) : infiniteLoop ⦃ x✝ => False ⦄
+-/
+#guard_msgs in
+#check infiniteLoop_partialSpec.step_spec
+
+/--
+info: Aeneas.Step.SpecPartialTests.infiniteLoop_partialSpec.mvcgen_spec (Q : PostCond Unit postShape)
+  (h_div : PostCond.div Q) : ⦃⌜True⌝⦄ infiniteLoop ⦃Q⦄
+-/
+#guard_msgs in
+#check infiniteLoop_partialSpec.mvcgen_spec
+
+
+/- ## Composition: `step*` and `mvcgen` chain several `partialSpec` lemmas -/
+
+example (x y z : U32) (h0 : x.val + y.val ≤ U32.max) (h1 : z.val ≠ 0) :
+    spec (do let s ← myAdd x y; myDiv s z) (fun r => r.val = (x.val + y.val) / z.val) := by
+  step*
+
+example (x y z : U32) :
+    ⦃ ⌜ True ⌝ ⦄ (do let s ← myAdd x y; myDiv s z)
+    ⦃ ⇓? r => ⌜ r.val = (x.val + y.val) / z.val ⌝ ⦄ := by
+  mvcgen
+  simp_all
+
+/- ## Several error cases in the failure predicate -/
+
+opaque myCheck (x : U32) : RustM U32
+
+@[step]
+axiom myCheck_partialSpec (x : U32) :
+  partialSpec (myCheck x)
+    (fun z => z = x)
+    (fun | .panic => x.val = 0 | .undef => x.val = 1)
+    False
+
+/--
+info: Aeneas.Step.SpecPartialTests.myCheck_partialSpec.step_spec (x : U32) (h_fail_1 : ¬↑x = 0) (h_fail_2 : ¬↑x = 1) :
+  myCheck x ⦃ z => z = x ⦄
+-/
+#guard_msgs in
+#check myCheck_partialSpec.step_spec
+
+/--
+info: Aeneas.Step.SpecPartialTests.myCheck_partialSpec.mvcgen_spec (x : U32) (Q : PostCond U32 postShape)
+  (h_ok : PostCond.ok Q x) (h_fail_1 : ↑x = 0 → PostCond.fail Q Error.panic)
+  (h_fail_2 : ↑x = 1 → PostCond.fail Q Error.undef) : ⦃⌜True⌝⦄ myCheck x ⦃Q⦄
+-/
+#guard_msgs in
+#check myCheck_partialSpec.mvcgen_spec
+
+end Aeneas.Step.SpecPartialTests

@@ -1,32 +1,34 @@
-import Aeneas.Std.Scalar.Core
-import Aeneas.Std.Scalar.Misc
-import Aeneas.Std.Scalar.Elab
-import Aeneas.Tactic.Solver.ScalarTac
-import Mathlib.Data.BitVec
+module
+public import Aeneas.Std.Scalar.Core
+public import Aeneas.Std.Scalar.Misc
+public import Aeneas.Std.Scalar.Elab
+public import Aeneas.Tactic.Solver.ScalarTac
+public import Mathlib.Data.BitVec
+public section
 
 namespace Aeneas.Std
 
-open Result Error Arith ScalarElab WP
+open RustM Error Arith ScalarElab WP
 
 /-!
 # Addition: Definitions
 -/
-def UScalar.add {ty : UScalarTy} (x y : UScalar ty) : Result (UScalar ty) :=
+def UScalar.add {ty : UScalarTy} (x y : UScalar ty) : RustM (UScalar ty) :=
   UScalar.tryMk ty (x.val + y.val)
 
-def IScalar.add {ty : IScalarTy} (x y : IScalar ty) : Result (IScalar ty) :=
+def IScalar.add {ty : IScalarTy} (x y : IScalar ty) : RustM (IScalar ty) :=
   IScalar.tryMk ty (x.val + y.val)
 
 def UScalar.try_add {ty : UScalarTy} (x y : UScalar ty) : Option (UScalar ty) :=
-  Option.ofResult (add x y)
+  Option.ofRustM (add x y)
 
 def IScalar.try_add {ty : IScalarTy} (x y : IScalar ty) : Option (IScalar ty) :=
-  Option.ofResult (add x y)
+  Option.ofRustM (add x y)
 
-instance {ty} : HAdd (UScalar ty) (UScalar ty) (Result (UScalar ty)) where
+instance {ty} : HAdd (UScalar ty) (UScalar ty) (RustM (UScalar ty)) where
   hAdd x y := UScalar.add x y
 
-instance {ty} : HAdd (IScalar ty) (IScalar ty) (Result (IScalar ty)) where
+instance {ty} : HAdd (IScalar ty) (IScalar ty) (RustM (IScalar ty)) where
   hAdd x y := IScalar.add x y
 
 
@@ -35,37 +37,37 @@ instance {ty} : HAdd (IScalar ty) (IScalar ty) (Result (IScalar ty)) where
 -/
 
 theorem UScalar.add_equiv {ty} (x y : UScalar ty) :
-  match x + y with
-  | ok z => x.val + y.val < 2^ty.numBits ∧
+  match (x + y).match with
+  | .ok z => x.val + y.val < 2^ty.numBits ∧
     z.val = x.val + y.val ∧
     z.bv = x.bv + y.bv
-  | fail _ => ¬ (UScalar.inBounds ty (x.val + y.val))
+  | .vis (.fail e) _ => e = .panic ∧ ¬ (UScalar.inBounds ty (x.val + y.val))
   | _ => ⊥ := by
   have : x + y = add x y := by rfl
   rw [this]
-  simp [add]
-  have h := tryMk_eq ty (↑x + ↑y)
+  simp [add, tryMk, RustM.ofOption]
+  have h := tryMkOpt_eq ty (↑x + ↑y)
   simp [inBounds] at h
-  split at h <;> simp_all
+  cases hopt : tryMkOpt ty (↑x + ↑y) <;> simp_all
   zify; simp
   zify at h
   have := @Int.emod_eq_of_lt (x.val + y.val) (2^ty.numBits) (by omega) (by omega)
   simp [*]
 
 theorem IScalar.add_equiv {ty} (x y : IScalar ty) :
-  match x + y with
-  | ok z =>
+  match (x + y).match with
+  | .ok z =>
     IScalar.inBounds ty (x.val + y.val) ∧
     z.val = x.val + y.val ∧
     z.bv = x.bv + y.bv
-  | fail _ => ¬ (IScalar.inBounds ty (x.val + y.val))
+  | .vis (.fail e) _ => e = .panic ∧ ¬ (IScalar.inBounds ty (x.val + y.val))
   | _ => ⊥ := by
   have : x + y = add x y := by rfl
   rw [this]
-  simp [add]
-  have h := tryMk_eq ty (↑x + ↑y)
+  simp [add, tryMk, RustM.ofOption]
+  have h := tryMkOpt_eq ty (↑x + ↑y)
   simp [inBounds] at h
-  split at h <;> simp_all
+  cases hopt : tryMkOpt ty (↑x + ↑y) <;> simp_all
   apply BitVec.eq_of_toInt_eq
   simp
   have := bmod_pow_numBits_eq_of_lt ty (x.val + y.val) (by omega) (by omega)
@@ -92,6 +94,7 @@ theorem IScalar.add_bv_spec {ty}  {x y : IScalar ty}
   x + y ⦃ z => (↑z : Int) = ↑x + ↑y ∧ z.bv = x.bv + y.bv ⦄ := by
   have h := @add_equiv ty x y
   split at h <;> simp_all [min, max]
+  have : 0 < 2^ty.numBits := by simp
   omega
 
 uscalar theorem «%S».add_bv_spec {x y : «%S»} (hmax : x.val + y.val ≤ «%S».max) :
@@ -111,56 +114,71 @@ only integers. Those are the most common to use, so we mark them with the
 
 /-- Generic theorem - shouldn't be used much -/
 @[step]
-theorem UScalar.add_spec {ty} {x y : UScalar ty}
-  (hmax : ↑x + ↑y ≤ UScalar.max ty) :
-  x + y ⦃ z => (↑z : Nat) = ↑x + ↑y ⦄ := by
+theorem UScalar.add_spec {ty} {x y : UScalar ty} :
+    partialSpec (x + y)
+      (fun z => (↑z : Nat) = ↑x + ↑y)
+      (fun | .panic => ↑x + ↑y > UScalar.max ty | _ => False)
+      False := by
   have h := @add_equiv ty x y
-  split at h <;> simp_all [max]
+  simp only [partialSpec]
+  split <;> simp_all [max]
   have : 0 < 2^ty.numBits := by simp
   omega
 
 /-- Generic theorem - shouldn't be used much -/
 @[step]
-theorem IScalar.add_spec {ty} {x y : IScalar ty}
-  (hmin : IScalar.min ty ≤ ↑x + ↑y)
-  (hmax : ↑x + ↑y ≤ IScalar.max ty) :
-  x + y ⦃ z => (↑z : Int) = ↑x + ↑y ⦄ := by
+theorem IScalar.add_spec {ty} {x y : IScalar ty} :
+    partialSpec (x + y)
+      (fun z => (↑z : Int) = ↑x + ↑y)
+      (fun | .panic => ↑x + ↑y < IScalar.min ty ∨ ↑x + ↑y > IScalar.max ty | _ => False)
+      False := by
   have h := @add_equiv ty x y
-  split at h <;> simp_all [min, max]
+  simp only [partialSpec]
+  split <;> simp_all [min, max, inBounds]
   omega
 
-uscalar @[step] theorem «%S».add_spec {x y : «%S»} (hmax : x.val + y.val ≤ «%S».max) :
-  x + y ⦃ z => (↑z : Nat) = ↑x + ↑y ⦄ :=
-  UScalar.add_spec (by scalar_tac)
+uscalar @[step] theorem «%S».add_spec {x y : «%S»} :
+    partialSpec (x + y)
+      (fun z => (↑z : Nat) = ↑x + ↑y)
+      (fun | .panic => ↑x + ↑y > «%S».max | _ => False)
+      False := by
+  convert @UScalar.add_spec _ x y; scalar_tac
 
-iscalar @[step] theorem «%S».add_spec {x y : «%S»}
-  (hmin : «%S».min ≤ ↑x + ↑y) (hmax : ↑x + ↑y ≤ «%S».max) :
-  x + y ⦃ z => (↑z : Int) = ↑x + ↑y ⦄ :=
-  IScalar.add_spec (by scalar_tac) (by scalar_tac)
+iscalar @[step] theorem «%S».add_spec {x y : «%S»} :
+    partialSpec (x + y)
+      (fun z => (↑z : Int) = ↑x + ↑y)
+      (fun | .panic => ↑x + ↑y < «%S».min ∨ ↑x + ↑y > «%S».max | _ => False)
+      False := by
+  convert @IScalar.add_spec _ x y <;> scalar_tac
 
 /-!
 # Addition through a shared reference
 -/
 
 def SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add
-  {ty : UScalarTy} (x y : UScalar ty) : Result (UScalar ty) :=
+  {ty : UScalarTy} (x y : UScalar ty) : RustM (UScalar ty) :=
   x + y
 
 /-- Generic theorem - shouldn't be used much -/
 @[step]
-theorem SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add_spec
-  {ty} {x y : UScalar ty} (hmax : ↑x + ↑y ≤ UScalar.max ty) :
-  SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add x y
-    ⦃ z => (↑z : Nat) = ↑x + ↑y ⦄ :=
-  UScalar.add_spec hmax
+theorem SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add_spec {ty} {x y : UScalar ty} :
+    partialSpec (SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add x y)
+      (fun z => (↑z : Nat) = ↑x + ↑y)
+      (fun | .panic => ↑x + ↑y > UScalar.max ty | _ => False)
+      False :=
+  UScalar.add_spec
 
-uscalar def «Shared'S».Insts.«CoreOpsArithAdd'S'S».add (x y : «%S») : Result «%S» :=
+uscalar @[expose] def «Shared'S».Insts.«CoreOpsArithAdd'S'S».add (x y : «%S») : RustM «%S» :=
   SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add x y
 
-uscalar @[step] theorem «Shared'S».Insts.«CoreOpsArithAdd'S'S».add_spec
-  {x y : «%S»} (hmax : x.val + y.val ≤ «%S».max) :
-  «Shared'S».Insts.«CoreOpsArithAdd'S'S».add x y ⦃ z => (↑z : Nat) = ↑x + ↑y ⦄ :=
-  SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add_spec (by scalar_tac)
+uscalar @[step] theorem «Shared'S».Insts.«CoreOpsArithAdd'S'S».add_spec {x y : «%S»} :
+    partialSpec («Shared'S».Insts.«CoreOpsArithAdd'S'S».add x y)
+      (fun z => (↑z : Nat) = ↑x + ↑y)
+      (fun | .panic => x.val + y.val > «%S».max | _ => False)
+      False := by
+  convert SharedUScalar.Insts.CoreOpsArithAddUScalarUScalar.add_spec
+  rfl
+  scalar_tac
 
 attribute [rust_fun "core::ops::arith::{core::ops::arith::Add<&'0 u8, u8, u8>}::add"]
   SharedU8.Insts.CoreOpsArithAddU8U8.add

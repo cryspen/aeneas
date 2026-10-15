@@ -114,10 +114,10 @@ and id =
           Example:
           {[
             def CONST.val := 32#u32
-            def CONST : Result u32 := ok CONST.val
+            def CONST : RustM u32 := ok CONST.val
           ]} *)
   | FunId of fun_id
-  | TerminationMeasureId of (A.fun_id * (LoopId.id * bool) option)
+  | TerminationMeasureId of (A.fun_decl_id * (LoopId.id * bool) option)
       (** The definition which provides the decreases/termination measure. We
           insert calls to this clause to prove/reason about termination: the
           body of those clauses must be defined by the user, in the proper
@@ -133,7 +133,7 @@ and id =
            }
            {- in Lean, this is the content of the [termination_by] clause. }
           } *)
-  | DecreasesProofId of (A.fun_id * (LoopId.id * bool) option)
+  | DecreasesProofId of (A.fun_decl_id * (LoopId.id * bool) option)
       (** The definition which provides the decreases/termination proof. We
           insert calls to this clause to prove/reason about termination: the
           body of those clauses must be defined by the user, in the proper
@@ -402,7 +402,7 @@ let allow_collisions (id : id) : bool =
   | TraitTypeId _
   | TraitConstId _
   | TraitMethodId _ -> !Config.record_fields_short_names
-  | FunId (Pure _ | FromLlbc (FunId (FBuiltin _), _)) ->
+  | FunId (Pure _) ->
       (* We map several builtin functions to the same id *)
       true
   | _ -> false
@@ -486,7 +486,6 @@ type names_map_init = {
   builtin_adts : (builtin_ty * string) list;
   builtin_structs : (builtin_ty * string) list;
   builtin_variants : (builtin_ty * VariantId.id * string) list;
-  builtin_llbc_functions : (A.builtin_fun_id * string) list;
   builtin_pure_functions : (pure_builtin_fun_id * string) list;
 }
 
@@ -593,10 +592,14 @@ type extraction_ctx = {
   trans_types : Pure.type_decl Pure.TypeDeclId.Map.t;
   trans_funs : pure_fun_translation A.FunDeclId.Map.t;
   trans_globals : Pure.global_decl Pure.GlobalDeclId.Map.t;
-  builtin_sigs : Pure.fun_sig Builtin.BuiltinFunIdMap.t;
   functions_with_decreases_clause : PureUtils.FunLoopIdSet.t;
   trans_trait_decls : Pure.trait_decl Pure.TraitDeclId.Map.t;
   trans_trait_impls : Pure.trait_impl Pure.TraitImplId.Map.t;
+  specs : Spec.spec list;
+      (** Gathered specs (statements of correctness) for this crate (see
+          {!module:Spec}). *)
+  proof_obligations : Spec.proof_obligation list;
+      (** Gathered proof obligations for this crate (see {!module:Spec}). *)
   types_filter_type_args_map : bool list TypeDeclId.Map.t;
       (** The map to filter the type arguments for the builtin type definitions.
 
@@ -661,8 +664,8 @@ let type_id_to_string (ctx : extraction_ctx) =
 let global_decl_id_to_string (ctx : extraction_ctx) =
   PrintPure.global_decl_id_to_string (extraction_ctx_to_fmt_env ctx)
 
-let llbc_fun_id_to_string (ctx : extraction_ctx) =
-  PrintPure.llbc_fun_id_to_string (extraction_ctx_to_fmt_env ctx)
+let fun_decl_id_to_string (ctx : extraction_ctx) =
+  PrintPure.fun_decl_id_to_string (extraction_ctx_to_fmt_env ctx)
 
 let fun_id_to_string (ctx : extraction_ctx) =
   PrintPure.regular_fun_id_to_string (extraction_ctx_to_fmt_env ctx)
@@ -688,7 +691,7 @@ let id_to_string (span : Meta.span option) (id : id) (ctx : extraction_ctx) :
       "@pureGlobalValue(" ^ global_decl_id_to_string ctx gid ^ ")"
   | FunId fid -> fun_id_to_string ctx fid
   | DecreasesProofId (fid, lid) ->
-      let fun_name = llbc_fun_id_to_string ctx fid in
+      let fun_name = fun_decl_id_to_string ctx fid in
       let loop =
         match lid with
         | None -> ""
@@ -698,7 +701,7 @@ let id_to_string (span : Meta.span option) (id : id) (ctx : extraction_ctx) :
       in
       "decreases proof for function: " ^ fun_name ^ loop
   | TerminationMeasureId (fid, lid) ->
-      let fun_name = llbc_fun_id_to_string ctx fid in
+      let fun_name = fun_decl_id_to_string ctx fid in
       let loop =
         match lid with
         | None -> ""
@@ -822,7 +825,7 @@ let ctx_get_function (span : Meta.span) (id : fun_id) (ctx : extraction_ctx) :
 
 let ctx_get_local_function (span : Meta.span) (id : A.FunDeclId.id)
     (lp : (LoopId.id * bool) option) (ctx : extraction_ctx) : string =
-  ctx_get_function span (FromLlbc (FunId (FRegular id), lp)) ctx
+  ctx_get_function span (FromLlbc (Pure.FunId id, lp)) ctx
 
 let ctx_get_type (span : Meta.span option) (id : type_id) (ctx : extraction_ctx)
     : string =
@@ -909,11 +912,11 @@ let ctx_get_variant (span : Meta.span) (def_id : type_id)
 
 let ctx_get_decreases_proof (span : Meta.span) (def_id : A.FunDeclId.id)
     (loop_id : (LoopId.id * bool) option) (ctx : extraction_ctx) : string =
-  ctx_get (Some span) (DecreasesProofId (FRegular def_id, loop_id)) ctx
+  ctx_get (Some span) (DecreasesProofId (def_id, loop_id)) ctx
 
 let ctx_get_termination_measure (span : Meta.span) (def_id : A.FunDeclId.id)
     (loop_id : (LoopId.id * bool) option) (ctx : extraction_ctx) : string =
-  ctx_get (Some span) (TerminationMeasureId (FRegular def_id, loop_id)) ctx
+  ctx_get (Some span) (TerminationMeasureId (def_id, loop_id)) ctx
 
 let ctx_lookup_fun_decl_info (ctx : extraction_ctx) (id : A.FunDeclId.id) :
     pure_fun_translation option =
@@ -1139,7 +1142,7 @@ let builtin_adts () : (builtin_ty * string) list =
   match backend () with
   | Lean ->
       [
-        (TResult, "Result");
+        (TResult, "RustM");
         (TLoopResult, "ControlFlow");
         (TFuel, "Nat");
         (TArray, "Array");
@@ -1212,37 +1215,6 @@ let builtin_variants () : (builtin_ty * VariantId.id * string) list =
         (* No Fuel::Succ on purpose *)
       ]
 
-let builtin_llbc_functions () : (A.builtin_fun_id * string) list =
-  match backend () with
-  | FStar | Coq | HOL4 ->
-      [
-        (ArrayToSliceShared, "array_to_slice");
-        (ArrayToSliceMut, "array_to_slice_mut");
-        (ArrayRepeat, "array_repeat");
-        ( Index { is_array = true; mutability = RShared; is_range = false },
-          "array_index_usize" );
-        ( Index { is_array = true; mutability = RMut; is_range = false },
-          "array_index_mut_usize" );
-        ( Index { is_array = false; mutability = RShared; is_range = false },
-          "slice_index_usize" );
-        ( Index { is_array = false; mutability = RMut; is_range = false },
-          "slice_index_mut_usize" );
-      ]
-  | Lean ->
-      [
-        (ArrayToSliceShared, "Array.to_slice");
-        (ArrayToSliceMut, "Array.to_slice_mut");
-        (ArrayRepeat, "Array.repeat");
-        ( Index { is_array = true; mutability = RShared; is_range = false },
-          "Array.index_usize" );
-        ( Index { is_array = true; mutability = RMut; is_range = false },
-          "Array.index_mut_usize" );
-        ( Index { is_array = false; mutability = RShared; is_range = false },
-          "Slice.index_usize" );
-        ( Index { is_array = false; mutability = RMut; is_range = false },
-          "Slice.index_mut_usize" );
-      ]
-
 let builtin_pure_functions () : (pure_builtin_fun_id * string) list =
   match backend () with
   | FStar ->
@@ -1254,6 +1226,10 @@ let builtin_pure_functions () : (pure_builtin_fun_id * string) list =
         (FuelEqZero, "is_zero");
         (UpdateAtIndex Slice, "slice_update_usize");
         (UpdateAtIndex Array, "array_update_usize");
+        (IndexAtIndex Slice, "slice_index_usize");
+        (IndexAtIndex Array, "array_index_usize");
+        (IndexMutAtIndex Slice, "slice_index_mut_usize");
+        (IndexMutAtIndex Array, "array_index_mut_usize");
         (ToResult, "return");
       ]
   | Coq ->
@@ -1264,6 +1240,10 @@ let builtin_pure_functions () : (pure_builtin_fun_id * string) list =
         (Assert, "massert");
         (UpdateAtIndex Slice, "slice_update_usize");
         (UpdateAtIndex Array, "array_update_usize");
+        (IndexAtIndex Slice, "slice_index_usize");
+        (IndexAtIndex Array, "array_index_usize");
+        (IndexMutAtIndex Slice, "slice_index_mut_usize");
+        (IndexMutAtIndex Array, "array_index_mut_usize");
         (ToResult, "return_");
       ]
   | Lean ->
@@ -1275,6 +1255,10 @@ let builtin_pure_functions () : (pure_builtin_fun_id * string) list =
         (Discriminant, "read_discriminant");
         (UpdateAtIndex Slice, "Slice.update");
         (UpdateAtIndex Array, "Array.update");
+        (IndexAtIndex Slice, "Slice.index_usize");
+        (IndexAtIndex Array, "Array.index_usize");
+        (IndexMutAtIndex Slice, "Slice.index_mut_usize");
+        (IndexMutAtIndex Array, "Array.index_mut_usize");
         (ToResult, "lift");
         (ResultUnwrapMut, "core.result.Result.unwrap.mut");
         (GetTarget, "get_target");
@@ -1288,6 +1272,10 @@ let builtin_pure_functions () : (pure_builtin_fun_id * string) list =
         (Assert, "massert");
         (UpdateAtIndex Slice, "slice_update_usize");
         (UpdateAtIndex Array, "array_update_usize");
+        (IndexAtIndex Slice, "slice_index_usize");
+        (IndexAtIndex Array, "array_index_usize");
+        (IndexMutAtIndex Slice, "slice_index_mut_usize");
+        (IndexMutAtIndex Array, "array_index_mut_usize");
         (ToResult, "return");
       ]
 
@@ -1297,7 +1285,6 @@ let names_map_init () : names_map_init =
     builtin_adts = builtin_adts ();
     builtin_structs = builtin_struct_constructors ();
     builtin_variants = builtin_variants ();
-    builtin_llbc_functions = builtin_llbc_functions ();
     builtin_pure_functions = builtin_pure_functions ();
   }
 
@@ -1368,12 +1355,8 @@ let initialize_names_maps () : names_maps =
   in
   let builtin_functions =
     List.map
-      (fun (fid, name) ->
-        ((FromLlbc (Pure.FunId (FBuiltin fid), None), None), name))
-      init.builtin_llbc_functions
-    @ List.map
-        (fun (fid, name) -> ((Pure fid, None), name))
-        init.builtin_pure_functions
+      (fun (fid, name) -> ((Pure fid, None), name))
+      init.builtin_pure_functions
   in
   let nm =
     List.fold_left
@@ -1845,8 +1828,27 @@ let ctx_compute_trait_impl_name_raw (ctx : extraction_ctx)
             in
             [%ldebug "trait_name: " ^ trait_name];
 
-            (* Put together *)
-            let name = flatten_name [ self_name; "Insts"; trait_name ] in
+            (* Put together. Under [-core-models-lib], non-local trait impls
+               get prefixed with the Rust crate they originate from (matching
+               the convention used for non-impl items, where the crate is the
+               leading namespace component). For local impls, the local crate
+               is stripped, as elsewhere. We also skip the prefix if the self
+               type's name already starts with that crate (the ADT case),
+               which would otherwise yield a duplicated crate component. *)
+            let name_parts = [ self_name; "Insts"; trait_name ] in
+            let name_parts =
+              if !core_models_lib && not trait_impl.item_meta.is_local then
+                match trait_impl.item_meta.name with
+                | PeIdent (crate, _) :: _ ->
+                    let already_prefixed =
+                      self_name = crate
+                      || String.starts_with ~prefix:(crate ^ ".") self_name
+                    in
+                    if already_prefixed then name_parts else crate :: name_parts
+                | _ -> name_parts
+              else name_parts
+            in
+            let name = flatten_name name_parts in
             [%ldebug "Final name: " ^ name];
             name)
   | Some name -> name
@@ -2122,6 +2124,15 @@ let trait_self_clause_basename = "self_clause"
 let name_append_index (basename : string) (i : int) : string =
   basename ^ string_of_int i
 
+(** Return [true] if [name] is the first component of a qualified name of
+    [names], that is if [names] contains a name of the shape [name ^ "." ^ ...].
+*)
+let is_qualified_name_prefix (name : string) (names : StringSet.t) : bool =
+  let prefix = name ^ "." in
+  match StringSet.find_first_opt (fun s -> s >= prefix) names with
+  | Some s -> String.starts_with ~prefix s
+  | None -> false
+
 let basename_to_unique (ctx : extraction_ctx) (name : string) =
   let collision s =
     (* Note that we ignore the "unsafe" names which contain in particular
@@ -2129,6 +2140,12 @@ let basename_to_unique (ctx : extraction_ctx) (name : string) =
        the backend allows such collisions *)
     StringSet.mem s ctx.names_maps.names_map.names_set
     || StringSet.mem s ctx.names_maps.strict_names_map.names_set
+    (* We also need to avoid shadowing the namespaces (only Lean uses
+       qualified names) *)
+    || backend () = Lean
+       && (is_qualified_name_prefix s ctx.names_maps.names_map.names_set
+          || is_qualified_name_prefix s
+               ctx.names_maps.strict_names_map.names_set)
   in
   basename_to_unique_aux collision name_append_index name
 
@@ -2274,6 +2291,7 @@ let ctx_add_adt_projector_names (decl_name : string) (field_names : string list)
 (** The part of a function or global's provenance that affects its extracted
     name. *)
 type extractable_item_source =
+  | AdtConstructorSource
   | TraitImplSource of T.trait_impl_ref * T.trait_decl_ref * T.assoc_item_id
   | TraitDefaultSource
   | OtherSource
@@ -2288,6 +2306,7 @@ let extractable_global_source (src : global_source) : extractable_item_source =
 let extractable_fun_source (ctx : extraction_ctx) (src : fun_source) :
     extractable_item_source =
   match src with
+  | AdtConstructorFun -> AdtConstructorSource
   | TraitImplFun (impl_ref, trait_ref, method_id, _) ->
       TraitImplSource (impl_ref, trait_ref, T.AssocIdMethod method_id)
   | TraitDefaultFun _ -> TraitDefaultSource
@@ -2378,6 +2397,14 @@ let ctx_compute_fun_global_name_no_suffix (item_meta : T.item_meta)
   | _ ->
       let llbc_name = opt_rename_llbc_name item_meta.attr_info item_meta.name in
       [%ldebug "llbc_name after renaming: " ^ name_to_string ctx llbc_name];
+      (* We add the suffix "constructor" if the function was synthesized by rustc
+         from an ADT constructor used as a function *)
+      let llbc_name =
+        match src with
+        | AdtConstructorSource ->
+            llbc_name @ [ PeIdent ("constructor", Disambiguator.zero) ]
+        | _ -> llbc_name
+      in
       (* When a trait method/const has a default implementation, this becomes a [fun_decl]
          that we may want to extract. By default, its name is [Trait::method], which
          for lean creates a name clash with the method name as a field in the trait
@@ -2527,14 +2554,14 @@ let ctx_add_decreases_proof (def : fun_decl) (ctx : extraction_ctx) :
     extraction_ctx =
   let name = ctx_compute_decreases_proof_name def ctx in
   ctx_add def.item_meta.span
-    (DecreasesProofId (FRegular def.def_id, def.loop_id))
+    (DecreasesProofId (def.def_id, def.loop_id))
     name ctx
 
 let ctx_add_termination_measure (def : fun_decl) (ctx : extraction_ctx) :
     extraction_ctx =
   let name = ctx_compute_termination_measure_name def ctx in
   ctx_add def.item_meta.span
-    (TerminationMeasureId (FRegular def.def_id, def.loop_id))
+    (TerminationMeasureId (def.def_id, def.loop_id))
     name ctx
 
 (* TODO: move to Extract *)
@@ -2549,7 +2576,7 @@ let ctx_add_fun_decl (def : fun_decl) (ctx : extraction_ctx) : extraction_ctx =
     let def_id = def.def_id in
     (* Add the function name *)
     let def_name = ctx_compute_fun_name def false ctx in
-    let fun_id = (Pure.FunId (FRegular def_id), def.loop_id) in
+    let fun_id = (Pure.FunId def_id, def.loop_id) in
     ctx_add def.item_meta.span (FunId (FromLlbc fun_id)) def_name ctx
 
 let ctx_compute_type_decl_name (ctx : extraction_ctx) (def : type_decl) : string

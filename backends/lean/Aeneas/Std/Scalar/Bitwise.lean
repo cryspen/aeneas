@@ -1,11 +1,13 @@
-import Aeneas.Std.Scalar.Core
-import Aeneas.Std.Scalar.Elab
-import Aeneas.Tactic.Solver.ScalarTac
-import Mathlib.Data.BitVec
+module
+public import Aeneas.Std.Scalar.Core
+public import Aeneas.Std.Scalar.Elab
+public import Aeneas.Tactic.Solver.ScalarTac
+public import Mathlib.Data.BitVec
+public section
 
 namespace Aeneas.Std
 
-open Result Error Arith ScalarElab WP
+open RustM Error Arith ScalarElab WP
 
 /-!
 # Bitwise Operations: Definitions
@@ -14,100 +16,100 @@ open Result Error Arith ScalarElab WP
 /-!
 Bit shifts
 -/
-def UScalar.shiftLeft {ty : UScalarTy} (x : UScalar ty) (s : Nat) :
-  Result (UScalar ty) :=
+@[expose] def UScalar.shiftLeft {ty : UScalarTy} (x : UScalar ty) (s : Nat) :
+  RustM (UScalar ty) :=
   if s < ty.numBits then
     ok ⟨ x.bv.shiftLeft s ⟩
-  else fail .integerOverflow
+  else fail .panic
 
-def UScalar.shiftRight {ty : UScalarTy} (x : UScalar ty) (s : Nat) :
-  Result (UScalar ty) :=
+@[expose] def UScalar.shiftRight {ty : UScalarTy} (x : UScalar ty) (s : Nat) :
+  RustM (UScalar ty) :=
   if s < ty.numBits then
     ok ⟨ x.bv.ushiftRight s ⟩
-  else fail .integerOverflow
+  else fail .panic
 
-def UScalar.shiftLeft_UScalar {ty tys} (x : UScalar ty) (s : UScalar tys) :
-  Result (UScalar ty) :=
+@[expose] def UScalar.shiftLeft_UScalar {ty tys} (x : UScalar ty) (s : UScalar tys) :
+  RustM (UScalar ty) :=
   x.shiftLeft s.val
 
-def UScalar.shiftRight_UScalar {ty tys} (x : UScalar ty) (s : UScalar tys) :
-  Result (UScalar ty) :=
+@[expose] def UScalar.shiftRight_UScalar {ty tys} (x : UScalar ty) (s : UScalar tys) :
+  RustM (UScalar ty) :=
   x.shiftRight s.val
 
-def UScalar.shiftLeft_IScalar {ty tys} (x : UScalar ty) (s : IScalar tys) :
-  Result (UScalar ty) :=
+@[expose] def UScalar.shiftLeft_IScalar {ty tys} (x : UScalar ty) (s : IScalar tys) :
+  RustM (UScalar ty) :=
   if s.val ≥ 0 then
     x.shiftLeft s.toNat
-  else fail .integerOverflow
+  else fail .panic
 
-def UScalar.shiftRight_IScalar {ty tys} (x : UScalar ty) (s : IScalar tys) :
-  Result (UScalar ty) :=
+@[expose] def UScalar.shiftRight_IScalar {ty tys} (x : UScalar ty) (s : IScalar tys) :
+  RustM (UScalar ty) :=
   if s.val ≥ 0 then
     x.shiftRight s.toNat
-  else fail .integerOverflow
+  else fail .panic
 
-def IScalar.shiftLeft {ty : IScalarTy} (x : IScalar ty) (s : Nat) :
-  Result (IScalar ty) :=
+@[expose] def IScalar.shiftLeft {ty : IScalarTy} (x : IScalar ty) (s : Nat) :
+  RustM (IScalar ty) :=
   if s < ty.numBits then
     ok ⟨ x.bv.shiftLeft s ⟩
-  else fail .integerOverflow
+  else fail .panic
 
-def IScalar.shiftRight {ty : IScalarTy} (x : IScalar ty) (s : Nat) :
-  Result (IScalar ty) :=
+@[expose] def IScalar.shiftRight {ty : IScalarTy} (x : IScalar ty) (s : Nat) :
+  RustM (IScalar ty) :=
   if s < ty.numBits then
     ok ⟨ x.bv.sshiftRight s ⟩
-  else fail .integerOverflow
+  else fail .panic
 
-def IScalar.shiftLeft_UScalar {ty tys} (x : IScalar ty) (s : UScalar tys) :
-  Result (IScalar ty) :=
+@[expose] def IScalar.shiftLeft_UScalar {ty tys} (x : IScalar ty) (s : UScalar tys) :
+  RustM (IScalar ty) :=
   x.shiftLeft s.val
 
-def IScalar.shiftRight_UScalar {ty tys} (x : IScalar ty) (s : UScalar tys) :
-  Result (IScalar ty) :=
+@[expose] def IScalar.shiftRight_UScalar {ty tys} (x : IScalar ty) (s : UScalar tys) :
+  RustM (IScalar ty) :=
   x.shiftRight s.val
 
-def IScalar.shiftLeft_IScalar {ty tys} (x : IScalar ty) (s : IScalar tys) :
-  Result (IScalar ty) :=
+@[expose] def IScalar.shiftLeft_IScalar {ty tys} (x : IScalar ty) (s : IScalar tys) :
+  RustM (IScalar ty) :=
   if s.val ≥ 0 then
     x.shiftLeft s.toNat
-  else fail .integerOverflow
+  else fail .panic
 
-def IScalar.shiftRight_IScalar {ty tys} (x : IScalar ty) (s : IScalar tys) :
-  Result (IScalar ty) :=
+@[expose] def IScalar.shiftRight_IScalar {ty tys} (x : IScalar ty) (s : IScalar tys) :
+  RustM (IScalar ty) :=
   if s.val ≥ 0 then
     x.shiftRight s.toNat
-  else fail .integerOverflow
+  else fail .panic
 
-instance {ty0 ty1} : HShiftLeft (UScalar ty0) (UScalar ty1) (Result (UScalar ty0)) where
+instance {ty0 ty1} : HShiftLeft (UScalar ty0) (UScalar ty1) (RustM (UScalar ty0)) where
   hShiftLeft x y := UScalar.shiftLeft_UScalar x y
 
-instance {ty0 ty1} : HShiftLeft (UScalar ty0) (IScalar ty1) (Result (UScalar ty0)) where
+instance {ty0 ty1} : HShiftLeft (UScalar ty0) (IScalar ty1) (RustM (UScalar ty0)) where
   hShiftLeft x y := UScalar.shiftLeft_IScalar x y
 
-instance {ty0 ty1} : HShiftLeft (IScalar ty0) (UScalar ty1) (Result (IScalar ty0)) where
+instance {ty0 ty1} : HShiftLeft (IScalar ty0) (UScalar ty1) (RustM (IScalar ty0)) where
   hShiftLeft x y := IScalar.shiftLeft_UScalar x y
 
-instance {ty0 ty1} : HShiftLeft (IScalar ty0) (IScalar ty1) (Result (IScalar ty0)) where
+instance {ty0 ty1} : HShiftLeft (IScalar ty0) (IScalar ty1) (RustM (IScalar ty0)) where
   hShiftLeft x y := IScalar.shiftLeft_IScalar x y
 
-instance {ty0 ty1} : HShiftRight (UScalar ty0) (UScalar ty1) (Result (UScalar ty0)) where
+instance {ty0 ty1} : HShiftRight (UScalar ty0) (UScalar ty1) (RustM (UScalar ty0)) where
   hShiftRight x y := UScalar.shiftRight_UScalar x y
 
-instance {ty0 ty1} : HShiftRight (UScalar ty0) (IScalar ty1) (Result (UScalar ty0)) where
+instance {ty0 ty1} : HShiftRight (UScalar ty0) (IScalar ty1) (RustM (UScalar ty0)) where
   hShiftRight x y := UScalar.shiftRight_IScalar x y
 
-instance {ty0 ty1} : HShiftRight (IScalar ty0) (UScalar ty1) (Result (IScalar ty0)) where
+instance {ty0 ty1} : HShiftRight (IScalar ty0) (UScalar ty1) (RustM (IScalar ty0)) where
   hShiftRight x y := IScalar.shiftRight_UScalar x y
 
-instance {ty0 ty1} : HShiftRight (IScalar ty0) (IScalar ty1) (Result (IScalar ty0)) where
+instance {ty0 ty1} : HShiftRight (IScalar ty0) (IScalar ty1) (RustM (IScalar ty0)) where
   hShiftRight x y := IScalar.shiftRight_IScalar x y
 
 /-!
 Bitwise and
 -/
-def UScalar.and {ty} (x y : UScalar ty) : UScalar ty := ⟨ x.bv &&& y.bv ⟩
+@[expose] def UScalar.and {ty} (x y : UScalar ty) : UScalar ty := ⟨ x.bv &&& y.bv ⟩
 
-def IScalar.and {ty} (x y : IScalar ty) : IScalar ty := ⟨ x.bv &&& y.bv ⟩
+@[expose] def IScalar.and {ty} (x y : IScalar ty) : IScalar ty := ⟨ x.bv &&& y.bv ⟩
 
 instance {ty} : HAnd (UScalar ty) (UScalar ty) (UScalar ty) where
   hAnd x y := UScalar.and x y
@@ -118,9 +120,9 @@ instance {ty} : HAnd (IScalar ty) (IScalar ty) (IScalar ty) where
 /-!
 Bitwise or
 -/
-def UScalar.or {ty} (x y : UScalar ty) : UScalar ty := ⟨ x.bv ||| y.bv ⟩
+@[expose] def UScalar.or {ty} (x y : UScalar ty) : UScalar ty := ⟨ x.bv ||| y.bv ⟩
 
-def IScalar.or {ty} (x y : IScalar ty) : IScalar ty := ⟨ x.bv ||| y.bv ⟩
+@[expose] def IScalar.or {ty} (x y : IScalar ty) : IScalar ty := ⟨ x.bv ||| y.bv ⟩
 
 instance {ty} : HOr (UScalar ty) (UScalar ty) (UScalar ty) where
   hOr x y := UScalar.or x y
@@ -131,9 +133,9 @@ instance {ty} : HOr (IScalar ty) (IScalar ty) (IScalar ty) where
 /-!
 Xor
 -/
-def UScalar.xor {ty} (x y : UScalar ty) : UScalar ty := ⟨ x.bv ^^^ y.bv ⟩
+@[expose] def UScalar.xor {ty} (x y : UScalar ty) : UScalar ty := ⟨ x.bv ^^^ y.bv ⟩
 
-def IScalar.xor {ty} (x y : IScalar ty) : IScalar ty := ⟨ x.bv ^^^ y.bv ⟩
+@[expose] def IScalar.xor {ty} (x y : IScalar ty) : IScalar ty := ⟨ x.bv ^^^ y.bv ⟩
 
 instance {ty} : HXor (UScalar ty) (UScalar ty) (UScalar ty) where
   hXor x y := UScalar.xor x y
@@ -144,9 +146,9 @@ instance {ty} : HXor (IScalar ty) (IScalar ty) (IScalar ty) where
 /-!
 Not
 -/
-def UScalar.not {ty} (x : UScalar ty) : UScalar ty := ⟨ ~~~x.bv ⟩
+@[expose] def UScalar.not {ty} (x : UScalar ty) : UScalar ty := ⟨ ~~~x.bv ⟩
 
-def IScalar.not {ty} (x : IScalar ty) : IScalar ty := ⟨ ~~~x.bv ⟩
+@[expose] def IScalar.not {ty} (x : IScalar ty) : IScalar ty := ⟨ ~~~x.bv ⟩
 
 instance {ty} : Complement (UScalar ty) where
   complement x := UScalar.not x
@@ -163,120 +165,167 @@ instance {ty} : Complement (IScalar ty) where
 ## Bit shifts
 -/
 
-theorem UScalar.ShiftRight_spec {ty0 ty1} (x : UScalar ty0) (y : UScalar ty1)
-  (hy : y.val < ty0.numBits) :
-  (x >>> y) ⦃ z =>
-    z.val = x.val >>> y.val ∧
-    z.bv = x.bv >>> y.val ⦄
-  := by
-  simp only [spec_ok, HShiftRight.hShiftRight, shiftRight_UScalar, shiftRight, hy, reduceIte]
-  simp only [BitVec.ushiftRight_eq, val]
-  simp only [HShiftRight.hShiftRight, BitVec.ushiftRight, bv_toNat, BitVec.toNat_ofNatLT, and_self]
+theorem UScalar.ShiftRight_spec {ty0 ty1} (x : UScalar ty0) (y : UScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.val ∧ z.bv = x.bv >>> y.val ∧ y.val < ty0.numBits)
+      (fun | .panic => y.val ≥ ty0.numBits | _ => False)
+      False := by
+  simp only [HShiftRight.hShiftRight, shiftRight_UScalar, shiftRight]
+  split
+  · simp only [partialSpec_ok, BitVec.ushiftRight_eq, val]
+    simp only [HShiftRight.hShiftRight, BitVec.ushiftRight, bv_toNat,
+      BitVec.toNat_ofNatLT, *, and_self]
+  · simp only [partialSpec_fail]; omega
 
-uscalar @[step] theorem «%S».ShiftRight_spec {ty1} (x : «%S») (y : UScalar ty1) (hy : y.val < %BitWidth) :
-  (x >>> y) ⦃ z => z.val = x.val >>> y.val ∧ z.bv = x.bv >>> y.val ⦄
-  := by apply UScalar.ShiftRight_spec; simp [*]
+uscalar @[step] theorem «%S».ShiftRight_spec {ty1} (x : «%S») (y : UScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.val ∧ z.bv = x.bv >>> y.val ∧ y.val < %BitWidth)
+      (fun | .panic => y.val ≥ %BitWidth | _ => False)
+      False
+  := by convert UScalar.ShiftRight_spec x y <;> scalar_tac
 
-theorem UScalar.ShiftRight_IScalar_spec {ty0 ty1} (x : UScalar ty0) (y : IScalar ty1)
-  (hy0 : 0 ≤ y.val) (hy1 : y.val < ty0.numBits) :
-  (x >>> y) ⦃ z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv >>> y.toNat ⦄
-  := by
-  have hy1 : y.toNat < ty0.numBits := by scalar_tac
-  simp only [spec_ok, HShiftRight.hShiftRight, shiftRight_IScalar, hy0, shiftRight, hy1, reduceIte]
-  simp only [BitVec.ushiftRight_eq, val]
-  simp only [IScalar.toNat, BitVec.toNat_ushiftRight, bv_toNat, and_true]; rfl
+theorem UScalar.ShiftRight_IScalar_spec {ty0 ty1} (x : UScalar ty0) (y : IScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv >>> y.toNat ∧ y.toNat < ty0.numBits)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ ty0.numBits | _ => False)
+      False := by
+  simp only [HShiftRight.hShiftRight, shiftRight_IScalar, shiftRight]
+  split
+  · split
+    · simp only [partialSpec_ok, BitVec.ushiftRight_eq, val]
+      simp only [IScalar.toNat, BitVec.toNat_ushiftRight, bv_toNat, *, and_true]; rfl
+    · simp only [partialSpec_fail]; omega
+  · simp only [partialSpec_fail]; omega
 
-uscalar @[step] theorem «%S».ShiftRight_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) (hy0 : 0 ≤ y.val) (hy : y.val < %BitWidth) :
-  (x >>> y) ⦃ z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv >>> y.toNat ⦄
-  := by apply UScalar.ShiftRight_IScalar_spec <;> simp [*]
+uscalar @[step] theorem «%S».ShiftRight_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv >>> y.toNat ∧ y.toNat < %BitWidth)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ %BitWidth | _ => False)
+      False
+  := by convert UScalar.ShiftRight_IScalar_spec x y <;> scalar_tac
 
 theorem UScalar.ShiftLeft_spec {ty0 ty1} (x : UScalar ty0) (y : UScalar ty1) (size : Nat)
-  (hy : y.val < ty0.numBits) (hsize : size = UScalar.size ty0) :
-  (x <<< y) ⦃ z =>
-  z.val = (x.val <<< y.val) % size ∧
-  z.bv = x.bv <<< y.val ⦄
-  := by
-  simp only [spec_ok, HShiftLeft.hShiftLeft, shiftLeft_UScalar, shiftLeft, hy, reduceIte, hsize, UScalar.size]
-  simp only [BitVec.shiftLeft_eq, val]
-  simp only [bv_toNat, BitVec.toNat_shiftLeft, ShiftLeft.shiftLeft, Nat.shiftLeft_eq', and_self]
+    (hsize : size = UScalar.size ty0) :
+    partialSpec (x <<< y)
+      (fun z => z.val = (x.val <<< y.val) % size ∧ z.bv = x.bv <<< y.val ∧ y.val < ty0.numBits)
+      (fun | .panic => y.val ≥ ty0.numBits | _ => False)
+      False := by
+  simp only [HShiftLeft.hShiftLeft, shiftLeft_UScalar, shiftLeft]
+  split <;> rename_i h
+  · simp only [partialSpec_ok, hsize, UScalar.size, BitVec.shiftLeft_eq, val]
+    simp only [bv_toNat, BitVec.toNat_shiftLeft, ShiftLeft.shiftLeft, Nat.shiftLeft_eq', h, and_self]
+  · simp only [partialSpec_fail]; omega
 
-uscalar @[step] theorem «%S».ShiftLeft_spec {ty1} (x : «%S») (y : UScalar ty1) (hy : y.val < %BitWidth) :
-  (x <<< y) ⦃ z => z.val = (x.val <<< y.val) % «%S».size ∧ z.bv = x.bv <<< y.val ⦄
-  := by apply UScalar.ShiftLeft_spec <;> simp [*]
+uscalar @[step] theorem «%S».ShiftLeft_spec {ty1} (x : «%S») (y : UScalar ty1) :
+    partialSpec (x <<< y)
+      (fun z => z.val = (x.val <<< y.val) % «%S».size ∧ z.bv = x.bv <<< y.val ∧ y.val < %BitWidth)
+      (fun | .panic => y.val ≥ %BitWidth | _ => False)
+      False
+  := by convert UScalar.ShiftLeft_spec x y «%S».size (by simp) <;> scalar_tac
 
 theorem UScalar.ShiftLeft_IScalar_spec {ty0 ty1} (x : UScalar ty0) (y : IScalar ty1) (size : Nat)
-  (hy0 : 0 ≤ y.val) (hy1 : y.val < ty0.numBits) (hsize : size = UScalar.size ty0) :
-  (x <<< y) ⦃ z =>
-  z.val = (x.val <<< y.toNat) % size ∧
-  z.bv = x.bv <<< y.toNat ⦄
-  := by
-  have hy1 : y.toNat < ty0.numBits := by scalar_tac
-  simp only [spec_ok, HShiftLeft.hShiftLeft, shiftLeft_IScalar, shiftLeft, hy0, hy1, reduceIte, hsize,
-    UScalar.size]
-  simp only [BitVec.shiftLeft_eq, val]
-  simp only [IScalar.toNat, BitVec.toNat_shiftLeft, bv_toNat, ShiftLeft.shiftLeft,
-    Nat.shiftLeft_eq', and_self]
+    (hsize : size = UScalar.size ty0) :
+    partialSpec (x <<< y)
+      (fun z => z.val = (x.val <<< y.toNat) % size ∧ z.bv = x.bv <<< y.toNat ∧ y.toNat < ty0.numBits)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ ty0.numBits | _ => False)
+      False := by
+  simp only [HShiftLeft.hShiftLeft, shiftLeft_IScalar, shiftLeft]
+  split
+  · split
+    · simp only [partialSpec_ok, hsize, UScalar.size, BitVec.shiftLeft_eq, val]
+      simp only [IScalar.toNat, BitVec.toNat_shiftLeft, bv_toNat, ShiftLeft.shiftLeft,
+        Nat.shiftLeft_eq', *, and_self]
+    · simp only [partialSpec_fail]; omega
+  · simp only [partialSpec_fail]; omega
 
-uscalar @[step] theorem «%S».ShiftLeft_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) (hy0 : 0 ≤ y.val) (hy : y.val < %BitWidth) :
-  (x <<< y) ⦃ z => z.val = (x.val <<< y.toNat) % «%S».size ∧ z.bv = x.bv <<< y.toNat ⦄
-  := by apply UScalar.ShiftLeft_IScalar_spec <;> simp [*]
+uscalar @[step] theorem «%S».ShiftLeft_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) :
+    partialSpec (x <<< y)
+      (fun z => z.val = (x.val <<< y.toNat) % «%S».size ∧ z.bv = x.bv <<< y.toNat ∧ y.toNat < %BitWidth)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ %BitWidth | _ => False)
+      False
+  := by convert UScalar.ShiftLeft_IScalar_spec x y «%S».size (by simp) <;> scalar_tac
 
-theorem IScalar.ShiftRight_spec {ty0 ty1} (x : IScalar ty0) (y : UScalar ty1)
-  (hy : y.val < ty0.numBits) :
-  (x >>> y) ⦃ z =>
-    z.val = x.val >>> y.val ∧
-    z.bv = x.bv.sshiftRight y.val ⦄
-  := by
-  simp only [spec_ok, HShiftRight.hShiftRight, shiftRight_UScalar, shiftRight, hy, reduceIte]
-  simp only [val, BitVec.toInt_sshiftRight, and_true]
-  rfl
+theorem IScalar.ShiftRight_spec {ty0 ty1} (x : IScalar ty0) (y : UScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.val ∧ z.bv = x.bv.sshiftRight y.val ∧ y.val < ty0.numBits)
+      (fun | .panic => y.val ≥ ty0.numBits | _ => False)
+      False := by
+  simp only [HShiftRight.hShiftRight, shiftRight_UScalar, shiftRight]
+  split <;> rename_i h
+  · simp only [partialSpec_ok, val, BitVec.toInt_sshiftRight, h, and_true]; rfl
+  · simp only [partialSpec_fail]; omega
 
-iscalar @[step] theorem «%S».ShiftRight_spec {ty1} (x : «%S») (y : UScalar ty1) (hy : y.val < %BitWidth) :
-  (x >>> y) ⦃ z => z.val = x.val >>> y.val ∧ z.bv = x.bv.sshiftRight y.val ⦄
-  := by apply IScalar.ShiftRight_spec; simp [*]
+iscalar @[step] theorem «%S».ShiftRight_spec {ty1} (x : «%S») (y : UScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.val ∧ z.bv = x.bv.sshiftRight y.val ∧ y.val < %BitWidth)
+      (fun | .panic => y.val ≥ %BitWidth | _ => False)
+      False
+  := by convert IScalar.ShiftRight_spec x y <;> scalar_tac
 
-theorem IScalar.ShiftRight_IScalar_spec {ty0 ty1} (x : IScalar ty0) (y : IScalar ty1)
-  (hy0 : 0 ≤ y.val) (hy1 : y.val < ty0.numBits) :
-  (x >>> y) ⦃ z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv.sshiftRight y.toNat ⦄
-  := by
-  have hy1 : y.toNat < ty0.numBits := by scalar_tac
-  simp only [spec_ok, HShiftRight.hShiftRight, shiftRight_IScalar, hy0, shiftRight, hy1, reduceIte]
-  simp only [val, BitVec.toInt_sshiftRight, and_true, HShiftRight.hShiftRight]
+theorem IScalar.ShiftRight_IScalar_spec {ty0 ty1} (x : IScalar ty0) (y : IScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv.sshiftRight y.toNat ∧ y.toNat < ty0.numBits)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ ty0.numBits | _ => False)
+      False := by
+  simp only [HShiftRight.hShiftRight, shiftRight_IScalar, shiftRight]
+  split <;> rename_i h0
+  · split <;> rename_i h1
+    · simp only [partialSpec_ok, val, BitVec.toInt_sshiftRight, h1, and_true, HShiftRight.hShiftRight]
+    · simp only [partialSpec_fail]; omega
+  · simp only [partialSpec_fail]; omega
 
-iscalar @[step] theorem «%S».ShiftRight_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) (hy0 : 0 ≤ y.val) (hy : y.val < %BitWidth) :
-  (x >>> y) ⦃ z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv.sshiftRight y.toNat ⦄
-  := by apply IScalar.ShiftRight_IScalar_spec <;> simp [*]
+iscalar @[step] theorem «%S».ShiftRight_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) :
+    partialSpec (x >>> y)
+      (fun z => z.val = x.val >>> y.toNat ∧ z.bv = x.bv.sshiftRight y.toNat ∧ y.toNat < %BitWidth)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ %BitWidth | _ => False)
+      False
+  := by convert IScalar.ShiftRight_IScalar_spec x y <;> scalar_tac
 
-theorem IScalar.ShiftLeft_spec {ty0 ty1} (x : IScalar ty0) (y : UScalar ty1)
-  (hy : y.val < ty0.numBits) :
-  (x <<< y) ⦃ z =>
-  z.val = Int.bmod (x.val <<< y.val) (2 ^ ty0.numBits) ∧
-  z.bv = x.bv <<< y.val ⦄
-  := by
+theorem IScalar.ShiftLeft_spec {ty0 ty1} (x : IScalar ty0) (y : UScalar ty1) :
+    partialSpec (x <<< y)
+      (fun z => z.val = Int.bmod (x.val <<< y.val) (2 ^ ty0.numBits) ∧ z.bv = x.bv <<< y.val ∧
+        y.val < ty0.numBits)
+      (fun | .panic => y.val ≥ ty0.numBits | _ => False)
+      False := by
   simp only [Int.shiftLeft_eq]
-  simp only [spec_ok, HShiftLeft.hShiftLeft, shiftLeft_UScalar, shiftLeft, hy, reduceIte]
-  simp only [BitVec.shiftLeft_eq, val, BitVec.toInt_shiftLeft, Nat.shiftLeft_eq, and_true]
-  simp only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat, BitVec.toInt_eq_toNat_bmod, Int.bmod_mul_bmod]
+  simp only [HShiftLeft.hShiftLeft, shiftLeft_UScalar, shiftLeft]
+  split
+  · simp only [partialSpec_ok, BitVec.shiftLeft_eq, val, BitVec.toInt_shiftLeft, Nat.shiftLeft_eq, *, and_true]
+    simp only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat, BitVec.toInt_eq_toNat_bmod, Int.bmod_mul_bmod]
+  · simp only [partialSpec_fail]; omega
 
-iscalar @[step] theorem «%S».ShiftLeft_spec {ty1} (x : «%S») (y : UScalar ty1) (hy : y.val < %BitWidth) :
-  (x <<< y) ⦃ z => z.val = Int.bmod (x.val <<< y.val) «%S».size ∧ z.bv = x.bv <<< y.val ⦄
-  := by simp only [«%S».size, «%S».numBits]; apply IScalar.ShiftLeft_spec; simp [*]
-
-theorem IScalar.ShiftLeft_IScalar_spec {ty0 ty1} (x : IScalar ty0) (y : IScalar ty1)
-  (hy0 : 0 ≤ y.val) (hy1 : y.val < ty0.numBits) :
-  (x <<< y) ⦃ z =>
-  z.val = Int.bmod (x.val <<< y.toNat) (2 ^ ty0.numBits) ∧
-  z.bv = x.bv <<< y.toNat ⦄
+iscalar @[step] theorem «%S».ShiftLeft_spec {ty1} (x : «%S») (y : UScalar ty1) :
+    partialSpec (x <<< y)
+      (fun z => z.val = Int.bmod (x.val <<< y.val) «%S».size ∧ z.bv = x.bv <<< y.val ∧
+        y.val < %BitWidth)
+      (fun | .panic => y.val ≥ %BitWidth | _ => False)
+      False
   := by
-  have hy1 : y.toNat < ty0.numBits := by scalar_tac
-  simp only [Int.shiftLeft_eq]
-  simp only [spec_ok, HShiftLeft.hShiftLeft, shiftLeft_IScalar, hy0, shiftLeft, hy1, reduceIte]
-  simp only [BitVec.shiftLeft_eq, val, BitVec.toInt_shiftLeft, Nat.shiftLeft_eq, and_true]
-  simp only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat, BitVec.toInt_eq_toNat_bmod, Int.bmod_mul_bmod]
+  simpa only [«%S».size, «%S».numBits, IScalarTy.numBits] using IScalar.ShiftLeft_spec x y
 
-iscalar @[step] theorem «%S».ShiftLeft_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) (hy0 : 0 ≤ y.val) (hy : y.val < %BitWidth) :
-  (x <<< y) ⦃ z => z.val = Int.bmod (x.val <<< y.toNat) «%S».size ∧ z.bv = x.bv <<< y.toNat ⦄
-  := by simp only [«%S».size, «%S».numBits]; apply IScalar.ShiftLeft_IScalar_spec <;> simp [*]
+theorem IScalar.ShiftLeft_IScalar_spec {ty0 ty1} (x : IScalar ty0) (y : IScalar ty1) :
+    partialSpec (x <<< y)
+      (fun z => z.val = Int.bmod (x.val <<< y.toNat) (2 ^ ty0.numBits) ∧ z.bv = x.bv <<< y.toNat ∧
+        y.toNat < ty0.numBits)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ ty0.numBits | _ => False)
+      False := by
+  simp only [Int.shiftLeft_eq]
+  simp only [HShiftLeft.hShiftLeft, shiftLeft_IScalar, shiftLeft]
+  split
+  · split
+    · simp only [partialSpec_ok, BitVec.shiftLeft_eq, val, BitVec.toInt_shiftLeft, Nat.shiftLeft_eq, *, and_true]
+      simp only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat, BitVec.toInt_eq_toNat_bmod, Int.bmod_mul_bmod]
+    · simp only [partialSpec_fail]; omega
+  · simp only [partialSpec_fail]; omega
+
+iscalar @[step] theorem «%S».ShiftLeft_IScalar_spec {ty1} (x : «%S») (y : IScalar ty1) :
+    partialSpec (x <<< y)
+      (fun z => z.val = Int.bmod (x.val <<< y.toNat) «%S».size ∧ z.bv = x.bv <<< y.toNat ∧
+        y.toNat < %BitWidth)
+      (fun | .panic => y.val < 0 ∨ y.toNat ≥ %BitWidth | _ => False)
+      False
+  := by
+  simpa only [«%S».size, «%S».numBits, IScalarTy.numBits] using IScalar.ShiftLeft_IScalar_spec x y
 
 /-!
 ## Bitwise And, Or

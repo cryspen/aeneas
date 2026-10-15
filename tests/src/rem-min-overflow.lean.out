@@ -1,0 +1,5 @@
+[[92mInfo[39m ] Imported: tests/llbc/rem_min_overflow.llbc
+[[91mError[39m] Unit test failed (concrete execution) on: rem_min_overflow::rem_min_minus_one
+Source: 'tests/src/rem-min-overflow.rs', lines 9:0-13:1
+Compiler source: interp/Interp.ml, line 664
+

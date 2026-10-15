@@ -3,7 +3,6 @@ open Types
 open Values
 open LlbcAst
 open Contexts
-open Builtin
 module SA = SymbolicAst
 module Micro = PureMicroPasses
 open TranslateCore
@@ -12,6 +11,12 @@ open Parallel
 
 (** The local logger *)
 let log = TranslateCore.log
+
+(** When [-core-models-lib] is on, non-local items are skipped from the main
+    extracted files (the user is expected to provide them via a separate Lean
+    library, e.g. [core_models] for [core::*] items). *)
+let skip_for_core_models_lib (is_local : bool) : bool =
+  !Config.core_models_lib && not is_local
 
 (** The result of running the symbolic interpreter on a function:
     - the list of symbolic values used for the input values
@@ -304,15 +309,6 @@ let translate_function_to_pure (trans_ctx : trans_ctx) (marked_ids : marked_ids)
       ^ compute_local_uses_error_message trans_ctx (IdFun fdef.def_id));
     None
 
-type translated_crate = {
-  type_decls : Pure.type_decl list;
-  builtin_fun_sigs : Pure.fun_sig BuiltinFunIdMap.t;
-  fun_decls : pure_fun_translation list;
-  global_decls : Pure.global_decl list;
-  trait_decls : Pure.trait_decl list;
-  trait_impls : Pure.trait_impl list;
-}
-
 (* TODO: factor out the return type *)
 let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
     trans_ctx * translated_crate =
@@ -429,16 +425,6 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
 
     FunOrMethodId.Map.of_list
       (FunOrMethodId.Map.bindings method_sigs @ fun_decl_sigs)
-  in
-
-  (* Translate the signatures of the builtin functions *)
-  let builtin_fun_sigs =
-    BuiltinFunIdMap.map
-      (fun (info : builtin_fun_info) ->
-        SymbolicToPureTypes.translate_fun_sig trans_ctx
-          (Pure.FunId (FBuiltin info.fun_id)) info.fun_sig
-          (List.map (fun _ -> None) info.fun_sig.item_binder_value.inputs))
-      builtin_fun_infos
   in
 
   (* Translate all the functions.
@@ -605,20 +591,32 @@ let translate_crate_to_pure (crate : crate) (marked_ids : marked_ids) :
 
   (* Apply the micro-passes *)
   let pure_translations =
-    Micro.apply_passes_to_pure_fun_translations crate trans_ctx builtin_fun_sigs
-      type_decls trait_impls pure_translations
+    Micro.apply_passes_to_pure_fun_translations crate trans_ctx type_decls
+      trait_impls pure_translations
   in
 
-  (* Return *)
-  ( trans_ctx,
+  (* Assemble the translated crate *)
+  let translated =
     {
       type_decls;
-      builtin_fun_sigs;
       fun_decls = pure_translations;
       global_decls;
       trait_decls;
       trait_impls;
-    } )
+      specs = [];
+      proof_obligations = [];
+    }
+  in
+
+  (* Gather specs/proofs obligations *)
+  let translated =
+    match !Config.opt_spec_config with
+    | Some (Hax, _) -> HaxProducer.produce trans_ctx translated
+    | None -> translated
+  in
+
+  (* Return *)
+  (trans_ctx, translated)
 
 type gen_ctx = ExtractBase.extraction_ctx
 
@@ -641,6 +639,12 @@ type gen_config = {
   extract_globals : bool;
       (** If [true], generate a definition/declaration for top-level (global)
           declarations *)
+  extract_specs : bool;
+      (** If [true], emit the produced {!Spec.spec} entries (Lean only). See
+          {!module:ExtractSpec}. *)
+  extract_proof_obligations : bool;
+      (** If [true], emit the produced {!Spec.proof_obligation} entries (Lean
+          only). See {!module:ExtractSpec}. *)
   interface : bool;
       (** [true] if we generate an interface file, [false] otherwise. For now,
           this only impacts whether we use [val] or [assume val] for the opaque
@@ -651,12 +655,12 @@ type gen_config = {
 
 (** Returns the pair: (has opaque type decls, has opaque fun decls).
 
-    [filter_builtin]: if [true], do not consider as opaque the external
+    [filter_external]: if [true], do not consider as opaque the external
     definitions that we will map to definitions from the standard library. *)
-let crate_has_opaque_non_builtin_decls (ctx : gen_ctx) (filter_builtin : bool) :
-    bool * bool =
+let crate_has_opaque_non_external_decls (ctx : gen_ctx) (filter_external : bool)
+    : bool * bool =
   let types, funs =
-    LlbcAstUtils.crate_get_opaque_non_builtin_decls ctx.crate filter_builtin
+    LlbcAstUtils.crate_get_opaque_non_external_decls ctx.crate filter_external
       ctx.trans_ctx.type_ctx.to_extract ctx.trans_ctx.fun_ctx.to_extract
   in
   [%ldebug
@@ -696,10 +700,10 @@ let export_type (fmt : Format.formatter) (config : gen_config) (ctx : gen_ctx)
         (true, kind)
   in
   (* Extract, if the config instructs to do so (depending on whether the type
-     is opaque or not). Remark: we don't check if the definitions are builtin
+     is opaque or not). Remark: we don't check if the definitions are external
      here but in the function [export_types_group]: the reason is that if one
-     definition in the group is builtin, then we must check that all the
-     definitions are marked builtin *)
+     definition in the group is external, then we must check that all the
+     definitions are marked external *)
   let extract =
     (is_opaque && config.extract_opaque)
     || ((not is_opaque) && config.extract_transparent)
@@ -742,12 +746,12 @@ let export_types_group (fmt : Format.formatter) (config : gen_config)
       ids
   in
 
-  (* Check if the definition are builtin - if yes they must be ignored.
-     Note that if one definition in the group is builtin, then all the
-     definitions must be builtin *)
-  let builtin =
-    let open ExtractBuiltin in
-    let types_map = builtin_types_map () in
+  (* Check if the definitions are external - if yes they must be ignored.
+     Note that if one definition in the group is external, then all the
+     definitions must be external *)
+  let externals =
+    let open ExternalNames in
+    let types_map = external_types_map () in
     List.map
       (fun (def : Pure.type_decl) ->
         match_name_find_opt ctx.trans_ctx def.item_meta.name types_map <> None)
@@ -763,9 +767,15 @@ let export_types_group (fmt : Format.formatter) (config : gen_config)
     List.exists (fun (d : Pure.type_decl) -> d.kind = Opaque) defs
   in
 
-  if List.exists (fun b -> b) builtin then
+  if List.exists (fun b -> b) externals then
     (* Sanity check *)
-    assert (List.for_all (fun b -> b) builtin)
+    assert (List.for_all (fun b -> b) externals)
+  else if
+    List.exists
+      (fun (d : Pure.type_decl) ->
+        skip_for_core_models_lib d.item_meta.is_local)
+      defs
+  then ()
   else if List.exists dont_extract defs then
     (* Check if we have to ignore declarations *)
     (* Sanity check *)
@@ -955,12 +965,12 @@ let export_fun_decls_scc (fmt : Format.formatter) (config : gen_config)
     check if the forward and backward functions are mutually recursive. *)
 let export_functions_group (fmt : Format.formatter) (config : gen_config)
     (ctx : gen_ctx) (pure_ls : pure_fun_translation list) : unit =
-  (* Check if the definition are builtin - if yes they must be ignored.
-     Note that if one definition in the group is builtin, then all the
-     definitions must be builtin *)
-  let builtin =
-    let open ExtractBuiltin in
-    let funs_map = builtin_funs_map () in
+  (* Check if the definitions are external - if yes they must be ignored.
+     Note that if one definition in the group is external, then all the
+     definitions must be external *)
+  let externals =
+    let open ExternalNames in
+    let funs_map = external_funs_map () in
     List.map
       (fun (trans : pure_fun_translation) ->
         match_name_find_opt ctx.trans_ctx trans.f.item_meta.name funs_map
@@ -968,9 +978,15 @@ let export_functions_group (fmt : Format.formatter) (config : gen_config)
       pure_ls
   in
 
-  if List.exists (fun b -> b) builtin then
+  if List.exists (fun b -> b) externals then
     (* Sanity check *)
-    assert (List.for_all (fun b -> b) builtin)
+    assert (List.for_all (fun b -> b) externals)
+  else if
+    List.exists
+      (fun (trans : pure_fun_translation) ->
+        skip_for_core_models_lib trans.f.item_meta.is_local)
+      pure_ls
+  then ()
   else (
     (* Extract the decrease clauses template bodies. We only generate them for
        the forward functions and the loops (not the decomposed loop bodies). *)
@@ -1019,13 +1035,13 @@ let export_global (fmt : Format.formatter) (config : gen_config) (ctx : gen_ctx)
   (* Save the fact that we extract opaque definitions, if we do *)
   ctx.extracted_opaque := is_opaque || !(ctx.extracted_opaque);
 
-  (* Check if it is a builtin global - if yes, we ignore it (together with the
+  (* Check if it is an external global - if yes, we ignore it (together with the
      auxiliary functions introduced for the loops it may contain) because we
      map the definition to one in the standard library *)
-  let is_builtin =
-    let open ExtractBuiltin in
+  let is_external =
+    let open ExternalNames in
     match_name_find_opt ctx.trans_ctx global.item_meta.name
-      (builtin_globals_map ())
+      (external_globals_map ())
     <> None
   in
 
@@ -1034,7 +1050,8 @@ let export_global (fmt : Format.formatter) (config : gen_config) (ctx : gen_ctx)
     config.extract_globals
     && (((not is_opaque) && config.extract_transparent)
        || (is_opaque && config.extract_opaque))
-    && not is_builtin
+    && (not is_external)
+    && not (skip_for_core_models_lib global.item_meta.is_local)
   in
   if extract then (
     (* We don't wrap global declaration groups between calls to functions
@@ -1054,17 +1071,17 @@ let export_global (fmt : Format.formatter) (config : gen_config) (ctx : gen_ctx)
     Extract.extract_global_decl ctx fmt pure_global body config.interface;
     Option.iter (EmitJson.record_global_if_enabled ctx) pure_global)
 
-let trait_decl_is_builtin (ctx : gen_ctx) (id : Pure.trait_decl_id) : bool =
+let trait_decl_is_external (ctx : gen_ctx) (id : Pure.trait_decl_id) : bool =
   let trait_decl =
     [%silent_unwrap_opt_span] None
       (TraitDeclId.Map.find_opt id ctx.trans_trait_decls)
   in
-  let open ExtractBuiltin in
+  let open ExternalNames in
   Option.is_some
     (match_name_find_opt ctx.trans_ctx trait_decl.item_meta.name
-       (builtin_trait_decls_map ()))
+       (external_trait_decls_map ()))
 
-let trait_impl_is_builtin (ctx : gen_ctx) (id : Pure.trait_impl_id) : bool =
+let trait_impl_is_external (ctx : gen_ctx) (id : Pure.trait_impl_id) : bool =
   let trait_impl =
     [%silent_unwrap_opt_span] None
       (TraitImplId.Map.find_opt id ctx.trans_trait_impls)
@@ -1073,16 +1090,16 @@ let trait_impl_is_builtin (ctx : gen_ctx) (id : Pure.trait_impl_id) : bool =
     Pure.TraitDeclId.Map.find trait_impl.impl_trait.trait_decl_id
       ctx.trans_trait_decls
   in
-  let builtin_info =
-    let open ExtractBuiltin in
+  let external_info =
+    let open ExternalNames in
     let trait_impl =
       TraitImplId.Map.find trait_impl.def_id ctx.crate.trait_impls
     in
     match_name_with_generics_find_opt ctx.trans_ctx trait_decl.item_meta.name
       trait_impl.impl_trait.generics
-      (builtin_trait_impls_map ())
+      (external_trait_impls_map ())
   in
-  Option.is_some builtin_info
+  Option.is_some external_info
 
 (** Export a trait declaration. *)
 let export_trait_decl (fmt : Format.formatter) (_config : gen_config)
@@ -1092,8 +1109,11 @@ let export_trait_decl (fmt : Format.formatter) (_config : gen_config)
     [%silent_unwrap_opt_span] None
       (TraitDeclId.Map.find_opt trait_decl_id ctx.trans_trait_decls)
   in
-  (* Check if the trait declaration is builtin, in which case we ignore it *)
-  if not (trait_decl_is_builtin ctx trait_decl_id) then (
+  (* Check if the trait declaration is external, in which case we ignore it *)
+  if
+    (not (trait_decl_is_external ctx trait_decl_id))
+    && not (skip_for_core_models_lib trait_decl.item_meta.is_local)
+  then (
     let ctx = { ctx with trait_decl_id = Some trait_decl.def_id } in
     if extract_decl then (
       Extract.extract_trait_decl ctx fmt trait_decl;
@@ -1111,7 +1131,10 @@ let export_trait_impl (fmt : Format.formatter) (_config : gen_config)
     [%silent_unwrap_opt_span] None
       (TraitImplId.Map.find_opt trait_impl_id ctx.trans_trait_impls)
   in
-  if not (trait_impl_is_builtin ctx trait_impl_id) then (
+  if
+    (not (trait_impl_is_external ctx trait_impl_id))
+    && not (skip_for_core_models_lib trait_impl.item_meta.is_local)
+  then (
     Extract.extract_trait_impl ctx fmt ~is_rec trait_impl;
     EmitJson.record_trait_impl_if_enabled ctx trait_impl)
 
@@ -1193,7 +1216,7 @@ let extract_definitions (fmt : Format.formatter) (config : gen_config)
                 ^ Errors.raw_span_to_string d.item_meta.span
           in
           let decls = List.map to_string ids in
-          if not (List.for_all (trait_decl_is_builtin ctx) ids) then (
+          if not (List.for_all (trait_decl_is_external ctx) ids) then (
             if List.length decls = 1 then
               [%warn_opt_span] None
                 ("Recursive trait declarations are not supported; the \
@@ -1240,7 +1263,7 @@ let extract_definitions (fmt : Format.formatter) (config : gen_config)
                 ^ Errors.raw_span_to_string d.item_meta.span
           in
           let decls = List.map to_string ids in
-          if not (List.for_all (trait_impl_is_builtin ctx) ids) then (
+          if not (List.for_all (trait_impl_is_external ctx) ids) then (
             (* We actually have a special elaboration in Lean that allows us
                to support recursive trait impls *)
             if List.length decls = 1 then
@@ -1275,7 +1298,12 @@ let extract_definitions (fmt : Format.formatter) (config : gen_config)
       with CFailure _ ->
         (* An exception was raised: ignore it *)
         ())
-    (Option.get ctx.crate.declarations)
+    (Option.get ctx.crate.declarations);
+
+  (* Emit hax specs/proof obligations, if requested. *)
+  if config.extract_specs then ExtractSpec.extract_specs ctx fmt;
+  if config.extract_proof_obligations then
+    ExtractSpec.extract_proof_obligations ctx fmt
 
 type extract_file_info = {
   filename : string;
@@ -1295,6 +1323,10 @@ type extract_file_info = {
 
 let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
     : unit =
+  (* Add the user-provided extra includes *)
+  let fi =
+    { fi with custom_includes = fi.custom_includes @ !Config.extra_includes }
+  in
   (* Open the file and create the formatter *)
   let out = open_out fi.filename in
   let fmt = Format.formatter_of_out_channel out in
@@ -1314,7 +1346,8 @@ let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
   (match Config.backend () with
   | Lean ->
       Printf.fprintf out "-- THIS FILE WAS AUTOMATICALLY GENERATED BY AENEAS\n";
-      Printf.fprintf out "-- [%s]%s\n" fi.rust_module_name fi.custom_msg
+      Printf.fprintf out "-- [%s]%s\n" fi.rust_module_name fi.custom_msg;
+      if !Config.use_lean_modules then Printf.fprintf out "module\n"
   | Coq | FStar | HOL4 ->
       Printf.fprintf out
         "(** THIS FILE WAS AUTOMATICALLY GENERATED BY AENEAS *)\n";
@@ -1366,13 +1399,33 @@ let extract_file (config : gen_config) (ctx : gen_ctx) (fi : extract_file_info)
         fi.custom_includes;
       Printf.fprintf out "Module %s.\n" fi.module_name
   | Lean ->
-      Printf.fprintf out "import Aeneas\n";
+      let import_kw =
+        if !Config.use_lean_modules then "public import" else "import"
+      in
+      Printf.fprintf out "%s Aeneas\n" import_kw;
+      if !Config.core_models_lib then
+        Printf.fprintf out "%s CoreModels\n" import_kw;
       (* Add the custom imports *)
-      List.iter (fun m -> Printf.fprintf out "import %s\n" m) fi.custom_imports;
+      List.iter
+        (fun m -> Printf.fprintf out "%s %s\n" import_kw m)
+        fi.custom_imports;
       (* Add the custom includes *)
-      List.iter (fun m -> Printf.fprintf out "import %s\n" m) fi.custom_includes;
+      List.iter
+        (fun m -> Printf.fprintf out "%s %s\n" import_kw m)
+        fi.custom_includes;
+      if !Config.use_lean_modules then
+        Printf.fprintf out "@[expose] public section\n";
       (* Always open the Primitives namespace *)
-      Printf.fprintf out "open Aeneas Aeneas.Std Result ControlFlow Error\n";
+      if !Config.core_models_lib then begin
+        Printf.fprintf out "open CoreModels Aeneas\n";
+        Printf.fprintf out "open Aeneas.Std hiding namespace core alloc\n";
+        Printf.fprintf out "open RustM ControlFlow Error\n"
+      end
+      else Printf.fprintf out "open Aeneas Aeneas.Std RustM ControlFlow Error\n";
+      (* In Mvcgen mode, we need to open Std.Do *)
+      (match Config.spec_backend () with
+      | Some Config.Mvcgen -> Printf.fprintf out "open Std.Do\n"
+      | Some Config.Step | None -> ());
       (* Silence the linters which would fire on generated code. *)
       List.iter
         (fun option -> Printf.fprintf out "set_option %s false\n" option)
@@ -1459,11 +1512,12 @@ let extract_translated_crate (filename : string) (dest_dir : string)
     (trans_crate : translated_crate) (extracted_opaque : bool ref) : unit =
   let {
     type_decls = trans_types;
-    builtin_fun_sigs = builtin_sigs;
     fun_decls = trans_funs;
     global_decls = trans_globals;
     trait_decls = trans_trait_decls;
     trait_impls = trans_trait_impls;
+    specs = trans_specs;
+    proof_obligations = trans_proof_obligations;
   } =
     trans_crate
   in
@@ -1537,7 +1591,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
       trans_trait_impls;
       trans_types;
       trans_funs;
-      builtin_sigs;
+      specs = trans_specs;
+      proof_obligations = trans_proof_obligations;
       trans_globals;
       functions_with_decreases_clause = rec_functions;
       types_filter_type_args_map = Pure.TypeDeclId.Map.empty;
@@ -1854,9 +1909,15 @@ let extract_translated_crate (filename : string) (dest_dir : string)
   (* Check if there are opaque types and functions (we need this to know whether
      we need to generate interface files, etc.) *)
   let has_opaque_types, has_opaque_funs =
-    crate_has_opaque_non_builtin_decls ctx true
+    crate_has_opaque_non_external_decls ctx true
   in
   let has_opaque = has_opaque_types || has_opaque_funs in
+
+  (* Extra Lean imports the produced specs require (empty when there are none);
+     the source-specific logic lives in {!Spec.required_imports}. *)
+  let spec_imports =
+    if trans_specs = [] then [] else Spec.required_imports ()
+  in
 
   (* Extract one or several files, depending on the configuration *)
   (if !Config.split_files then (
@@ -1871,6 +1932,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_transparent = true;
          extract_opaque = false;
          extract_globals = false;
+         extract_specs = false;
+         extract_proof_obligations = false;
          interface = false;
        }
      in
@@ -2093,7 +2156,38 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          noncomputable = has_opaque && not !Config.all_computable;
        }
      in
-     extract_file fun_config ctx file_info)
+     extract_file fun_config ctx file_info;
+
+     (* Dedicated Specs.lean (statements of correctness) and
+        ProofObligations.lean (the obligations), if any *)
+     let specs_module = import_prefix ^ "Specs" in
+     (if trans_specs <> [] then
+        let specs_config = { base_gen_config with extract_specs = true } in
+        let file_info =
+          {
+            file_info with
+            filename = extract_filebasename ^ "Specs" ^ ext;
+            module_name = specs_module;
+            custom_msg = ": specs (statements of correctness)";
+            custom_imports = spec_imports;
+            custom_includes = [ types_module; fun_module ];
+          }
+        in
+        extract_file specs_config ctx file_info);
+     if trans_proof_obligations <> [] then
+       let obligations_config =
+         { base_gen_config with extract_proof_obligations = true }
+       in
+       let file_info =
+         {
+           file_info with
+           filename = extract_filebasename ^ "ProofObligations" ^ ext;
+           module_name = import_prefix ^ "ProofObligations";
+           custom_msg = ": proof obligations";
+           custom_includes = [ types_module; fun_module; specs_module ];
+         }
+       in
+       extract_file obligations_config ctx file_info)
    else
      let gen_config =
        {
@@ -2107,6 +2201,8 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          extract_transparent = true;
          extract_opaque = true;
          extract_globals = true;
+         extract_specs = Config.spec_config_enabled ();
+         extract_proof_obligations = Config.spec_config_enabled ();
          interface = false;
        }
      in
@@ -2120,7 +2216,7 @@ let extract_translated_crate (filename : string) (dest_dir : string)
          rust_module_name = crate.name;
          module_name = crate_name;
          custom_msg = "";
-         custom_imports = [];
+         custom_imports = spec_imports;
          custom_includes = [];
          noncomputable = has_opaque && not !Config.all_computable;
        }
@@ -2149,8 +2245,10 @@ let extract_translated_crate (filename : string) (dest_dir : string)
       if !Config.split_files && !Config.generate_lib_entry_point then (
         let filename = Filename.concat dest_dir (crate_name ^ ".lean") in
         let out = open_out filename in
-        (* Write *)
-        Printf.fprintf out "import %s.Funs\n" crate_name;
+        if !Config.use_lean_modules then (
+          Printf.fprintf out "module\n";
+          Printf.fprintf out "public import %s.Funs\n" crate_name)
+        else Printf.fprintf out "import %s.Funs\n" crate_name;
         (* Flush and close the file, log *)
         close_out out;
         log#linfo (lazy ("Generated: " ^ filename)));

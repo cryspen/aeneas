@@ -1,47 +1,83 @@
-import Aeneas.Std.Primitives
-import Aeneas.Std.Delab
-import Std.Do
-import Aeneas.Tactic.Solver.Grind.Init
-import Aeneas.Std.Spec
+module
+public import Aeneas.Std.Primitives
+public import Aeneas.Std.Delab
+public import Std.Do
+public import Aeneas.Tactic.Solver.Grind.Init
+public import Aeneas.Tactic.Step.DspecInduction
+public meta import Aeneas.Std.Spec
+public meta import Aeneas.Std.Delab
+public import Aeneas.Data.Coinductive.ITree
+public import Aeneas.Data.Coinductive.Effect
+public import Aeneas.Data.Coinductive.ITreeWP
+import all Init.Internal.Order.Basic
+public section
 
 namespace Aeneas.Std.WP
 
-open Std Result
+open Std RustM
+open Aeneas.Data.Coinductive
+open Lean.Order
 
-def Post α := (α -> Prop)
-def Pre := Prop
+@[expose] def Post α := (α -> Prop)
+@[expose] def Pre := Prop
 
-def Wp α := Post α → Pre
+@[expose] def Wp α := Post α → Pre
 
-def wp_return (x:α) : Wp α := fun p => p x
+@[expose] def wp_return (x:α) : Wp α := fun p => p x
 
-def theta (m:Result α) : Wp α :=
-  match m with
-  | ok x => wp_return x
-  | fail _ => fun _ => False
-  | div => fun _ => False
+section ResultImplementation
 
-def spec {α} (x:Result α) (p:Post α) :=
-  theta x p
+unseal RustM
 
-def dspec {α} (x:Result α) (p:Post α) :=
-  match x with
-  | ok x => p x
-  | fail _ => False
-  | div => True
+@[expose] section
 
-theorem spec_dspec (α) (x : Result α) (p: Post α) : spec x p → dspec x p := by
-  intros s
-  simp [spec, dspec] at *
-  cases x <;> simp at * <;> assumption
-theorem dspec_admissible {α} (p : Post α )
-  : Lean.Order.admissible (fun x => dspec x p) := by
-  apply Lean.Order.admissible_flatOrder
-  simp [dspec]
+/-- The WP of the effects of Rust programs (`RustEffect`). -/
+@[reducible]
+def effectWP : EffectWP RustEffect where
+  State := Unit
+  wp effect _ _ :=
+    match effect with
+    | .fail _ => False
+
+instance : EffectWP.Monotonic effectWP where
+  wp_monotonic _ := False.elim
+
+instance : EffectWP.Conjunctive effectWP where
+  wp_conj := by
+    intro _ _ _ hNonempty hAll
+    obtain ⟨C₀, hC₀⟩ := hNonempty
+    exact (hAll C₀ hC₀).elim
+
+instance : EffectWP.ExcludedMiracle effectWP where
+  wp_excludedMiracle := by
+    rintro ⟨⟩ _ h
+    exact h
+
+def spec (m : RustM α) (p : Post α) : Prop :=
+  DWP effectWP m (fun value _ => p value) ()
+
+def dspec (m : RustM α) (p : Post α) : Prop :=
+  DWLP effectWP m (fun value _ => p value) ()
+
+theorem spec_dspec (α) (x : RustM α) (p: Post α) : spec x p → dspec x p :=
+  DWP.toPartial
+
+theorem dspec_admissible {α} (p : Post α) :
+    admissible (fun x => dspec x p) :=
+  DWLP.admissible effectWP _ ()
+
+end
+
+/-- The shape the `dspec_induction` tactic needs to discharge the admissibility
+side-goal it generates for a partial specification about a recursive function. -/
+@[dspec_admissible]
+theorem dspec_func_admissible {α : Sort v} {β} (arg : α) (p : Post β) :
+    admissible (fun f : α → RustM β => dspec (f arg) p) :=
+  admissible_apply (fun _ m => dspec m p) arg (dspec_admissible p)
 
 /-- Variant of `uncurry` used to decompose tuples in post-conditions.
 
-Similar to `uncurry` but specialized for `Prop` and delaborated differently:
+Similar to `uncurry` but delaborated differently:
 `uncurry'` is delaborated as `x y => ...` (separate binders), while
 `uncurry` is delaborated as `(x, y) => ...` (tuple binder).
 We use this in the Hoare triple notation `⦃ ⦄`.
@@ -49,20 +85,25 @@ We use this in the Hoare triple notation `⦃ ⦄`.
 Example: `f 0 ⦃ x y z => ... ⦄` desugars to
 `spec (f 0) (uncurry' fun x => uncurry' fun y z => ...)`.
 -/
-def uncurry' {α β} (p : α → β → Prop) : α × β → Prop :=
+
+@[expose]
+def uncurry' {α β γ : Type _} (p : α → β → γ) : α × β → γ :=
   fun (x, y) => p x y
 
-@[simp] theorem uncurry'_pair x y (p : α → β → Prop) : uncurry' p (x, y) = p x y := by simp [uncurry']
-@[defeq] theorem uncurry'_eq x (p : α → β → Prop) : uncurry' p x = p x.fst x.snd := by simp [uncurry']
+@[simp] theorem uncurry'_pair x y (p : α → β → γ) : uncurry' p (x, y) = p x y := by simp [uncurry']
+@[defeq] theorem uncurry'_eq x (p : α → β → γ) : uncurry' p x = p x.fst x.snd := by simp [uncurry']
 
 @[simp, grind =, agrind =]
-theorem spec_ok (x : α) : spec (ok x) p ↔ p x := by simp [spec, theta, wp_return]
+theorem spec_ok (x : α) : spec (ok x) p ↔ p x := DWP.ret_iff
 
 @[simp, grind =, agrind =]
-theorem spec_fail (e : Error) : spec (fail e) p ↔ False := by simp [spec, theta]
+theorem spec_vis (e k) : spec (.vis e k) p ↔ False := ⟨fun h => DWP.vis_view h, False.elim⟩
 
 @[simp, grind =, agrind =]
-theorem spec_div : spec div p ↔ False := by simp [spec, theta]
+theorem spec_fail (e : Error) : spec (fail e) p ↔ False := by simp [RustM.fail_eq_vis]
+
+@[simp, grind =, agrind =]
+theorem spec_div : spec div p ↔ False := ⟨DWP.div_false, False.elim⟩
 
 /-! ### `spec_*` for tuple posts
 
@@ -81,167 +122,55 @@ theorem spec_fail_pair (e : Error) (f : α → β → Prop) :
 theorem spec_div_pair (f : α → β → Prop) :
     spec div (uncurry f) ↔ False := by simp
 
-theorem spec_mono {α} {P₁ : Post α} {m : Result α} {P₀ : Post α} (h : spec m P₀):
-  (∀ x, P₀ x → P₁ x) → spec m P₁ := by
-  intros HMonPost
-  revert h
-  unfold spec theta wp_return
-  cases m <;> grind
+/-- Mono rule used by `step`. -/
+theorem spec_mono {α} {P₁ : Post α} {m : RustM α} {P₀ : Post α} (h : spec m P₀):
+  (∀ x, P₀ x → P₁ x) → spec m P₁ :=
+  fun HMonPost => DWP.mono h fun value _ => HMonPost value
 
-theorem spec_bind {α β} {k : α -> Result β} {Pₖ : Post β} {m : Result α} {Pₘ : Post α} :
+/-- Bind rule used by `step`. It is stated on `Std.bind` rather than on `>>=`, which is
+what a translated program binds with. -/
+theorem spec_bind {α β} {k : α -> RustM β} {Pₖ : Post β} {m : RustM α} {Pₘ : Post α} :
   spec m Pₘ →
-  (forall x, Pₘ x → spec (k x) Pₖ) →
-  spec (Std.bind m k) Pₖ := by
-  intro Hm Hk
-  cases m
-  · simp
-    apply Hk
-    apply Hm
-  · simp
-    apply Hm
-  · simp
-    apply Hm
+  (∀ x, Pₘ x → spec (k x) Pₖ) →
+  spec (Std.bind m k) Pₖ :=
+  fun Hm Hk => DWP.bind (k := k) Hm fun value _ => Hk value
 
-/-- Small helper to currify functions -/
-def curry {α β γ} (f : α × β → γ) (x : α) : β → γ := fun y => f (x, y)
+theorem spec_and {m : RustM α} {p q : Post α} (h₁ : spec m p) (h₂ : spec m q) :
+    spec m (fun value => p value ∧ q value) :=
+  DWP.and_iff.mpr ⟨h₁, h₂⟩
 
-/-- Implication -/
-def imp (P Q : Prop) : Prop := P → Q
-
-@[simp]
-theorem imp_and_iff (P0 P1 Q : Prop) : imp (P0 ∧ P1) Q ↔ P0 → imp P1 Q := by simp [imp]
-
-/-- Implication with quantifier -/
-def qimp {α} (P₀ P₁ : Post α) : Prop := ∀ x, P₀ x → P₁ x
-
-/-- We use this lemma to decompose nested `uncurry'` predicates into a sequence of universal quantifiers. -/
-@[simp]
-def qimp_uncurry' {α₀ α₁} (P : α₀ → α₁ → Prop) (Q : α₀ × α₁ → Prop) :
-  qimp (uncurry' P) Q ↔ ∀ x, qimp (P x) (curry Q x) := by
-  simp [qimp, curry]
-
-/-- We use this lemma to eliminate `imp` after we decomposed the nested `uncurry'` -/
-theorem qimp_iff {α} (P₀ P₁ : Post α) : qimp P₀ P₁ ↔ ∀ x, imp (P₀ x) (P₁ x) := by simp [qimp, imp]
-
-/-- Alternative to `spec_mono`: we control the introduction of universal quantifiers by introducing `imp`. -/
-theorem spec_mono' {α} {P₁ : Post α} {m : Result α} {P₀ : Post α} (h : spec m P₀):
-  qimp P₀ P₁ → spec m P₁ := by
-  intros HMonPost
-  revert h
-  unfold spec theta wp_return
-  cases m <;> grind [qimp]
-
-/-- Implication of a `spec` predicate with quantifier -/
-def qimp_spec {α β} (P : α → Prop) (k : α → Result β) (Q : β → Prop) : Prop :=
-  ∀ x, P x → spec (k x) Q
-
-/-- This alternative to `spec_bind` controls the introduction of universal quantifiers with `imp_spec`. -/
-theorem spec_bind' {α β} {k : α -> Result β} {Pₖ : Post β} {m : Result α} {Pₘ : Post α} :
-  spec m Pₘ →
-  (qimp_spec Pₘ k Pₖ) →
-  spec (Std.bind m k) Pₖ := by
-  intro Hm Hk
-  cases m
-  · simp
-    apply Hk
-    apply Hm
-  · simp
-    apply Hm
-  · simp
-    apply Hm
-
-/-- We use this lemma to decompose nested `uncurry'` predicates into a sequence of universal quantifiers. -/
-@[simp]
-def qimp_spec_uncurry' {α₀ α₁ β} (P : α₀ → α₁ → Prop) (k : α₀ × α₁ → Result β) (Q : β → Prop) :
-  qimp_spec (uncurry' P) k Q ↔ ∀ x, qimp_spec (P x) (curry k x) Q := by
-  simp [qimp_spec, curry]
-
-/-- We use this lemma to eliminate `imp_spec` after we decomposed the nested `uncurry'` -/
-def qimp_spec_iff {α β} (P : α → Prop) (k : α → Result β) (Q : β → Prop) :
-  qimp_spec P k Q ↔ ∀ x, imp (P x) (spec (k x) Q) := by
-  simp [qimp_spec, imp]
-
-/--
-error: unsolved goals
-⊢ ∀ (x : Nat), qimp_spec (fun y => 0 < x + y) (curry (fun x => ok (x.fst + x.snd)) x) fun z => 0 < z
--/
-#guard_msgs in
-example : qimp_spec (uncurry' fun x y => x + y > 0) (fun (x, y) => .ok (x + y)) (fun z => z > 0) := by
-  simp
-
-@[simp]
-theorem qimp_exists {α β} (P₀ : β → Post α) (P₁ : Post α) :
-  qimp (fun x => ∃ y, P₀ y x) P₁ ↔ ∀ x, qimp (P₀ x) P₁ := by
-  simp only [qimp, forall_exists_index]; grind
-
-@[simp]
-theorem qimp_spec_exists {α β γ} (P : γ → α → Prop) (k : α → Result β) (Q : β → Prop) :
-  qimp_spec (fun x => ∃ y, P y x) k Q ↔ ∀ x, qimp_spec (P x) k Q := by
-  simp only [qimp_spec, forall_exists_index]; grind
-
-theorem spec_equiv_exists (m:Result α) (P:Post α) :
-  spec m P ↔ (∃ y, m = ok y ∧ P y) := by
-  cases m <;> simp [spec, theta, wp_return]
-
-theorem spec_imp_exists {m:Result α} {P:Post α} :
-  spec m P → (∃ y, m = ok y ∧ P y) := by
-  exact (spec_equiv_exists m P).1
-
-theorem exists_imp_spec {m:Result α} {P:Post α} :
-  (∃ y, m = ok y ∧ P y) → spec m P := by
-  exact (spec_equiv_exists m P).2
+theorem spec_exists {m : RustM α} {p : Post α} (h : spec m p) : ∃ value, p value :=
+  let ⟨value, _, hp⟩ := DWP.exists h
+  ⟨value, hp⟩
 
 -- `dspec` theorems
-theorem dspec_mono' {α} {P₁ : Post α} {m : Result α} {P₀ : Post α} (h : dspec m P₀):
-  qimp P₀ P₁ → dspec m P₁ := by
-  intros HMonPost
-  revert h
-  unfold dspec
-  cases m <;> grind [qimp]
+theorem dspec_mono {α} {P₁ : Post α} {m : RustM α} {P₀ : Post α} (h : dspec m P₀):
+  (∀ x, P₀ x → P₁ x) → dspec m P₁ :=
+  fun HMonPost => DWLP.mono h fun value _ => HMonPost value
 
-/-- Implication of a `dspec` predicate with quantifier -/
-def qimp_dspec {α β} (P : α → Prop) (k : α → Result β) (Q : β → Prop) : Prop :=
-  ∀ x, P x → dspec (k x) Q
-
-theorem dspec_bind' {α β} {k : α -> Result β} {Pₖ : Post β} {m : Result α} {Pₘ : Post α} :
+theorem dspec_bind {α β} {k : α -> RustM β} {Pₖ : Post β} {m : RustM α} {Pₘ : Post α} :
   dspec m Pₘ →
-  (qimp_dspec Pₘ k Pₖ) →
-  dspec (Std.bind m k) Pₖ := by
-  intro Hm Hk
-  cases m
-  · simp
-    apply Hk
-    apply Hm
-  · simp
-    apply Hm
-  · simp
-    apply Hm
-
-@[simp]
-def qimp_dspec_uncurry' {α₀ α₁ β} (P : α₀ → α₁ → Prop) (k : α₀ × α₁ → Result β) (Q : β → Prop) :
-  qimp_dspec (uncurry' P) k Q ↔ ∀ x, qimp_dspec (P x) (curry k x) Q := by
-  simp [qimp_dspec, curry]
-
-@[simp]
-theorem qimp_dspec_unit {α} (P : Unit → Prop) (k : Unit → Result α) (Q : α → Prop) :
-  qimp_dspec P k Q ↔ (P () → dspec (k ()) Q) := by
-  grind [qimp_dspec]
-
-@[simp]
-theorem qimp_dspec_exists {α β γ} (P : γ → α → Prop) (k : α → Result β) (Q : β → Prop) :
-  qimp_dspec (fun x => ∃ y, P y x) k Q ↔ ∀ x, qimp_dspec (P x) k Q := by
-  simp only [qimp_dspec, forall_exists_index]; grind
-
-def qimp_dspec_iff {α β} (P : α → Prop) (k : α → Result β) (Q : β → Prop) :
-  qimp_dspec P k Q ↔ ∀ x, imp (P x) (dspec (k x) Q) := by
-  simp [qimp_dspec, imp]
+  (∀ x, Pₘ x → dspec (k x) Pₖ) →
+  dspec (Std.bind m k) Pₖ :=
+  fun Hm Hk => DWLP.bind (k := k) Hm fun value _ => Hk value
 
 @[simp, grind =, agrind =]
-theorem dspec_ok (x : α) : dspec (ok x) p ↔ p x := by simp [dspec]
+theorem dspec_ok (x : α) : dspec (ok x) p ↔ p x := DWLP.ret_iff
 
-theorem dspec_imp_forall {m:Result α} {P:Post α} :
-  dspec m P → (∀ y, m = ok y → P y) := by
-  grind only [= dspec_ok]
+@[simp, grind =, agrind =]
+theorem dspec_vis (e k) : dspec (.vis e k) p ↔ False := ⟨fun h => DWLP.vis_view h, False.elim⟩
+
+@[simp, grind =, agrind =]
+theorem dspec_div : dspec (div : RustM α) p ↔ True := iff_true_intro DWLP.div
+
+@[simp, grind =, agrind =]
+theorem dspec_fail (e : Error) : dspec (fail e) p ↔ False := by simp [RustM.fail_eq_vis]
+
+theorem dspec_and {m : RustM α} {p q : Post α} (h₁ : dspec m p) (h₂ : dspec m q) :
+    dspec m (fun value => p value ∧ q value) :=
+  DWLP.and_iff.mpr ⟨h₁, h₂⟩
+
+end ResultImplementation
 
 end Aeneas.Std.WP
 
@@ -251,7 +180,7 @@ TODO: use https://github.com/leanprover/lean4/pull/11355
 -/
 namespace Aeneas
 
-open Std WP Result
+open Std WP RustM
 
 /-!
 # Hoare triple notation and elaboration
@@ -272,7 +201,7 @@ open Lean PrettyPrinter
 
 Given `x0`, ..., `xn` and `body`, generates the (syntactic) term `fun (x0, ..., xn) => body`.
 -/
-partial def buildUncurryLam (xs : List (TSyntax `term)) (body : TSyntax `term) :
+meta partial def buildUncurryLam (xs : List (TSyntax `term)) (body : TSyntax `term) :
     MacroM (TSyntax `term) := do
   let uncurryIdent := mkIdent ``Std.uncurry
   match xs with
@@ -284,7 +213,7 @@ partial def buildUncurryLam (xs : List (TSyntax `term)) (body : TSyntax `term) :
     `($uncurryIdent (fun $a => $inner))
 
 /-- Helper to elaborate `binder => body` when binder is a tuple - this supports nested tuples. -/
-partial def mkBinderFun (depth : Nat) (binder : Term) (body : Term) : MacroM Term := do
+meta partial def mkBinderFun (depth : Nat) (binder : Term) (body : Term) : MacroM Term := do
   match binder with
   | `( ($a, $bs,*) ) =>
     let xs : List Term := a :: bs.getElems.toList
@@ -303,7 +232,7 @@ partial def mkBinderFun (depth : Nat) (binder : Term) (body : Term) : MacroM Ter
     buildUncurryLam leafIdents wrappedBody
   | _ => `(fun $binder => $body)
 
-def mk_function_syntax (p : TSyntax `term) (depth : Nat) (xs : List Term) : MacroM Term := do
+meta def mk_function_syntax (p : TSyntax `term) (depth : Nat) (xs : List Term) : MacroM Term := do
   match xs with
   | [] => `($p)
   | [x] => mkBinderFun depth x p
@@ -316,7 +245,7 @@ def mk_function_syntax (p : TSyntax `term) (depth : Nat) (xs : List Term) : Macr
 identifiers — i.e. a binder group like `a b c` — return the identifiers in
 order.  Otherwise return `none`, so anonymous constructors `⟨a, b⟩`, tuple
 patterns, and other structured terms are left untouched. -/
-private partial def binderGroupIdents? (stx : Syntax) : Option (Array Term) :=
+private meta partial def binderGroupIdents? (stx : Syntax) : Option (Array Term) :=
   if stx.isIdent then some #[⟨stx⟩]
   else if stx.getKind == ``Lean.Parser.Term.app || stx.getKind == Lean.nullKind then
     stx.getArgs.foldlM (init := (#[] : Array Term)) fun acc s =>
@@ -328,7 +257,7 @@ private partial def binderGroupIdents? (stx : Syntax) : Option (Array Term) :=
 so each name becomes its own product component (exactly as if written
 separately).  Tuple/pattern binders `(a, b)`, `(⟨a, b⟩ : T)`, single binders
 `(a : T)`, and bare identifiers are returned unchanged. -/
-private def expandGroupedBinder (binder : Term) : MacroM (List Term) := do
+private meta def expandGroupedBinder (binder : Term) : MacroM (List Term) := do
   match binder with
   | `(($e : $t)) =>
     match binderGroupIdents? e.raw with
@@ -339,7 +268,7 @@ private def expandGroupedBinder (binder : Term) : MacroM (List Term) := do
   | _ => pure [binder]
 
 /-- Flatten grouped binders across the whole binder list. -/
-private def expandBinders (xs : List Term) : MacroM (List Term) := do
+private meta def expandBinders (xs : List Term) : MacroM (List Term) := do
   let mut out : Array Term := #[]
   for x in xs do
     out := out ++ (← expandGroupedBinder x).toArray
@@ -347,7 +276,7 @@ private def expandBinders (xs : List Term) : MacroM (List Term) := do
 
 /-- Build the postcondition term for `⦃ xs => p ⦄`, expanding grouped binders
 into one component per name first. -/
-private def mkPost (p : Term) (xs : List Term) : MacroM Term := do
+private meta def mkPost (p : Term) (xs : List Term) : MacroM Term := do
   mk_function_syntax p 0 (← expandBinders xs)
 
 /-- Macro expansion for a single element (may expand to several via a grouped binder) -/
@@ -414,7 +343,7 @@ so the continuation lambdas are left untouched.
 
 Example: on `fun a b => fun c => body`, collects `[a, b]` and leaves the reader
 at `fun c => body`. -/
-private partial def enterUncurryOnce (acc : Array Std.Delab.BinderEntry)
+private meta partial def enterUncurryOnce (acc : Array Std.Delab.BinderEntry)
     (k : Array Std.Delab.BinderEntry → DelabM α) : DelabM α := do
   match (← getExpr) with
   | .lam n _ _ _ =>
@@ -428,9 +357,9 @@ private partial def enterUncurryOnce (acc : Array Std.Delab.BinderEntry)
   | _ => k acc
 
 /-- Is the expression an `uncurry'` or `uncurry` wrapper? -/
-private def isPostBinderWrapper (e : Expr) : Bool :=
+private meta def isPostBinderWrapper (e : Expr) : Bool :=
   match_expr e.consumeMData with
-  | uncurry' _ _ _ => true
+  | uncurry' _ _ _ _ => true
   | uncurry _ _ _ _ => true
   | _ => false
 
@@ -438,13 +367,13 @@ private def isPostBinderWrapper (e : Expr) : Bool :=
 Returns `(binders, bodyTerm)` where each binder is a `Term` (either a plain
 name like `x` or a (potentially nested) tuple pattern like `(a, b)`).
 -/
-private partial def delabPostBinders : DelabM (Array Term × Term) := do
+private meta partial def delabPostBinders : DelabM (Array Term × Term) := do
   match_expr (← getExpr).consumeMData with
-  | uncurry' _ _ _ =>
-    /- `uncurry' f`: dive into `f` (arg 2) and peel one binder.
+  | uncurry' _ _ _ _ =>
+    /- `uncurry' f`: dive into `f` (arg 3) and peel one binder.
        If `f = uncurry g`, the binder is a tuple `(a, b)`.
        If `f = fun x => rest`, the binder is scalar `x`. -/
-    withNaryArg 2 do
+    withNaryArg 3 do
       match_expr (← getExpr).consumeMData with
       | uncurry _ _ _ _ =>
         -- Tuple binder: peel one uncurry level, then recurse for more binders
@@ -491,7 +420,7 @@ where
 
 /-- Delaborator for `WP.spec e post` → `e ⦃ binders => body ⦄`. -/
 @[scoped delab app.Aeneas.Std.WP.spec]
-def delabSpec : Delab := do
+meta def delabSpec : Delab := do
   guard $ (← getExpr).isAppOfArity' ``spec 3
   let monadExpr ← withNaryArg 1 delab
   let (binders, bodyTerm) ← withNaryArg 2 delabPostBinders
@@ -502,7 +431,7 @@ def delabSpec : Delab := do
 
 /-- Delaborator for `WP.dspec e post` → `e ⦃ binders => body ⦄div`. -/
 @[scoped delab app.Aeneas.Std.WP.dspec]
-def delabDSpec : Delab := do
+meta def delabDSpec : Delab := do
   guard $ (← getExpr).isAppOfArity' ``dspec 3
   let monadExpr ← withNaryArg 1 delab
   let (binders, bodyTerm) ← withNaryArg 2 delabPostBinders
@@ -629,7 +558,7 @@ end Aeneas
 namespace Aeneas.Std.WP
 
 section
-  variable (U32 : Type) [HAdd U32 U32 (Result U32)]
+  variable (U32 : Type) [HAdd U32 U32 (RustM U32)]
   variable (x y : U32)
 
   #elab x + y ⦃ _ => True ⦄
@@ -637,16 +566,16 @@ section
   #elab True ∧ x + y ⦃ _ => True ⦄
 
   -- Checking what happpens if we put post-conditions inside post-conditions
-  example (f : Nat → Result (Nat × (Nat → Result Nat)))
+  example (f : Nat → RustM (Nat × (Nat → RustM Nat)))
           (_ : ∀ x, f x ⦃ (y, g) => y > 0 ∧ ∀ x, g x ⦃ z => z > y ⦄ ⦄ ∧ True)
    : True := by simp only
 end
 
-def add1 (x : Nat) := Result.ok (x + 1)
+def add1 (x : Nat) := RustM.ok (x + 1)
 theorem  add1_spec (x : Nat) : add1 x ⦃ y => y = x + 1⦄ :=
   by simp [add1]
 
-/-- Example without `imp` -/
+/-- Example with a single output. -/
 example (x : Nat) :
   (do
     let y ← add1 x
@@ -660,31 +589,12 @@ example (x : Nat) :
     --
     grind
 
-/-- Example with `imp` -/
-example (x : Nat) :
-  (do
-    let y ← add1 x
-    add1 y) ⦃ y => y = x + 2 ⦄ := by
-    -- step as ⟨ y, z ⟩
-    apply spec_bind' (add1_spec _)
-    simp -failIfUnchanged only -- introduce the quantifiers
-    simp only [qimp_spec_iff] -- eliminate `qimp_spec`
-    intro y h
-    -- step as ⟨ y1, z1⟩
-    apply spec_mono' (add1_spec _)
-    simp -failIfUnchanged only -- introduce the quantifiers
-    simp only [qimp_iff] -- eliminate `qimp_spec`
-    simp only [imp] -- eliminate `imp`
-    intro y' h
-    --
-    grind
-
-def add2 (x : Nat) := Result.ok (x + 1, x + 2)
+def add2 (x : Nat) := RustM.ok (x + 1, x + 2)
 
 theorem  add2_spec (x : Nat) : add2 x ⦃ (y, z) => y = x + 1 ∧ z = x + 2⦄ :=
   by simp [add2]
 
-/-- Example without `imp` -/
+/-- Example with a tuple output. -/
 example (x : Nat) :
   (do
     let (y, _) ← add2 x
@@ -692,58 +602,39 @@ example (x : Nat) :
     -- step as ⟨ y, z ⟩
     apply spec_bind
     . apply add2_spec
-    rintro ⟨y, z⟩ h
-    simp at h
+    simp only [Prod.forall, uncurry_apply_pair, and_imp]
+    intro y z h0 h1
     -- step as ⟨ y1, z1⟩
     apply spec_mono
     . apply add2_spec
-    rintro ⟨y1, z1⟩ h
-    simp at h
+    simp only [Prod.forall, uncurry_apply_pair, and_imp]
+    intro y1 z1 h2 h3
     grind
 
 theorem  add2_spec' (x : Nat) : add2 x ⦃ y z => y = x + 1 ∧ z = x + 2⦄ :=
   by simp [add2]
 
-/-- Example with `imp` -/
+/-- The same with separate binders: the post-condition is wrapped in the `uncurry'` marker,
+which is reduced when rewriting the goal with separate output quantifiers. -/
 example (x : Nat) :
   (do
     let (y, _) ← add2 x
     add2 y) ⦃ y _ => y = x + 2 ⦄ := by
     -- step as ⟨ y, z ⟩
-    apply spec_bind'
+    apply spec_bind
     . apply add2_spec'
-    simp -failIfUnchanged only [qimp_spec_uncurry'] -- introduce the quantifiers
-    simp only [qimp_spec_iff, curry] -- eliminate `qimp_spec` and `curry`
-    simp only [imp] -- eliminate `imp`
-    intro y z h0
+    simp only [Prod.forall, uncurry'_pair, and_imp]
+    intro y z h0 h1
     -- step as ⟨ y1, z1⟩
-    apply spec_mono'
+    apply spec_mono
     . apply add2_spec'
-    simp -failIfUnchanged only [qimp_uncurry'] -- introduce the quantifiers
-    simp only [qimp_iff, curry, uncurry'] -- eliminate `qimp_spec` and `curry`
-    simp only [imp]
-    intros y z h
-    --
+    simp only [Prod.forall, uncurry'_pair, and_imp]
+    intro y1 z1 h2 h3
     grind
 
 private theorem massert_spec' (b : Prop) [Decidable b] (h : b) :
   massert b ⦃ _ => True ⦄ := by
   grind [massert]
-
-@[simp]
-theorem qimp_spec_unit {α} (P : Unit → Prop) (k : Unit → Result α) (Q : α → Prop) :
-  qimp_spec P k Q ↔ (P () → k () ⦃ Q ⦄) := by
-  grind [qimp_spec]
-
-@[simp]
-theorem qimp_unit (P Q : Unit → Prop) :
-  qimp P Q ↔ (P () → Q ()) := by
-  grind [qimp]
-
-@[simp]
-theorem imp_exists_iff {α} (P : α → Prop) (Q : Prop) :
-  imp (∃ x, P x) Q ↔ (∀ x, imp (P x) Q) := by
-  simp only [imp, forall_exists_index]
 
 /-- Example with a function outputting `()` (we need to eliminate the quantifier) -/
 example :
@@ -753,16 +644,16 @@ example :
     ) ⦃ _ => True ⦄
   := by
   --
-  apply spec_bind'
-  · apply massert_spec'; omega
-  simp -failIfUnchanged only [qimp_spec_unit, forall_const]
+  apply spec_bind
+  · apply massert_spec'; decide
+  simp only [forall_const]
   --
-  apply spec_mono'
-  · apply massert_spec'; omega
-  simp -failIfUnchanged only [qimp_unit, forall_const]
+  apply spec_mono
+  · apply massert_spec'; decide
+  simp only [forall_const]
 
 /- Example with a post-condition manipulating an ∃ -/
-example (zero : List Nat → Result (List Nat))
+example (zero : List Nat → RustM (List Nat))
     (zero_spec : ∀ s, zero s ⦃ s' =>
       ∃ (h : s'.length = s.length),
       (∀ i, (_ : i < s.length) → s'[i]'(by grind) = 0) ⦄)
@@ -770,10 +661,9 @@ example (zero : List Nat → Result (List Nat))
     (do
       let _ ← zero s
       pure ()) ⦃ _ => True ⦄ := by
-  apply spec_bind'
+  apply spec_bind
   · apply zero_spec
-  simp -failIfUnchanged only [qimp_spec_iff, imp_exists_iff]
-  rintro s' h0 h1
+  rintro _ ⟨_, _⟩
   --
   simp only [pure, spec_ok]
 
@@ -786,53 +676,70 @@ namespace Aeneas.Std.WP
 # mvcgen
 -/
 
-open Std Result
+open Std RustM
 open Std.Do
 
-instance Result.instWP : WP Result.{u} (.except (ULift Error) (.except PUnit .pure)) where
+-- mvcgen does not support all types of effects, and currently this implementation only works with fail and div.
+-- This option is set here so that this same code works for any extension to RustEffect.Input
+set_option match.ignoreUnusedAlts true
+-- There are three types of exceptions in the type: the Error from RustM.fail,
+-- a dummy exception thrown when any other effect is used, and RustM.div.
+instance RustM.instWP : WP RustM.{u} (.except (ULift Error) (.except PUnit (.except PUnit .pure))) where
   wp x := {
-    trans Q := match x with | .ok a => Q.1 a | .fail e => Q.2.1 (ULift.up e) | .div => Q.2.2.1 .unit
+    trans Q := match x.match with
+      | .ok a => Q.1 a
+      | .vis eff _ =>
+        match eff with
+        | .fail e => Q.2.1 (ULift.up e)
+        | _ => Q.2.2.1 PUnit.unit
+      | .div => Q.2.2.2.1 .unit
     conjunctiveRaw Q₁ Q₂ := by
       apply SPred.bientails.of_eq
       cases x <;> simp
   }
+set_option match.ignoreUnusedAlts false
 
-instance : LawfulMonad Result where
-    map_const := by intros; rfl
-    id_map := by intros _ x; cases x <;> rfl
-    seqLeft_eq := by intros _ _ x y; cases x <;> cases y <;> rfl
-    seqRight_eq := by intros _ _ x y; cases x <;> cases y <;> rfl
-    pure_seq := by intros _ _ _ x; cases x <;> rfl
-    pure_bind := by intros; rfl
-    bind_pure_comp := by intros; rfl
-    bind_map := by intros; rfl
-    bind_assoc := by intros _ _ _ x _ _; cases x <;> rfl
-
-instance Result.instWPMonad : WPMonad Result (.except (ULift Error) (.except PUnit .pure)) where
+instance RustM.instWPMonad : WPMonad RustM (.except (ULift Error) (.except PUnit (.except PUnit .pure))) where
   wp_pure a := by apply PredTrans.ext; intro Q; simp [PredTrans.apply, wp, WP.wp]; rfl
-  wp_bind x f := by apply PredTrans.ext; intro Q; simp [PredTrans.apply, wp, WP.wp]; cases x <;> rfl
+  wp_bind x f := by
+    apply PredTrans.ext
+    intro Q
+    simp [PredTrans.apply, wp, WP.wp]
+    cases x
+    · cbv
+    · simp
+      rename_i i k
+      cases i <;> cbv
+    · cbv
 
-theorem Result.of_wp {α : Type u} {x : Result α} (P : Result α → Prop) :
+
+theorem RustM.of_wp {α : Type u} {x : RustM α} (P : RustM α → Prop) :
     (⊢ₛ wp⟦x⟧ (fun a => ⌜P (.ok a)⌝,
                   fun e => ⌜P (.fail e.down)⌝,
+                  fun _ => ⌜False⌝, -- unreachable: `RustEffect` currently only has the `fail` effect.
                   fun .unit => ⌜P .div⌝, .unit)) → P x := by
-  intro hspec
-  simp only [WP.wp, PredTrans.apply] at hspec
-  split at hspec <;> simp_all
+    intro hspec
+    simp only [WP.wp, PredTrans.apply] at hspec
+    split at hspec <;> simp_all
+    rename_i x eff heq a
+    cases eff
+    have : heq = PEmpty.elim := by funext; contradiction
+    simp [*] at *
+    try trivial
+
 
 /-- Lift an Aeneas step spec to an mvcgen-compatible `Triple`. -/
-theorem spec_to_mvcgen {α : Type u} {x : Result α} {Q : α → Prop}
+theorem spec_to_mvcgen {α : Type u} {x : RustM α} {Q : α → Prop}
     (h : spec x Q) :
     ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ Q r ⌝ ⦄ := by
-  obtain ⟨v, hx, hQv⟩ := spec_imp_exists h
-  subst hx
-  simp [Triple, WP.wp, PredTrans.apply, hQv]
+  cases x <;> simp_all [Triple, WP.wp, PredTrans.apply]
 
-theorem dspec_to_mvcgen {α : Type u} {x : Result α} {Q : α → Prop}
+theorem dspec_to_mvcgen {α : Type u} {x : RustM α} {Q : α → Prop}
     (h : dspec x Q) :
     ⦃ ⌜ ¬ x = .div ⌝ ⦄ x ⦃ ⇓ r => ⌜ Q r ⌝ ⦄ := by
   simp [Triple, WP.wp, PredTrans.apply, SPred.pure]
-  cases x <;> simp [*, dspec] at * <;> trivial
+  cases x <;> simp [*] at *
+  trivial
 
 end Aeneas.Std.WP
 
@@ -852,7 +759,7 @@ theorem loop.spec {α : Type u} {β : Type v} {γ : Type w}
   [wf : WellFoundedRelation γ]
   (inv : α → Prop)
   (post : β → Prop)
-  (body : α → Result (ControlFlow α β)) (x : α)
+  (body : α → RustM (ControlFlow α β)) (x : α)
   (hBody :
     ∀ x, inv x → body x ⦃ r =>
       match r with
@@ -865,13 +772,20 @@ theorem loop.spec {α : Type u} {β : Type v} {γ : Type w}
   apply @wf.wf.fix γ (fun x' =>
     ∀ x, measure x = x' →
     inv x → loop body x ⦃ post ⦄)
-  grind [loop]
+  intro y ih x eq ix
+  subst eq
+  unfold loop
+  apply WP.spec_bind (hBody x ix)
+  intro r hr
+  cases r with
+  | done z => simpa using hr
+  | cont x' => exact ih (measure x') hr.2 x' rfl hr.1
 
 theorem loop.spec_decr_nat {α : Type u} {β : Type v}
   (measure : α → Nat)
   (inv : α → Prop)
   (post : β → Prop)
-  (body : α → Result (ControlFlow α β)) (x : α)
+  (body : α → RustM (ControlFlow α β)) (x : α)
   (hBody :
     ∀ x, inv x → body x ⦃ r =>
       match r with
@@ -890,56 +804,267 @@ namespace Aeneas.Std.WP
 want to introduce in the context -/
 theorem forall_unit {p : Prop} : (Unit → p) ↔ p := by simp
 
--- registers the spec info for use in the step tactic, see Spec.lean
-#register_spec_info {
-    spec_name := ``Std.WP.spec
-    arity := 3
-    program_index := 1
-    post_index := 2
-    mk_spec_mono := ``Std.WP.spec_mono'
-    mk_spec_mono_skip_args := 2
-    mk_spec_bind := ``Std.WP.spec_bind'
-    mk_spec_bind_skip_args := 4
-    uncurry_elim_tactics := #[
-      ``Std.WP.qimp_spec_unit, ``Std.WP.qimp_unit,
-      ``Std.WP.qimp_spec_exists, ``Std.WP.qimp_exists,
-      ``forall_unit, ``true_imp_iff
-    ]
-    qimp_elim_tactics := #[
-      ``Std.WP.qimp_spec_iff, ``Std.WP.qimp_iff,
-      ``Std.WP.imp_and_iff, ``Std.uncurry_apply_pair,
-      ``Std.WP.uncurry'_eq, ``Std.WP.uncurry'_pair,
-      ``Std.WP.imp_exists_iff,
-      ``forall_unit, ``true_imp_iff]
-    to_mvcgen := .some ``Std.WP.spec_to_mvcgen
-    liftings := #[]
-  }
+end Aeneas.Std.WP
 
-#register_spec_info {
-    spec_name := ``Std.WP.dspec
-    arity := 3
-    program_index := 1
-    post_index := 2
-    mk_spec_mono := ``Std.WP.dspec_mono'
-    mk_spec_mono_skip_args := 2
-    mk_spec_bind := ``Std.WP.dspec_bind'
-    mk_spec_bind_skip_args := 4
-    uncurry_elim_tactics := #[
-      ``Std.WP.qimp_dspec_unit, ``Std.WP.qimp_unit,
-      ``Std.WP.qimp_dspec_exists, ``Std.WP.qimp_exists,
-      ``forall_unit, ``true_imp_iff
-    ]
-    qimp_elim_tactics := #[
-      ``Std.WP.qimp_dspec_iff, ``Std.WP.qimp_iff,
-      ``Std.WP.imp_and_iff, ``Std.uncurry_apply_pair,
-      ``Std.WP.uncurry'_eq, ``Std.WP.uncurry'_pair,
-      ``Std.WP.imp_exists_iff,
-      ``forall_unit, ``true_imp_iff]
-    to_mvcgen := .some ``Std.WP.dspec_to_mvcgen
-    liftings := #[
-      { from_statement := ``Std.WP.spec
-        conversion_thm := ``Std.WP.spec_dspec
-        conversion_thm_inferred_args := 3 }
-    ]
-  }
+/-!
+# `mvcgen` specs
+
+Accessors for the postconditions of `RustM` programs, `@[spec]` lemmas for `mvcgen`, and lemmas
+relating triples to `RustM.ok`.
+-/
+
+namespace Aeneas.Std
+
+open Std.Do WP RustM
+open Aeneas.Data.Coinductive
+
+/-- The post-shape of `RustM` in `mvcgen`: a failure (`Error`), any other effect, divergence. -/
+abbrev RustM.postShape : PostShape :=
+  .except (ULift Error) (.except PUnit (.except PUnit .pure))
+
+abbrev PostCond.okAssertion {α : Type u} (Q : PostCond α RustM.postShape) (r : α) :
+    Assertion RustM.postShape :=
+  Q.1 r
+
+abbrev PostCond.ok {α : Type u} (Q : PostCond α RustM.postShape) (r : α) : Prop :=
+  (Q.1 r).down
+
+abbrev PostCond.failAssertion {α : Type u} (Q : PostCond α RustM.postShape) (e : ULift Error) :
+    Assertion RustM.postShape :=
+  Q.2.1 e
+
+abbrev PostCond.fail {α : Type u} (Q : PostCond α RustM.postShape) (e : Error) : Prop :=
+  (Q.2.1 (.up e)).down
+
+/-- The postcondition for effects other than failure (`RustM` has none at the moment). -/
+abbrev PostCond.otherAssertion {α : Type u} (Q : PostCond α RustM.postShape) :
+    PUnit → Assertion RustM.postShape :=
+  Q.2.2.1
+
+abbrev PostCond.divAssertion {α : Type u} (Q : PostCond α RustM.postShape) :
+    PUnit → Assertion RustM.postShape :=
+  Q.2.2.2.1
+
+abbrev PostCond.div {α : Type u} (Q : PostCond α RustM.postShape) : Prop :=
+  (Q.2.2.2.1 .unit).down
+
+@[spec]
+theorem RustM.ok_spec {α : Type} {a : α} {Q : PostCond α RustM.postShape}
+    (hQ : PostCond.ok Q a) :
+    ⦃ ⌜ True ⌝ ⦄ RustM.ok a ⦃ Q ⦄ := by
+  simpa [Triple, WP.wp, PredTrans.apply]
+
+@[spec]
+theorem RustM.fail_spec {α : Type} {e : Error} {Q : PostCond α RustM.postShape}
+    (hQ : PostCond.fail Q e) :
+    ⦃ ⌜ True ⌝ ⦄ (RustM.fail e : RustM α) ⦃ Q ⦄ := by
+  simpa [Triple, WP.wp, PredTrans.apply]
+
+attribute [spec] uncurry
+
+/-- A triple with postcondition `r = v` is equivalent to the program being `.ok v`. -/
+theorem triple_post_eq_iff_eq {α : Type} {x : RustM α} {v : α} :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ r = v ⌝ ⦄ ↔ x = .ok v := by
+  cases x with
+  | ret a => simp [Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp [Triple, WP.wp, PredTrans.apply]
+  | div => simp [Triple, WP.wp, PredTrans.apply]
+
+/-- If the program equals `.ok v`, then a triple is equivalent to its postcondition on `.ok v`. -/
+theorem triple_iff_post_of_eq_ok {α : Type} {x : RustM α} {v : α} {P : α → Prop}
+    (hx : x = .ok v) : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄ ↔ P v := by
+  subst hx
+  simp [Triple, WP.wp, PredTrans.apply]
+
+/-- A triple is equivalent to the existence of a value `a` such that the program is `.ok a`
+and the postcondition holds on `a`. -/
+theorem triple_iff_exists_ok {α : Type} {x : RustM α} {P : α → Prop} :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄ ↔ ∃ a, x = .ok a ∧ P a := by
+  cases x with
+  | ret a => simp [Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp [Triple, WP.wp, PredTrans.apply]
+  | div => simp [Triple, WP.wp, PredTrans.apply]
+
+/-- Enrich triple's postcondition to contain a triple stating which program produced the value. -/
+theorem triple_with_self {α : Type} {x : RustM α} {P : α → Prop}
+    (h : ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ⌝ ⦄) :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r => ⌜ P r ∧ ⦃ ⌜ True ⌝ ⦄ x ⦃ ⇓ r' => ⌜ r' = r ⌝ ⦄ ⌝ ⦄ := by
+  obtain ⟨a, hx, hPa⟩ := triple_iff_exists_ok.1 h
+  exact (triple_iff_post_of_eq_ok hx).2 ⟨hPa, triple_post_eq_iff_eq.2 hx⟩
+
+/- Modus-ponens-like reasoning on a `noThrow` and a `mayThrow` triple -/
+theorem triple_in_hypothesis {α : Type} {f : RustM α} {Q : α → Assertion RustM.postShape}
+    (p : Prop)
+    (h : ⦃ ⌜ True ⌝ ⦄ f ⦃ ⇓ r => Q r ⦄)
+    (hp : ⦃ ⌜ True ⌝ ⦄ f ⦃ ⇓? r => Q r → ⌜ p ⌝ ⦄) :
+    p := by
+  cases f with
+  | ret a => simp_all [Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp_all [Triple, WP.wp, PredTrans.apply]
+  | div => simp_all [Triple, WP.wp, PredTrans.apply]
+
+/-!
+## Loops
+-/
+
+section
+unseal RustM
+
+/-- When divergence is allowed, `mvcgen`'s WP of a `RustM` program is admissible: the head of
+a chain's supremum (a result or a failure) already occurs in the chain. -/
+theorem wp_admissible_of_div {β : Type} (P : PostCond β RustM.postShape)
+    (hdiv : PostCond.div P) :
+    Lean.Order.admissible (fun r : RustM β => (wp⟦r⟧ P).down) := by
+  intro c hc hAll
+  generalize hEq : Lean.Order.CCPO.csup hc = t
+  cases t with
+  | ret v =>
+    have h := hAll _ (ITree.csup_ret_mem hc hEq)
+    rw [show (ITree.ret v : RustM β) = RustM.ok v from rfl] at h
+    simpa [WP.wp, PredTrans.apply] using h
+  | vis i k =>
+    obtain ⟨k₀, hMem⟩ := ITree.csup_vis_mem hc hEq
+    have h := hAll _ hMem
+    rw [show (ITree.vis i k₀ : RustM β) = RustM.vis i k₀ from rfl] at h
+    cases i
+    simpa [WP.wp, PredTrans.apply] using h
+  | div => simpa [WP.wp, PredTrans.apply] using hdiv
+
+/-- `mvcgen` spec for the `loop` combinator.
+
+Given a loop invariant `inv`, a well-founded relation `rel` and a termination measure, discharges
+`loop body init` provided each iteration of `body` either finishes (`.done`) satisfying the
+postcondition or continues (`.cont`) preserving the invariant while decreasing the measure. The
+measure does not need to decrease if the postcondition allows divergence. -/
+@[spec]
+theorem loop_spec
+  {α β γ : Type}
+  {P : PostCond β RustM.postShape}
+  {body : α → RustM (ControlFlow α β)} {init : α}
+  (inv : α → Prop)
+  (rel : γ → γ → Prop)
+  (termination : α → γ)
+  (hwf : WellFounded rel)
+  (h_inv_init : inv init)
+  (h_body : ∀ x, inv x → ⦃ ⌜ True ⌝ ⦄ body x ⦃ post⟨
+    fun cf => match cf with
+      | .cont r => ⌜ inv r ∧ (rel (termination r) (termination x) ∨ PostCond.div P) ⌝
+      | .done r => PostCond.okAssertion P r,
+    PostCond.failAssertion P, PostCond.otherAssertion P, PostCond.divAssertion P⟩ ⦄) :
+  ⦃ ⌜ True ⌝ ⦄ loop body init ⦃ P ⦄ := by
+  suffices h : ∀ x, inv x → (wp⟦loop body x⟧ P).down by
+    unfold Triple
+    intro _
+    exact h init h_inv_init
+  -- One iteration: the property holds for the unfolding of the loop if it holds for the
+  -- continuations allowed by `h_body`.
+  have step : ∀ (g : α → RustM β) x, inv x →
+      (∀ r, inv r → (rel (termination r) (termination x) ∨ PostCond.div P) →
+        (wp⟦g r⟧ P).down) →
+      (wp⟦Std.bind (body x) (fun r => match r with
+        | ControlFlow.cont x => g x
+        | ControlFlow.done x => RustM.ok x)⟧ P).down := by
+    intro g x hinv hg
+    have hb := h_body x hinv trivial
+    revert hb
+    generalize body x = b
+    cases b with
+    | ret cf =>
+      cases cf with
+      | cont r =>
+        simp only [WP.wp, PredTrans.apply, RustM.match.ok, bind_ok]
+        exact fun ⟨hi, hr⟩ => hg r hi hr
+      | done r => simp [WP.wp, PredTrans.apply]
+    | vis i k => cases i; simp [WP.wp, PredTrans.apply]
+    | div => simp [WP.wp, PredTrans.apply]
+  by_cases hdiv : PostCond.div P
+  case pos => -- Divergence permitted: fixpoint induction.
+    have hadm : Lean.Order.admissible
+        (fun g : α → RustM β => ∀ x, inv x → (wp⟦g x⟧ P).down) := by
+      apply Lean.Order.admissible_pi
+      intro x
+      apply Lean.Order.admissible_pi
+      intro _
+      exact Lean.Order.admissible_apply (β := fun _ => RustM β)
+        (fun _ (r : RustM β) => (wp⟦r⟧ P).down) x (wp_admissible_of_div P hdiv)
+    exact loop.fixpoint_induct body _ hadm
+      (fun g ih x hinv => step g x hinv (fun r hr _ => ih r hr))
+  case neg => -- Divergence forbidden: well-founded induction on the termination measure.
+    intro x hinv
+    induction hg : termination x using hwf.induction generalizing x
+    rename_i t IH
+    rw [loop.eq_1]
+    refine step _ x hinv (fun r hr hrel => ?_)
+    rcases hrel with hrel | hd
+    · subst hg
+      exact IH (termination r) hrel r hr rfl
+    · exact absurd hd hdiv
+
+end
+
+end Aeneas.Std
+
+/-!
+# Partial-correctness specifications
+-/
+
+namespace Aeneas.Std.WP
+
+open Std RustM
+open Std.Do
+
+/-- Partial-correctness variant of `spec`.
+
+`partialSpec x p_ok p_fail p_div` reads as: "if `x` reduces to `ok a` then `p_ok a` holds; if it
+reduces to `fail e` then `p_fail e` holds; if it diverges then `p_div` holds". Unlike `spec`, it
+does not assume the program terminates without exception. -/
+@[expose]
+def partialSpec {α} (x : RustM α)
+    (p_ok : α → Prop) (p_fail : Error → Prop) (p_div : Prop) : Prop :=
+  match x.match with
+  | .ok a => p_ok a
+  | .vis (.fail e) _ => p_fail e
+  | .div => p_div
+
+@[simp, grind =, agrind =]
+theorem partialSpec_ok (a : α) (p_ok : α → Prop) p_fail p_div :
+    partialSpec (ok a) p_ok p_fail p_div ↔ p_ok a := by
+  simp [partialSpec]
+
+@[simp, grind =, agrind =]
+theorem partialSpec_fail (e : Error) p_ok p_fail p_div :
+    partialSpec (α := α) (fail e) p_ok p_fail p_div ↔ p_fail e := by
+  simp [partialSpec]
+
+@[simp, grind =, agrind =]
+theorem partialSpec_div (p_ok : α → Prop) p_fail p_div :
+    partialSpec div p_ok p_fail p_div ↔ p_div := by
+  simp [partialSpec]
+
+/-- Derive a total-correctness `spec` from `partialSpec` by ruling out the failure and divergence
+cases. Used by `@[step]` to generate a step-tactic lemma from a `partialSpec` theorem. -/
+theorem spec_of_partialSpec
+    {α} {x : RustM α} {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
+    (h : partialSpec x p_ok p_fail p_div)
+    (h_fail : ∀ e, ¬ p_fail e) (h_div : ¬ p_div) :
+    spec x p_ok := by
+  cases x with
+  | ret a => simpa [partialSpec] using h
+  | vis i k => cases i; simp [partialSpec] at h; exact absurd h (h_fail _)
+  | div => simp [partialSpec] at h; exact absurd h h_div
+
+/-- Lift an Aeneas partial-correctness spec to an mvcgen-compatible `Triple`. -/
+theorem partialSpec_to_mvcgen {α : Type u} {x : RustM α}
+    {p_ok : α → Prop} {p_fail : Error → Prop} {p_div : Prop}
+    (h : partialSpec x p_ok p_fail p_div)
+    {Q : PostCond α RustM.postShape}
+    (h_ok   : ∀ r, p_ok r → PostCond.ok Q r)
+    (h_fail : ∀ e, p_fail e → PostCond.fail Q e)
+    (h_div  : p_div → PostCond.div Q) :
+    ⦃ ⌜ True ⌝ ⦄ x ⦃ Q ⦄ := by
+  cases x with
+  | ret a => simp_all [partialSpec, Triple, WP.wp, PredTrans.apply]
+  | vis i k => cases i; simp_all [partialSpec, Triple, WP.wp, PredTrans.apply]
+  | div => simp_all [partialSpec, Triple, WP.wp, PredTrans.apply]
+
 end Aeneas.Std.WP

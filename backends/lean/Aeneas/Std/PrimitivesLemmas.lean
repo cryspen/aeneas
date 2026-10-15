@@ -1,18 +1,25 @@
-import Aeneas.Std.Primitives
-import Aeneas.Tactic.Step.Init
-import Aeneas.Tactic.Conv.Bvify.Init
+module
+public import Aeneas.Std.Primitives
+public meta import Aeneas.Tactic.Step.Init
+public meta import Aeneas.Tactic.Conv.Bvify.Init
+public section
 
 namespace Aeneas.Std
 
-open Result WP
+open RustM WP
 
 @[step]
-theorem massert_spec (b : Prop) [Decidable b] (h : b) :
-  massert b ⦃ _ => b ⦄ := by
-  simp [massert, *]
+theorem massert_spec (b : Prop) [Decidable b] :
+    partialSpec (massert b)
+      (fun _ => b)
+      (fun | .panic => ¬ b | _ => False)
+      False := by
+  unfold massert
+  split <;> simp_all [partialSpec]
 
 @[simp, step_pre_simps, bvify]
-theorem massert_ok (b : Prop) [Decidable b] : massert b = ok () ↔ b := by simp [massert]
+theorem massert_ok (b : Prop) [Decidable b] : massert b = ok () ↔ b := by
+  grind [massert, fail_not_ok]
 
 @[simp, step_pre_simps, bvify]
 theorem spec_massert (b : Prop) [Decidable b] : Std.WP.spec (massert b) P ↔ (b ∧ P ()) := by
@@ -20,6 +27,6 @@ theorem spec_massert (b : Prop) [Decidable b] : Std.WP.spec (massert b) P ↔ (b
   split <;> simp <;> grind
 
 @[simp, global_simps] theorem massert_True : massert True = ok () := by simp [massert]
-@[simp, global_simps] theorem massert_False : massert False = fail .assertionFailure := by simp [massert]
+@[simp, global_simps] theorem massert_False : massert False = fail .panic := by simp [massert]
 
 end Aeneas.Std

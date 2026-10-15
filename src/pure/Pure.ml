@@ -56,7 +56,6 @@ type span_data = Meta.span_data [@@deriving show, ord]
 type span = Meta.span [@@deriving show, ord]
 type ref_kind = Types.ref_kind [@@deriving show, ord]
 type 'a de_bruijn_var = 'a Types.de_bruijn_var [@@deriving show, ord]
-type llbc_fun_id = A.fun_id [@@deriving show, ord]
 type overflow_mode = E.overflow_mode [@@deriving show, ord]
 type de_bruijn_id = T.de_bruijn_id [@@deriving show, ord]
 type type_var_id = TypeVarId.id [@@deriving show, ord]
@@ -125,6 +124,11 @@ type pure_builtin_fun_id =
           an element in an array/slice, we create a mutable borrow to this
           element, then use the borrow to perform the update. The update
           functions are introduced in the pure code by a micro-pass. *)
+  | IndexAtIndex of array_or_slice
+      (** Index an array or slice with a [usize]. Introduced by micro-passes
+          which recognize lower-level standard library calls. *)
+  | IndexMutAtIndex of array_or_slice
+      (** Mutably index an array or slice with a [usize]. *)
   | ToResult
       (** Lifts a pure expression to a monadic expression.
 
@@ -152,32 +156,31 @@ type pure_builtin_fun_id =
           beginning of their body. *)
 [@@deriving show, ord]
 
-(* Builtin declarations coming from external libraries.
+(* Declarations coming from external libraries.
 
-   Those are not too be understood as the builtin definitions like `U32`:
-   the builtin declarations decribed with, e.g., `builtin_type_info`, are
-   declarations coming from external libraries and which we should thus not
-   extract (for instance: `std::vec::Vec`, `std::option::Option`, etc.).
+   Those are declarations which we should not extract, but rather map to
+   handwritten models in the backends (for instance: `std::vec::Vec`,
+   `std::option::Option`, etc.).
 *)
 
-type builtin_variant_info = { fields : (string * string) list }
+type external_variant_info = { fields : (string * string) list }
 [@@deriving show, ord]
 
-type builtin_enum_variant_info = {
+type external_enum_variant_info = {
   rust_variant_name : string;
   extract_variant_name : string;
   fields : string list option;
 }
 [@@deriving show, ord]
 
-type builtin_type_body_info =
+type external_type_body_info =
   | Struct of string * (string * string) list
     (* The constructor name and the map for the field names *)
-  | Enum of builtin_enum_variant_info list
+  | Enum of external_enum_variant_info list
 (* For every variant, a map for the field names *)
 [@@deriving show, ord]
 
-type builtin_type_info = {
+type external_type_info = {
   rust_name : NameMatcher.pattern;
   extract_name : string;
   keep_params : bool list option;
@@ -190,18 +193,18 @@ type builtin_type_info = {
 
           The integer represents the position of the region in the list of
           parameters, not its id. *)
-  body_info : builtin_type_body_info option;
+  body_info : external_type_body_info option;
 }
 [@@deriving show, ord]
 
-type builtin_global_info = {
-  rust_name : string;
+type external_global_info = {
+  rust_name : NameMatcher.pattern;
   extract_name : string;
   can_fail : bool;
 }
 [@@deriving show]
 
-type builtin_fun_info = {
+type external_fun_info = {
   keep_params : bool list option;
   keep_trait_clauses : bool list option;
   extract_name : string;
@@ -218,7 +221,7 @@ type builtin_fun_info = {
 }
 [@@deriving show]
 
-type builtin_trait_decl_info = {
+type external_trait_decl_info = {
   rust_name : NameMatcher.pattern;
   extract_name : string;
   constructor : string;
@@ -228,11 +231,11 @@ type builtin_trait_decl_info = {
       (** Every type has:
           - a Rust name
           - an extraction name *)
-  methods : (string * builtin_fun_info) list;
+  methods : (string * external_fun_info) list;
 }
 [@@deriving show]
 
-type builtin_trait_impl_info = {
+type external_trait_impl_info = {
   extract_name : string;
   keep_params : bool list option;
   keep_trait_clauses : bool list option;
@@ -263,7 +266,7 @@ let fuel_succ_id = VariantId.of_int 1
 type int_ty = V.int_ty [@@deriving show, ord]
 type u_int_ty = V.u_int_ty [@@deriving show, ord]
 type float_value = V.float_value [@@deriving show, ord]
-type scalar_value = V.scalar_value [@@deriving show, ord]
+type integer_value = V.integer_value [@@deriving show, ord]
 type char_value = Charon.Uchar.t [@@deriving show, ord]
 type big_int = Charon.BigInt.big_int [@@deriving show, ord]
 
@@ -283,7 +286,7 @@ class ['self] iter_ty_base =
     method visit_u_int_ty : 'env -> u_int_ty -> unit = fun _ _ -> ()
     method visit_float_type : 'env -> float_type -> unit = fun _ _ -> ()
     method visit_float_value : 'env -> float_value -> unit = fun _ _ -> ()
-    method visit_scalar_value : 'env -> scalar_value -> unit = fun _ _ -> ()
+    method visit_integer_value : 'env -> integer_value -> unit = fun _ _ -> ()
     method visit_char_value : 'env -> char_value -> unit = fun _ _ -> ()
     method visit_big_int : 'env -> big_int -> unit = fun _ _ -> ()
 
@@ -341,7 +344,7 @@ class ['self] map_ty_base =
     method visit_float_type : 'env -> float_type -> float_type = fun _ x -> x
     method visit_float_value : 'env -> float_value -> float_value = fun _ x -> x
 
-    method visit_scalar_value : 'env -> scalar_value -> scalar_value =
+    method visit_integer_value : 'env -> integer_value -> integer_value =
       fun _ x -> x
 
     method visit_char_value : 'env -> char_value -> char_value = fun _ x -> x
@@ -417,7 +420,7 @@ class virtual ['self] reduce_ty_base =
     method visit_float_type : 'env -> float_type -> 'a = fun _ _ -> self#zero
     method visit_float_value : 'env -> float_value -> 'a = fun _ _ -> self#zero
 
-    method visit_scalar_value : 'env -> scalar_value -> 'a =
+    method visit_integer_value : 'env -> integer_value -> 'a =
       fun _ _ -> self#zero
 
     method visit_char_value : 'env -> char_value -> 'a = fun _ _ -> self#zero
@@ -500,7 +503,7 @@ class virtual ['self] mapreduce_ty_base =
     method visit_float_value : 'env -> float_value -> float_value * 'a =
       fun _ x -> (x, self#zero)
 
-    method visit_scalar_value : 'env -> scalar_value -> scalar_value * 'a =
+    method visit_integer_value : 'env -> integer_value -> integer_value * 'a =
       fun _ x -> (x, self#zero)
 
     method visit_char_value : 'env -> char_value -> char_value * 'a =
@@ -709,7 +712,7 @@ and literal_type =
   | TPureInt  (** Mathematical (unbounded) integer *)
 
 and literal =
-  | VScalar of scalar_value
+  | VScalar of integer_value
   | VFloat of float_value
   | VBool of bool
   | VChar of char_value
@@ -767,7 +770,7 @@ class ['self] iter_type_decl_base =
     inherit [_] iter_ty
     method visit_item_meta : 'env -> T.item_meta -> unit = fun _ _ -> ()
 
-    method visit_builtin_type_info : 'env -> builtin_type_info -> unit =
+    method visit_external_type_info : 'env -> external_type_info -> unit =
       fun _ _ -> ()
   end
 
@@ -777,8 +780,8 @@ class ['self] map_type_decl_base =
     inherit [_] map_ty
     method visit_item_meta : 'env -> T.item_meta -> T.item_meta = fun _ x -> x
 
-    method visit_builtin_type_info :
-        'env -> builtin_type_info -> builtin_type_info =
+    method visit_external_type_info :
+        'env -> external_type_info -> external_type_info =
       fun _ x -> x
   end
 
@@ -788,7 +791,7 @@ class virtual ['self] reduce_type_decl_base =
     inherit [_] reduce_ty
     method visit_item_meta : 'env -> T.item_meta -> 'a = fun _ _ -> self#zero
 
-    method visit_builtin_type_info : 'env -> builtin_type_info -> 'a =
+    method visit_external_type_info : 'env -> external_type_info -> 'a =
       fun _ _ -> self#zero
   end
 
@@ -800,8 +803,8 @@ class virtual ['self] mapreduce_type_decl_base =
     method visit_item_meta : 'env -> T.item_meta -> T.item_meta * 'a =
       fun _ x -> (x, self#zero)
 
-    method visit_builtin_type_info :
-        'env -> builtin_type_info -> builtin_type_info * 'a =
+    method visit_external_type_info :
+        'env -> external_type_info -> external_type_info * 'a =
       fun _ x -> (x, self#zero)
   end
 
@@ -890,7 +893,7 @@ and type_decl = {
           derive them from the original LLBC types from before the
           simplification of types like boxes and references. *)
   kind : type_decl_kind;
-  builtin_info : builtin_type_info option;
+  external_info : external_type_info option;
   preds : predicates;
 }
 [@@deriving
@@ -999,8 +1002,6 @@ class ['self] iter_tpat_base =
         self#visit_option self#visit_string e var.basename;
         self#visit_ty e var.ty
 
-    method visit_llbc_fun_id : 'env -> llbc_fun_id -> unit = fun _ _ -> ()
-
     method visit_pure_builtin_fun_id : 'env -> pure_builtin_fun_id -> unit =
       fun _ _ -> ()
 
@@ -1034,8 +1035,6 @@ class ['self] map_tpat_base =
           ty = self#visit_ty e var.ty;
         }
 
-    method visit_llbc_fun_id : 'env -> llbc_fun_id -> llbc_fun_id = fun _ x -> x
-
     method visit_pure_builtin_fun_id :
         'env -> pure_builtin_fun_id -> pure_builtin_fun_id =
       fun _ x -> x
@@ -1067,8 +1066,6 @@ class virtual ['self] reduce_tpat_base =
         let x1 = self#visit_option self#visit_string e var.basename in
         let x2 = self#visit_ty e var.ty in
         self#plus (self#plus x0 x1) x2
-
-    method visit_llbc_fun_id : 'env -> llbc_fun_id -> 'a = fun _ _ -> self#zero
 
     method visit_pure_builtin_fun_id : 'env -> pure_builtin_fun_id -> 'a =
       fun _ _ -> self#zero
@@ -1110,9 +1107,6 @@ class virtual ['self] mapreduce_tpat_base =
         let basename, x1 = self#visit_option self#visit_string e var.basename in
         let ty, x2 = self#visit_ty e var.ty in
         ({ id; basename; ty }, self#plus (self#plus x0 x1) x2)
-
-    method visit_llbc_fun_id : 'env -> llbc_fun_id -> llbc_fun_id * 'a =
-      fun _ x -> (x, self#zero)
 
     method visit_pure_builtin_fun_id :
         'env -> pure_builtin_fun_id -> pure_builtin_fun_id * 'a =
@@ -1225,7 +1219,7 @@ and cast_kind =
       *)
 
 and fn_ptr_kind =
-  | FunId of llbc_fun_id
+  | FunId of fun_decl_id
   | TraitMethod of trait_ref * trait_method_id
 
 (** A function id for a non-builtin function.
@@ -1819,7 +1813,7 @@ type 'a binder = {
 type fun_decl = {
   def_id : FunDeclId.id;
   item_meta : T.item_meta;
-  builtin_info : builtin_fun_info option;
+  external_info : external_fun_info option;
   src : fun_source;
   backend_attributes : backend_attributes;
   num_loops : int;
@@ -1862,7 +1856,7 @@ type global_decl = {
   def_id : GlobalDeclId.id;
   span : span;
   item_meta : T.item_meta;
-  builtin_info : builtin_global_info option;
+  external_info : external_global_info option;
   name : string;
       (** We use the name only for printing purposes (for debugging): the name
           used at extraction time will be derived from the llbc_name. *)
@@ -1897,7 +1891,7 @@ type trait_decl = {
   def_id : trait_decl_id;
   name : string;
   item_meta : T.item_meta;
-  builtin_info : builtin_trait_decl_info option;
+  external_info : external_trait_decl_info option;
   generics : generic_params;
   explicit_info : explicit_info;
       (** Information about which inputs parameters are explicit/implicit *)
@@ -1920,7 +1914,7 @@ type trait_impl = {
   def_id : trait_impl_id;
   name : string;
   item_meta : T.item_meta;
-  builtin_info : builtin_trait_impl_info option;
+  external_info : external_trait_impl_info option;
   impl_trait : trait_decl_ref;
   llbc_impl_trait : Types.trait_decl_ref;
       (** Same remark as for {!field:llbc_generics}. *)

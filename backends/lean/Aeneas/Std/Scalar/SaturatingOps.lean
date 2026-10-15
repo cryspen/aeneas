@@ -1,9 +1,11 @@
-import Aeneas.Std.Scalar.Core
-import Aeneas.Std.Scalar.Elab
+module
+public import Aeneas.Std.Scalar.Core
+public import Aeneas.Std.Scalar.Elab
+public section
 
 namespace Aeneas.Std
 
-open Result Error ScalarElab
+open RustM Error ScalarElab
 
 /-!
 # Saturating Operations

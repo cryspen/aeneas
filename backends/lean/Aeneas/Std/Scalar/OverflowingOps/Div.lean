@@ -1,27 +1,29 @@
-import Aeneas.Std.Scalar.Core
-import Aeneas.Std.Scalar.Elab
-import Aeneas.Std.Scalar.Ops
+module
+public import Aeneas.Std.Scalar.Core
+public import Aeneas.Std.Scalar.Elab
+public import Aeneas.Std.Scalar.Ops
+public section
 
 namespace Aeneas.Std
 
-open Result Error ScalarElab
+open RustM Error ScalarElab
 
 /-!
 # Overflowing Division
 -/
 
-def UScalar.overflowing_div {ty} (x y : UScalar ty) : Result (UScalar ty × Bool) :=
-  if y.bv != 0 then ok (⟨ BitVec.udiv x.bv y.bv ⟩, false) else fail divisionByZero
+def UScalar.overflowing_div {ty} (x y : UScalar ty) : RustM (UScalar ty × Bool) :=
+  if y.bv != 0 then ok (⟨ BitVec.udiv x.bv y.bv ⟩, false) else fail panic
 
-def IScalar.overflowing_div {ty} (x y : IScalar ty) : Result (IScalar ty × Bool) :=
+def IScalar.overflowing_div {ty} (x y : IScalar ty) : RustM (IScalar ty × Bool) :=
   if y.val != 0 then ok (⟨ BitVec.sdiv x.bv y.bv ⟩, BitVec.sdivOverflow x.bv y.bv)
-  else fail divisionByZero
+  else fail panic
 
 uscalar @[step_pure_def]
-def «%S».overflowing_div (x y : «%S») : Result («%S» × Bool) := @UScalar.overflowing_div .«%S» x y
+def «%S».overflowing_div (x y : «%S») : RustM («%S» × Bool) := @UScalar.overflowing_div .«%S» x y
 
 iscalar @[step_pure_def]
-def «%S».overflowing_div (x y : «%S») : Result («%S» × Bool) := @IScalar.overflowing_div .«%S» x y
+def «%S».overflowing_div (x y : «%S») : RustM («%S» × Bool) := @IScalar.overflowing_div .«%S» x y
 
 /- [core::num::{_}::overflowing_div] -/
 uscalar @[step_pure_def]

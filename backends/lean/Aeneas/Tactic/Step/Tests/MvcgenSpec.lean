@@ -1,8 +1,9 @@
+module
 import Aeneas.Std.Scalar
 import Aeneas.Std.Array
 import Aeneas.Tactic.Step
 
-open Aeneas Aeneas.Std Result Std.Do
+open Aeneas Aeneas.Std RustM Std.Do
 set_option mvcgen.warning false
 
 /-!
@@ -28,4 +29,4 @@ example (arr : Array U8 25#usize) (i : Usize) (a : U8) (hi : i < arr.length) :
     ⦃ ⌜ True ⌝ ⦄
       Array.update arr i a
     ⦃ ⇓ r => ⌜ r.get? i = some a ⌝ ⦄ := by
-  mvcgen; grind
+  mvcgen <;> grind

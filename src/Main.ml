@@ -38,14 +38,14 @@ Usage: %s [OPTIONS] FILE
 let matches_name (c : crate) (name : Types.name)
     (m : 'a ExtractName.NameMatcherMap.t) : bool =
   let mctx = Charon.NameMatcher.ctx_from_crate c in
-  let open ExtractBuiltin in
+  let open ExtractName in
   NameMatcherMap.mem mctx name m
 
 let matches_name_with_generics (c : crate) (name : Types.name)
     (generics : Types.generic_args) (m : 'a ExtractName.NameMatcherMap.t) : bool
     =
   let mctx = Charon.NameMatcher.ctx_from_crate c in
-  let open ExtractBuiltin in
+  let open ExtractName in
   Option.is_some (NameMatcherMap.find_with_generics_opt mctx name generics m)
 
 let activated_loggers : (EL.level * string) list ref = ref []
@@ -105,6 +105,11 @@ let () =
         Arg.String set_subdir,
         " Extract the files in a sub-folder; this option has an impact on the \
          import paths of the generated files" );
+      ( "-use-lean-modules",
+        Arg.Bool (fun b -> use_lean_modules := b),
+        " Emit Lean files using the module system (default: true). Pass \
+         `-use-lean-modules false` to emit files that don't use the module \
+         system." );
       ( "-test-units",
         Arg.Set test_unit_functions,
         " Test the unit functions with the concrete (i.e., not symbolic) \
@@ -136,9 +141,19 @@ let () =
       ( "-lean-default-lakefile",
         Arg.Clear lean_gen_lakefile,
         " Generate a default lakefile.lean (Lean only)" );
+      ( "-specs",
+        Arg.Symbol (spec_config_options, set_spec_config),
+        " Gather and emit specs from the given source. Available: "
+        ^ String.concat ", " spec_config_options );
       ( "-emit-json",
         Arg.Set emit_json,
         " Emit a translation.json file alongside the Lean files (Lean only)" );
+      ( "-external-names",
+        Arg.String add_external_names_file,
+        " Read a list of external names (definitions which we do not extract, \
+         and which we map to models in the backend) from a JSON file. Can be \
+         given several times: later files take precedence over earlier ones, \
+         and over the entries which ship with Aeneas" );
       ("-print-llbc", Arg.Set print_llbc, " Print the imported LLBC");
       ( "-abort-on-error",
         Arg.Set fail_hard,
@@ -211,6 +226,27 @@ let () =
          collisions with field projectors. Example: the `len` method in `impl \
          Struct { fn len(&self) -> usize { ... } }` would be named \
          `Struct.impl.len`." );
+      ( "-filter-trait-methods",
+        Arg.Set filter_trait_impl_methods,
+        " When extracting a trait impl, filter out the methods which are \
+         absent from the model of the trait declaration in the target backend \
+         (e.g., Lean). Trait declarations which have no model are not \
+         affected." );
+      ( "-extra-includes",
+        Arg.String add_extra_includes,
+        " Include additional modules at the top of every generated file. It is \
+         possible to specify a list of modules if they are separated by commas \
+         without spaces; for instance: '-extra-includes=Foo,Bar.Baz'. For \
+         Lean, the included files must be Lean modules unless \
+         -use-lean-modules is disabled." );
+      ( "-core-models-lib",
+        Arg.Set core_models_lib,
+        " For Lean: disable the Rust core library overrides from \
+         ExtractBuiltinLean.ml. Items like the `Clone` impl for arrays are \
+         extracted using the standard name-mangling scheme rather than \
+         hand-tuned names such as `core.array.CloneArray.clone`, and the \
+         associated shape overrides (keep_params, can_fail, etc.) are ignored."
+      );
       ( "-all-computable",
         Arg.Set all_computable,
         " For Lean: do not insert `noncomputable section` at the top of the \
@@ -462,6 +498,9 @@ let () =
   if !lean_gen_lakefile && not (backend () = Lean) then
     fail_with_error
       "The -lean-default-lakefile option is valid only for the Lean backend";
+  if !core_models_lib && not (backend () = Lean) then
+    fail_with_error
+      "The -core-models-lib option is valid only for the Lean backend";
   if !set_max_heartbeats && not (backend () = Lean) then
     fail_with_error
       "The -max-heartbeats option is valid only for the Lean backend";
@@ -470,6 +509,8 @@ let () =
       "The -max-recdepth option is valid only for the Lean backend";
   if !emit_json && not (backend () = Lean) then
     fail_with_error "The -emit-json option is valid only for the Lean backend";
+  if Option.is_some !opt_spec_config && not (backend () = Lean) then
+    fail_with_error "The -specs option is valid only for the Lean backend";
 
   check_arg_implies !diagnose_detailed "-diagnose-detailed"
     !diagnose_micro_passes "-diagnose-micro-passes";
@@ -538,14 +579,22 @@ let () =
               fail true))
   in
 
-  (* If running in parallel mode there can be racing conditions on the memoized
-     elements. Precompute them so that it doesn't happen. *)
-  let _ = ExtractBuiltin.builtin_globals_map () in
-  let _ = ExtractBuiltin.builtin_types_map () in
-  let _ = ExtractBuiltin.builtin_trait_decls_map () in
-  let _ = ExtractBuiltin.builtin_trait_impls_map () in
-  let _ = ExtractBuiltin.builtin_funs_map () in
-  let _ = ExtractBuiltin.builtin_fun_effects_map () in
+  (* Load the lists of external names given through [-external-names]. This has
+     to happen before we force the maps below, as they are memoized. *)
+  let () =
+    try
+      ExternalNames.load_files ();
+      (* If running in parallel mode there can be racing conditions on the
+         memoized elements. Precompute them so that it doesn't happen. *)
+      let _ = ExternalNames.external_globals_map () in
+      let _ = ExternalNames.external_types_map () in
+      let _ = ExternalNames.external_trait_decls_map () in
+      let _ = ExternalNames.external_trait_impls_map () in
+      let _ = ExternalNames.external_funs_map () in
+      let _ = ExternalNames.external_fun_effects_map () in
+      ()
+    with ExternalNames.Read_error msg -> fail_with_error_no_doc msg
+  in
 
   (* Retrieve and check the filename *)
   let filename =
@@ -608,15 +657,22 @@ let () =
       (* Print the external definitions which are not listed in the builtin functions *)
       if !print_unknown_externals then (
         let open TranslateCore in
-        let { type_decls; fun_decls; global_decls; trait_decls; trait_impls; _ }
-            =
+        let ({
+               type_decls;
+               fun_decls;
+               global_decls;
+               trait_decls;
+               trait_impls;
+               _;
+             }
+              : crate) =
           m
         in
         (* Filter the definitions *)
         let type_decls =
           Types.TypeDeclId.Map.filter
             (fun _ (d : Types.type_decl) ->
-              let names_map = ExtractBuiltin.builtin_types_map () in
+              let names_map = ExternalNames.external_types_map () in
               (not d.item_meta.is_local)
               && not (matches_name m d.item_meta.name names_map))
             type_decls
@@ -624,7 +680,7 @@ let () =
         let fun_decls =
           LlbcAst.FunDeclId.Map.filter
             (fun _ (d : LlbcAst.fun_decl) ->
-              let names_map = ExtractBuiltin.builtin_funs_map () in
+              let names_map = ExternalNames.external_funs_map () in
               (not d.item_meta.is_local)
               && (not (matches_name m d.item_meta.name names_map))
               (* We also ignore the trait method declarations *)
@@ -637,7 +693,7 @@ let () =
         let global_decls =
           LlbcAst.GlobalDeclId.Map.filter
             (fun _ (d : LlbcAst.global_decl) ->
-              let globals_map = ExtractBuiltin.builtin_globals_map () in
+              let globals_map = ExternalNames.external_globals_map () in
               (not d.item_meta.is_local)
               && not (matches_name m d.item_meta.name globals_map))
             global_decls
@@ -645,7 +701,7 @@ let () =
         let trait_decls =
           LlbcAst.TraitDeclId.Map.filter
             (fun _ (d : LlbcAst.trait_decl) ->
-              let names_map = ExtractBuiltin.builtin_trait_decls_map () in
+              let names_map = ExternalNames.external_trait_decls_map () in
               (not d.item_meta.is_local)
               && not (matches_name m d.item_meta.name names_map))
             trait_decls
@@ -653,7 +709,7 @@ let () =
         let trait_impls =
           List.filter_map
             (fun (d : LlbcAst.trait_impl) ->
-              let names_map = ExtractBuiltin.builtin_trait_impls_map () in
+              let names_map = ExternalNames.external_trait_impls_map () in
               match
                 LlbcAst.TraitDeclId.Map.find_opt d.impl_trait.id m.trait_decls
               with

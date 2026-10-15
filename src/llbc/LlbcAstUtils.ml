@@ -1,19 +1,6 @@
 open Types
 open LlbcAst
 include Charon.LlbcAstUtils
-open Collections
-
-module FunIdOrderedType : OrderedType with type t = fun_id = struct
-  type t = fun_id
-
-  let compare = compare_fun_id
-  let to_string = show_fun_id
-  let pp_t = pp_fun_id
-  let show_t = show_fun_id
-end
-
-module FunIdMap = Collections.MakeMap (FunIdOrderedType)
-module FunIdSet = Collections.MakeSet (FunIdOrderedType)
 
 let body_as_body = Charon.LlbcAstUtils.body_as_structured
 
@@ -46,39 +33,34 @@ let fun_decl_global_initializer (f : fun_decl) : global_decl_ref option =
 let fun_decl_is_global_initializer (f : fun_decl) : bool =
   Option.is_some (fun_decl_global_initializer f)
 
-let lookup_fun_sig (fun_id : fun_id) (fun_decls : fun_decl FunDeclId.Map.t) :
-    bound_fun_sig =
-  match fun_id with
-  | FRegular id ->
-      let fun_decl = FunDeclId.Map.find id fun_decls in
-      bound_fun_sig_of_decl fun_decl
-  | FBuiltin aid -> Builtin.get_builtin_fun_sig aid
-
 (** Return the opaque declarations found in the crate, which are also *not
     builtin*.
 
-    [filter_builtin]: if [true], do not consider as opaque the external
+    [filter_external]: if [true], do not consider as opaque the external
     definitions that we will map to definitions from the standard library.
 
     Remark: the list of functions also contains the list of opaque global
     bodies. *)
-let crate_get_opaque_non_builtin_decls (k : crate) (filter_builtin : bool)
+let crate_get_opaque_non_external_decls (k : crate) (filter_external : bool)
     (type_decls : type_decl TypeDeclId.Map.t)
     (fun_decls : fun_decl FunDeclId.Map.t) : type_decl list * fun_decl list =
-  let open ExtractBuiltin in
+  let open ExtractName in
+  let open ExternalNames in
   let ctx = Charon.NameMatcher.ctx_from_crate k in
   let is_opaque_fun (d : fun_decl) : bool =
     (not (body_is_known d.body))
-    && ((not filter_builtin)
+    && ((not filter_external)
        || (not
-             (NameMatcherMap.mem ctx d.item_meta.name (builtin_globals_map ())))
-          && not (NameMatcherMap.mem ctx d.item_meta.name (builtin_funs_map ()))
+             (NameMatcherMap.mem ctx d.item_meta.name (external_globals_map ())))
+          && not
+               (NameMatcherMap.mem ctx d.item_meta.name (external_funs_map ()))
        )
   in
   let is_opaque_type (d : type_decl) : bool =
     d.kind = Opaque
-    && ((not filter_builtin)
-       || not (NameMatcherMap.mem ctx d.item_meta.name (builtin_types_map ())))
+    && ((not filter_external)
+       || not (NameMatcherMap.mem ctx d.item_meta.name (external_types_map ()))
+       )
   in
   (* Note that by checking the function bodies we also the globals *)
   ( List.filter is_opaque_type (TypeDeclId.Map.values type_decls),
@@ -86,10 +68,10 @@ let crate_get_opaque_non_builtin_decls (k : crate) (filter_builtin : bool)
 
 (** Return true if the crate contains opaque declarations, ignoring the builtin
     definitions. *)
-let crate_has_opaque_non_builtin_decls (k : crate) (filter_builtin : bool)
+let crate_has_opaque_non_external_decls (k : crate) (filter_external : bool)
     (type_decls : type_decl TypeDeclId.Map.t)
     (fun_decls : fun_decl FunDeclId.Map.t) : bool =
-  crate_get_opaque_non_builtin_decls k filter_builtin type_decls fun_decls
+  crate_get_opaque_non_external_decls k filter_external type_decls fun_decls
   <> ([], [])
 
 (** Strip trailing [PeTarget] elements from a name.
@@ -146,6 +128,24 @@ let name_with_crate_to_pattern_string (span : Meta.span option)
   in
   let pat = name_to_pattern span mctx c n in
   Charon.NameMatcher.pattern_to_string { tgt = TkPattern } pat
+
+(** Saves an error for entries that also map to an external name *)
+let check_not_external (k : crate) (kind : string) ~(opaque : bool)
+    (item_meta : item_meta) (extract_name : string option) : unit =
+  if (not opaque) && item_meta.is_local then
+    Option.iter
+      (fun model ->
+        let pattern =
+          name_with_crate_to_pattern_string (Some item_meta.span) k
+            item_meta.name
+        in
+        [%save_error] item_meta.span
+          (kind
+         ^ " is defined in this crate, but a list of external names maps it"
+         ^ " to the model '" ^ model ^ "', which would silently replace it."
+         ^ " Remove that entry, or make the definition opaque for Charon"
+         ^ " (--opaque '" ^ pattern ^ "')."))
+      extract_name
 
 let name_with_generics_to_pattern (span : Meta.span option)
     (ctx : Charon.NameMatcher.ctx) (c : Charon.NameMatcher.to_pat_config)

@@ -1,37 +1,39 @@
-import Aeneas.Std.Scalar.Core
-import Aeneas.Std.Scalar.Misc
-import Aeneas.Std.Scalar.Elab
-import Aeneas.Tactic.Solver.ScalarTac
-import Mathlib.Data.BitVec
+module
+public import Aeneas.Std.Scalar.Core
+public import Aeneas.Std.Scalar.Misc
+public import Aeneas.Std.Scalar.Elab
+public import Aeneas.Tactic.Solver.ScalarTac
+public import Mathlib.Data.BitVec
+public section
 
 namespace Aeneas.Std
 
-open Result Error Arith ScalarElab WP
+open RustM Error Arith ScalarElab WP
 
 /-!
 # Division: Definitions
 -/
 
-def UScalar.div {ty : UScalarTy} (x y : UScalar ty) : Result (UScalar ty) :=
-  if y.bv != 0 then ok ⟨ BitVec.udiv x.bv y.bv ⟩ else fail divisionByZero
+@[expose] def UScalar.div {ty : UScalarTy} (x y : UScalar ty) : RustM (UScalar ty) :=
+  if y.bv != 0 then ok ⟨ BitVec.udiv x.bv y.bv ⟩ else fail panic
 
-def IScalar.div {ty : IScalarTy} (x y : IScalar ty): Result (IScalar ty) :=
+@[expose] def IScalar.div {ty : IScalarTy} (x y : IScalar ty): RustM (IScalar ty) :=
   if y.val != 0 then
     -- There can be an overflow if `x` is equal to the lower bound and `y` to `-1`
     if ¬ (x.val = IScalar.min ty && y.val = -1) then ok ⟨ BitVec.sdiv x.bv y.bv ⟩
-    else fail integerOverflow
-  else fail divisionByZero
+    else fail panic
+  else fail panic
 
 def UScalar.try_div {ty : UScalarTy} (x y : UScalar ty) : Option (UScalar ty) :=
-  Option.ofResult (div x y)
+  Option.ofRustM (div x y)
 
 def IScalar.try_div {ty : IScalarTy} (x y : IScalar ty): Option (IScalar ty) :=
-  Option.ofResult (div x y)
+  Option.ofRustM (div x y)
 
-instance {ty} : HDiv (UScalar ty) (UScalar ty) (Result (UScalar ty)) where
+instance {ty} : HDiv (UScalar ty) (UScalar ty) (RustM (UScalar ty)) where
   hDiv x y := UScalar.div x y
 
-instance {ty} : HDiv (IScalar ty) (IScalar ty) (Result (IScalar ty)) where
+instance {ty} : HDiv (IScalar ty) (IScalar ty) (RustM (IScalar ty)) where
   hDiv x y := IScalar.div x y
 
 /-!
@@ -44,27 +46,27 @@ implemented by the `Int.tdiv`, `Int.tmod`, etc. definitions.
 
 namespace Tests
   -- Checking that the division over signed integers agrees with Rust
-  #assert Int.tdiv 3 2 = 1
-  #assert Int.tdiv (-3) 2 = -1
-  #assert Int.tdiv 3 (-2) = -1
-  #assert Int.tdiv (-3) (-2) = 1
-  #assert Int.tdiv 7 3 = 2
-  #assert Int.tdiv (-7) 3 = -2
-  #assert Int.tdiv 7 (-3) = -2
-  #assert Int.tdiv (-7) (-3) = 2
+  #guard Int.tdiv 3 2 = 1
+  #guard Int.tdiv (-3) 2 = -1
+  #guard Int.tdiv 3 (-2) = -1
+  #guard Int.tdiv (-3) (-2) = 1
+  #guard Int.tdiv 7 3 = 2
+  #guard Int.tdiv (-7) 3 = -2
+  #guard Int.tdiv 7 (-3) = -2
+  #guard Int.tdiv (-7) (-3) = 2
 
   -- Checking that the signed division over bit-vectors agrees with Rust
   private def bv_sdiv (x y : Int) : Int :=
     (BitVec.sdiv (BitVec.ofInt 32 x) (BitVec.ofInt 32 y)).toInt
 
-  #assert bv_sdiv 3 2 = 1
-  #assert bv_sdiv (-3) 2 = -1
-  #assert bv_sdiv 3 (-2) = -1
-  #assert bv_sdiv (-3) (-2) = 1
-  #assert bv_sdiv 7 3 = 2
-  #assert bv_sdiv (-7) 3 = -2
-  #assert bv_sdiv 7 (-3) = -2
-  #assert bv_sdiv (-7) (-3) = 2
+  #guard bv_sdiv 3 2 = 1
+  #guard bv_sdiv (-3) 2 = -1
+  #guard bv_sdiv 3 (-2) = -1
+  #guard bv_sdiv (-3) (-2) = 1
+  #guard bv_sdiv 7 3 = 2
+  #guard bv_sdiv (-7) 3 = -2
+  #guard bv_sdiv 7 (-3) = -2
+  #guard bv_sdiv (-7) (-3) = 2
 end Tests
 
 /-!
@@ -387,8 +389,9 @@ theorem IScalar.div_bv_spec {ty} {x y : IScalar ty}
     simp only [Int.tdiv_neg, Int.neg_tdiv, neg_neg]
 
 uscalar theorem «%S».div_bv_spec (x : «%S») {y : «%S»} (hnz : ↑y ≠ (0 : Nat)) :
-  x / y ⦃ z => (↑z : Nat) = ↑x / ↑y ∧ z.bv = x.bv / y.bv ⦄ :=
-  exists_imp_spec (UScalar.div_bv_spec x hnz)
+  x / y ⦃ z => (↑z : Nat) = ↑x / ↑y ∧ z.bv = x.bv / y.bv ⦄ := by
+  obtain ⟨z, hz, hpost⟩ := UScalar.div_bv_spec x hnz
+  simpa only [hz, spec_ok] using hpost
 
 iscalar theorem «%S».div_bv_spec {x y : «%S»} (hnz : ↑y ≠ (0 : Int))
   (hNoOverflow : ¬ (x.val = «%S».min ∧ y.val = -1)) :
@@ -414,13 +417,35 @@ theorem IScalar.div_spec {ty} {x y : IScalar ty}
   have ⟨ z, hz ⟩ := IScalar.div_bv_spec hzero hNoOverflow
   simp [hz]
 
-uscalar @[step] theorem «%S».div_spec (x : «%S») {y : «%S»} (hnz : ↑y ≠ (0 : Nat)) :
-  (x / y) ⦃ z => (↑z : Nat) = ↑x / ↑y ⦄ :=
-  exists_imp_spec (UScalar.div_spec x hnz)
+uscalar @[step] theorem «%S».div_spec (x : «%S») {y : «%S»} :
+    partialSpec (x / y)
+      (fun z => (↑z : Nat) = ↑x / ↑y)
+      (fun | .panic => (↑y : Nat) = 0 | _ => False)
+      False := by
+  have hxy : (x / y : RustM _) = UScalar.div x y := rfl
+  rw [hxy]
+  by_cases hy : y.val = 0
+  · have hbv : y.bv = 0#_ := by zify; simp_all
+    simp [partialSpec, UScalar.div, hbv]; exact hy
+  · have ⟨ z, hz, hzVal ⟩ := UScalar.div_spec x hy
+    rw [hxy] at hz
+    simp [partialSpec, hz, hzVal]
 
-iscalar @[step] theorem «%S».div_spec {x y : «%S»} (hnz : ↑y ≠ (0 : Int))
-  (hNoOverflow : ¬ (x.val = «%S».min ∧ y.val = -1)) :
-  (x / y) ⦃ z => (↑z : Int) = Int.tdiv ↑x ↑y ⦄ :=
-  exists_imp_spec (IScalar.div_spec hnz (by scalar_tac))
+iscalar @[step] theorem «%S».div_spec {x y : «%S»} :
+    partialSpec (x / y)
+      (fun z => (↑z : Int) = Int.tdiv ↑x ↑y)
+      (fun | .panic => ((↑y : Int) = 0) ∨ ((↑x : Int) = «%S».min ∧ (↑y : Int) = -1)
+           | _ => False)
+      False := by
+  have hxy : (x / y : RustM _) = IScalar.div x y := rfl
+  rw [hxy]
+  by_cases hy : y.val = 0
+  · simp [partialSpec, IScalar.div, hy]
+  · by_cases ho : x.val = IScalar.min (IScalarTy.«%S») ∧ y.val = -1
+    · simp [partialSpec, IScalar.div, ho.1, ho.2]
+      try scalar_tac
+    · have ⟨ z, hz, hzVal ⟩ := IScalar.div_spec hy ho
+      rw [hxy] at hz
+      simp [partialSpec, hz, hzVal]
 
 end Aeneas.Std

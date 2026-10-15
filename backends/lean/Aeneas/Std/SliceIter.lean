@@ -1,11 +1,18 @@
 /- Arrays/Slices -/
-import Aeneas.Std.Slice
-import Aeneas.Std.Array.Array
-import Aeneas.Std.Core.Iter
+module
+public import Aeneas.Std.Slice
+public import Aeneas.Std.Array.Array
+public import Aeneas.Std.Core.Iter
+public meta import Aeneas.Std.Core.Iter
+meta import Aeneas.Std.Slice
+meta import Aeneas.Std.Array.Array
+public section
+
+@[expose] section
 
 namespace Aeneas.Std
 
-open Result Error core.ops.range WP
+open RustM Error core.ops.range WP
 
 attribute [-simp] List.getElem!_eq_getElem?_getD
 
@@ -25,12 +32,12 @@ structure core.slice.iter.IterMut (T : Type) where
   i : Nat := 0
 
 @[rust_fun "core::slice::{[@T]}::iter"]
-def core.slice.Slice.iter {T : Type} (s : Slice T) : Result (core.slice.iter.Iter T) :=
+def core.slice.Slice.iter {T : Type} (s : Slice T) : RustM (core.slice.iter.Iter T) :=
   ok ⟨ s, 0 ⟩
 
 @[rust_fun "core::slice::{[@T]}::contains"]
 def core.slice.Slice.contains {T : Type} (partialEqInst : core.cmp.PartialEq T T)
-  (s : Slice T) (x : T) : Result Bool :=
+  (s : Slice T) (x : T) : RustM Bool :=
   List.anyM (partialEqInst.eq x) s.val
 
 @[rust_fun
@@ -38,7 +45,7 @@ def core.slice.Slice.contains {T : Type} (partialEqInst : core.cmp.PartialEq T T
 def core.slice.iter.IteratorIterMut.next
   {T : Type}
   (it : core.slice.iter.IterMut T) :
-  Result ((Option T) × (core.slice.iter.IterMut T) ×
+  RustM ((Option T) × (core.slice.iter.IterMut T) ×
           (core.slice.iter.IterMut T → Option T → core.slice.iter.IterMut T)) :=
   if h: it.i < it.slice.len then
     let x := it.slice[it.i]
@@ -53,13 +60,13 @@ def core.slice.iter.IteratorIterMut.next
 
 @[rust_fun "core::slice::{[@T]}::iter_mut"]
 def core.slice.Slice.iter_mut {T : Type} (slice : Slice T) :
-  Result ((core.slice.iter.IterMut T) × (core.slice.iter.IterMut T → Slice T)) :=
+  RustM ((core.slice.iter.IterMut T) × (core.slice.iter.IterMut T → Slice T)) :=
   ok ({slice}, fun it => it.slice)
 
 @[rust_fun
   "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::Iter<'a, @T>, &'a @T>}::next"]
 def core.slice.iter.IteratorSliceIter.next
-  {T : Type} (it : core.slice.iter.Iter T) : Result ((Option T) × (core.slice.iter.Iter T)) :=
+  {T : Type} (it : core.slice.iter.Iter T) : RustM ((Option T) × (core.slice.iter.Iter T)) :=
   if h : it.i < it.slice.len then
     let x := it.slice[it.i]
     let it := { it with i := it.i + 1}
@@ -89,8 +96,8 @@ viewed as a slice. -/
 @[rust_fun
   "core::array::{core::iter::traits::collect::IntoIterator<&'a [@T; @N], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter"]
 def SharedArray.Insts.CoreIterTraitsCollectIntoIteratorSharedIter.into_iter
-    {T : Type} {N : Usize} (a : Array T N) : Result (core.slice.iter.Iter T) :=
-  ok ⟨ ⟨a.val, by scalar_tac⟩, 0 ⟩
+    {T : Type} {N : Usize} (a : Array T N) : RustM (core.slice.iter.Iter T) :=
+  ok ⟨ .from a.val (by scalar_tac), 0 ⟩
 
 @[reducible, rust_trait_impl
   "core::iter::traits::collect::IntoIterator<&'a [@T; @N], &'a @T, core::slice::iter::Iter<'a, @T>>"]
@@ -110,7 +117,7 @@ Mirrors Rust: `(&[T]).into_iter()` returns an `Iter<T>` starting at index 0. -/
 @[rust_fun
   "core::slice::iter::{core::iter::traits::collect::IntoIterator<&'a [@T], &'a @T, core::slice::iter::Iter<'a, @T>>}::into_iter"]
 def SharedSlice.Insts.CoreIterTraitsCollectIntoIteratorSharedIter.into_iter
-    {T : Type} (s : Slice T) : Result (core.slice.iter.Iter T) :=
+    {T : Type} (s : Slice T) : RustM (core.slice.iter.Iter T) :=
   ok ⟨ s, 0 ⟩
 
 @[reducible, rust_trait_impl
@@ -130,14 +137,14 @@ structure core.slice.iter.ChunksExact (T : Type) where
 @[rust_fun
   "core::slice::iter::{core::slice::iter::ChunksExact<'a, @T>}::remainder"]
 def core.slice.iter.ChunksExact.getRemainder
-  {T : Type} (self : core.slice.iter.ChunksExact T) : Result (Slice T) :=
+  {T : Type} (self : core.slice.iter.ChunksExact T) : RustM (Slice T) :=
   ok self.remainder
 
 @[rust_fun
   "core::slice::iter::{core::iter::traits::iterator::Iterator<core::slice::iter::ChunksExact<'a, @T>, &'a [@T]>}::next"]
 def core.slice.iter.IteratorChunksExact.next
   {T : Type} (self : core.slice.iter.ChunksExact T) :
-  Result ((Option (Slice T)) × (core.slice.iter.ChunksExact T)) :=
+  RustM ((Option (Slice T)) × (core.slice.iter.ChunksExact T)) :=
   match self.chunks with
   | [] => ok (none, self)
   | chunk :: chunks => ok (some chunk, { chunks, remainder := self.remainder })
@@ -196,16 +203,16 @@ decreasing_by simp [List.length_drop]; omega
 
 @[rust_fun "core::slice::{[@T]}::chunks_exact"]
 def core.slice.Slice.chunks_exact {T : Type} (s : Slice T) (chunk_size : Std.Usize) :
-  Result (core.slice.iter.ChunksExact T) :=
+  RustM (core.slice.iter.ChunksExact T) :=
   if hcs : chunk_size.val > 0 then
     let result := List.toChunksExact chunk_size.val hcs s.val
-    let sliceChunks := result.1.attach.map fun ⟨c, hc⟩ => ⟨c, by
+    let sliceChunks := result.1.attach.map fun ⟨c, hc⟩ => .from c (by
         have := List.toChunksExact_chunk_length hcs s.val c hc
-        scalar_tac⟩
+        scalar_tac)
     ok { chunks := sliceChunks,
-         remainder := ⟨result.2, by
+         remainder := .from result.2 (by
            have := List.toChunksExact_remainder_length hcs s.val
-           scalar_tac⟩ }
+           grind) }
   else fail .panic
 
 
@@ -215,10 +222,10 @@ def core.slice.Slice.chunks_exact {T : Type} (s : Slice T) (chunk_size : Std.Usi
 
 private def mkSliceIter (l : List Nat) (h : l.length ≤ Usize.max := by scalar_tac) :
     core.slice.iter.Iter Nat :=
-  { slice := ⟨l, h⟩, i := 0 }
+  { slice := .from l h, i := 0 }
 
 private def collectStepBy (sbi : core.iter.adapters.step_by.StepBy (core.slice.iter.Iter Nat))
-    (fuel : Nat := 100) : Result (List Nat) :=
+    (fuel : Nat := 100) : RustM (List Nat) :=
   match fuel with
   | 0 => .ok []
   | fuel + 1 => do
@@ -232,83 +239,83 @@ private def collectStepBy (sbi : core.iter.adapters.step_by.StepBy (core.slice.i
       .ok (x :: rest)
 
 -- step_by(0) panics
-#assert
-  match core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [1, 2, 3]) 0#usize with
-  | .fail .panic => true
+#guard
+  match (core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [1, 2, 3]) 0#usize).match with
+  | .vis (.fail e) _ => e == panic
   | _ => false
 
 -- step_by(1) returns all elements
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1, 2, 3, 4]) 1#usize
-  collectStepBy sbi) == .ok [0, 1, 2, 3, 4]
+  collectStepBy sbi).reducesTo [0, 1, 2, 3, 4]
 
 -- step_by(2) returns every other element
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1, 2, 3, 4]) 2#usize
-  collectStepBy sbi) == .ok [0, 2, 4]
+  collectStepBy sbi).reducesTo [0, 2, 4]
 
 -- step_by(3)
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1, 2, 3, 4, 5, 6]) 3#usize
-  collectStepBy sbi) == .ok [0, 3, 6]
+  collectStepBy sbi).reducesTo [0, 3, 6]
 
 -- step_by larger than collection: returns only first element
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1, 2]) 10#usize
-  collectStepBy sbi) == .ok [0]
+  collectStepBy sbi).reducesTo [0]
 
 -- step_by on empty iterator
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter []) 2#usize
-  collectStepBy sbi) == .ok []
+  collectStepBy sbi).reducesTo []
 
 -- step_by(1) on single element
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [42]) 1#usize
-  collectStepBy sbi) == .ok [42]
+  collectStepBy sbi).reducesTo [42]
 
 -- step_by(2) on single element
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [42]) 2#usize
-  collectStepBy sbi) == .ok [42]
+  collectStepBy sbi).reducesTo [42]
 
 -- step_by equal to length: returns only first element
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1, 2]) 3#usize
-  collectStepBy sbi) == .ok [0]
+  collectStepBy sbi).reducesTo [0]
 
 -- step_by = length - 1
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1, 2]) 2#usize
-  collectStepBy sbi) == .ok [0, 2]
+  collectStepBy sbi).reducesTo [0, 2]
 
 -- step_by(2) on two elements: returns only first
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1]) 2#usize
-  collectStepBy sbi) == .ok [0]
+  collectStepBy sbi).reducesTo [0]
 
 -- step_by(2) on three elements: returns first and third
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [0, 1, 2]) 2#usize
-  collectStepBy sbi) == .ok [0, 2]
+  collectStepBy sbi).reducesTo [0, 2]
 
 -- step_by(4) on longer sequence
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default
     (mkSliceIter [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) 4#usize
-  collectStepBy sbi) == .ok [0, 4, 8]
+  collectStepBy sbi).reducesTo [0, 4, 8]
 
 -- Verify that step_by(0) on the generic Iterator.step_by.default also panics
-#assert
-  match core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [1]) 0#usize with
-  | .fail .panic => true
+#guard
+  match (core.iter.traits.iterator.Iterator.step_by.default (mkSliceIter [1]) 0#usize).match with
+  | .vis (.fail e) _ => e == panic
   | _ => false
 
 -- Nested step_by: step_by(2) then step_by(2) on [0..8] gives [0, 4]
 private def collectNestedStepBy
     (sbi : core.iter.adapters.step_by.StepBy
       (core.iter.adapters.step_by.StepBy (core.slice.iter.Iter Nat)))
-    (fuel : Nat := 100) : Result (List Nat) :=
+    (fuel : Nat := 100) : RustM (List Nat) :=
   match fuel with
   | 0 => .ok []
   | fuel + 1 => do
@@ -322,11 +329,11 @@ private def collectNestedStepBy
       let rest ← collectNestedStepBy sbi fuel
       .ok (x :: rest)
 
-#assert (do
+#guard (do
   let sbi ← core.iter.traits.iterator.Iterator.step_by.default
     (mkSliceIter [0, 1, 2, 3, 4, 5, 6, 7]) 2#usize
   let sbi2 ← core.iter.traits.iterator.Iterator.step_by.default sbi 2#usize
-  collectNestedStepBy sbi2) == .ok [0, 4]
+  collectNestedStepBy sbi2).reducesTo [0, 4]
 
 -- ============================================================================
 -- Step specs for SharedArray.into_iter and SharedSlice.into_iter
