@@ -229,6 +229,10 @@ This technique makes large proofs tractable by breaking them into manageable pie
    grep -r "@\[progress\]" . --include="*.lean"
    ```
 
+5. **`hax_lib` contracts:** with `-specs hax`, the contracts of the Rust code
+   are stated in `Specs.lean` and proved by hand; the proofs are not registered
+   for `step`/`mvcgen` (see [hax-specs.md](hax-specs.md))
+
 ### When to write a new spec:
 
 - The function is Aeneas-generated and has no existing spec

@@ -8,6 +8,7 @@ Aeneas translates Rust programs to into pure functional programs (primarily Lean
 - [Tactics Reference](tactics-reference.md) — All tactics with docstrings and examples
 - [Tips, Tricks & Pitfalls](tips-and-tricks.md) — Common pitfalls and how to avoid them
 - [Crypto Verification](crypto-verification.md) — Verifying cryptographic code
+- [hax Specs](hax-specs.md) — Lean specs and proof obligations from `hax_lib` contracts (`-specs hax`)
 - [Glossary](glossary.md) — Aeneas-specific terms
 
 For AI agent instructions see the [skills/](skills/) folder.
