@@ -56,6 +56,73 @@ structure specs.generics.Holder.Lawful (Self : Type _) (T : Type _) (HolderInst
 structure specs.naming.Qux.Lawful (Self : Type _) (QuxInst : specs.naming.Qux
   Self) : Prop
 
+/-- [hax_tests::specs::naming::lawful_field::Sub::g::pre]:
+    Source: 'src/specs/naming.rs', lines 71:4-71:26 -/
+@[reducible]
+def specs.naming.lawful_field.Sub.g.pre
+  {Self_ : Type _} {QuxInstLawful : Type _} {g_spec : Type _} (QuxInst :
+  specs.naming.Qux Self_) (SubInst : specs.naming.lawful_field.Sub Self_
+  QuxInstLawful g_spec) (self_ : Self_) (x : QuxInstLawful) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::naming::lawful_field::Sub::g::post]:
+    Source: 'src/specs/naming.rs', lines 74:8-74:45 -/
+@[reducible]
+def specs.naming.lawful_field.Sub.g.post
+  {Self_ : Type _} {QuxInstLawful : Type _} {g_spec : Type _} (QuxInst :
+  specs.naming.Qux Self_) (SubInst : specs.naming.lawful_field.Sub Self_
+  QuxInstLawful g_spec) (self_ : Self_) (x : QuxInstLawful) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::naming::lawful_field::Sub::h::pre]:
+    Source: 'src/specs/naming.rs', lines 71:4-71:26 -/
+@[reducible]
+def specs.naming.lawful_field.Sub.h.pre
+  {Self_ : Type _} {QuxInstLawful : Type _} {g_spec : Type _} (QuxInst :
+  specs.naming.Qux Self_) (SubInst : specs.naming.lawful_field.Sub Self_
+  QuxInstLawful g_spec) (self_ : Self_) (x : g_spec) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::naming::lawful_field::Sub::h::post]:
+    Source: 'src/specs/naming.rs', lines 77:8-77:38 -/
+@[reducible]
+def specs.naming.lawful_field.Sub.h.post
+  {Self_ : Type _} {QuxInstLawful : Type _} {g_spec : Type _} (QuxInst :
+  specs.naming.Qux Self_) (SubInst : specs.naming.lawful_field.Sub Self_
+  QuxInstLawful g_spec) (self_ : Self_) (x : g_spec) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::naming::lawful_field::Sub]
+    Source: 'src/specs/naming.rs', lines 72:4-78:5 -/
+structure specs.naming.lawful_field.Sub.Lawful (Self : Type _) (QuxInstLawful1
+  : Type _) (g_spec1 : Type _) (SubInst : specs.naming.lawful_field.Sub Self
+  QuxInstLawful1 g_spec1) : Prop where
+  QuxInstLawful : specs.naming.Qux.Lawful Self SubInst.QuxInst
+  g_spec (self_ : Self) (x : QuxInstLawful1) :
+    (specs.naming.lawful_field.Sub.g.pre SubInst.QuxInst SubInst self_ x).holds
+    →
+    ⦃ ⌜ True ⌝ ⦄
+    SubInst.g self_ x
+    ⦃ ⇓ res =>
+      ⌜ (specs.naming.lawful_field.Sub.g.post SubInst.QuxInst SubInst self_ x
+          res).holds ⌝ ⦄
+  h_spec (self_ : Self) (x : g_spec1) :
+    (specs.naming.lawful_field.Sub.h.pre SubInst.QuxInst SubInst self_ x).holds
+    →
+    ⦃ ⌜ True ⌝ ⦄
+    SubInst.h self_ x
+    ⦃ ⇓ res =>
+      ⌜ (specs.naming.lawful_field.Sub.h.post SubInst.QuxInst SubInst self_ x
+          res).holds ⌝ ⦄
+
 /-- [hax_tests::specs::traits::assoc_consts::Bounded::clamp::pre]:
     Source: 'src/specs/traits/assoc_consts.rs', lines 8:0-8:22 -/
 @[reducible]
@@ -1177,6 +1244,57 @@ structure specs.traits.synthesized.Many.Lawful (Self : Type _) (ManyInst :
           corecloneCloneInst4 corecloneCloneInst5 corecloneCloneInst6
           corecloneCloneInst7 ManyInst.corecloneCloneInst ManyInst self_
           res).holds ⌝ ⦄
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::SubAssoc]
+    Source: 'src/specs/traits/synthesized.rs', lines 79:0-82:1 -/
+structure specs.traits.synthesized.SubAssoc.Lawful (Self : Type _)
+  (Self_Clause0_Item : Type _) (SubAssocInst :
+  specs.traits.synthesized.SubAssoc Self Self_Clause0_Item) : Prop where
+  AssocInstLawful : specs.traits.synthesized.Assoc.Lawful Self
+    Self_Clause0_Item SubAssocInst.AssocInst
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::CallOnce]
+    Source: 'src/specs/traits/synthesized.rs', lines 86:0-88:1 -/
+structure specs.traits.synthesized.CallOnce.Lawful (Self : Type _) (Args :
+  Type _) (Self_Output : Type _) (CallOnceInst :
+  specs.traits.synthesized.CallOnce Self Args Self_Output) : Prop
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Call]
+    Source: 'src/specs/traits/synthesized.rs', lines 91:0-94:1 -/
+structure specs.traits.synthesized.Call.Lawful (Self : Type _) (Args : Type _)
+  (Self_Clause0_Output : Type _) (CallInst : specs.traits.synthesized.Call Self
+  Args Self_Clause0_Output) : Prop where
+  CallOnceInstLawful : specs.traits.synthesized.CallOnce.Lawful Self Args
+    Self_Clause0_Output CallInst.CallOnceInst
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::SubGen]
+    Source: 'src/specs/traits/synthesized.rs', lines 100:0-103:1 -/
+structure specs.traits.synthesized.SubGen.Lawful (Self : Type _)
+  (Self_Clause0_Item : Type _) (SubGenInst : specs.traits.synthesized.SubGen
+  Self Self_Clause0_Item) : Prop where
+  AssocInstLawful : specs.traits.synthesized.Assoc.Lawful Self
+    Self_Clause0_Item SubGenInst.AssocInst
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::ManyAssoc]
+    Source: 'src/specs/traits/synthesized.rs', lines 109:0-114:1 -/
+structure specs.traits.synthesized.ManyAssoc.Lawful (Self : Type _)
+  (Self_Clause0_Item : Type _) (ManyAssocInst :
+  specs.traits.synthesized.ManyAssoc Self Self_Clause0_Item) : Prop where
+  AssocInstLawful : specs.traits.synthesized.Assoc.Lawful Self
+    Self_Clause0_Item ManyAssocInst.AssocInst
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::K2]
+    Source: 'src/specs/traits/synthesized.rs', lines 116:0-120:1 -/
+structure specs.traits.synthesized.K2.Lawful (Self : Type _) (Self_X : Type _)
+  (K2Inst : specs.traits.synthesized.K2 Self Self_X) : Prop
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Sym2]
+    Source: 'src/specs/traits/synthesized.rs', lines 125:0-128:1 -/
+structure specs.traits.synthesized.Sym2.Lawful (Self : Type _) (Self_Clause0_X
+  : Type _) (Sym2Inst : specs.traits.synthesized.Sym2 Self Self_Clause0_X) :
+  Prop where
+  K2InstLawful : specs.traits.synthesized.K2.Lawful Self Self_Clause0_X
+    Sym2Inst.K2Inst
 
 /-- [hax_tests::specs::traits::trait_generics::Conv::conv::pre]:
     Source: 'src/specs/traits/trait_generics.rs', lines 8:4-8:32 -/

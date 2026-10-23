@@ -68,42 +68,75 @@ trait Many: Clone {
     ) -> u32;
 }
 
-// BUG: aeneas fails on the conditions of a trait method when the trait or a
-// supertrait has an associated type: it maps their generics positionally to
-// the method's, but charon lifts the associated type once per clause path
-// (`SubAssoc.len.pre {Self_} {Clause0_Item} {Clause1_Clause0_Item}` vs
-// `Self, Self_Clause0_Item`) and after the method's own type parameters
+// The contracts of the methods below are dropped with a warning ("the generics
+// of its conditions don't match those of the trait and the method"): charon
+// lifts the associated type of the trait or a supertrait once per clause path
+// in the decoration fns, but only once in the trait. The comments below
+// describe the expected conditions.
+
+// A supertrait with an associated type; the result does not mention it
+#[hax_lib::attributes]
+trait SubAssoc: Assoc {
+    #[requires(true)]
+    fn len(&self) -> usize;
+}
+
+// The same with a generic supertrait, as `FnMut<Args>: FnOnce<Args>`
+#[hax_lib::attributes]
+trait CallOnce<Args> {
+    type Output;
+}
+
+#[hax_lib::attributes]
+trait Call<Args>: CallOnce<Args> {
+    #[requires(true)]
+    fn call(&self, args: Args) -> Self::Output;
+}
+
+// A supertrait with an associated type and a bounded method type parameter:
+// the clause `U: Assoc` of the conditions gets the instance of `U`, not the
+// parent `Self: Assoc`
+#[hax_lib::attributes]
+trait SubGen: Assoc {
+    #[requires(true)]
+    fn g<U: Assoc>(&self, u: U) -> U;
+}
+
+// `Many` with a supertrait with an associated type: the conditions get the
+// instances of `A`…`H` in order, and `Self_Clause0_Item` for both lifted
+// copies of the associated type (`Clause8_Item`, `Clause9_Clause0_Item`)
+#[hax_lib::attributes]
+trait ManyAssoc: Assoc {
+    #[requires(true)]
+    fn m<A: Clone, B: Clone, C: Clone, D: Clone, E: Clone, F: Clone, G: Clone, H: Clone>(
+        &self,
+    ) -> u32;
+}
+
+trait K2 {
+    type X;
+
+    fn k() -> u32;
+}
+
+// `Sym` with an associated type: two clauses on `K2`, `Self_: K2` and
+// `U: K2`; `U::k()` must be read from the instance of `U`
+#[hax_lib::attributes]
+trait Sym2: K2 {
+    #[requires(x < U::k() && U::k() < 10)]
+    fn g<U: K2>(x: u32) -> u32;
+}
+
+// BUG: aeneas fails on the conditions of these trait methods: it maps their
+// generics positionally to the method's, but charon lifts the associated type
+// once per clause path (as above) and after the method's own type parameters
 // (`AssocGen.f.post {Self_} {U} {Clause0_Item}` vs `Self, Self_Item, U`).
-// - `SubAssoc`, `Call`, `SubGen`, `ManyAssoc`, `Sym2`: "Internal error: the
-//   generics of the conditions of `…` don't match those of the trait and the
-//   method", contract dropped (exit 1);
 // - `SubBoth`: "Internal error: the generics of the condition `SubBoth::h.pre`
-//   don't match those it is applied to" (exit 2);
+//   don't match those it is applied to", partial `SubBoth.Lawful` (exit 1);
 // - `AssocGen`: synthesized post with `res : Clause0_Item`, then "Could not
-//   find an instance for a trait clause of a pre/post condition" (exit 2).
+//   find an instance for a trait clause of a pre/post condition", partial
+//   `AssocGen.Lawful` (exit 1).
 // The traits are commented out because aeneas fails on them.
-
-// // A supertrait with an associated type. The decoration fns have one copy of
-// // the lifted associated type per clause (`Clause0_Item` for `Self_: Assoc`,
-// // `Clause1_Clause0_Item` for `Self_: SubAssoc`), the trait only one
-// // (`Self_Clause0_Item`). The result does not mention the associated type.
-// #[hax_lib::attributes]
-// trait SubAssoc: Assoc {
-//     #[requires(true)]
-//     fn len(&self) -> usize;
-// }
-
-// // The same with a generic supertrait, as `FnMut<Args>: FnOnce<Args>`
-// #[hax_lib::attributes]
-// trait CallOnce<Args> {
-//     type Output;
-// }
-//
-// #[hax_lib::attributes]
-// trait Call<Args>: CallOnce<Args> {
-//     #[requires(true)]
-//     fn call(&self, args: Args) -> Self::Output;
-// }
 
 // // An associated type and a method type parameter: in the decoration fns, the
 // // lifted `Clause0_Item` comes after `U`, in the method after `Self`
@@ -115,44 +148,10 @@ trait Many: Clone {
 //     fn f<U>(&self, u: U) -> U;
 // }
 
-// // A supertrait with an associated type and a bounded method type parameter:
-// // the clause `U: Assoc` of the conditions gets the instance of `U`, not the
-// // parent `Self: Assoc`
-// #[hax_lib::attributes]
-// trait SubGen: Assoc {
-//     #[requires(true)]
-//     fn g<U: Assoc>(&self, u: U) -> U;
-// }
-
 // // Both conditions written, with a supertrait with an associated type
 // #[hax_lib::attributes]
 // trait SubBoth: Assoc {
 //     #[requires(true)]
 //     #[ensures(|r| r == 0)]
 //     fn h(&self) -> usize;
-// }
-
-// // `Many` with a supertrait with an associated type: the conditions get the
-// // instances of `A`…`H` in order, and `Self_Clause0_Item` for both lifted
-// // copies of the associated type (`Clause8_Item`, `Clause9_Clause0_Item`)
-// #[hax_lib::attributes]
-// trait ManyAssoc: Assoc {
-//     #[requires(true)]
-//     fn m<A: Clone, B: Clone, C: Clone, D: Clone, E: Clone, F: Clone, G: Clone, H: Clone>(
-//         &self,
-//     ) -> u32;
-// }
-
-// trait K2 {
-//     type X;
-//
-//     fn k() -> u32;
-// }
-//
-// // `Sym` with an associated type: two clauses on `K2`, `Self_: K2` and
-// // `U: K2`; `U::k()` must be read from the instance of `U`
-// #[hax_lib::attributes]
-// trait Sym2: K2 {
-//     #[requires(x < U::k() && U::k() < 10)]
-//     fn g<U: K2>(x: u32) -> u32;
 // }

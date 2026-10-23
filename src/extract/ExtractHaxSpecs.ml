@@ -313,6 +313,17 @@ let lookup_parent (ctx : ExtractBase.extraction_ctx) (fn : Pure.FunDeclId.id) :
     (fun (ft : TranslateCore.pure_fun_translation) -> ft.f)
     (Pure.FunDeclId.Map.find_opt fn ctx.trans_funs)
 
+(** The translated trait impl [impl] and the trait it implements, if both were
+    translated *)
+let trait_impl_and_decl (ctx : ExtractBase.extraction_ctx)
+    (impl : Pure.TraitImplId.id) : (Pure.trait_impl * Pure.trait_decl) option =
+  Option.bind (Pure.TraitImplId.Map.find_opt impl ctx.trans_trait_impls)
+    (fun (i : Pure.trait_impl) ->
+      Option.map
+        (fun d -> (i, d))
+        (Pure.TraitDeclId.Map.find_opt i.impl_trait.trait_decl_id
+           ctx.trans_trait_decls))
+
 (** Register the names of conditions, under the ids of their fns *)
 let register_conds span (conds : (Pure.fun_decl * string) list)
     (ctx : ExtractBase.extraction_ctx) : ExtractBase.extraction_ctx =
@@ -334,10 +345,11 @@ let warn_untranslated ?(dropped = "the contract")
     | Some m -> (Some m.span, TranslateCore.name_to_string ctx.trans_ctx m.name)
     | None -> (opt_span, id)
   in
-  [%warn_opt_span] span
-    (Printf.sprintf
-       "hax-specs: dropping %s of %s `%s`: the %s was not translated" dropped
-       kind name kind)
+  Errors.warn_and_continue (fun () ->
+      [%warn_opt_span] span
+        (Printf.sprintf
+           "hax-specs: dropping %s of %s `%s`: the %s was not translated"
+           dropped kind name kind))
 
 (** Report a clash between [<X>.Lawful] and the projection of a field of the
     trait structure [d] (parent clause, associated item or method) named
@@ -436,6 +448,21 @@ let register_obligation_names (ctx : ExtractBase.extraction_ctx)
                   ctx.trans_ctx.crate.trait_impls))
             "trait impl"
             (Pure.TraitImplId.to_string impl);
+          ctx
+      | Some i
+        when not
+               (Pure.TraitDeclId.Map.mem i.impl_trait.trait_decl_id
+                  ctx.trans_trait_decls) ->
+          (* We use the span of the impl: the trait may not be local *)
+          let id = i.impl_trait.trait_decl_id in
+          warn_untranslated ~dropped:"the Lawful obligation of an impl" ctx
+            (Some i.item_meta.span) None "trait"
+            (match
+               Pure.TraitDeclId.Map.find_opt id ctx.trans_ctx.crate.trait_decls
+             with
+            | Some d ->
+                TranslateCore.name_to_string ctx.trans_ctx d.item_meta.name
+            | None -> Pure.TraitDeclId.to_string id);
           ctx
       | Some i ->
           let span = i.item_meta.span in
@@ -590,6 +617,26 @@ let emit_lawful_structure (ctx : ExtractBase.extraction_ctx) fmt
   let open ExtractBase in
   let span = d.item_meta.span in
   let no_params_tys = Pure.TypeDeclId.Set.empty in
+  let parent_field (c : Pure.trait_param) =
+    lawful_binder_name
+      (ctx_get_raw (Some span)
+         (TraitParentClauseId (d.def_id, c.clause_id))
+         ctx)
+  in
+  let method_field method_id =
+    ctx_get_raw (Some span) (TraitMethodId (d.def_id, method_id)) ctx ^ "_spec"
+  in
+  (* Reserve the field names, so that no parameter takes them, as
+     [extract_trait_decl] does *)
+  let ctx =
+    ctx_reserve_names
+      (List.map parent_field d.parent_clauses
+      @ List.map
+          (fun ({ method_id; _ } : HaxSpecs.method_spec) ->
+            method_field method_id)
+          methods)
+      ctx
+  in
   let ctx, type_params, cg_params, trait_clauses =
     ctx_add_generic_params span d.item_meta.name Item d.llbc_generics d.generics
       ctx
@@ -628,13 +675,8 @@ let emit_lawful_structure (ctx : ExtractBase.extraction_ctx) fmt
   (* The parents: [<P>Lawful : <P>.Lawful <args> <X>Inst.<P>] *)
   List.iter
     (fun (c : Pure.trait_param) ->
-      let name =
-        ctx_get_raw (Some span)
-          (TraitParentClauseId (d.def_id, c.clause_id))
-          ctx
-      in
       Extract.extract_trait_decl_item ctx fmt
-        (escape_name (lawful_binder_name name))
+        (escape_name (parent_field c))
         (fun () ->
           F.pp_print_space fmt ();
           emit_lawful_type span ctx fmt (parent_ref d self_ref c)))
@@ -666,10 +708,7 @@ let emit_lawful_structure (ctx : ExtractBase.extraction_ctx) fmt
       F.pp_print_space fmt ();
       F.pp_open_vbox fmt ctx.indent_incr;
       F.pp_open_hovbox fmt ctx.indent_incr;
-      F.pp_print_string fmt
-        (escape_name
-           (ctx_get_raw (Some span) (TraitMethodId (d.def_id, method_id)) ctx
-           ^ "_spec"));
+      F.pp_print_string fmt (escape_name (method_field method_id));
       ExtractTypes.extract_generic_params span ctx fmt no_params_tys Method
         { sg.generics with trait_clauses = [] }
         (Some sg.explicit_info) type_params cg_params [];
@@ -749,18 +788,14 @@ let emit_fun_binders (ctx : ExtractBase.extraction_ctx) fmt (f : Pure.fun_decl)
   ExtractTypes.insert_req_space fmt space;
   (ctx, lawful_names)
 
-(** Emit the binders of the trait impl [impl]: its generic parameters, named as
-    in its definition (see {!Extract.extract_trait_impl}), then the Lawful
-    binders of its trait clauses. Return the context with the parameters
-    registered. *)
+(** Emit the binders of the trait impl [impl] of the trait [d]: its generic
+    parameters, named as in its definition (see {!Extract.extract_trait_impl}),
+    then the Lawful binders of its trait clauses. Return the context with the
+    parameters registered. *)
 let emit_impl_binders (ctx : ExtractBase.extraction_ctx) fmt
-    (impl : Pure.trait_impl) =
+    (d : Pure.trait_decl) (impl : Pure.trait_impl) =
   let open ExtractBase in
   let span = impl.item_meta.span in
-  let d =
-    Pure.TraitDeclId.Map.find impl.impl_trait.trait_decl_id
-      ctx.trans_trait_decls
-  in
   (* Reserve the field names of the trait, as [extract_trait_impl] does *)
   let ctx =
     ctx_reserve_names
@@ -939,9 +974,9 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) =
           (* outer hvbox *)
           F.pp_print_cut fmt ())
   | ImplLawful { impl; proof } -> (
-      match Pure.TraitImplId.Map.find_opt impl ctx.trans_trait_impls with
+      match trait_impl_and_decl ctx impl with
       | None -> (* Reported by [register_obligation_names] *) ()
-      | Some impl ->
+      | Some (impl, d) ->
           let span = impl.item_meta.span in
           (* Blank line before the entry. *)
           F.pp_print_break fmt 0 0;
@@ -955,7 +990,7 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) =
             (escape_name
                (lawful_name
                   (ctx_get_raw (Some span) (TraitImplId impl.def_id) ctx)));
-          let ctx = emit_impl_binders ctx fmt impl in
+          let ctx = emit_impl_binders ctx fmt d impl in
           F.pp_print_space fmt ();
           F.pp_print_string fmt ":";
           F.pp_print_space fmt ();

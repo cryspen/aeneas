@@ -110,6 +110,15 @@ structure specs.naming.Qux (Self : Type _) where
 @[reducible]
 def specs.naming.lawful_impl_binder.Wrap (T : Type _) := T
 
+/-- Trait declaration: [hax_tests::specs::naming::lawful_field::Sub]
+    Source: 'src/specs/naming.rs', lines 72:4-78:5
+    Visibility: public -/
+structure specs.naming.lawful_field.Sub (Self : Type _) (QuxInstLawful :
+  Type _) (g_spec : Type _) where
+  QuxInst : specs.naming.Qux Self
+  g : Self → QuxInstLawful → RustM Std.U32
+  h : Self → g_spec → RustM Std.U32
+
 /-- Trait declaration: [hax_tests::specs::traits::assoc_consts::Bounded]
     Source: 'src/specs/traits/assoc_consts.rs', lines 9:0-18:1 -/
 structure specs.traits.assoc_consts.Bounded (Self : Type _) where
@@ -323,6 +332,60 @@ structure specs.traits.synthesized.Many (Self : Type _) where
     (corecloneCloneInst5 : core.clone.Clone E) (corecloneCloneInst6 :
     core.clone.Clone F) (corecloneCloneInst7 : core.clone.Clone G)
     (corecloneCloneInst8 : core.clone.Clone H), Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::SubAssoc]
+    Source: 'src/specs/traits/synthesized.rs', lines 79:0-82:1 -/
+structure specs.traits.synthesized.SubAssoc (Self : Type _) (Self_Clause0_Item
+  : Type _) where
+  AssocInst : specs.traits.synthesized.Assoc Self Self_Clause0_Item
+  len : Self → RustM Std.Usize
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::CallOnce]
+    Source: 'src/specs/traits/synthesized.rs', lines 86:0-88:1 -/
+structure specs.traits.synthesized.CallOnce (Self : Type _) (Args : Type _)
+  (Self_Output : Type _) where
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Call]
+    Source: 'src/specs/traits/synthesized.rs', lines 91:0-94:1 -/
+structure specs.traits.synthesized.Call (Self : Type _) (Args : Type _)
+  (Self_Clause0_Output : Type _) where
+  CallOnceInst : specs.traits.synthesized.CallOnce Self Args
+    Self_Clause0_Output
+  call : Self → Args → RustM Self_Clause0_Output
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::SubGen]
+    Source: 'src/specs/traits/synthesized.rs', lines 100:0-103:1 -/
+structure specs.traits.synthesized.SubGen (Self : Type _) (Self_Clause0_Item :
+  Type _) where
+  AssocInst : specs.traits.synthesized.Assoc Self Self_Clause0_Item
+  g : forall {U : Type} {Clause0_Item : Type} (AssocInst1 :
+    specs.traits.synthesized.Assoc U Clause0_Item), Self → U → RustM U
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::ManyAssoc]
+    Source: 'src/specs/traits/synthesized.rs', lines 109:0-114:1 -/
+structure specs.traits.synthesized.ManyAssoc (Self : Type _) (Self_Clause0_Item
+  : Type _) where
+  AssocInst : specs.traits.synthesized.Assoc Self Self_Clause0_Item
+  m : forall {A : Type} {B : Type} {C : Type} {D : Type} {E : Type} {F : Type}
+    {G : Type} {H : Type} (corecloneCloneInst : core.clone.Clone A)
+    (corecloneCloneInst1 : core.clone.Clone B) (corecloneCloneInst2 :
+    core.clone.Clone C) (corecloneCloneInst3 : core.clone.Clone D)
+    (corecloneCloneInst4 : core.clone.Clone E) (corecloneCloneInst5 :
+    core.clone.Clone F) (corecloneCloneInst6 : core.clone.Clone G)
+    (corecloneCloneInst7 : core.clone.Clone H), Self → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::K2]
+    Source: 'src/specs/traits/synthesized.rs', lines 116:0-120:1 -/
+structure specs.traits.synthesized.K2 (Self : Type _) (Self_X : Type _) where
+  k : RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Sym2]
+    Source: 'src/specs/traits/synthesized.rs', lines 125:0-128:1 -/
+structure specs.traits.synthesized.Sym2 (Self : Type _) (Self_Clause0_X :
+  Type _) where
+  K2Inst : specs.traits.synthesized.K2 Self Self_Clause0_X
+  g : forall {U : Type} {Clause0_X : Type} (K2Inst1 :
+    specs.traits.synthesized.K2 U Clause0_X), Std.U32 → RustM Std.U32
 
 /-- Trait declaration: [hax_tests::specs::traits::trait_generics::Conv]
     Source: 'src/specs/traits/trait_generics.rs', lines 6:0-9:1 -/

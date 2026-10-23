@@ -210,6 +210,11 @@ let cassert_warn (file : string) (line : int) (span : Meta.span) (b : bool)
     (msg : string) =
   if not b then warn_opt_span file line (Some span) msg
 
+(** Run [warn], a warning, and continue: under [-warnings-as-errors], the
+    warning raises a [CFailure] once the error is recorded, which we ignore *)
+let warn_and_continue (warn : unit -> unit) : unit =
+  try warn () with CFailure _ -> ()
+
 let unwrap_opt_span (file : string) (line : int) (span : Meta.span option)
     (x : 'a option) (msg : string) : 'a =
   match x with

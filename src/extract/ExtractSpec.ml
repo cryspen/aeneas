@@ -46,7 +46,32 @@ let register_names (ctx : ExtractBase.extraction_ctx) :
         ctx)
     ctx ctx.proof_obligations
 
-let extract_specs ctx fmt = List.iter (emit_spec ctx fmt) ctx.specs
+(** Print the entry [x] with [emit], ignoring a [CFailure]: it was normally
+    reported when raised, and only drops [x]. The entry is printed in a buffer
+    first, so that a partial output (with unclosed boxes) is dropped too. [fmt]
+    must be in a vertical box at column 0, as the entries are. *)
+let skip_on_failure fmt (emit : F.formatter -> 'a -> unit) (x : 'a) : unit =
+  let buf = Buffer.create 1024 in
+  let bfmt = F.formatter_of_buffer buf in
+  FormatCompat.use_byte_width bfmt;
+  let { F.margin; max_indent } = F.pp_get_geometry fmt () in
+  F.pp_set_geometry bfmt ~max_indent ~margin;
+  F.pp_open_vbox bfmt 0;
+  match emit bfmt x with
+  | () ->
+      F.pp_close_box bfmt ();
+      F.pp_print_flush bfmt ();
+      List.iteri
+        (fun i line ->
+          if i > 0 then F.pp_print_cut fmt ();
+          F.pp_print_string fmt line)
+        (String.split_on_char '\n' (Buffer.contents buf))
+  | exception Errors.CFailure _ -> ()
+
+let extract_specs ctx fmt =
+  List.iter (skip_on_failure fmt (emit_spec ctx)) ctx.specs
 
 let extract_proof_obligations ctx fmt =
-  List.iter (emit_proof_obligation ctx fmt) ctx.proof_obligations
+  List.iter
+    (skip_on_failure fmt (emit_proof_obligation ctx))
+    ctx.proof_obligations
