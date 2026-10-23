@@ -938,7 +938,7 @@ let emit_obligation ctx fmt (o : HaxSpecs.obligation) =
           F.pp_close_box fmt ();
           (* outer hvbox *)
           F.pp_print_cut fmt ())
-  | ImplLawful { impl; proof; _ } -> (
+  | ImplLawful { impl; proof } -> (
       match Pure.TraitImplId.Map.find_opt impl ctx.trans_trait_impls with
       | None -> (* Reported by [register_obligation_names] *) ()
       | Some impl ->
