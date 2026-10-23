@@ -91,6 +91,16 @@ theorem
   (specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux QuxInst)
   := by sorry
 
+theorem U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.Lawful :
+  specs.traits.assoc_consts.Bounded.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsAssoc_constsScaled.Lawful :
+  specs.traits.assoc_consts.Scaled.Lawful Std.U32
+  U32.Insts.Hax_testsSpecsTraitsAssoc_constsScaled
+  := by sorry
+
 theorem U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar.Lawful :
   specs.traits.assoc_type_bounds.Bar.Lawful Std.U32
   U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar
@@ -459,6 +469,15 @@ theorem specs.generics.empty.spec.proof (T : Type) (N : Std.Usize)
   (k : Std.Usize) : specs.generics.empty.spec T N k
   := by sorry
 
+theorem
+  specs.generics.first.spec.proof {T : Type} {V : Type} (HolderVOptionInst :
+                                 specs.generics.Holder V (core.option.Option
+                                 T)) (v : V)
+  (HolderVOptionInstLawful : specs.generics.Holder.Lawful V (core.option.Option
+  T) HolderVOptionInst) :
+  specs.generics.first.spec HolderVOptionInst v HolderVOptionInstLawful
+  := by sorry
+
 theorem specs.naming.foo.spec.proof (x : Std.U32) : specs.naming.foo.spec x
   := by sorry
 
@@ -573,6 +592,14 @@ theorem
   := by sorry
 
 theorem
+  specs.traits.assoc_consts.use_clamp.spec.proof {T : Type} (BoundedInst :
+                                                specs.traits.assoc_consts.Bounded
+                                                T) (t : T) (x : Std.U32)
+  (BoundedInstLawful : specs.traits.assoc_consts.Bounded.Lawful T BoundedInst)
+  : specs.traits.assoc_consts.use_clamp.spec BoundedInst t x BoundedInstLawful
+  := by sorry
+
+theorem
   specs.naming.lawful_binder.f.spec.proof {T : Type} (QuxInst :
                                          specs.naming.Qux T)
   (QuxInstLawful1 : T) (x : Std.U32)
@@ -586,6 +613,11 @@ theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec.proof
 
 theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.spec.proof
   (self : Std.U32) : U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.spec self
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp.spec.proof
+   (self : Std.U32) (x : Std.U32) :
+  U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp.spec self x
   := by sorry
 
 end hax_tests
