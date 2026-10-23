@@ -40,13 +40,7 @@ and method_spec = {
 (** Type for proof-obligation objects. *)
 and obligation =
   | FunctionContract of { spec : function_spec; proof : proof }
-  | ImplLawful of {
-      impl : Pure.TraitImplId.id;
-      spec : trait_spec option;
-          (** The contract of the implemented trait. [None] for a non-local
-              trait. *)
-      proof : proof;
-    }
+  | ImplLawful of { impl : Pure.TraitImplId.id; proof : proof }
       (** [<impl>.Lawful : X.Lawful … <impl>]: the impl satisfies the contract
           of its trait *)
 [@@deriving show]

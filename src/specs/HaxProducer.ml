@@ -367,20 +367,10 @@ let produce (ctx : TranslateCore.trans_ctx)
       local_trait_decls
   in
   (* The Lawful obligations of the local trait impls, in the order of the
-     declaration groups (dependencies first), with the contract of the
-     implemented trait if it is local *)
+     declaration groups (dependencies first) *)
   let trait_impls =
     Pure.TraitImplId.Map.of_list
       (List.map (fun (i : Pure.trait_impl) -> (i.def_id, i)) crate.trait_impls)
-  in
-  let trait_spec (id : Pure.TraitDeclId.id) : HaxSpecs.trait_spec option =
-    List.find_map
-      (fun (s : Spec.spec) ->
-        match s with
-        | { kind = HaxSpec (TraitSpec ts); _ } when ts.trait_decl = id ->
-            Some ts
-        | _ -> None)
-      trait_specs
   in
   let impl_obligations =
     List.concat_map
@@ -397,12 +387,7 @@ let produce (ctx : TranslateCore.trans_ctx)
                          span = Some i.item_meta.span;
                          kind =
                            HaxProof
-                             (ImplLawful
-                                {
-                                  impl = i.def_id;
-                                  spec = trait_spec i.impl_trait.trait_decl_id;
-                                  proof = Admitted;
-                                });
+                             (ImplLawful { impl = i.def_id; proof = Admitted });
                        }
                         : Spec.proof_obligation)
                 | _ -> None)
