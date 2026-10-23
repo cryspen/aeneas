@@ -89,7 +89,7 @@ EOF
             ;;
     esac
 
-    (cd "$tests" && cargo hax extract "$scenario")
+    (cd "$tests" && cargo hax extract -v "$scenario")
 }
 
 # The names declared by `theorem` in the given Lean files, or in stdin if none
