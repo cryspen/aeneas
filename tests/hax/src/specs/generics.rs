@@ -126,3 +126,11 @@ fn empty<T, const N: usize>(k: usize) -> Option<Pair<T, N>> {
 fn from_default<T: Default, const N: usize>(k: usize) -> Pair<T, N> {
     Pair { fst: T::default() }
 }
+
+// A trait clause whose argument mentions another type parameter
+trait Holder<T> {}
+
+#[requires(true)]
+fn first<T, V: Holder<Option<T>>>(v: V) -> u32 {
+    0
+}

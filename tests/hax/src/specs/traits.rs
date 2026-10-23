@@ -14,3 +14,4 @@ mod unannotated_sub;
 mod impl_contract;
 mod trait_generics;
 mod synthesized;
+mod assoc_consts;

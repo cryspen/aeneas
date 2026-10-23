@@ -144,3 +144,19 @@ fn with_loop(n: u32) -> u32 {
     }
     acc
 }
+
+struct Opaque;
+
+// BUG: an opaque method with a precondition, in a `#[hax_lib::attributes]`
+// impl. hax-lib puts the decoration fn inside the method body, which
+// `#[hax_lib::opaque]` hides from charon: the method references an unknown
+// decoration uid, and its precondition is silently dropped. (A free opaque fn
+// is fine: its decoration fn is a sibling item.)
+#[hax_lib::attributes]
+impl Opaque {
+    #[hax_lib::opaque]
+    #[hax_lib::requires(x < 100)]
+    fn opaque_requires(x: u32) -> u32 {
+        x + 1
+    }
+}

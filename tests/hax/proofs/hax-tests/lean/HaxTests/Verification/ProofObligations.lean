@@ -5,6 +5,7 @@ import HaxTests.Extraction.Types
 import HaxTests.Extraction.Funs
 import HaxTests.Extraction.Specs
 import HaxTests.Verification.Lemmas
+import HaxTests.Verification.Traits.AssocConsts
 import HaxTests.Verification.Traits.AssocTypeBounds
 import HaxTests.Verification.Traits.Basic
 import HaxTests.Verification.Traits.BlanketImpl
@@ -296,6 +297,17 @@ theorem specs.generics.empty.spec.proof (T : Type) (N : Std.Usize)
   (k : Std.Usize) : specs.generics.empty.spec T N k
   := by
   unfold specs.generics.empty.spec specs.generics.empty
+  hax_mvcgen
+
+theorem
+  specs.generics.first.spec.proof {T : Type} {V : Type} (HolderVOptionInst :
+                                 specs.generics.Holder V (core.option.Option
+                                 T)) (v : V)
+  (HolderVOptionInstLawful : specs.generics.Holder.Lawful V (core.option.Option
+  T) HolderVOptionInst) :
+  specs.generics.first.spec HolderVOptionInst v HolderVOptionInstLawful
+  := by
+  unfold specs.generics.first.spec specs.generics.first
   hax_mvcgen
 
 theorem specs.arguments.named.spec.proof (_ : Unit) : specs.arguments.named.spec ()

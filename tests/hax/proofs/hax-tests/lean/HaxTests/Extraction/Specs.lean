@@ -46,10 +46,91 @@ structure specs.generics.Val.Lawful (Self : Type _) (ValInst :
 structure specs.generics.Producer.Lawful (Self : Type _) (Self_Out : Type _)
   (ProducerInst : specs.generics.Producer Self Self_Out) : Prop
 
+/-- Lawful structure of trait: [hax_tests::specs::generics::Holder]
+    Source: 'src/specs/generics.rs', lines 131:0-131:18 -/
+structure specs.generics.Holder.Lawful (Self : Type _) (T : Type _) (HolderInst
+  : specs.generics.Holder Self T) : Prop
+
 /-- Lawful structure of trait: [hax_tests::specs::naming::Qux]
     Source: 'src/specs/naming.rs', lines 31:0-33:1 -/
 structure specs.naming.Qux.Lawful (Self : Type _) (QuxInst : specs.naming.Qux
   Self) : Prop
+
+/-- [hax_tests::specs::traits::assoc_consts::Bounded::clamp::pre]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 8:0-8:22 -/
+@[reducible]
+def specs.traits.assoc_consts.Bounded.clamp.pre
+  {Self_ : Type _} (BoundedInst : specs.traits.assoc_consts.Bounded Self_)
+  (self_ : Self_) (x : Std.U32) :
+  RustM Bool
+  := do
+  let i ← BoundedInst.MAX
+  ok (x < i)
+
+/-- [hax_tests::specs::traits::assoc_consts::Bounded::clamp::post]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 8:0-8:22 -/
+@[reducible]
+def specs.traits.assoc_consts.Bounded.clamp.post
+  {Self_ : Type _} (BoundedInst : specs.traits.assoc_consts.Bounded Self_)
+  (self_ : Self_) (x : Std.U32) (r : Std.U32) :
+  RustM Bool
+  := do
+  let i ← BoundedInst.MAX
+  ok (r <= i)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::assoc_consts::Bounded]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 9:0-18:1 -/
+structure specs.traits.assoc_consts.Bounded.Lawful (Self : Type _) (BoundedInst
+  : specs.traits.assoc_consts.Bounded Self) : Prop where
+  clamp_spec (self_ : Self) (x : Std.U32) :
+    (specs.traits.assoc_consts.Bounded.clamp.pre BoundedInst self_ x).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    BoundedInst.clamp self_ x
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.assoc_consts.Bounded.clamp.post BoundedInst self_ x
+          res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::assoc_consts::Scaled::scale::pre]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 33:0-33:22 -/
+@[reducible]
+def specs.traits.assoc_consts.Scaled.scale.pre
+  {Self_ : Type _} (BoundedInst : specs.traits.assoc_consts.Bounded Self_)
+  (ScaledInst : specs.traits.assoc_consts.Scaled Self_) (self_ : Self_)
+  (x : Std.U32) :
+  RustM Bool
+  := do
+  let i ← BoundedInst.MIN
+  if i <= x
+  then let i1 ← BoundedInst.MAX
+       ok (x <= i1)
+  else ok false
+
+/-- [hax_tests::specs::traits::assoc_consts::Scaled::scale::post]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 33:0-33:22 -/
+@[reducible]
+def specs.traits.assoc_consts.Scaled.scale.post
+  {Self_ : Type _} (BoundedInst : specs.traits.assoc_consts.Bounded Self_)
+  (ScaledInst : specs.traits.assoc_consts.Scaled Self_) (self_ : Self_)
+  (x : Std.U32) (r : Std.U32) :
+  RustM Bool
+  := do
+  let i ← BoundedInst.MAX
+  ok (r <= i)
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::assoc_consts::Scaled]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 34:0-38:1 -/
+structure specs.traits.assoc_consts.Scaled.Lawful (Self : Type _) (ScaledInst :
+  specs.traits.assoc_consts.Scaled Self) : Prop where
+  BoundedInstLawful : specs.traits.assoc_consts.Bounded.Lawful Self
+    ScaledInst.BoundedInst
+  scale_spec (self_ : Self) (x : Std.U32) :
+    (specs.traits.assoc_consts.Scaled.scale.pre ScaledInst.BoundedInst
+    ScaledInst self_ x).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    ScaledInst.scale self_ x
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.assoc_consts.Scaled.scale.post ScaledInst.BoundedInst
+          ScaledInst self_ x res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::traits::assoc_type_bounds::Bar::bar::pre]:
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 11:4-11:25 -/
@@ -938,6 +1019,165 @@ structure specs.traits.synthesized.Assoc.Lawful (Self : Type _) (Self_Item :
     ⦃ ⇓ res =>
       ⌜ (specs.traits.synthesized.Assoc.item.post AssocInst self_ res).holds ⌝ ⦄
 
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::K]
+    Source: 'src/specs/traits/synthesized.rs', lines 43:0-45:1 -/
+structure specs.traits.synthesized.K.Lawful (Self : Type _) (KInst :
+  specs.traits.synthesized.K Self) : Prop
+
+/-- [hax_tests::specs::traits::synthesized::Sym::g::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 49:0-49:22 -/
+@[reducible]
+def specs.traits.synthesized.Sym.g.pre
+  {Self_ : Type _} {U : Type _} (KInst : specs.traits.synthesized.K U) (KInst1
+  : specs.traits.synthesized.K Self_) (SymInst : specs.traits.synthesized.Sym
+  Self_) (x : Std.U32) :
+  RustM Bool
+  := do
+  let i ← KInst.k
+  if x < i
+  then ok (i < 10#u32)
+  else ok false
+
+/-- [hax_tests::specs::traits::synthesized::Sym::g::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 52:4-52:30 -/
+@[reducible]
+def specs.traits.synthesized.Sym.g.post
+  {Self_ : Type _} {U : Type _} (KInst : specs.traits.synthesized.K U) (KInst1
+  : specs.traits.synthesized.K Self_) (SymInst : specs.traits.synthesized.Sym
+  Self_) (x : Std.U32) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Sym]
+    Source: 'src/specs/traits/synthesized.rs', lines 50:0-53:1 -/
+structure specs.traits.synthesized.Sym.Lawful (Self : Type _) (SymInst :
+  specs.traits.synthesized.Sym Self) : Prop where
+  KInstLawful : specs.traits.synthesized.K.Lawful Self SymInst.KInst
+  g_spec {U : Type} (KInst : specs.traits.synthesized.K U)
+    (KInstLawful : specs.traits.synthesized.K.Lawful U KInst) (x : Std.U32) :
+    (specs.traits.synthesized.Sym.g.pre KInst SymInst.KInst SymInst x).holds
+    →
+    ⦃ ⌜ True ⌝ ⦄
+    SymInst.g KInst x
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Sym.g.post KInst SymInst.KInst SymInst x
+          res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::synthesized::Nested::m::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 56:0-56:22 -/
+@[reducible]
+def specs.traits.synthesized.Nested.m.pre
+  {Self_ : Type _} {V : Type _} {U : Type _} (TgUOptionInst :
+  specs.traits.synthesized.Tg U (core.option.Option V)) (NestedInst :
+  specs.traits.synthesized.Nested Self_) (self_ : Self_) (u : U) (v : Std.U32)
+  :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Nested::m::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 59:4-59:58 -/
+@[reducible]
+def specs.traits.synthesized.Nested.m.post
+  {Self_ : Type _} {V : Type _} {U : Type _} (TgUOptionInst :
+  specs.traits.synthesized.Tg U (core.option.Option V)) (NestedInst :
+  specs.traits.synthesized.Nested Self_) (self_ : Self_) (u : U) (v : Std.U32)
+  (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Nested]
+    Source: 'src/specs/traits/synthesized.rs', lines 57:0-60:1 -/
+structure specs.traits.synthesized.Nested.Lawful (Self : Type _) (NestedInst :
+  specs.traits.synthesized.Nested Self) : Prop where
+  m_spec {V : Type} {U : Type}
+    (TgPOptionInst : specs.traits.synthesized.Tg U (core.option.Option V))
+    (TgPOptionInstLawful : specs.traits.synthesized.Tg.Lawful U
+    (core.option.Option V) TgPOptionInst) (self_ : Self) (u : U) (v : Std.U32)
+    :
+    (specs.traits.synthesized.Nested.m.pre TgPOptionInst NestedInst self_ u
+    v).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    NestedInst.m TgPOptionInst self_ u v
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Nested.m.post TgPOptionInst NestedInst
+          self_ u v res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::synthesized::Many::m::pre]:
+    Source: 'src/specs/traits/synthesized.rs', lines 63:0-63:22 -/
+@[reducible]
+def specs.traits.synthesized.Many.m.pre
+  {Self_ : Type _} {A : Type _} {B : Type _} {C : Type _} {D : Type _} {E :
+  Type _} {F : Type _} {G : Type _} {H : Type _} (corecloneCloneInst :
+  core.clone.Clone A) (corecloneCloneInst1 : core.clone.Clone B)
+  (corecloneCloneInst2 : core.clone.Clone C) (corecloneCloneInst3 :
+  core.clone.Clone D) (corecloneCloneInst4 : core.clone.Clone E)
+  (corecloneCloneInst5 : core.clone.Clone F) (corecloneCloneInst6 :
+  core.clone.Clone G) (corecloneCloneInst7 : core.clone.Clone H)
+  (corecloneCloneInst8 : core.clone.Clone Self_) (ManyInst :
+  specs.traits.synthesized.Many Self_) (self_ : Self_) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::traits::synthesized::Many::m::post]:
+    Source: 'src/specs/traits/synthesized.rs', lines 66:4-68:13 -/
+@[reducible]
+def specs.traits.synthesized.Many.m.post
+  {Self_ : Type _} {A : Type _} {B : Type _} {C : Type _} {D : Type _} {E :
+  Type _} {F : Type _} {G : Type _} {H : Type _} (corecloneCloneInst :
+  core.clone.Clone A) (corecloneCloneInst1 : core.clone.Clone B)
+  (corecloneCloneInst2 : core.clone.Clone C) (corecloneCloneInst3 :
+  core.clone.Clone D) (corecloneCloneInst4 : core.clone.Clone E)
+  (corecloneCloneInst5 : core.clone.Clone F) (corecloneCloneInst6 :
+  core.clone.Clone G) (corecloneCloneInst7 : core.clone.Clone H)
+  (corecloneCloneInst8 : core.clone.Clone Self_) (ManyInst :
+  specs.traits.synthesized.Many Self_) (self_ : Self_) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::traits::synthesized::Many]
+    Source: 'src/specs/traits/synthesized.rs', lines 64:0-69:1 -/
+structure specs.traits.synthesized.Many.Lawful (Self : Type _) (ManyInst :
+  specs.traits.synthesized.Many Self) : Prop where
+  corecloneCloneInstLawful : core.clone.Clone.Lawful Self
+    ManyInst.corecloneCloneInst
+  m_spec {A : Type} {B : Type} {C : Type} {D : Type} {E : Type} {F : Type} {G :
+    Type} {H : Type} (corecloneCloneInst : core.clone.Clone A)
+    (corecloneCloneInstLawful : core.clone.Clone.Lawful A corecloneCloneInst)
+    (corecloneCloneInst1 : core.clone.Clone B)
+    (corecloneCloneInst1Lawful : core.clone.Clone.Lawful B corecloneCloneInst1)
+    (corecloneCloneInst2 : core.clone.Clone C)
+    (corecloneCloneInst2Lawful : core.clone.Clone.Lawful C corecloneCloneInst2)
+    (corecloneCloneInst3 : core.clone.Clone D)
+    (corecloneCloneInst3Lawful : core.clone.Clone.Lawful D corecloneCloneInst3)
+    (corecloneCloneInst4 : core.clone.Clone E)
+    (corecloneCloneInst4Lawful : core.clone.Clone.Lawful E corecloneCloneInst4)
+    (corecloneCloneInst5 : core.clone.Clone F)
+    (corecloneCloneInst5Lawful : core.clone.Clone.Lawful F corecloneCloneInst5)
+    (corecloneCloneInst6 : core.clone.Clone G)
+    (corecloneCloneInst6Lawful : core.clone.Clone.Lawful G corecloneCloneInst6)
+    (corecloneCloneInst7 : core.clone.Clone H)
+    (corecloneCloneInst7Lawful : core.clone.Clone.Lawful H corecloneCloneInst7)
+    (self_ : Self) :
+    (specs.traits.synthesized.Many.m.pre corecloneCloneInst corecloneCloneInst1
+    corecloneCloneInst2 corecloneCloneInst3 corecloneCloneInst4
+    corecloneCloneInst5 corecloneCloneInst6 corecloneCloneInst7
+    ManyInst.corecloneCloneInst ManyInst self_).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    ManyInst.m corecloneCloneInst corecloneCloneInst1 corecloneCloneInst2
+    corecloneCloneInst3 corecloneCloneInst4 corecloneCloneInst5
+    corecloneCloneInst6 corecloneCloneInst7 self_
+    ⦃ ⇓ res =>
+      ⌜ (specs.traits.synthesized.Many.m.post corecloneCloneInst
+          corecloneCloneInst1 corecloneCloneInst2 corecloneCloneInst3
+          corecloneCloneInst4 corecloneCloneInst5 corecloneCloneInst6
+          corecloneCloneInst7 ManyInst.corecloneCloneInst ManyInst self_
+          res).holds ⌝ ⦄
+
 /-- [hax_tests::specs::traits::trait_generics::Conv::conv::pre]:
     Source: 'src/specs/traits/trait_generics.rs', lines 8:4-8:32 -/
 @[reducible]
@@ -1768,6 +2008,27 @@ def specs.generics.empty.spec (T : Type _) (N : Std.Usize) (k : Std.Usize)
   specs.generics.empty T N k
   ⦃ ⇓ res => ⌜ (specs.generics.empty.post k res).holds ⌝ ⦄
 
+/-- [hax_tests::specs::generics::first::pre]:
+    Source: 'src/specs/generics.rs', lines 133:0-133:17 -/
+@[reducible]
+def specs.generics.first.pre
+  {T : Type _} {V : Type _} (HolderVOptionInst : specs.generics.Holder V
+  (core.option.Option T)) (v : V) :
+  RustM Bool
+  := do
+  ok true
+
+def
+  specs.generics.first.spec {T : Type _} {V : Type _} (HolderVOptionInst :
+                           specs.generics.Holder V (core.option.Option T))
+  (v : V)
+  (HolderVOptionInstLawful : specs.generics.Holder.Lawful V (core.option.Option
+  T) HolderVOptionInst) : Prop :=
+  (specs.generics.first.pre HolderVOptionInst v).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.generics.first HolderVOptionInst v
+  ⦃ ⇓ res => ⌜ True ⌝ ⦄
+
 /-- [hax_tests::specs::mutual::is_even::pre]:
     Source: 'src/specs/mutual.rs', lines 5:0-5:21 -/
 @[reducible]
@@ -2160,6 +2421,40 @@ def
   ⦃ ⇓ res =>
     ⌜ (specs.traits.trait_generics.use_conv.post ConvCU8Inst c res).holds ⌝ ⦄
 
+/-- [hax_tests::specs::traits::assoc_consts::use_clamp::pre]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 47:0-47:23 -/
+@[reducible]
+def specs.traits.assoc_consts.use_clamp.pre
+  {T : Type _} (BoundedInst : specs.traits.assoc_consts.Bounded T) (t : T)
+  (x : Std.U32) :
+  RustM Bool
+  := do
+  let i ← BoundedInst.MAX
+  ok (x < i)
+
+/-- [hax_tests::specs::traits::assoc_consts::use_clamp::post]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 48:0-48:27 -/
+@[reducible]
+def specs.traits.assoc_consts.use_clamp.post
+  {T : Type _} (BoundedInst : specs.traits.assoc_consts.Bounded T) (t : T)
+  (x : Std.U32) (r : Std.U32) :
+  RustM Bool
+  := do
+  let i ← BoundedInst.MAX
+  ok (r <= i)
+
+def
+  specs.traits.assoc_consts.use_clamp.spec {T : Type _} (BoundedInst :
+                                          specs.traits.assoc_consts.Bounded T)
+  (t : T) (x : Std.U32)
+  (BoundedInstLawful : specs.traits.assoc_consts.Bounded.Lawful T BoundedInst)
+  : Prop :=
+  (specs.traits.assoc_consts.use_clamp.pre BoundedInst t x).holds →
+  ⦃ ⌜ True ⌝ ⦄
+  specs.traits.assoc_consts.use_clamp BoundedInst t x
+  ⦃ ⇓ res =>
+    ⌜ (specs.traits.assoc_consts.use_clamp.post BoundedInst t x res).holds ⌝ ⦄
+
 /-- [hax_tests::specs::naming::lawful_binder::f::post]:
     Source: 'src/specs/naming.rs', lines 42:4-42:36 -/
 @[reducible]
@@ -2224,5 +2519,20 @@ def U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.spec (self : Std.U32)
   U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g self
   ⦃ ⇓ res =>
     ⌜ (U32.Insts.Hax_testsSpecsTraitsImpl_contractG.g.post self res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::traits::assoc_consts::{impl hax_tests::specs::traits::assoc_consts::Bounded for u32}::clamp::pre]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 26:4-26:42 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp.pre
+  (self_ : Std.U32) (x : Std.U32) : RustM Bool := do
+  ok (x < U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.MAX)
+
+def U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp.spec
+  (self : Std.U32) (x : Std.U32) : Prop :=
+  (U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp.pre self x).holds
+  →
+  ⦃ ⌜ True ⌝ ⦄
+  U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp self x
+  ⦃ ⇓ res => ⌜ True ⌝ ⦄
 
 end hax_tests

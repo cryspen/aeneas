@@ -56,6 +56,11 @@ def specs.contracts.__20.requires.closure := Std.U32
 @[reducible]
 def specs.contracts.__21.ensures.closure := Std.U32
 
+/-- [hax_tests::specs::contracts::Opaque]
+    Source: 'src/specs/contracts.rs', lines 148:0-148:14 -/
+@[reducible]
+def specs.contracts.Opaque := Unit
+
 /-- Trait declaration: [hax_tests::specs::generics::Val]
     Source: 'src/specs/generics.rs', lines 16:0-18:1 -/
 structure specs.generics.Val (Self : Type _) where
@@ -83,6 +88,10 @@ structure specs.generics.MyStruct (N : Std.Usize) where
 structure specs.generics.Pair (T : Type _) (N : Std.Usize) where
   fst : T
 
+/-- Trait declaration: [hax_tests::specs::generics::Holder]
+    Source: 'src/specs/generics.rs', lines 131:0-131:18 -/
+structure specs.generics.Holder (Self : Type _) (T : Type _) where
+
 /-- [hax_tests::specs::mutable_borrows::Counter]
     Source: 'src/specs/mutable_borrows.rs', lines 51:0-53:1
     Visibility: public -/
@@ -100,6 +109,19 @@ structure specs.naming.Qux (Self : Type _) where
     Visibility: public -/
 @[reducible]
 def specs.naming.lawful_impl_binder.Wrap (T : Type _) := T
+
+/-- Trait declaration: [hax_tests::specs::traits::assoc_consts::Bounded]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 9:0-18:1 -/
+structure specs.traits.assoc_consts.Bounded (Self : Type _) where
+  MAX : RustM Std.U32
+  MIN : RustM Std.U32
+  clamp : Self → Std.U32 → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::assoc_consts::Scaled]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 34:0-38:1 -/
+structure specs.traits.assoc_consts.Scaled (Self : Type _) where
+  BoundedInst : specs.traits.assoc_consts.Bounded Self
+  scale : Self → Std.U32 → RustM Std.U32
 
 /-- Trait declaration: [hax_tests::specs::traits::assoc_type_bounds::Bar]
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 9:0-12:1 -/
@@ -271,6 +293,36 @@ structure specs.traits.synthesized.Tg (Self : Type _) (T : Type _) where
 structure specs.traits.synthesized.Assoc (Self : Type _) (Self_Item : Type _)
   where
   item : Self → RustM Self_Item
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::K]
+    Source: 'src/specs/traits/synthesized.rs', lines 43:0-45:1 -/
+structure specs.traits.synthesized.K (Self : Type _) where
+  k : RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Sym]
+    Source: 'src/specs/traits/synthesized.rs', lines 50:0-53:1 -/
+structure specs.traits.synthesized.Sym (Self : Type _) where
+  KInst : specs.traits.synthesized.K Self
+  g : forall {U : Type} (KInst1 : specs.traits.synthesized.K U), Std.U32 →
+    RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Nested]
+    Source: 'src/specs/traits/synthesized.rs', lines 57:0-60:1 -/
+structure specs.traits.synthesized.Nested (Self : Type _) where
+  m : forall {V : Type} {U : Type} (TgPOptionInst : specs.traits.synthesized.Tg
+    U (core.option.Option V)), Self → U → Std.U32 → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::traits::synthesized::Many]
+    Source: 'src/specs/traits/synthesized.rs', lines 64:0-69:1 -/
+structure specs.traits.synthesized.Many (Self : Type _) where
+  corecloneCloneInst : core.clone.Clone Self
+  m : forall {A : Type} {B : Type} {C : Type} {D : Type} {E : Type} {F : Type}
+    {G : Type} {H : Type} (corecloneCloneInst1 : core.clone.Clone A)
+    (corecloneCloneInst2 : core.clone.Clone B) (corecloneCloneInst3 :
+    core.clone.Clone C) (corecloneCloneInst4 : core.clone.Clone D)
+    (corecloneCloneInst5 : core.clone.Clone E) (corecloneCloneInst6 :
+    core.clone.Clone F) (corecloneCloneInst7 : core.clone.Clone G)
+    (corecloneCloneInst8 : core.clone.Clone H), Self → RustM Std.U32
 
 /-- Trait declaration: [hax_tests::specs::traits::trait_generics::Conv]
     Source: 'src/specs/traits/trait_generics.rs', lines 6:0-9:1 -/

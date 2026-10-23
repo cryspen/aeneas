@@ -450,6 +450,15 @@ def specs.generics.from_default
   let t ← coredefaultDefaultInst.default
   ok { fst := t }
 
+/-- [hax_tests::specs::generics::first]:
+    Source: 'src/specs/generics.rs', lines 134:0-136:1 -/
+def specs.generics.first
+  {T : Type _} {V : Type _} (HolderVOptionInst : specs.generics.Holder V
+  (core.option.Option T)) (v : V) :
+  RustM Std.U32
+  := do
+  ok 0#u32
+
 /-- [hax_tests::specs::mutable_borrows::incr]:
     Source: 'src/specs/mutable_borrows.rs', lines 5:0-7:1 -/
 def specs.mutable_borrows.incr (x : Std.U32) : RustM Std.U32 := do
@@ -580,6 +589,57 @@ def specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux
     specs.naming.lawful_impl_binder.Wrap.Insts.Hax_testsSpecsNamingQux.lawful
     QuxInst
 }
+
+/-- [hax_tests::specs::traits::assoc_consts::Bounded::MIN]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 13:4-13:23 -/
+@[global_simps, irreducible, trait_default]
+def specs.traits.assoc_consts.Bounded.MIN.default (Self : Type _) : Std.U32 :=
+  0#u32
+
+/-- [hax_tests::specs::traits::assoc_consts::{impl hax_tests::specs::traits::assoc_consts::Bounded for u32}::clamp]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 27:4-29:5 -/
+def U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp
+  (self : Std.U32) (x : Std.U32) : RustM Std.U32 := do
+  ok x
+
+/-- [hax_tests::specs::traits::assoc_consts::{impl hax_tests::specs::traits::assoc_consts::Bounded for u32}::MAX]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 22:4-22:25 -/
+@[global_simps, irreducible]
+def U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.MAX : Std.U32 := 100#u32
+
+/-- Trait implementation: [hax_tests::specs::traits::assoc_consts::{impl hax_tests::specs::traits::assoc_consts::Bounded for u32}]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 21:0-30:1 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded :
+  specs.traits.assoc_consts.Bounded Std.U32 := {
+  MAX := ok U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.MAX
+  MIN := ok (specs.traits.assoc_consts.Bounded.MIN.default Std.U32)
+  clamp := U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded.clamp
+}
+
+/-- [hax_tests::specs::traits::assoc_consts::{impl hax_tests::specs::traits::assoc_consts::Scaled for u32}::scale]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 41:4-43:5 -/
+def U32.Insts.Hax_testsSpecsTraitsAssoc_constsScaled.scale
+  (self : Std.U32) (x : Std.U32) : RustM Std.U32 := do
+  ok x
+
+/-- Trait implementation: [hax_tests::specs::traits::assoc_consts::{impl hax_tests::specs::traits::assoc_consts::Scaled for u32}]
+    Source: 'src/specs/traits/assoc_consts.rs', lines 40:0-44:1 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsAssoc_constsScaled :
+  specs.traits.assoc_consts.Scaled Std.U32 := {
+  BoundedInst := U32.Insts.Hax_testsSpecsTraitsAssoc_constsBounded
+  scale := U32.Insts.Hax_testsSpecsTraitsAssoc_constsScaled.scale
+}
+
+/-- [hax_tests::specs::traits::assoc_consts::use_clamp]:
+    Source: 'src/specs/traits/assoc_consts.rs', lines 49:0-51:1 -/
+def specs.traits.assoc_consts.use_clamp
+  {T : Type _} (BoundedInst : specs.traits.assoc_consts.Bounded T) (t : T)
+  (x : Std.U32) :
+  RustM Std.U32
+  := do
+  BoundedInst.clamp t x
 
 /-- [hax_tests::specs::traits::assoc_type_bounds::{impl hax_tests::specs::traits::assoc_type_bounds::Bar for u32}::bar]:
     Source: 'src/specs/traits/assoc_type_bounds.rs', lines 27:4-29:5 -/
