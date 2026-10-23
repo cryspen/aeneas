@@ -59,3 +59,21 @@ pub mod lawful_impl_binder {
         }
     }
 }
+
+// No clash: trait type parameters named like the fields `QuxInstLawful` (of
+// the parent clause `QuxInst`) and `g_spec` of `Sub.Lawful` become
+// `QuxInstLawful1` and `g_spec1` in the structure.
+pub mod lawful_field {
+    #![allow(non_camel_case_types)]
+    use super::Qux;
+    use hax_lib::*;
+
+    #[hax_lib::attributes]
+    pub trait Sub<QuxInstLawful, g_spec>: Qux {
+        #[requires(true)]
+        fn g(&self, x: QuxInstLawful) -> u32;
+
+        #[requires(true)]
+        fn h(&self, x: g_spec) -> u32;
+    }
+}

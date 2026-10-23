@@ -238,11 +238,10 @@ let produce (ctx : TranslateCore.trans_ctx)
   (* The output type of the method [m] of [d], in the generics of its
      condition [dec]. The type parameters of the decoration fns are those of
      the trait then those of the method, as in the flattened signature of the
-     method. *)
+     method. [Error reason] if it can't be computed. *)
   let method_output_ty (d : Pure.trait_decl) (m : Pure.trait_method)
-      (dec : Pure.fun_decl) : Pure.ty =
+      (dec : Pure.fun_decl) : (Pure.ty, string) result =
     let span = m.item_meta.span in
-    let name = parent_name ctx (Method m) in
     let llbc_decl = Pure.TraitDeclId.Map.find d.def_id ctx.crate.trait_decls in
     let sg =
       (SymbolicToPureTypes.translate_flat_trait_method_sigs ctx llbc_decl
@@ -252,38 +251,40 @@ let produce (ctx : TranslateCore.trans_ctx)
     in
     let params = sg.generics in
     let args = PureUtils.generic_args_of_params dec.signature.generics in
-    [%cassert] span
-      (List.length params.types = List.length args.types
-      && List.length params.const_generics = List.length args.const_generics)
-      ("Internal error: the generics of the conditions of `" ^ name
-     ^ "` don't match those of the trait and the method");
-    let unsupported () =
-      [%craise] span
-        ("hax-specs: cannot synthesize the postcondition of `" ^ name
-       ^ "`: trait instances in its output type are not supported yet")
-    in
-    let subst : PureUtils.subst =
-      {
-        ty_subst = PureUtils.make_type_subst params.types args.types;
-        cg_subst =
-          PureUtils.make_const_generic_subst params.const_generics
-            args.const_generics;
-        tr_subst = (fun _ -> unsupported ());
-        tr_self = Self (* Unused: see [visit_Self] *);
-      }
-    in
-    let visitor =
-      object
-        inherit [_] PureUtils.subst_visitor
-        method! visit_Self _ = unsupported ()
-      end
-    in
-    let output =
-      if sg.fwd_info.effect_info.can_fail then
-        PureUtils.unwrap_result_ty span sg.output
-      else sg.output
-    in
-    visitor#visit_ty subst output
+    if
+      List.length params.types <> List.length args.types
+      || List.length params.const_generics <> List.length args.const_generics
+    then
+      Error
+        "the generics of its conditions don't match those of the trait and the \
+         method"
+    else
+      let exception Unsupported in
+      let unsupported () = raise Unsupported in
+      let subst : PureUtils.subst =
+        {
+          ty_subst = PureUtils.make_type_subst params.types args.types;
+          cg_subst =
+            PureUtils.make_const_generic_subst params.const_generics
+              args.const_generics;
+          tr_subst = (fun _ -> unsupported ());
+          tr_self = Self (* Unused: see [visit_Self] *);
+        }
+      in
+      let visitor =
+        object
+          inherit [_] PureUtils.subst_visitor
+          method! visit_Self _ = unsupported ()
+        end
+      in
+      let output =
+        if sg.fwd_info.effect_info.can_fail then
+          PureUtils.unwrap_result_ty span sg.output
+        else sg.output
+      in
+      try Ok (visitor#visit_ty subst output)
+      with Unsupported ->
+        Error "trait instances in its output type are not supported yet"
   in
   (* The contracts of the local traits, in the order of the declaration groups
      (parents first). Every local trait gets one, even without annotated
@@ -306,9 +307,10 @@ let produce (ctx : TranslateCore.trans_ctx)
       Some { method_id = m.method_id; pre = Some pre; post = Some post }
     in
     let warn_drop reason =
-      [%warn] m.item_meta.span
-        ("hax-specs: dropping the contract of trait method `"
-       ^ parent_name ctx (Method m) ^ "`: " ^ reason);
+      HaxSpecs.warn_dropped (fun () ->
+          [%warn] m.item_meta.span
+            ("hax-specs: dropping the contract of trait method `"
+           ^ parent_name ctx (Method m) ^ "`: " ^ reason));
       None
     in
     (* Only the conditions without annotation are synthesized: if an annotated
@@ -320,26 +322,34 @@ let produce (ctx : TranslateCore.trans_ctx)
     | _, post when dropped a.ensures_uid post ->
         warn_drop "its #[ensures] is invalid"
     | pre, post -> (
-        (* A failure to synthesize a condition only drops the contract of [m] *)
-        try
-          match (pre, post) with
-          | None, None -> None
-          | Some pre, Some post -> spec pre post
-          | None, Some post ->
-              (* The inputs of [post] but the result *)
-              let inputs =
-                fst (Collections.List.pop_last (cond_inputs m post))
-              in
-              spec (synthesize_cond m "pre" post inputs) post
-          | Some pre, None ->
-              let ty = method_output_ty d m pre in
-              let res : Pure.tpat =
-                { pat = PBound ({ basename = Some "res"; ty }, None); ty }
-              in
-              let inputs = cond_inputs m pre @ [ res ] in
-              spec pre (synthesize_cond m "post" pre inputs)
-        with Errors.CFailure _ ->
-          warn_drop "a missing condition could not be synthesized")
+        (* A failure to synthesize a condition only drops the contract of [m]
+           (a [CFailure] was reported) *)
+        let synthesized =
+          try
+            match (pre, post) with
+            | None, None -> Ok None
+            | Some pre, Some post -> Ok (spec pre post)
+            | None, Some post ->
+                (* The inputs of [post] but the result *)
+                let inputs =
+                  fst (Collections.List.pop_last (cond_inputs m post))
+                in
+                Ok (spec (synthesize_cond m "pre" post inputs) post)
+            | Some pre, None ->
+                Result.map
+                  (fun ty ->
+                    let res : Pure.tpat =
+                      { pat = PBound ({ basename = Some "res"; ty }, None); ty }
+                    in
+                    let inputs = cond_inputs m pre @ [ res ] in
+                    spec pre (synthesize_cond m "post" pre inputs))
+                  (method_output_ty d m pre)
+          with Errors.CFailure _ ->
+            Error "a missing condition could not be synthesized"
+        in
+        match synthesized with
+        | Ok s -> s
+        | Error reason -> warn_drop reason)
   in
   let local_trait_decls =
     List.concat_map
@@ -488,8 +498,9 @@ let produce (ctx : TranslateCore.trans_ctx)
                     "unsupported or invalid annotation, or part of a dropped \
                      contract"]
               else
-                [%warn] dec.item_meta.span
-                  (msg "it is attached to no translated item")
+                HaxSpecs.warn_dropped (fun () ->
+                    [%warn] dec.item_meta.span
+                      (msg "it is attached to no translated item"))
           | _ -> ())
         dec.item_meta.attr_info.attributes
   in

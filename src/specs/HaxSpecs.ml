@@ -50,3 +50,9 @@ and proof = Admitted [@@deriving show]
 
 (** The extra Lean modules hax specs need to elaborate *)
 let required_imports () : string list = [ "Hax" ]
+
+(** Run [warn], a warning about something the hax specs drop. Under
+    [-warnings-as-errors], the warning raises a [CFailure] once the error is
+    recorded: we ignore it, so that only the item is dropped. *)
+let warn_dropped (warn : unit -> unit) : unit =
+  try warn () with Errors.CFailure _ -> ()

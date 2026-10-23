@@ -31,7 +31,15 @@ let register_names (ctx : ExtractBase.extraction_ctx) :
       | HaxProof ho -> ExtractHaxSpecs.register_obligation_names ctx o.id ho)
     ctx ctx.proof_obligations
 
-let extract_specs ctx fmt = List.iter (emit_spec ctx fmt) ctx.specs
+(** Apply [emit] to [x], ignoring a [CFailure]: it was normally reported when
+    raised, and only drops the entry [x] (whose output may be partial) *)
+let skip_on_failure (emit : 'a -> unit) (x : 'a) : unit =
+  try emit x with Errors.CFailure _ -> ()
+
+let extract_specs ctx fmt =
+  List.iter (skip_on_failure (emit_spec ctx fmt)) ctx.specs
 
 let extract_proof_obligations ctx fmt =
-  List.iter (emit_proof_obligation ctx fmt) ctx.proof_obligations
+  List.iter
+    (skip_on_failure (emit_proof_obligation ctx fmt))
+    ctx.proof_obligations
