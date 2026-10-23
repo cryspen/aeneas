@@ -83,7 +83,7 @@ EOF
             ;;
     esac
 
-    (cd "$tests" && cargo hax extract "$scenario")
+    (cd "$tests" && cargo hax extract -v "$scenario")
 }
 
 verify() {
