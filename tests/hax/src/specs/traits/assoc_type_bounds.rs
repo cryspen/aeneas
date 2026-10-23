@@ -51,3 +51,21 @@ impl<T: Bar + Copy> Container for Box1<T> {
 fn first_bar<C: Container>(c: &C) -> u32 {
     c.first().bar()
 }
+
+// `get` is annotated so that its Lawful field says it doesn't fail
+#[hax_lib::attributes]
+trait Source {
+    type Item;
+
+    #[ensures(|_| true)]
+    fn get(&self) -> Self::Item;
+}
+
+// A bound on an associated type in a `where` clause
+#[ensures(|res| res < 10)]
+fn proj<S: Source>(s: &S) -> u32
+where
+    S::Item: Bar,
+{
+    s.get().bar()
+}

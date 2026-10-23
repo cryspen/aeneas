@@ -89,4 +89,25 @@ theorem
   -- `Bar.bar.post` and `first_bar.post` are both `ok (res < 10#u32)`: defeq
   mvcgen [h1, h2]
 
+theorem
+  specs.traits.assoc_type_bounds.proj.spec.proof {S : Type} {Clause0_Item :
+                                                Type} (SourceInst :
+                                                specs.traits.assoc_type_bounds.Source
+                                                S Clause0_Item) (BarInst :
+                                                specs.traits.assoc_type_bounds.Bar
+                                                Clause0_Item) (s : S)
+  (SourceInstLawful : specs.traits.assoc_type_bounds.Source.Lawful S
+  Clause0_Item SourceInst)
+  (BarInstLawful : specs.traits.assoc_type_bounds.Bar.Lawful Clause0_Item
+  BarInst) :
+  specs.traits.assoc_type_bounds.proj.spec SourceInst BarInst s
+  SourceInstLawful BarInstLawful
+  := by
+  unfold specs.traits.assoc_type_bounds.proj.spec specs.traits.assoc_type_bounds.proj
+  /- The bound `S::Item: Bar` is a clause of `proj`, with its own Lawful
+     binder -/
+  have h1 := SourceInstLawful.get_spec
+  have h2 := BarInstLawful.bar_spec
+  mvcgen [h1, h2]
+
 end hax_tests

@@ -126,4 +126,30 @@ theorem
     simp [hfy] at *
     agrind
 
+theorem
+  specs.traits.generic_impl.Wrapper.get.spec.proof {T : Type} (FooInst :
+                                                  specs.traits.generic_impl.Foo
+                                                  T)
+  (self : specs.traits.generic_impl.Wrapper T)
+  (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst) :
+  specs.traits.generic_impl.Wrapper.get.spec FooInst self FooInstLawful
+  := by
+  unfold specs.traits.generic_impl.Wrapper.get.spec specs.traits.generic_impl.Wrapper.get
+  -- The clause of the `impl` block comes with its Lawful binder
+  have h := FooInstLawful.f_spec
+  mvcgen [h]
+
+theorem Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo.Lawful :
+  specs.traits.generic_impl.Foo.Lawful Std.U64
+  Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo
+  where
+  f_spec := by
+    intro self _
+    mvcgen [Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo.f]
+    rename_i r hr
+    simp only [specs.traits.generic_impl.Foo.f.post]
+    have : self.val % 11 < 11 := Nat.mod_lt _ (by decide)
+    simp [hr]
+    scalar_tac
+
 end hax_tests

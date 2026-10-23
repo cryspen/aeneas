@@ -11,11 +11,13 @@ import HaxTests.Verification.Traits.AssocTypeBounds
 import HaxTests.Verification.Traits.Basic
 import HaxTests.Verification.Traits.BlanketImpl
 import HaxTests.Verification.Traits.BuiltinBound
+import HaxTests.Verification.Traits.ConstGenerics
 import HaxTests.Verification.Traits.DefaultMethods
 import HaxTests.Verification.Traits.Diamond
 import HaxTests.Verification.Traits.GenericImpl
 import HaxTests.Verification.Traits.ImplContract
 import HaxTests.Verification.Traits.MethodGenerics
+import HaxTests.Verification.Traits.Modules
 import HaxTests.Verification.Traits.MutSelf
 import HaxTests.Verification.Traits.Supertraits
 import HaxTests.Verification.Traits.TraitGenerics
