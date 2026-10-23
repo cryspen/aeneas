@@ -513,7 +513,8 @@ let () =
   if Option.is_some !opt_spec_config && not (backend () = Lean) then
     fail_with_error "The -specs option is valid only for the Lean backend";
   if spec_config_is_hax () && not !core_models_lib then
-    fail_with_error "The -specs hax option requires the -core-models-lib option";
+    fail_with_error_no_doc
+      "The -specs hax option requires the -core-models-lib option";
 
   check_arg_implies !diagnose_detailed "-diagnose-detailed"
     !diagnose_micro_passes "-diagnose-micro-passes";

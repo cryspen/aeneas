@@ -66,7 +66,6 @@ pub mod lawful_impl_binder {
 pub mod lawful_field {
     #![allow(non_camel_case_types)]
     use super::Qux;
-    use hax_lib::*;
 
     #[hax_lib::attributes]
     pub trait Sub<QuxInstLawful, g_spec>: Qux {

@@ -15,3 +15,5 @@ mod impl_contract;
 mod trait_generics;
 mod synthesized;
 mod assoc_consts;
+mod const_generics;
+mod modules;

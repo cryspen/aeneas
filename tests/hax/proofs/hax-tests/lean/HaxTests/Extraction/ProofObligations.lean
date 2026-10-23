@@ -185,6 +185,22 @@ theorem
   specs.traits.builtin_bound.WU32.Insts.Hax_testsSpecsTraitsBuiltin_boundDup
   := by sorry
 
+theorem U32.Insts.Hax_testsSpecsTraitsConst_genericsCg4.Lawful :
+  specs.traits.const_generics.Cg.Lawful Std.U32 4#usize
+  U32.Insts.Hax_testsSpecsTraitsConst_genericsCg4
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsConst_genericsCg8.Lawful :
+  specs.traits.const_generics.Cg.Lawful Std.U32 8#usize
+  U32.Insts.Hax_testsSpecsTraitsConst_genericsCg8
+  := by sorry
+
+theorem ArrayU32N.Insts.Hax_testsSpecsTraitsConst_genericsCg.Lawful (N :
+  Std.Usize) :
+  specs.traits.const_generics.Cg.Lawful (Array Std.U32 N) N
+  (ArrayU32N.Insts.Hax_testsSpecsTraitsConst_genericsCg N)
+  := by sorry
+
 theorem U32.Insts.Hax_testsSpecsTraitsDefault_methodsD.Lawful :
   specs.traits.default_methods.D.Lawful Std.U32
   U32.Insts.Hax_testsSpecsTraitsDefault_methodsD
@@ -256,6 +272,11 @@ theorem
   specs.traits.generic_impl.SingleU64.Insts.Hax_testsSpecsTraitsGeneric_implSub
   := by sorry
 
+theorem Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo.Lawful :
+  specs.traits.generic_impl.Foo.Lawful Std.U64
+  Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo
+  := by sorry
+
 theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.Lawful :
   specs.traits.impl_contract.Foo.Lawful Std.U32
   U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo
@@ -274,6 +295,18 @@ theorem U32.Insts.Hax_testsSpecsTraitsMethod_genericsBar.Lawful :
 theorem U32.Insts.Hax_testsSpecsTraitsMethod_genericsFoo.Lawful :
   specs.traits.method_generics.Foo.Lawful Std.U32
   U32.Insts.Hax_testsSpecsTraitsMethod_genericsFoo
+  := by sorry
+
+theorem specs.traits.modules.c.S.Insts.Hax_testsSpecsTraitsModulesABT.Lawful :
+  specs.traits.modules.a.b.T.Lawful specs.traits.modules.c.S
+  specs.traits.modules.c.S.Insts.Hax_testsSpecsTraitsModulesABT
+  := by sorry
+
+theorem specs.traits.modules.W.Insts.Hax_testsSpecsTraitsModulesABT.Lawful {U :
+  Type _} (abTInst : specs.traits.modules.a.b.T U)
+  (abTInstLawful : specs.traits.modules.a.b.T.Lawful U abTInst) :
+  specs.traits.modules.a.b.T.Lawful (specs.traits.modules.W U)
+  (specs.traits.modules.W.Insts.Hax_testsSpecsTraitsModulesABT abTInst)
   := by sorry
 
 theorem U32.Insts.Hax_testsSpecsTraitsMut_selfCounter.Lawful :
@@ -299,6 +332,11 @@ theorem U8.Insts.Hax_testsSpecsTraitsSupertraitsCc.Lawful :
 theorem U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU8.Lawful :
   specs.traits.trait_generics.Conv.Lawful Std.U32 Std.U8
   U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU8
+  := by sorry
+
+theorem U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16.Lawful :
+  specs.traits.trait_generics.Conv.Lawful Std.U32 Std.U16
+  U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16
   := by sorry
 
 theorem U32.Insts.Hax_testsSpecsTraitsUnannotated_subA.Lawful :
@@ -587,6 +625,21 @@ theorem
   := by sorry
 
 theorem
+  specs.traits.assoc_type_bounds.proj.spec.proof {S : Type _} {Clause0_Item :
+                                                Type _} (SourceInst :
+                                                specs.traits.assoc_type_bounds.Source
+                                                S Clause0_Item) (BarInst :
+                                                specs.traits.assoc_type_bounds.Bar
+                                                Clause0_Item) (s : S)
+  (SourceInstLawful : specs.traits.assoc_type_bounds.Source.Lawful S
+  Clause0_Item SourceInst)
+  (BarInstLawful : specs.traits.assoc_type_bounds.Bar.Lawful Clause0_Item
+  BarInst) :
+  specs.traits.assoc_type_bounds.proj.spec SourceInst BarInst s
+  SourceInstLawful BarInstLawful
+  := by sorry
+
+theorem
   specs.traits.builtin_bound.dup.spec.proof {T : Type _} (corecloneCloneInst :
                                            core.clone.Clone T) (x : T)
   (corecloneCloneInstLawful : core.clone.Clone.Lawful T corecloneCloneInst) :
@@ -604,6 +657,20 @@ theorem
   := by sorry
 
 theorem
+  specs.traits.trait_generics.use_both.spec.proof {C : Type _} (ConvCU8Inst :
+                                                 specs.traits.trait_generics.Conv
+                                                 C Std.U8) (ConvCU16Inst :
+                                                 specs.traits.trait_generics.Conv
+                                                 C Std.U16) (c : C)
+  (ConvCU8InstLawful : specs.traits.trait_generics.Conv.Lawful C Std.U8
+  ConvCU8Inst)
+  (ConvCU16InstLawful : specs.traits.trait_generics.Conv.Lawful C Std.U16
+  ConvCU16Inst) :
+  specs.traits.trait_generics.use_both.spec ConvCU8Inst ConvCU16Inst c
+  ConvCU8InstLawful ConvCU16InstLawful
+  := by sorry
+
+theorem
   specs.traits.assoc_consts.use_clamp.spec.proof {T : Type _} (BoundedInst :
                                                 specs.traits.assoc_consts.Bounded
                                                 T) (t : T) (x : Std.U32)
@@ -612,11 +679,35 @@ theorem
   := by sorry
 
 theorem
+  specs.traits.const_generics.use_cg.spec.proof {T : Type _} (CgT4Inst :
+                                               specs.traits.const_generics.Cg T
+                                               4#usize) (t : T) (x : Std.Usize)
+  (CgT4InstLawful : specs.traits.const_generics.Cg.Lawful T 4#usize CgT4Inst) :
+  specs.traits.const_generics.use_cg.spec CgT4Inst t x CgT4InstLawful
+  := by sorry
+
+theorem
+  specs.traits.modules.impl_arg.spec.proof {T0 : Type _} (abTInst :
+                                          specs.traits.modules.a.b.T T0)
+  (x : T0) (abTInstLawful : specs.traits.modules.a.b.T.Lawful T0 abTInst) :
+  specs.traits.modules.impl_arg.spec abTInst x abTInstLawful
+  := by sorry
+
+theorem
   specs.naming.lawful_binder.f.spec.proof {T : Type _} (QuxInst :
                                          specs.naming.Qux T)
   (QuxInstLawful1 : T) (x : Std.U32)
   (QuxInstLawful : specs.naming.Qux.Lawful T QuxInst) :
   specs.naming.lawful_binder.f.spec QuxInst QuxInstLawful1 x QuxInstLawful
+  := by sorry
+
+theorem
+  specs.traits.generic_impl.Wrapper.get.spec.proof {T : Type _} (FooInst :
+                                                  specs.traits.generic_impl.Foo
+                                                  T)
+  (self : specs.traits.generic_impl.Wrapper T)
+  (FooInstLawful : specs.traits.generic_impl.Foo.Lawful T FooInst) :
+  specs.traits.generic_impl.Wrapper.get.spec FooInst self FooInstLawful
   := by sorry
 
 theorem U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f.spec.proof

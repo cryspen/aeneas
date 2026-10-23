@@ -63,3 +63,19 @@ impl Sub for Single<u64> {
 fn k<T: Foo, U: Sub>(x: &T, y: &U) -> u64 {
     x.f() + y.s()
 }
+
+// An inherent method whose `impl` block has a clause on the annotated trait
+#[hax_lib::attributes]
+impl<T: Foo> Wrapper<T> {
+    #[ensures(|res| res <= 10)]
+    fn get(&self) -> u64 {
+        self.inner.f()
+    }
+}
+
+// An impl for a reference type
+impl Foo for &u64 {
+    fn f(&self) -> u64 {
+        **self % 11
+    }
+}

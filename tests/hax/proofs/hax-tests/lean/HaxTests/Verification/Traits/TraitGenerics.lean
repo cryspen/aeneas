@@ -51,4 +51,39 @@ theorem
   have hc := ConvCU8InstLawful.conv_spec
   mvcgen [hc]
 
+theorem U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16.Lawful :
+  specs.traits.trait_generics.Conv.Lawful Std.U32 Std.U16
+  U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16
+  where
+  conv_spec := by
+    intro self t _
+    mvcgen [U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16.conv]
+
+theorem
+  specs.traits.trait_generics.use_both.spec.proof {C : Type} (ConvCU8Inst :
+                                                 specs.traits.trait_generics.Conv
+                                                 C Std.U8) (ConvCU16Inst :
+                                                 specs.traits.trait_generics.Conv
+                                                 C Std.U16) (c : C)
+  (ConvCU8InstLawful : specs.traits.trait_generics.Conv.Lawful C Std.U8
+  ConvCU8Inst)
+  (ConvCU16InstLawful : specs.traits.trait_generics.Conv.Lawful C Std.U16
+  ConvCU16Inst) :
+  specs.traits.trait_generics.use_both.spec ConvCU8Inst ConvCU16Inst c
+  ConvCU8InstLawful ConvCU16InstLawful
+  := by
+  unfold specs.traits.trait_generics.use_both.spec
+    specs.traits.trait_generics.use_both
+  -- One Lawful binder per argument of `Conv`
+  have h8 := ConvCU8InstLawful.conv_spec
+  have h16 := ConvCU16InstLawful.conv_spec
+  mvcgen [h8, h16]
+  · -- both results are `< 10`
+    simp [specs.traits.trait_generics.Conv.conv.post,
+      specs.traits.trait_generics.use_both.post] at *
+    agrind
+  · -- no overflow
+    simp [specs.traits.trait_generics.Conv.conv.post] at *
+    agrind
+
 end hax_tests

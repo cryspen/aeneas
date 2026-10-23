@@ -710,6 +710,17 @@ def specs.traits.assoc_type_bounds.first_bar
   let t ← ContainerInst.first c
   ContainerInst.BarInst.bar t
 
+/-- [hax_tests::specs::traits::assoc_type_bounds::proj]:
+    Source: 'src/specs/traits/assoc_type_bounds.rs', lines 66:0-71:1 -/
+def specs.traits.assoc_type_bounds.proj
+  {S : Type _} {Clause0_Item : Type _} (SourceInst :
+  specs.traits.assoc_type_bounds.Source S Clause0_Item) (BarInst :
+  specs.traits.assoc_type_bounds.Bar Clause0_Item) (s : S) :
+  RustM Std.U32
+  := do
+  let t ← SourceInst.get s
+  BarInst.bar t
+
 /-- [hax_tests::specs::traits::basic::{impl hax_tests::specs::traits::basic::Foo for u64}::zero]:
     Source: 'src/specs/traits/basic.rs', lines 35:4-37:5 -/
 def U64.Insts.Hax_testsSpecsTraitsBasicFoo.zero : RustM Std.U64 := do
@@ -953,6 +964,59 @@ def specs.traits.builtin_bound.WU32.Insts.Hax_testsSpecsTraitsBuiltin_boundDup
     specs.traits.builtin_bound.WU32.Insts.Hax_testsSpecsTraitsBuiltin_boundDup.dup
 }
 
+/-- [hax_tests::specs::traits::const_generics::{impl hax_tests::specs::traits::const_generics::Cg<4usize> for u32}::f]:
+    Source: 'src/specs/traits/const_generics.rs', lines 15:4-17:5 -/
+def U32.Insts.Hax_testsSpecsTraitsConst_genericsCg4.f
+  (self : Std.U32) (x : Std.Usize) : RustM Std.Usize := do
+  ok x
+
+/-- Trait implementation: [hax_tests::specs::traits::const_generics::{impl hax_tests::specs::traits::const_generics::Cg<4usize> for u32}]
+    Source: 'src/specs/traits/const_generics.rs', lines 14:0-18:1 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsConst_genericsCg4 :
+  specs.traits.const_generics.Cg Std.U32 4#usize := {
+  f := U32.Insts.Hax_testsSpecsTraitsConst_genericsCg4.f
+}
+
+/-- [hax_tests::specs::traits::const_generics::{impl hax_tests::specs::traits::const_generics::Cg<8usize> for u32}::f]:
+    Source: 'src/specs/traits/const_generics.rs', lines 21:4-23:5 -/
+def U32.Insts.Hax_testsSpecsTraitsConst_genericsCg8.f
+  (self : Std.U32) (x : Std.Usize) : RustM Std.Usize := do
+  x + 1#usize
+
+/-- Trait implementation: [hax_tests::specs::traits::const_generics::{impl hax_tests::specs::traits::const_generics::Cg<8usize> for u32}]
+    Source: 'src/specs/traits/const_generics.rs', lines 20:0-24:1 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsConst_genericsCg8 :
+  specs.traits.const_generics.Cg Std.U32 8#usize := {
+  f := U32.Insts.Hax_testsSpecsTraitsConst_genericsCg8.f
+}
+
+/-- [hax_tests::specs::traits::const_generics::{impl hax_tests::specs::traits::const_generics::Cg<N> for [u32; N]}::f]:
+    Source: 'src/specs/traits/const_generics.rs', lines 27:4-29:5 -/
+def ArrayU32N.Insts.Hax_testsSpecsTraitsConst_genericsCg.f
+  {N : Std.Usize} (self : Array Std.U32 N) (_x : Std.Usize) :
+  RustM Std.Usize
+  := do
+  ok N
+
+/-- Trait implementation: [hax_tests::specs::traits::const_generics::{impl hax_tests::specs::traits::const_generics::Cg<N> for [u32; N]}]
+    Source: 'src/specs/traits/const_generics.rs', lines 26:0-30:1 -/
+@[reducible]
+def ArrayU32N.Insts.Hax_testsSpecsTraitsConst_genericsCg (N : Std.Usize) :
+  specs.traits.const_generics.Cg (Array Std.U32 N) N := {
+  f := ArrayU32N.Insts.Hax_testsSpecsTraitsConst_genericsCg.f
+}
+
+/-- [hax_tests::specs::traits::const_generics::use_cg]:
+    Source: 'src/specs/traits/const_generics.rs', lines 34:0-36:1 -/
+def specs.traits.const_generics.use_cg
+  {T : Type _} (CgT4Inst : specs.traits.const_generics.Cg T 4#usize) 
+  (t : T) (x : Std.Usize) :
+  RustM Std.Usize
+  := do
+  CgT4Inst.f t x
+
 /-- [hax_tests::specs::traits::default_methods::D::next]:
     Source: 'src/specs/traits/default_methods.rs', lines 12:4-14:5 -/
 @[trait_default]
@@ -1193,6 +1257,29 @@ def specs.traits.generic_impl.k
   let i1 ← SubInst.s y
   i + i1
 
+/-- [hax_tests::specs::traits::generic_impl::{hax_tests::specs::traits::generic_impl::Wrapper<T>}::get]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 71:4-73:5 -/
+def specs.traits.generic_impl.Wrapper.get
+  {T : Type _} (FooInst : specs.traits.generic_impl.Foo T)
+  (self : specs.traits.generic_impl.Wrapper T) :
+  RustM Std.U64
+  := do
+  FooInst.f self.inner
+
+/-- [hax_tests::specs::traits::generic_impl::{impl hax_tests::specs::traits::generic_impl::Foo for &'_0 u64}::f]:
+    Source: 'src/specs/traits/generic_impl.rs', lines 78:4-80:5 -/
+def Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo.f
+  (self : Std.U64) : RustM Std.U64 := do
+  self % 11#u64
+
+/-- Trait implementation: [hax_tests::specs::traits::generic_impl::{impl hax_tests::specs::traits::generic_impl::Foo for &'_0 u64}]
+    Source: 'src/specs/traits/generic_impl.rs', lines 77:0-81:1 -/
+@[reducible]
+def Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo :
+  specs.traits.generic_impl.Foo Std.U64 := {
+  f := Shared0U64.Insts.Hax_testsSpecsTraitsGeneric_implFoo.f
+}
+
 /-- [hax_tests::specs::traits::impl_contract::{impl hax_tests::specs::traits::impl_contract::Foo for u32}::f]:
     Source: 'src/specs/traits/impl_contract.rs', lines 16:4-18:5 -/
 def U32.Insts.Hax_testsSpecsTraitsImpl_contractFoo.f
@@ -1252,6 +1339,48 @@ def U32.Insts.Hax_testsSpecsTraitsMethod_genericsFoo :
   specs.traits.method_generics.Foo Std.U32 := {
   f := fun {U : Type} (BarInst : specs.traits.method_generics.Bar U) =>
     U32.Insts.Hax_testsSpecsTraitsMethod_genericsFoo.f BarInst
+}
+
+/-- [hax_tests::specs::traits::modules::c::{impl hax_tests::specs::traits::modules::a::b::T for hax_tests::specs::traits::modules::c::S}::t]:
+    Source: 'src/specs/traits/modules.rs', lines 21:8-23:9
+    Visibility: public -/
+def specs.traits.modules.c.S.Insts.Hax_testsSpecsTraitsModulesABT.t
+  (self : specs.traits.modules.c.S) : RustM Std.U32 := do
+  ok 0#u32
+
+/-- Trait implementation: [hax_tests::specs::traits::modules::c::{impl hax_tests::specs::traits::modules::a::b::T for hax_tests::specs::traits::modules::c::S}]
+    Source: 'src/specs/traits/modules.rs', lines 20:4-24:5 -/
+@[reducible]
+def specs.traits.modules.c.S.Insts.Hax_testsSpecsTraitsModulesABT :
+  specs.traits.modules.a.b.T specs.traits.modules.c.S := {
+  t := specs.traits.modules.c.S.Insts.Hax_testsSpecsTraitsModulesABT.t
+}
+
+/-- [hax_tests::specs::traits::modules::impl_arg]:
+    Source: 'src/specs/traits/modules.rs', lines 29:0-31:1 -/
+def specs.traits.modules.impl_arg
+  {T0 : Type _} (abTInst : specs.traits.modules.a.b.T T0) (x : T0) :
+  RustM Std.U32
+  := do
+  abTInst.t x
+
+/-- [hax_tests::specs::traits::modules::{impl hax_tests::specs::traits::modules::a::b::T for hax_tests::specs::traits::modules::W<U>}::t]:
+    Source: 'src/specs/traits/modules.rs', lines 40:4-42:5
+    Visibility: public -/
+def specs.traits.modules.W.Insts.Hax_testsSpecsTraitsModulesABT.t
+  {U : Type _} (abTInst : specs.traits.modules.a.b.T U)
+  (self : specs.traits.modules.W U) :
+  RustM Std.U32
+  := do
+  abTInst.t self
+
+/-- Trait implementation: [hax_tests::specs::traits::modules::{impl hax_tests::specs::traits::modules::a::b::T for hax_tests::specs::traits::modules::W<U>}]
+    Source: 'src/specs/traits/modules.rs', lines 36:0-43:1 -/
+@[reducible]
+def specs.traits.modules.W.Insts.Hax_testsSpecsTraitsModulesABT {U : Type _}
+  (abTInst : specs.traits.modules.a.b.T U) : specs.traits.modules.a.b.T
+  (specs.traits.modules.W U) := {
+  t := specs.traits.modules.W.Insts.Hax_testsSpecsTraitsModulesABT.t abTInst
 }
 
 /-- [hax_tests::specs::traits::mut_self::{impl hax_tests::specs::traits::mut_self::Counter for u32}::incr]:
@@ -1338,13 +1467,13 @@ def specs.traits.supertraits.via_u8 (x : Std.U8) : RustM Std.Usize := do
   i - i1
 
 /-- [hax_tests::specs::traits::trait_generics::{impl hax_tests::specs::traits::trait_generics::Conv<u8> for u32}::conv]:
-    Source: 'src/specs/traits/trait_generics.rs', lines 12:4-14:5 -/
+    Source: 'src/specs/traits/trait_generics.rs', lines 13:4-15:5 -/
 def U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU8.conv
   (self : Std.U32) (_t : Std.U8) : RustM Std.U32 := do
   ok 0#u32
 
 /-- Trait implementation: [hax_tests::specs::traits::trait_generics::{impl hax_tests::specs::traits::trait_generics::Conv<u8> for u32}]
-    Source: 'src/specs/traits/trait_generics.rs', lines 11:0-15:1 -/
+    Source: 'src/specs/traits/trait_generics.rs', lines 12:0-16:1 -/
 @[reducible]
 def U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU8 :
   specs.traits.trait_generics.Conv Std.U32 Std.U8 := {
@@ -1352,13 +1481,38 @@ def U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU8 :
 }
 
 /-- [hax_tests::specs::traits::trait_generics::use_conv]:
-    Source: 'src/specs/traits/trait_generics.rs', lines 18:0-20:1 -/
+    Source: 'src/specs/traits/trait_generics.rs', lines 19:0-21:1 -/
 def specs.traits.trait_generics.use_conv
   {C : Type _} (ConvCU8Inst : specs.traits.trait_generics.Conv C Std.U8)
   (c : C) :
   RustM Std.U32
   := do
   ConvCU8Inst.conv c 0#u8
+
+/-- [hax_tests::specs::traits::trait_generics::{impl hax_tests::specs::traits::trait_generics::Conv<u16> for u32}::conv]:
+    Source: 'src/specs/traits/trait_generics.rs', lines 24:4-26:5 -/
+def U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16.conv
+  (self : Std.U32) (_t : Std.U16) : RustM Std.U32 := do
+  ok 1#u32
+
+/-- Trait implementation: [hax_tests::specs::traits::trait_generics::{impl hax_tests::specs::traits::trait_generics::Conv<u16> for u32}]
+    Source: 'src/specs/traits/trait_generics.rs', lines 23:0-27:1 -/
+@[reducible]
+def U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16 :
+  specs.traits.trait_generics.Conv Std.U32 Std.U16 := {
+  conv := U32.Insts.Hax_testsSpecsTraitsTrait_genericsConvU16.conv
+}
+
+/-- [hax_tests::specs::traits::trait_generics::use_both]:
+    Source: 'src/specs/traits/trait_generics.rs', lines 31:0-33:1 -/
+def specs.traits.trait_generics.use_both
+  {C : Type _} (ConvCU8Inst : specs.traits.trait_generics.Conv C Std.U8)
+  (ConvCU16Inst : specs.traits.trait_generics.Conv C Std.U16) (c : C) :
+  RustM Std.U32
+  := do
+  let i ← ConvCU8Inst.conv c 0#u8
+  let i1 ← ConvCU16Inst.conv c 0#u16
+  i + i1
 
 /-- [hax_tests::specs::traits::unannotated_sub::{impl hax_tests::specs::traits::unannotated_sub::A for u32}::a]:
     Source: 'src/specs/traits/unannotated_sub.rs', lines 17:4-19:5 -/

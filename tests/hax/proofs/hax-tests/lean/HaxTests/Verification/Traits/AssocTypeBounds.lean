@@ -50,6 +50,8 @@ theorem
     -- the post calls `bar` on the result, through the impl's `BarInst`
     mvcgen [specs.traits.assoc_type_bounds.One.Insts.Hax_testsSpecsTraitsAssoc_type_boundsContainerU32.first,
       U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar.bar]
+    simp [specs.traits.assoc_type_bounds.Container.first.post,
+      U32.Insts.Hax_testsSpecsTraitsAssoc_type_boundsBar.bar]
 
 theorem
   specs.traits.assoc_type_bounds.Box1.Insts.Hax_testsSpecsTraitsAssoc_type_boundsContainer.Lawful
@@ -68,9 +70,9 @@ theorem
     /- `first` is the identity on `Box1 T = T`, and the post calls
        `BarInst1.bar` on it: evaluate it once through `BarInst1Lawful`. -/
     obtain ⟨i, hb, hi⟩ :=
-      Aeneas.Std.WP.triple_iff_exists_ok.1 (BarInst1Lawful.bar_spec self hpre)
+      Aeneas.Std.triple_iff_exists_ok.1 (BarInst1Lawful.bar_spec self hpre)
     mvcgen [specs.traits.assoc_type_bounds.Box1.Insts.Hax_testsSpecsTraitsAssoc_type_boundsContainer.first]
-    simpa [hb] using hi
+    simpa [hb, specs.traits.assoc_type_bounds.Container.first.post] using hi
 
 theorem
   specs.traits.assoc_type_bounds.first_bar.spec.proof {C : Type} {Clause0_Item
@@ -87,6 +89,27 @@ theorem
   have h1 := ContainerInstLawful.first_spec
   have h2 := ContainerInstLawful.BarInstLawful.bar_spec
   -- `Bar.bar.post` and `first_bar.post` are both `ok (res < 10#u32)`: defeq
+  mvcgen [h1, h2]
+
+theorem
+  specs.traits.assoc_type_bounds.proj.spec.proof {S : Type} {Clause0_Item :
+                                                Type} (SourceInst :
+                                                specs.traits.assoc_type_bounds.Source
+                                                S Clause0_Item) (BarInst :
+                                                specs.traits.assoc_type_bounds.Bar
+                                                Clause0_Item) (s : S)
+  (SourceInstLawful : specs.traits.assoc_type_bounds.Source.Lawful S
+  Clause0_Item SourceInst)
+  (BarInstLawful : specs.traits.assoc_type_bounds.Bar.Lawful Clause0_Item
+  BarInst) :
+  specs.traits.assoc_type_bounds.proj.spec SourceInst BarInst s
+  SourceInstLawful BarInstLawful
+  := by
+  unfold specs.traits.assoc_type_bounds.proj.spec specs.traits.assoc_type_bounds.proj
+  /- The bound `S::Item: Bar` is a clause of `proj`, with its own Lawful
+     binder -/
+  have h1 := SourceInstLawful.get_spec
+  have h2 := BarInstLawful.bar_spec
   mvcgen [h1, h2]
 
 end hax_tests
