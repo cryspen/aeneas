@@ -15,6 +15,21 @@ impl Size for () {
     }
 }
 
+// A unit argument of a trait method: also passed as `()` in its `Lawful` field
+#[hax_lib::attributes]
+trait UnitArg {
+    #[requires(true)]
+    fn m(&self, x: ()) -> u32;
+}
+
+// An unnamed argument of a trait method: named after its type in its `Lawful`
+// field, as in the functions with a body
+#[hax_lib::attributes]
+trait UnnamedArg {
+    #[requires(true)]
+    fn m(&self, _: u32) -> u32;
+}
+
 #[ensures(|result| result == 0)]
 fn named(x: ()) -> usize {
     0

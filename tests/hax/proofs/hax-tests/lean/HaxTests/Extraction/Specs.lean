@@ -36,6 +36,68 @@ namespace hax_tests
 structure specs.arguments.Size.Lawful (Self : Type _) (SizeInst :
   specs.arguments.Size Self) : Prop
 
+/-- [hax_tests::specs::arguments::UnitArg::m::pre]:
+    Source: 'src/specs/arguments.rs', lines 19:0-19:22 -/
+@[reducible]
+def specs.arguments.UnitArg.m.pre
+  {Self_ : Type _} (UnitArgInst : specs.arguments.UnitArg Self_)
+  (self_ : Self_) (_ : Unit) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::arguments::UnitArg::m::post]:
+    Source: 'src/specs/arguments.rs', lines 22:4-22:30 -/
+@[reducible]
+def specs.arguments.UnitArg.m.post
+  {Self_ : Type _} (UnitArgInst : specs.arguments.UnitArg Self_)
+  (self_ : Self_) (_ : Unit) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::arguments::UnitArg]
+    Source: 'src/specs/arguments.rs', lines 20:0-23:1 -/
+structure specs.arguments.UnitArg.Lawful (Self : Type _) (UnitArgInst :
+  specs.arguments.UnitArg Self) : Prop where
+  m_spec (self_ : Self) (_ : Unit) :
+    (specs.arguments.UnitArg.m.pre UnitArgInst self_ ()).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    UnitArgInst.m self_ ()
+    ⦃ ⇓ res =>
+      ⌜ (specs.arguments.UnitArg.m.post UnitArgInst self_ () res).holds ⌝ ⦄
+
+/-- [hax_tests::specs::arguments::UnnamedArg::m::pre]:
+    Source: 'src/specs/arguments.rs', lines 27:0-27:22 -/
+@[reducible]
+def specs.arguments.UnnamedArg.m.pre
+  {Self_ : Type _} (UnnamedArgInst : specs.arguments.UnnamedArg Self_)
+  (self_ : Self_) (i : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- [hax_tests::specs::arguments::UnnamedArg::m::post]:
+    Source: 'src/specs/arguments.rs', lines 30:4-30:31 -/
+@[reducible]
+def specs.arguments.UnnamedArg.m.post
+  {Self_ : Type _} (UnnamedArgInst : specs.arguments.UnnamedArg Self_)
+  (self_ : Self_) (i : Std.U32) (res : Std.U32) :
+  RustM Bool
+  := do
+  ok true
+
+/-- Lawful structure of trait: [hax_tests::specs::arguments::UnnamedArg]
+    Source: 'src/specs/arguments.rs', lines 28:0-31:1 -/
+structure specs.arguments.UnnamedArg.Lawful (Self : Type _) (UnnamedArgInst :
+  specs.arguments.UnnamedArg Self) : Prop where
+  m_spec (self_ : Self) (i : Std.U32) :
+    (specs.arguments.UnnamedArg.m.pre UnnamedArgInst self_ i).holds →
+    ⦃ ⌜ True ⌝ ⦄
+    UnnamedArgInst.m self_ i
+    ⦃ ⇓ res =>
+      ⌜ (specs.arguments.UnnamedArg.m.post UnnamedArgInst self_ i res).holds ⌝ ⦄
+
 /-- Lawful structure of trait: [hax_tests::specs::generics::Val]
     Source: 'src/specs/generics.rs', lines 16:0-18:1 -/
 structure specs.generics.Val.Lawful (Self : Type _) (ValInst :
@@ -1814,7 +1876,7 @@ def specs.contracts.with_loop.spec (n : Std.U32) : Prop :=
   ⦃ ⇓ res => ⌜ (specs.contracts.with_loop.post n res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::arguments::named::post]:
-    Source: 'src/specs/arguments.rs', lines 18:0-18:32 -/
+    Source: 'src/specs/arguments.rs', lines 33:0-33:32 -/
 @[reducible]
 def specs.arguments.named.post
   (_ : Unit) (result : Std.Usize) : RustM Bool := do
@@ -1826,14 +1888,14 @@ def specs.arguments.named.spec (_ : Unit) : Prop :=
   ⦃ ⇓ res => ⌜ (specs.arguments.named.post () res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::arguments::before_other::pre]:
-    Source: 'src/specs/arguments.rs', lines 24:0-24:20 -/
+    Source: 'src/specs/arguments.rs', lines 39:0-39:20 -/
 @[reducible]
 def specs.arguments.before_other.pre
   (_ : Unit) (y : Std.U32) : RustM Bool := do
   ok (y < 100#u32)
 
 /-- [hax_tests::specs::arguments::before_other::post]:
-    Source: 'src/specs/arguments.rs', lines 25:0-25:32 -/
+    Source: 'src/specs/arguments.rs', lines 40:0-40:32 -/
 @[reducible]
 def specs.arguments.before_other.post
   (_ : Unit) (y : Std.U32) (result : Std.U32) : RustM Bool := do
@@ -1846,7 +1908,7 @@ def specs.arguments.before_other.spec (_ : Unit) (y : Std.U32) : Prop :=
   ⦃ ⇓ res => ⌜ (specs.arguments.before_other.post () y res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::arguments::sum_fields::pre]:
-    Source: 'src/specs/arguments.rs', lines 36:0-36:35 -/
+    Source: 'src/specs/arguments.rs', lines 51:0-51:35 -/
 @[reducible]
 def specs.arguments.sum_fields.pre
   (p : specs.arguments.Point) : RustM Bool := do
@@ -1855,7 +1917,7 @@ def specs.arguments.sum_fields.pre
   else ok false
 
 /-- [hax_tests::specs::arguments::sum_fields::post]:
-    Source: 'src/specs/arguments.rs', lines 37:0-37:40 -/
+    Source: 'src/specs/arguments.rs', lines 52:0-52:40 -/
 @[reducible]
 def specs.arguments.sum_fields.post
   (p : specs.arguments.Point) (result : Std.U32) : RustM Bool := do
@@ -1869,7 +1931,7 @@ def specs.arguments.sum_fields.spec (p : specs.arguments.Point) : Prop :=
   ⦃ ⇓ res => ⌜ (specs.arguments.sum_fields.post p res).holds ⌝ ⦄
 
 /-- [hax_tests::specs::arguments::shape_len::pre]:
-    Source: 'src/specs/arguments.rs', lines 48:0-48:70 -/
+    Source: 'src/specs/arguments.rs', lines 63:0-63:70 -/
 @[reducible]
 def specs.arguments.shape_len.pre
   (s : specs.arguments.Shape) : RustM Bool := do
@@ -1878,7 +1940,7 @@ def specs.arguments.shape_len.pre
   | specs.arguments.Shape.Line l => ok (l < 100#u32)
 
 /-- [hax_tests::specs::arguments::shape_len::post]:
-    Source: 'src/specs/arguments.rs', lines 49:0-49:34 -/
+    Source: 'src/specs/arguments.rs', lines 64:0-64:34 -/
 @[reducible]
 def specs.arguments.shape_len.post
   (s : specs.arguments.Shape) (result : Std.U32) : RustM Bool := do

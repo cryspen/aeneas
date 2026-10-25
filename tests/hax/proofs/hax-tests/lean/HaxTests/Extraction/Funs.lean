@@ -44,23 +44,23 @@ def Tuple.Insts.Hax_testsSpecsArgumentsSize : specs.arguments.Size Unit := {
 }
 
 /-- [hax_tests::specs::arguments::named]:
-    Source: 'src/specs/arguments.rs', lines 19:0-21:1 -/
+    Source: 'src/specs/arguments.rs', lines 34:0-36:1 -/
 def specs.arguments.named (_ : Unit) : RustM Std.Usize := do
   ok 0#usize
 
 /-- [hax_tests::specs::arguments::before_other]:
-    Source: 'src/specs/arguments.rs', lines 26:0-28:1 -/
+    Source: 'src/specs/arguments.rs', lines 41:0-43:1 -/
 def specs.arguments.before_other (_ : Unit) (y : Std.U32) : RustM Std.U32 := do
   ok y
 
 /-- [hax_tests::specs::arguments::sum_fields]:
-    Source: 'src/specs/arguments.rs', lines 38:0-40:1 -/
+    Source: 'src/specs/arguments.rs', lines 53:0-55:1 -/
 def specs.arguments.sum_fields
   (p : specs.arguments.Point) : RustM Std.U32 := do
   p.x + p.y
 
 /-- [hax_tests::specs::arguments::shape_len]:
-    Source: 'src/specs/arguments.rs', lines 50:0-55:1 -/
+    Source: 'src/specs/arguments.rs', lines 65:0-70:1 -/
 def specs.arguments.shape_len (s : specs.arguments.Shape) : RustM Std.U32 := do
   match s with
   | specs.arguments.Shape.Dot => ok 0#u32

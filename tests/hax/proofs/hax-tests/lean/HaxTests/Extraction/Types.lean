@@ -31,15 +31,25 @@ namespace hax_tests
 structure specs.arguments.Size (Self : Type _) where
   len : Self → RustM Std.Usize
 
+/-- Trait declaration: [hax_tests::specs::arguments::UnitArg]
+    Source: 'src/specs/arguments.rs', lines 20:0-23:1 -/
+structure specs.arguments.UnitArg (Self : Type _) where
+  m : Self → Unit → RustM Std.U32
+
+/-- Trait declaration: [hax_tests::specs::arguments::UnnamedArg]
+    Source: 'src/specs/arguments.rs', lines 28:0-31:1 -/
+structure specs.arguments.UnnamedArg (Self : Type _) where
+  m : Self → Std.U32 → RustM Std.U32
+
 /-- [hax_tests::specs::arguments::Point]
-    Source: 'src/specs/arguments.rs', lines 30:0-33:1
+    Source: 'src/specs/arguments.rs', lines 45:0-48:1
     Visibility: public -/
 structure specs.arguments.Point where
   x : Std.U32
   y : Std.U32
 
 /-- [hax_tests::specs::arguments::Shape]
-    Source: 'src/specs/arguments.rs', lines 42:0-45:1
+    Source: 'src/specs/arguments.rs', lines 57:0-60:1
     Visibility: public -/
 @[discriminant isize]
 inductive specs.arguments.Shape where

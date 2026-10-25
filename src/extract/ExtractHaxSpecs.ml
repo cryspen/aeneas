@@ -69,8 +69,11 @@ module Helpers = struct
         | None -> [%internal_error] span)
       inputs
 
-  (** The arguments of a method with signature [sg], as fresh variables
-      registered in [ctx], named after the inputs of the precondition [pre]. *)
+  (** The arguments of a method with signature [sg]: [()] for its unit inputs
+      (as in {!input_args}), and fresh variables registered in [ctx] for the
+      others, named after the inputs of the precondition [pre] (or, for an input
+      that is not a variable, e.g. [_], after its type, as in
+      {!ExtractBase.ctx_add_vars}). *)
   let method_args span (ctx : ExtractBase.extraction_ctx) fresh_fvar_id
       (sg : Pure.fun_sig) (pre : Pure.fun_decl option) :
       ExtractBase.extraction_ctx * Pure.texpr list =
@@ -79,16 +82,21 @@ module Helpers = struct
         ~some:(fun (b : Pure.fun_body) -> b.inputs)
         (Option.bind pre (fun (f : Pure.fun_decl) -> f.body))
     in
-    let name i =
+    let basename i =
       match Option.bind (List.nth_opt inputs i) PureUtils.as_opt_pat_bound with
-      | Some ({ basename = Some n; _ }, _) -> n
-      | _ -> "_"
+      | Some ({ basename; _ }, _) -> basename
+      | None -> None
     in
     List.fold_left_map
       (fun ctx (i, ty) ->
-        let id = fresh_fvar_id () in
-        let ctx, _ = ExtractBase.ctx_add_var span (name i) id ctx in
-        (ctx, ({ e = FVar id; ty } : Pure.texpr)))
+        if ty = PureUtils.mk_unit_ty then (ctx, PureUtils.mk_unit_texpr)
+        else
+          let id = fresh_fvar_id () in
+          let name =
+            ExtractBase.ctx_compute_var_basename span ctx (basename i) ty
+          in
+          let ctx, _ = ExtractBase.ctx_add_var span name id ctx in
+          (ctx, ({ e = FVar id; ty } : Pure.texpr)))
       ctx
       (List.mapi (fun i ty -> (i, ty)) sg.inputs)
 
@@ -716,7 +724,9 @@ let emit_lawful_structure (ctx : ExtractBase.extraction_ctx) fmt
       List.iter
         (fun (a : Pure.texpr) ->
           emit_binder fmt
-            (ctx_get_var span (PureUtils.as_fvar span a) ctx)
+            (match a.e with
+            | FVar id -> ctx_get_var span id ctx
+            | _ -> (* [()] *) "_")
             (fun () ->
               ExtractTypes.extract_ty span ctx fmt no_params_tys ~inside:false
                 a.ty))
