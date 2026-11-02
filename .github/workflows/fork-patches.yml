@@ -1,0 +1,24 @@
+# Checks that every commit of a pull request belongs to one of the fork
+# patches documented in `fork/patches/` (see `scripts/ci-check-fork-patches.sh`).
+# Commits that come from upstream (e.g. in a rebase) are not checked.
+name: fork patches
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-fork-patches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0 # deep clone in order to get access to other commits
+      - run: git fetch --no-tags https://github.com/AeneasVerif/aeneas main
+      - run: |
+          scripts/ci-check-fork-patches.sh \
+            "${{ github.event.pull_request.base.sha }}..HEAD" --not FETCH_HEAD
