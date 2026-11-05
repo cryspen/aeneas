@@ -480,10 +480,14 @@ let symbolic_value_has_ended_regions (ended_regions : RegionId.Set.t)
     (s : symbolic_value) : bool =
   (* [ended_regions] only contains free region ids. Erased and body regions can
      never be ended and legitimately appear here in normalized projection types,
-     so we tolerate them via [~allow_erased] rather than raising as [ty_regions]
-     would. *)
-  ty_has_regions_in_pred
-    (fun r -> region_in_set ~allow_erased:true r ended_regions)
+     so we tolerate them rather than raising as [ty_regions] would. *)
+  ty_has_regions_in_pred_aux None
+    (fun r ->
+      match r with
+      | RVar (Free id) -> RegionId.Set.mem id ended_regions
+      | RStatic | RErased | RBody _ -> false
+      | RLub _ -> [%craise_opt_span] None "Unexpected Lub region"
+      | RVar (Bound _) -> [%craise_opt_span] None "Unexpected bound region")
     s.sv_ty
 
 let region_is_owned (abs : abs) (r : region) : bool =
